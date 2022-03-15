@@ -1,0 +1,3 @@
+[submodule "libxiv"]
+	path = libxiv
+	url = ../libxiv.git
