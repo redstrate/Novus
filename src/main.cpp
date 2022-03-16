@@ -1,16 +1,15 @@
-#include <fmt/format.h>
+#include <QApplication>
 
+#include "mainwindow.h"
 #include "gamedata.h"
 
 int main(int argc, char* argv[]) {
-    if(argc < 3) {
-        fmt::print("novus [sqpack directory] [game path] [out path]");
-        return -1;
-    }
+    QApplication app(argc, argv);
 
     GameData data(argv[1]);
 
-    data.extractFile(argv[2], argv[3]);
+    MainWindow w(data);
+    w.show();
 
-    return 0;
+    return app.exec();
 }
