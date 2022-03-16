@@ -19,6 +19,7 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
     QTableWidget* listWidget = new QTableWidget();
 
+    data.extractFile("exd/map.exl", "map.exl");
     data.extractFile("exd/map.exh", "map.exh");
     data.extractFile("exd/map_0.exd", "map_0.exd");
 
