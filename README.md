@@ -8,4 +8,13 @@ mirror](https://img.shields.io/badge/mirror-ryne.moe-red.svg?logo=git)](https://
 
 A cross-platform FFXIV modding tool. This uses my own custom modding library, [libxiv](https://git.sr.ht/~redstrate/libxiv).
 
-This is **alpha** level software, not intended to be usable in any capacity at the moment.
+This is **alpha** level software, not intended to be usable in any capacity at the moment. All it can really do
+at the moment is view excel sheets.
+
+![screenshot](misc/screenshot.png)
+
+## Usage
+
+You must pass the path to your `sqpack` directory as the first argument.
+
+`novus C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
