@@ -42,7 +42,7 @@ MainWindow::MainWindow(GameData& data) : data(data) {
                 fmt::print("page, row count = {}, start id = {}\n", page.rowCount, page.startId);
 
                 std::string path;
-                if(exh.language.empty()) {
+                if(exh.language[0] == Language::None) {
                     path = getEXDFilename(exh, nameLowercase, "", page);
                 } else {
                     path = getEXDFilename(exh, nameLowercase, getLanguageCode(Language::English), page);
