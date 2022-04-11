@@ -55,6 +55,10 @@ MainWindow::MainWindow(GameData& data) : data(data) {
                         auto newItem = new QTableWidgetItem(exd.rows[i].data[j].data.c_str());
 
                         tableWidget->setItem(i, j, newItem);
+
+                        QTableWidgetItem* headerItem = new QTableWidgetItem();
+                        headerItem->setText(exd.rows[i].data[j].type.c_str());
+                        tableWidget->setHorizontalHeaderItem(j, headerItem);
                     }
                 }
             }
