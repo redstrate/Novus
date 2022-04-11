@@ -40,7 +40,14 @@ MainWindow::MainWindow(GameData& data) : data(data) {
         for(auto page : exh.pages) {
             if(page.startId == 0) {
                 fmt::print("page, row count = {}, start id = {}\n", page.rowCount, page.startId);
-                auto path = getEXDFilename(exh, nameLowercase, page);
+
+                std::string path;
+                if(exh.language.empty()) {
+                    path = getEXDFilename(exh, nameLowercase, "", page);
+                } else {
+                    path = getEXDFilename(exh, nameLowercase, getLanguageCode(Language::English), page);
+                }
+
                 data.extractFile("exd/" + path, path);
                 auto exd = readEXD(exh, path, page);
                 for (int i = 0; i < exd.rows.size(); i++) {
