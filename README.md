@@ -17,4 +17,4 @@ at the moment is view excel sheets.
 
 You must pass the path to your `sqpack` directory as the first argument.
 
-`novus C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
+`novus.exe C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
