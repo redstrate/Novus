@@ -1,8 +1,9 @@
 #include "mainwindow.h"
 
-#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QTableWidget>
 #include <fmt/core.h>
+#include <QListWidget>
 
 #include "gamedata.h"
 #include "exhparser.h"
@@ -14,34 +15,45 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     QWidget* dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
 
-    QVBoxLayout* layout = new QVBoxLayout();
+    QHBoxLayout* layout = new QHBoxLayout();
     dummyWidget->setLayout(layout);
 
-    QTableWidget* listWidget = new QTableWidget();
-
-    data.extractFile("exd/map.exl", "map.exl");
-    data.extractFile("exd/map.exh", "map.exh");
-    data.extractFile("exd/map_0.exd", "map_0.exd");
-
-    auto exh = readEXH("map.exh");
-    for(auto column : exh.columnDefinitions) {
-        fmt::print("type = {}, offset = {}\n", column.type, column.offset);
+    QListWidget* listWidget = new QListWidget();
+    for(auto name : data.getAllSheetNames()) {
+        listWidget->addItem(name.c_str());
     }
 
-    listWidget->setColumnCount(exh.columnDefinitions.size());
-    listWidget->setRowCount(exh.header.rowCount);
+    QTableWidget* tableWidget = new QTableWidget();
 
-    for(auto page : exh.pages) {
-        fmt::print("page, row count = {}, start id = {}\n", page.rowCount, page.startId);
-        auto exd = readEXD(exh, page);
-        for(int i = 0; i < exd.rows.size(); i++) {
-            for(int j = 0; j < exd.rows[i].data.size(); j++) {
-                auto newItem = new QTableWidgetItem(exd.rows[i].data[j].data.c_str());
+    connect(listWidget, &QListWidget::itemClicked, this, [&data, tableWidget](QListWidgetItem* item) {
+        auto name = item->text().toStdString();
+        auto nameLowercase = item->text().toLower().toStdString();
 
-                listWidget->setItem(i, j, newItem);
+        auto exh = *data.readExcelSheet(name);
+        for(auto column : exh.columnDefinitions) {
+            fmt::print("type = {}, offset = {}\n", column.type, column.offset);
+        }
+
+        tableWidget->setColumnCount(exh.columnDefinitions.size());
+        tableWidget->setRowCount(exh.header.rowCount);
+
+        for(auto page : exh.pages) {
+            if(page.startId == 0) {
+                fmt::print("page, row count = {}, start id = {}\n", page.rowCount, page.startId);
+                auto path = getEXDFilename(exh, nameLowercase, page);
+                data.extractFile("exd/" + path, path);
+                auto exd = readEXD(exh, path, page);
+                for (int i = 0; i < exd.rows.size(); i++) {
+                    for (int j = 0; j < exd.rows[i].data.size(); j++) {
+                        auto newItem = new QTableWidgetItem(exd.rows[i].data[j].data.c_str());
+
+                        tableWidget->setItem(i, j, newItem);
+                    }
+                }
             }
         }
-    }
+    });
 
     layout->addWidget(listWidget);
+    layout->addWidget(tableWidget);
 }
