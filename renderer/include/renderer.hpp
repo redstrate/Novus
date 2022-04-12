@@ -8,7 +8,8 @@ class Renderer {
 public:
     Renderer();
 
-    void initSwapchain(VkSurfaceKHR surface);
+    void initSwapchain(VkSurfaceKHR surface, int width, int height);
+    void resize(VkSurfaceKHR surface, int width, int height);
 
     void render();
 

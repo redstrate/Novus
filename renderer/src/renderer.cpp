@@ -136,8 +136,8 @@ Renderer::Renderer() {
     fmt::print("Initialized renderer!\n");
 }
 
-void Renderer::initSwapchain(VkSurfaceKHR surface) {
-    fmt::print("Creating swapchain...\n");
+void Renderer::initSwapchain(VkSurfaceKHR surface, int width, int height) {
+    vkQueueWaitIdle(presentQueue);
 
     // TODO: fix this pls
     VkBool32 supported;
@@ -198,8 +198,8 @@ void Renderer::initSwapchain(VkSurfaceKHR surface) {
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = swapchainSurfaceFormat.format;
     createInfo.imageColorSpace = swapchainSurfaceFormat.colorSpace;
-    createInfo.imageExtent.width = capabilities.currentExtent.width;
-    createInfo.imageExtent.height = capabilities.currentExtent.height;
+    createInfo.imageExtent.width = width;
+    createInfo.imageExtent.height = height;
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -208,9 +208,16 @@ void Renderer::initSwapchain(VkSurfaceKHR surface) {
     createInfo.presentMode = swapchainPresentMode;
     createInfo.clipped = VK_TRUE;
 
+    VkSwapchainKHR oldSwapchain = swapchain;
+    createInfo.oldSwapchain = oldSwapchain;
+
     vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain);
 
-    swapchainExtent = capabilities.currentExtent;
+    if(oldSwapchain != VK_NULL_HANDLE)
+        vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
+
+    swapchainExtent.width = width;
+    swapchainExtent.height = height;
 
     vkGetSwapchainImagesKHR(device, swapchain, &imageCount,
                             nullptr);
@@ -317,6 +324,10 @@ void Renderer::initSwapchain(VkSurfaceKHR surface) {
         vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
         vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
     }
+}
+
+void Renderer::resize(VkSurfaceKHR surface, int width, int height) {
+    initSwapchain(surface, width, height);
 }
 
 void Renderer::render() {

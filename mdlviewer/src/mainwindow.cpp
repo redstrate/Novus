@@ -1,10 +1,12 @@
 #include "mainwindow.h"
 
-#include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QTableWidget>
 #include <fmt/core.h>
 #include <QListWidget>
 #include <QVulkanWindow>
+#include <QLineEdit>
+#include <QResizeEvent>
 
 #include "gamedata.h"
 #include "exhparser.h"
@@ -23,6 +25,10 @@ public:
         if (isExposed()) {
             if (!m_initialized) {
                 m_initialized = true;
+
+                auto surface = m_instance->surfaceForWindow(this);
+                m_renderer->initSwapchain(surface, width(), height());
+
                 render();
             }
         }
@@ -32,11 +38,18 @@ public:
         if (e->type() == QEvent::UpdateRequest)
             render();
 
+        if (e->type() == QEvent::Resize) {
+            QResizeEvent* resizeEvent = (QResizeEvent*)e;
+            auto surface = m_instance->surfaceForWindow(this);
+            m_renderer->resize(surface, resizeEvent->size().width(), resizeEvent->size().height());
+        }
+
         return QWindow::event(e);
     }
 
     void render() {
         m_renderer->render();
+        m_instance->presentQueued(this);
         requestUpdate();
     }
 
@@ -52,24 +65,30 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
 
-    auto layout = new QHBoxLayout();
+    auto layout = new QVBoxLayout();
     dummyWidget->setLayout(layout);
+
+    QLineEdit* pathEdit = new QLineEdit();
+    layout->addWidget(pathEdit);
 
     renderer = new Renderer();
 
-    QVulkanInstance inst;
-    inst.setVkInstance(renderer->instance);
-    inst.setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
-    inst.create();
+    QVulkanInstance* inst = new QVulkanInstance();
+    inst->setVkInstance(renderer->instance);
+    inst->setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
+    inst->create();
 
-    VulkanWindow* vkWindow = new VulkanWindow(renderer, &inst);
-    vkWindow->show();
-    vkWindow->setVulkanInstance(&inst);
-
-    auto surface = inst.surfaceForWindow(vkWindow);
-    renderer->initSwapchain(surface);
+    VulkanWindow* vkWindow = new VulkanWindow(renderer, inst);
+    vkWindow->setVulkanInstance(inst);
 
     auto widget = QWidget::createWindowContainer(vkWindow);
+    //widget->resize(640, 480);
     layout->addWidget(widget);
+    //vkWindow->show();
+
+    //auto surface = inst.surfaceForWindow(vkWindow);
+    //renderer->initSwapchain(surface);
+
+
 
 }
