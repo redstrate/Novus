@@ -572,12 +572,14 @@ void Renderer::initPipeline() {
     normalAttribute.location = 1;
     normalAttribute.offset = offsetof(Vertex, normal);
 
+    std::array<VkVertexInputAttributeDescription, 2> attributes = {positionAttribute, normalAttribute};
+
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputState.vertexBindingDescriptionCount = 1;
     vertexInputState.pVertexBindingDescriptions = &binding;
-    vertexInputState.vertexAttributeDescriptionCount = 1;
-    vertexInputState.pVertexAttributeDescriptions = &positionAttribute;
+    vertexInputState.vertexAttributeDescriptionCount = attributes.size();
+    vertexInputState.pVertexAttributeDescriptions = attributes.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
