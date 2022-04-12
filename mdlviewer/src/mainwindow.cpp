@@ -7,6 +7,7 @@
 #include <QVulkanWindow>
 #include <QLineEdit>
 #include <QResizeEvent>
+#include <QComboBox>
 
 #include "gamedata.h"
 #include "exhparser.h"
@@ -62,26 +63,6 @@ private:
     QVulkanInstance* m_instance;
 };
 
-struct ModelInfo {
-
-};
-
-enum class Slot {
-    Body,
-    Legs
-};
-
-struct GearInfo {
-    std::string name;
-    Slot slot;
-    ModelInfo modelInfo;
-};
-
-std::unordered_map<Slot, std::string_view> slotToName = {
-        {Slot::Body, "top"},
-        {Slot::Legs, "dwn"}
-};
-
 MainWindow::MainWindow(GameData& data) : data(data) {
     setWindowTitle("mdlviewer");
     setMinimumSize(QSize(640, 480));
@@ -91,8 +72,6 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
     auto layout = new QHBoxLayout();
     dummyWidget->setLayout(layout);
-
-    std::vector<GearInfo> gears;
 
     // smallclothes body
     {
@@ -122,26 +101,51 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
     renderer = new Renderer();
 
-    QVulkanInstance* inst = new QVulkanInstance();
+    auto inst = new QVulkanInstance();
     inst->setVkInstance(renderer->instance);
     inst->setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
     inst->create();
 
-    VulkanWindow* vkWindow = new VulkanWindow(renderer, inst);
+    vkWindow = new VulkanWindow(renderer, inst);
     vkWindow->setVulkanInstance(inst);
 
     auto widget = QWidget::createWindowContainer(vkWindow);
-    layout->addWidget(widget);
 
-    connect(listWidget, &QListWidget::itemClicked, [this, &data, vkWindow, gears](QListWidgetItem* item) {
-        for(auto gear : gears) {
-            if(gear.name == item->text().toStdString()) {
-                QString resolvedModelPath = QString("chara/equipment/e0000/model/c0201e0000_%1.mdl");
-                resolvedModelPath = resolvedModelPath.arg(slotToName[gear.slot].data());
+    auto viewportLayout = new QVBoxLayout();
+    viewportLayout->addWidget(widget);
+    layout->addLayout(viewportLayout);
 
-                data.extractFile(resolvedModelPath.toStdString(), "top.mdl");
-                vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
-            }
-        }
+    QComboBox* raceCombo = new QComboBox();
+    for(auto [race, raceName] : raceNames) {
+        raceCombo->addItem(raceName.data());
+    }
+    raceCombo->setCurrentIndex(0);
+
+    connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        currentRace = (Race)index;
+        refreshModel();
     });
+
+    viewportLayout->addWidget(raceCombo);
+
+    connect(listWidget, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
+        for(auto& gear : gears) {
+            if(gear.name == item->text().toStdString())
+                loadedGears = {&gear};
+        }
+
+        refreshModel();
+    });
+}
+
+void MainWindow::refreshModel() {
+    vkWindow->models.clear();
+
+    for(auto gear : loadedGears) {
+        QString resolvedModelPath = QString("chara/equipment/e0000/model/c%1e0000_%2.mdl");
+        resolvedModelPath = resolvedModelPath.arg(raceIDs[currentRace].data(), slotToName[gear->slot].data());
+
+        data.extractFile(resolvedModelPath.toStdString(), "top.mdl");
+        vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
+    }
 }
