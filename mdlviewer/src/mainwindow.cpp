@@ -119,7 +119,6 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     for(auto [race, raceName] : raceNames) {
         raceCombo->addItem(raceName.data());
     }
-    raceCombo->setCurrentIndex(0);
 
     connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
         currentRace = (Race)index;

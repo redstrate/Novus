@@ -52,7 +52,7 @@ private:
     std::vector<GearInfo> gears;
     std::vector<GearInfo*> loadedGears;
 
-    Race currentRace;
+    Race currentRace = Race::HyurMidlanderMale;
 
     GameData& data;
 
