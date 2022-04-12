@@ -6,15 +6,36 @@ mirror](https://img.shields.io/badge/mirror-GitHub-black.svg?logo=github)](https
 [![ryne.moe
 mirror](https://img.shields.io/badge/mirror-ryne.moe-red.svg?logo=git)](https://git.ryne.moe/redstrate/novus)
 
-A cross-platform FFXIV modding tool. This uses my own custom modding library, [libxiv](https://git.sr.ht/~redstrate/libxiv).
+This is a collection of cross-platform, FFXIV modding tools. These don't use any pre-existing modding framework (Lumina,
+xivModdingFramework, etc) but instead my own custom modding library, [libxiv](https://git.sr.ht/~redstrate/libxiv).
 
-This is **alpha** level software, not intended to be usable in any capacity at the moment. All it can really do
-at the moment is view excel sheets.
+The goal is to create a good set of tools that isn't based on WPF and C#, and can work cross-platform without having
+to resort to Wine.
 
-![screenshot](misc/screenshot.png)
+**Note:** This is alpha level software, not intended to be usable in any capacity at the moment. Thus, I have not tagged
+any stable releases.
 
-## Usage
+## exdviewer
+
+This is used to view excel data from the game. It's pretty basic right now but it seems to read anything I throw at it just fine.
+
+
+![exdviewer screenshot](misc/exdviewer-screenshot.png)
+
+### Usage
 
 You must pass the path to your `sqpack` directory as the first argument.
 
-`novus.exe C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
+`exdviewer.exe C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
+
+## mdlviewer
+
+mdlviewer can display any arbitrary mdl file from the game, provided that it's supported by libxiv and you know it's path.
+
+![mdlviewer screenshot](misc/mdlviewer-screenshot.png)
+
+### Usage
+
+You must pass the path to your `sqpack` directory as the first argument.
+
+`mdlviewer.exe C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
