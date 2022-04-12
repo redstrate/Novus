@@ -30,7 +30,7 @@ You must pass the path to your `sqpack` directory as the first argument.
 
 ## mdlviewer
 
-mdlviewer can display any arbitrary mdl file from the game, provided that it's supported by libxiv and you know it's path.
+This can display any arbitrary model from the game, as long as it's supported by libxiv.
 
 ![mdlviewer screenshot](misc/mdlviewer-screenshot.png)
 
@@ -39,3 +39,7 @@ mdlviewer can display any arbitrary mdl file from the game, provided that it's s
 You must pass the path to your `sqpack` directory as the first argument.
 
 `mdlviewer.exe C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
+
+### Note
+
+The viewport uses Vulkan, so it must be supported on your system in order to work.
