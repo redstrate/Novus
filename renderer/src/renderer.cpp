@@ -385,8 +385,9 @@ void Renderer::render(std::vector<RenderModel> models) {
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &model.vertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-        glm::mat4 p = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
-        glm::mat4 v = glm::lookAt(glm::vec3(2), glm::vec3(0), glm::vec3(0, 1, 0));
+        glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 100.0f);
+        p[1][1] *= -1;
+        glm::mat4 v = glm::lookAt(glm::vec3(0, 1, -2.5), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
         glm::mat4 mvp = p * v;
 
         vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
