@@ -139,8 +139,11 @@ Renderer::Renderer() {
     fmt::print("Initialized renderer!\n");
 }
 
-void Renderer::initSwapchain(VkSurfaceKHR surface, int width, int height) {
+bool Renderer::initSwapchain(VkSurfaceKHR surface, int width, int height) {
     vkQueueWaitIdle(presentQueue);
+
+    if(width == 0 || height == 0)
+        return false;
 
     // TODO: fix this pls
     VkBool32 supported;
@@ -329,6 +332,8 @@ void Renderer::initSwapchain(VkSurfaceKHR surface, int width, int height) {
         vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
         vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
     }
+
+    return true;
 }
 
 void Renderer::resize(VkSurfaceKHR surface, int width, int height) {

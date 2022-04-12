@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 
-#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QTableWidget>
 #include <fmt/core.h>
 #include <QListWidget>
@@ -27,9 +27,10 @@ public:
                 m_initialized = true;
 
                 auto surface = m_instance->surfaceForWindow(this);
-                m_renderer->initSwapchain(surface, width(), height());
-
-                render();
+                if(!m_renderer->initSwapchain(surface, width(), height()))
+                    m_initialized = false;
+                else
+                    render();
             }
         }
     }
@@ -61,17 +62,63 @@ private:
     QVulkanInstance* m_instance;
 };
 
+struct ModelInfo {
+
+};
+
+enum class Slot {
+    Body,
+    Legs
+};
+
+struct GearInfo {
+    std::string name;
+    Slot slot;
+    ModelInfo modelInfo;
+};
+
+std::unordered_map<Slot, std::string_view> slotToName = {
+        {Slot::Body, "top"},
+        {Slot::Legs, "dwn"}
+};
+
 MainWindow::MainWindow(GameData& data) : data(data) {
     setWindowTitle("mdlviewer");
+    setMinimumSize(QSize(640, 480));
 
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
 
-    auto layout = new QVBoxLayout();
+    auto layout = new QHBoxLayout();
     dummyWidget->setLayout(layout);
 
-    QLineEdit* pathEdit = new QLineEdit();
-    layout->addWidget(pathEdit);
+    std::vector<GearInfo> gears;
+
+    // smallclothes body
+    {
+        GearInfo info = {};
+        info.name = "Smallclothes Body";
+        info.slot = Slot::Body;
+
+        gears.push_back(info);
+    }
+
+    // smallclothes legs
+    {
+        GearInfo info = {};
+        info.name = "Smallclothes Legs";
+        info.slot = Slot::Legs;
+
+        gears.push_back(info);
+    }
+
+    auto listWidget = new QListWidget();
+    for(auto gear : gears)
+        listWidget->addItem(gear.name.c_str());
+
+    listWidget->setMaximumWidth(200);
+
+    layout->addWidget(listWidget);
 
     renderer = new Renderer();
 
@@ -86,6 +133,15 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     auto widget = QWidget::createWindowContainer(vkWindow);
     layout->addWidget(widget);
 
-    data.extractFile("chara/equipment/e0000/model/c0201e0000_top.mdl", "top.mdl");
-    vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
+    connect(listWidget, &QListWidget::itemClicked, [this, &data, vkWindow, gears](QListWidgetItem* item) {
+        for(auto gear : gears) {
+            if(gear.name == item->text().toStdString()) {
+                QString resolvedModelPath = QString("chara/equipment/e0000/model/c0201e0000_%1.mdl");
+                resolvedModelPath = resolvedModelPath.arg(slotToName[gear.slot].data());
+
+                data.extractFile(resolvedModelPath.toStdString(), "top.mdl");
+                vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
+            }
+        }
+    });
 }

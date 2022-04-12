@@ -22,7 +22,7 @@ public:
     Renderer();
 
     void initPipeline();
-    void initSwapchain(VkSurfaceKHR surface, int width, int height);
+    bool initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
 
     RenderModel addModel(const Model& model);
