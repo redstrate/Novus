@@ -30,5 +30,6 @@ else()
     set(LIBRARIES fmt::fmt ${LIBRARIES})
 endif()
 
+add_subdirectory(renderer)
 add_subdirectory(exdviewer)
 add_subdirectory(mdlviewer)

@@ -2,6 +2,8 @@
 
 #include <QMainWindow>
 
+#include "renderer.hpp"
+
 class GameData;
 
 class MainWindow : public QMainWindow {
@@ -10,4 +12,6 @@ public:
 
 private:
     GameData& data;
+
+    Renderer* renderer;
 };

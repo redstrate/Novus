@@ -4,7 +4,7 @@ add_executable(mdlviewer
 target_include_directories(mdlviewer
         PUBLIC
         include)
-target_link_libraries(mdlviewer PUBLIC libxiv ${LIBRARIES} Qt5::Core Qt5::Widgets)
+target_link_libraries(mdlviewer PUBLIC libxiv ${LIBRARIES} Qt5::Core Qt5::Widgets renderer)
 
 install(TARGETS mdlviewer
         DESTINATION "${INSTALL_BIN_PATH}")
