@@ -4,10 +4,13 @@
 #include <vector>
 #include <array>
 
-#include "mdlparser.h";
+#include "mdlparser.h"
 
 struct RenderModel {
+    size_t numIndices;
 
+    VkBuffer vertexBuffer, indexBuffer;
+    VkDeviceMemory vertexMemory, indexMemory;
 };
 
 class Renderer {
@@ -20,7 +23,7 @@ public:
 
     RenderModel addModel(const Model& model);
 
-    void render();
+    void render(std::vector<RenderModel> models);
 
     VkInstance instance = VK_NULL_HANDLE;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -37,6 +40,8 @@ public:
     std::array<VkFence, 3> inFlightFences;
     std::array<VkSemaphore, 3> imageAvailableSemaphores, renderFinishedSemaphores;
     uint32_t currentFrame = 0;
+    VkPipeline pipeline;
+    VkPipelineLayout pipelineLayout;
 
     std::tuple<VkBuffer, VkDeviceMemory> createBuffer(size_t size, VkBufferUsageFlags usageFlags);
 

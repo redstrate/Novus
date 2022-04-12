@@ -48,10 +48,12 @@ public:
     }
 
     void render() {
-        m_renderer->render();
+        m_renderer->render(models);
         m_instance->presentQueued(this);
         requestUpdate();
     }
+
+    std::vector<RenderModel> models;
 
 private:
     bool m_initialized = false;
@@ -85,5 +87,5 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     layout->addWidget(widget);
 
     data.extractFile("chara/equipment/e0000/model/c0201e0000_top.mdl", "top.mdl");
-    renderer->addModel(parseMDL("top.mdl"));
+    vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
 }
