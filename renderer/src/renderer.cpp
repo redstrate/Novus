@@ -366,11 +366,11 @@ void Renderer::render(std::vector<RenderModel> models) {
     renderPassInfo.renderPass = renderPass;
     renderPassInfo.framebuffer = swapchainFramebuffers[imageIndex];
 
-    static float i = 0;
     VkClearValue clearValue = {};
-    clearValue.color.float32[0] = sin(i);
-    i += 0.01;
-    clearValue.color.float32[3] = 1;
+    clearValue.color.float32[0] = 0.8;
+    clearValue.color.float32[1] = 0.8;
+    clearValue.color.float32[2] = 0.8;
+    clearValue.color.float32[3] = 1.0;
 
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearValue;
