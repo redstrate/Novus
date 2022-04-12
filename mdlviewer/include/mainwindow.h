@@ -25,7 +25,7 @@ inline std::unordered_map<Race, std::string_view> raceIDs = {
 };
 
 struct ModelInfo {
-
+    int primaryID;
 };
 
 struct GearInfo {

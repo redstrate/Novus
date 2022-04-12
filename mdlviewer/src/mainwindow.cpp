@@ -91,6 +91,26 @@ MainWindow::MainWindow(GameData& data) : data(data) {
         gears.push_back(info);
     }
 
+    auto exh = *data.readExcelSheet("Item");
+
+    auto path = getEXDFilename(exh, "item", getLanguageCode(Language::English), exh.pages[1]);
+    data.extractFile("exd/" + path, path);
+    auto exd = readEXD(exh, path, exh.pages[1]);
+    for(auto row : exd.rows) {
+        auto primaryModel = row.data[47].uint64Data;
+        auto secondaryModel = row.data[48].uint64Data;
+
+        int16_t parts[4];
+        memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
+
+        GearInfo info = {};
+        info.name = row.data[9].data;
+        info.slot = Slot::Body;
+        info.modelInfo.primaryID = parts[0];
+
+        gears.push_back(info);
+    }
+
     auto listWidget = new QListWidget();
     for(auto gear : gears)
         listWidget->addItem(gear.name.c_str());
@@ -141,8 +161,10 @@ void MainWindow::refreshModel() {
     vkWindow->models.clear();
 
     for(auto gear : loadedGears) {
-        QString resolvedModelPath = QString("chara/equipment/e0000/model/c%1e0000_%2.mdl");
-        resolvedModelPath = resolvedModelPath.arg(raceIDs[currentRace].data(), slotToName[gear->slot].data());
+        QString modelID = QString("%1").arg(gear->modelInfo.primaryID, 4, 10, QLatin1Char('0'));
+
+        QString resolvedModelPath = QString("chara/equipment/e%1/model/c%2e%3_%4.mdl");
+        resolvedModelPath = resolvedModelPath.arg(modelID, raceIDs[currentRace].data(), modelID, slotToName[gear->slot].data());
 
         data.extractFile(resolvedModelPath.toStdString(), "top.mdl");
         vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
