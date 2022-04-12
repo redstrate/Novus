@@ -8,6 +8,16 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glm)
 
-add_library(renderer src/renderer.cpp)
+if(USE_STANDALONE_WINDOW)
+    find_package(SDL2 REQUIRED)
+    set(EXTRA_SRC src/standalonewindow.cpp)
+    set(EXTRA_LIBRARIES SDL2::SDL2)
+endif()
+
+add_library(renderer src/renderer.cpp ${EXTRA_SRC})
 target_include_directories(renderer PUBLIC include)
-target_link_libraries(renderer PUBLIC Vulkan::Vulkan fmt::fmt libxiv glm::glm)
+target_link_libraries(renderer PUBLIC Vulkan::Vulkan fmt::fmt libxiv glm::glm ${EXTRA_LIBRARIES})
+
+if(USE_STANDALONE_WINDOW)
+    target_compile_definitions(renderer PUBLIC USE_STANDALONE_WINDOW)
+endif()

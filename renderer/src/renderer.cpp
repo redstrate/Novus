@@ -12,7 +12,23 @@
 Renderer::Renderer() {
     VkApplicationInfo applicationInfo = {};
 
-    const std::array<const char*, 4> instanceExtensions = {"VK_KHR_surface", "VK_KHR_xcb_surface", "VK_EXT_debug_utils", "VK_KHR_xlib_surface"};
+    std::vector<const char*> instanceExtensions = {"VK_EXT_debug_utils"};
+
+    uint32_t extensionCount = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> extensions(extensionCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
+    for(auto& extension : extensions) {
+        if (strstr(extension.extensionName, "surface") != nullptr) {
+            instanceExtensions.push_back(extension.extensionName);
+        }
+
+        if (strstr(extension.extensionName, "VK_KHR_get_physical_device_properties2") != nullptr) {
+            instanceExtensions.push_back(extension.extensionName);
+        }
+    }
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -35,7 +51,7 @@ Renderer::Renderer() {
 
     physicalDevice = devices[0];
 
-    uint32_t extensionCount = 0;
+    extensionCount = 0;
     vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr,
                                          &extensionCount, nullptr);
 

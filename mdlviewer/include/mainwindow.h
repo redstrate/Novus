@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <unordered_map>
 
 #include "renderer.hpp"
 
@@ -41,6 +42,7 @@ inline std::unordered_map<Slot, std::string_view> slotToName = {
 
 class GameData;
 class VulkanWindow;
+class StandaloneWindow;
 
 class MainWindow : public QMainWindow {
 public:
@@ -58,4 +60,5 @@ private:
 
     Renderer* renderer;
     VulkanWindow* vkWindow;
+    StandaloneWindow* standaloneWindow;
 };

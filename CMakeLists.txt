@@ -30,6 +30,11 @@ else()
     set(LIBRARIES fmt::fmt ${LIBRARIES})
 endif()
 
+# macos
+if(UNIX AND NOT LINUX)
+    set(USE_STANDALONE_WINDOW TRUE)
+endif()
+
 add_subdirectory(renderer)
 add_subdirectory(exdviewer)
 add_subdirectory(mdlviewer)

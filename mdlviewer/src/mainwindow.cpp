@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 
+#include <QWindow>
+#include <QVulkanInstance>
 #include <QHBoxLayout>
 #include <QTableWidget>
 #include <fmt/core.h>
@@ -8,12 +10,14 @@
 #include <QLineEdit>
 #include <QResizeEvent>
 #include <QComboBox>
+#include <QTimer>
 
 #include "gamedata.h"
 #include "exhparser.h"
 #include "exdparser.h"
 #include "mdlparser.h"
 
+#ifndef USE_STANDALONE_WINDOW
 class VulkanWindow : public QWindow
 {
 public:
@@ -62,6 +66,9 @@ private:
     Renderer* m_renderer;
     QVulkanInstance* m_instance;
 };
+#else
+#include "standalonewindow.h"
+#endif
 
 MainWindow::MainWindow(GameData& data) : data(data) {
     setWindowTitle("mdlviewer");
@@ -121,6 +128,10 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
     renderer = new Renderer();
 
+    auto viewportLayout = new QVBoxLayout();
+    layout->addLayout(viewportLayout);
+
+#ifndef USE_STANDALONE_WINDOW
     auto inst = new QVulkanInstance();
     inst->setVkInstance(renderer->instance);
     inst->setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
@@ -131,9 +142,17 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
     auto widget = QWidget::createWindowContainer(vkWindow);
 
-    auto viewportLayout = new QVBoxLayout();
     viewportLayout->addWidget(widget);
-    layout->addLayout(viewportLayout);
+#else
+    standaloneWindow = new StandaloneWindow(renderer);
+    renderer->initSwapchain(standaloneWindow->getSurface(renderer->instance), 640, 480);
+
+    QTimer* timer = new QTimer();
+    connect(timer, &QTimer::timeout, this, [this] {
+        standaloneWindow->render();
+    });
+    timer->start(1000);
+#endif
 
     QComboBox* raceCombo = new QComboBox();
     for(auto [race, raceName] : raceNames) {
@@ -158,7 +177,11 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 }
 
 void MainWindow::refreshModel() {
+#ifdef USE_STANDALONE_WINDOW
+    standaloneWindow->models.clear();
+#else
     vkWindow->models.clear();
+#endif
 
     for(auto gear : loadedGears) {
         QString modelID = QString("%1").arg(gear->modelInfo.primaryID, 4, 10, QLatin1Char('0'));
@@ -167,6 +190,11 @@ void MainWindow::refreshModel() {
         resolvedModelPath = resolvedModelPath.arg(modelID, raceIDs[currentRace].data(), modelID, slotToName[gear->slot].data());
 
         data.extractFile(resolvedModelPath.toStdString(), "top.mdl");
+
+#ifndef USE_STANDALONE_WINDOW
         vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
+#else
+        standaloneWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
+#endif
     }
 }
