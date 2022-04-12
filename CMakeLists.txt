@@ -31,3 +31,4 @@ else()
 endif()
 
 add_subdirectory(exdviewer)
+add_subdirectory(mdlviewer)

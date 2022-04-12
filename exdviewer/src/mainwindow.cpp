@@ -11,7 +11,7 @@
 #include "mdlparser.h"
 
 MainWindow::MainWindow(GameData& data) : data(data) {
-    setWindowTitle("Novus");
+    setWindowTitle("exdviewer");
 
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
@@ -25,9 +25,6 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     }
 
     auto* pageTabWidget = new QTabWidget();
-
-    data.extractFile("chara/equipment/e0000/model/c0201e0000_top.mdl", "top.mdl");
-    parseMDL("top.mdl");
 
     connect(listWidget, &QListWidget::itemClicked, this, [&data, pageTabWidget](QListWidgetItem* item) {
         pageTabWidget->clear();
