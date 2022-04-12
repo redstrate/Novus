@@ -82,13 +82,8 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     vkWindow->setVulkanInstance(inst);
 
     auto widget = QWidget::createWindowContainer(vkWindow);
-    //widget->resize(640, 480);
     layout->addWidget(widget);
-    //vkWindow->show();
 
-    //auto surface = inst.surfaceForWindow(vkWindow);
-    //renderer->initSwapchain(surface);
-
-
-
+    data.extractFile("chara/equipment/e0000/model/c0201e0000_top.mdl", "top.mdl");
+    renderer->addModel(parseMDL("top.mdl"));
 }

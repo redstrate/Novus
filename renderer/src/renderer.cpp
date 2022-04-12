@@ -5,6 +5,7 @@
 #include <array>
 #include <vector>
 #include <valarray>
+#include <fstream>
 
 Renderer::Renderer() {
     VkApplicationInfo applicationInfo = {};
@@ -132,6 +133,8 @@ Renderer::Renderer() {
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
     vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool);
+
+    initPipeline();
 
     fmt::print("Initialized renderer!\n");
 }
@@ -412,4 +415,131 @@ void Renderer::render() {
     vkQueuePresentKHR(presentQueue, &presentInfo);
 
     currentFrame = (currentFrame + 1) % 3;
+}
+
+std::tuple<VkBuffer, VkDeviceMemory> Renderer::createBuffer(size_t size, VkBufferUsageFlags usageFlags) {
+    vkDeviceWaitIdle(device);
+
+    // create buffer
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usageFlags;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkBuffer handle;
+    vkCreateBuffer(device, &bufferInfo, nullptr, &handle);
+
+    // allocate memory
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(device, handle, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex =
+            findMemoryType(memRequirements.memoryTypeBits,
+                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                           VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    VkDeviceMemory memory;
+    vkAllocateMemory(device, &allocInfo, nullptr, &memory);
+
+    vkBindBufferMemory(device, handle, memory, 0);
+
+    return {handle, memory};
+}
+
+uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) &&
+            (memProperties.memoryTypes[i].propertyFlags & properties) ==
+            properties) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+RenderModel Renderer::addModel(const Model& model) {
+    RenderModel renderModel;
+
+    size_t vertexSize = model.lods[0].parts[0].vertices.size() * sizeof(float) * 3;
+    auto [vertexBuffer, vertexMemory] = createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    size_t indexSize = model.lods[0].parts[0].indices.size() * sizeof(uint16_t);
+    auto [indexBuffer, indexMemory] = createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+
+    // copy vertex data
+    {
+        void* mapped_data = nullptr;
+        vkMapMemory(device, vertexMemory, 0, vertexSize, 0, &mapped_data);
+
+        for(int i = 0; i < model.lods[0].parts[0].vertices.size(); i++) {
+            memcpy(mapped_data, model.lods[0].parts[0].vertices[i].position.data(), sizeof(float) * 3);
+        }
+
+        VkMappedMemoryRange range = {};
+        range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+        range.memory = vertexMemory;
+        range.size = vertexSize;
+        vkFlushMappedMemoryRanges(device, 1, &range);
+
+        vkUnmapMemory(device, vertexMemory);
+    }
+
+    // copy index data
+    {
+        void* mapped_data = nullptr;
+        vkMapMemory(device, indexMemory, 0, indexSize, 0, &mapped_data);
+
+        memcpy(mapped_data, model.lods[0].parts[0].indices.data(), indexSize);
+
+        VkMappedMemoryRange range = {};
+        range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+        range.memory = indexMemory;
+        range.size = indexSize;
+        vkFlushMappedMemoryRanges(device, 1, &range);
+
+        vkUnmapMemory(device, indexMemory);
+    }
+
+    return renderModel;
+}
+
+void Renderer::initPipeline() {
+    auto vertexModule = loadShaderFromDisk("mesh.vert.spv");
+    auto fragmentModule = loadShaderFromDisk("mesh.frag.spv");
+}
+
+VkShaderModule Renderer::createShaderModule(const uint32_t* code, const int length) {
+    VkShaderModuleCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = length;
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code);
+
+    VkShaderModule shaderModule;
+    vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
+
+    return shaderModule;
+}
+
+VkShaderModule Renderer::loadShaderFromDisk(const std::string_view path) {
+    std::ifstream file(path.data(), std::ios::ate | std::ios::binary);
+
+    if (!file.is_open()) {
+        throw std::runtime_error(fmt::format("failed to open shader file {}", path));
+    }
+
+    size_t fileSize = (size_t) file.tellg();
+    std::vector<char> buffer(fileSize);
+
+    file.seekg(0);
+    file.read(buffer.data(), fileSize);
+
+    return createShaderModule(reinterpret_cast<const uint32_t *>(buffer.data()), fileSize);
 }

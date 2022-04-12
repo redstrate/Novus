@@ -4,12 +4,21 @@
 #include <vector>
 #include <array>
 
+#include "mdlparser.h";
+
+struct RenderModel {
+
+};
+
 class Renderer {
 public:
     Renderer();
 
+    void initPipeline();
     void initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
+
+    RenderModel addModel(const Model& model);
 
     void render();
 
@@ -28,4 +37,12 @@ public:
     std::array<VkFence, 3> inFlightFences;
     std::array<VkSemaphore, 3> imageAvailableSemaphores, renderFinishedSemaphores;
     uint32_t currentFrame = 0;
+
+    std::tuple<VkBuffer, VkDeviceMemory> createBuffer(size_t size, VkBufferUsageFlags usageFlags);
+
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    VkShaderModule createShaderModule(const uint32_t *code, const int length);
+
+    VkShaderModule loadShaderFromDisk(const std::string_view path);
 };
