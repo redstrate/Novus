@@ -6,6 +6,8 @@
 #include <vector>
 #include <valarray>
 #include <fstream>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 Renderer::Renderer() {
     VkApplicationInfo applicationInfo = {};
@@ -383,6 +385,12 @@ void Renderer::render(std::vector<RenderModel> models) {
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &model.vertexBuffer, offsets);
         vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
+        glm::mat4 p = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+        glm::mat4 v = glm::lookAt(glm::vec3(2), glm::vec3(0), glm::vec3(0, 1, 0));
+        glm::mat4 mvp = p * v;
+
+        vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+
         vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0);
     }
 
@@ -562,13 +570,12 @@ void Renderer::initPipeline() {
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
     VkViewport viewport = {};
-    viewport.width = 640;
-    viewport.height = 480;
+    viewport.width = swapchainExtent.width;
+    viewport.height = swapchainExtent.height;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor = {};
-    scissor.extent.width = 640;
-    scissor.extent.height = 489;
+    scissor.extent = swapchainExtent;
 
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -595,15 +602,17 @@ void Renderer::initPipeline() {
     colorBlending.attachmentCount = 1;
     colorBlending.pAttachments = &colorBlendAttachment;
 
-    std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-    dynamicState.pDynamicStates = dynamicStates.data();
+
+    VkPushConstantRange pushConstantRange = {};
+    pushConstantRange.size = sizeof(glm::mat4);
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
     vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
 
