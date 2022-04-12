@@ -6,11 +6,15 @@
 
 #include "mdlparser.h"
 
-struct RenderModel {
+struct RenderPart {
     size_t numIndices;
 
     VkBuffer vertexBuffer, indexBuffer;
     VkDeviceMemory vertexMemory, indexMemory;
+};
+
+struct RenderModel {
+    std::vector<RenderPart> parts;
 };
 
 class Renderer {

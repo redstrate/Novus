@@ -381,18 +381,21 @@ void Renderer::render(std::vector<RenderModel> models) {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
     for(auto model : models) {
-        VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &model.vertexBuffer, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+        for(auto part : model.parts) {
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
+            vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-        glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 100.0f);
-        p[1][1] *= -1;
-        glm::mat4 v = glm::lookAt(glm::vec3(0, 1, -2.5), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
-        glm::mat4 mvp = p * v;
+            glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float) swapchainExtent.height,
+                                           0.1f, 100.0f);
+            p[1][1] *= -1;
+            glm::mat4 v = glm::lookAt(glm::vec3(0, 1, -2.5), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
+            glm::mat4 mvp = p * v;
 
-        vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
 
-        vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0);
+            vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
+        }
     }
 
     vkCmdEndRenderPass(commandBuffer);
@@ -487,53 +490,60 @@ uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
 RenderModel Renderer::addModel(const Model& model) {
     RenderModel renderModel;
 
-    size_t vertexSize = model.lods[0].parts[0].vertices.size() * sizeof(float) * 3;
-    auto [vertexBuffer, vertexMemory] = createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    for(auto part : model.lods[0].parts) {
+        RenderPart renderPart;
 
-    size_t indexSize = model.lods[0].parts[0].indices.size() * sizeof(uint16_t);
-    auto [indexBuffer, indexMemory] = createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+        size_t vertexSize = part.vertices.size() * sizeof(float) * 3;
+        auto[vertexBuffer, vertexMemory] = createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    // copy vertex data
-    {
-        void* mapped_data = nullptr;
-        vkMapMemory(device, vertexMemory, 0, vertexSize, 0, &mapped_data);
+        size_t indexSize = part.indices.size() * sizeof(uint16_t);
+        auto[indexBuffer, indexMemory] = createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
-        for(int i = 0; i < model.lods[0].parts[0].vertices.size(); i++) {
-            memcpy((char*)mapped_data + ((sizeof(float) * 3) * i), model.lods[0].parts[0].vertices[i].position.data(), sizeof(float) * 3);
+        // copy vertex data
+        {
+            void *mapped_data = nullptr;
+            vkMapMemory(device, vertexMemory, 0, vertexSize, 0, &mapped_data);
+
+            for (int i = 0; i < part.vertices.size(); i++) {
+                memcpy((char *) mapped_data + ((sizeof(float) * 3) * i),
+                       part.vertices[i].position.data(), sizeof(float) * 3);
+            }
+
+            VkMappedMemoryRange range = {};
+            range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            range.memory = vertexMemory;
+            range.size = vertexSize;
+            vkFlushMappedMemoryRanges(device, 1, &range);
+
+            vkUnmapMemory(device, vertexMemory);
         }
 
-        VkMappedMemoryRange range = {};
-        range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-        range.memory = vertexMemory;
-        range.size = vertexSize;
-        vkFlushMappedMemoryRanges(device, 1, &range);
+        // copy index data
+        {
+            void *mapped_data = nullptr;
+            vkMapMemory(device, indexMemory, 0, indexSize, 0, &mapped_data);
 
-        vkUnmapMemory(device, vertexMemory);
+            memcpy(mapped_data, part.indices.data(), indexSize);
+
+            VkMappedMemoryRange range = {};
+            range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            range.memory = indexMemory;
+            range.size = indexSize;
+            vkFlushMappedMemoryRanges(device, 1, &range);
+
+            vkUnmapMemory(device, indexMemory);
+        }
+
+        renderPart.numIndices = part.indices.size();
+
+        renderPart.vertexBuffer = vertexBuffer;
+        renderPart.vertexMemory = vertexMemory;
+
+        renderPart.indexBuffer = indexBuffer;
+        renderPart.indexMemory = indexMemory;
+
+        renderModel.parts.push_back(renderPart);
     }
-
-    // copy index data
-    {
-        void* mapped_data = nullptr;
-        vkMapMemory(device, indexMemory, 0, indexSize, 0, &mapped_data);
-
-        memcpy(mapped_data, model.lods[0].parts[0].indices.data(), indexSize);
-
-        VkMappedMemoryRange range = {};
-        range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-        range.memory = indexMemory;
-        range.size = indexSize;
-        vkFlushMappedMemoryRanges(device, 1, &range);
-
-        vkUnmapMemory(device, indexMemory);
-    }
-
-    renderModel.numIndices = model.lods[0].parts[0].indices.size();
-
-    renderModel.vertexBuffer = vertexBuffer;
-    renderModel.vertexMemory = vertexMemory;
-
-    renderModel.indexBuffer = indexBuffer;
-    renderModel.indexMemory = indexMemory;
 
     return renderModel;
 }
