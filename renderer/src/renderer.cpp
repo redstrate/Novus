@@ -493,7 +493,7 @@ RenderModel Renderer::addModel(const Model& model) {
     for(auto part : model.lods[0].parts) {
         RenderPart renderPart;
 
-        size_t vertexSize = part.vertices.size() * sizeof(float) * 3;
+        size_t vertexSize = part.vertices.size() * sizeof(Vertex);
         auto[vertexBuffer, vertexMemory] = createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
         size_t indexSize = part.indices.size() * sizeof(uint16_t);
@@ -501,13 +501,10 @@ RenderModel Renderer::addModel(const Model& model) {
 
         // copy vertex data
         {
-            void *mapped_data = nullptr;
+            void* mapped_data = nullptr;
             vkMapMemory(device, vertexMemory, 0, vertexSize, 0, &mapped_data);
 
-            for (int i = 0; i < part.vertices.size(); i++) {
-                memcpy((char *) mapped_data + ((sizeof(float) * 3) * i),
-                       part.vertices[i].position.data(), sizeof(float) * 3);
-            }
+            memcpy(mapped_data, part.vertices.data(), vertexSize);
 
             VkMappedMemoryRange range = {};
             range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -520,7 +517,7 @@ RenderModel Renderer::addModel(const Model& model) {
 
         // copy index data
         {
-            void *mapped_data = nullptr;
+            void* mapped_data = nullptr;
             vkMapMemory(device, indexMemory, 0, indexSize, 0, &mapped_data);
 
             memcpy(mapped_data, part.indices.data(), indexSize);
@@ -564,10 +561,16 @@ void Renderer::initPipeline() {
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
     VkVertexInputBindingDescription binding = {};
-    binding.stride = sizeof(float) * 3;
+    binding.stride = sizeof(Vertex);
 
     VkVertexInputAttributeDescription positionAttribute = {};
     positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+    positionAttribute.offset = offsetof(Vertex, position);
+
+    VkVertexInputAttributeDescription normalAttribute = {};
+    normalAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+    normalAttribute.location = 1;
+    normalAttribute.offset = offsetof(Vertex, normal);
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
