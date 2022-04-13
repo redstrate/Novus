@@ -14,6 +14,7 @@ struct RenderPart {
 };
 
 struct RenderModel {
+    Model model;
     std::vector<RenderPart> parts;
 };
 

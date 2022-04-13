@@ -50,7 +50,7 @@ public:
 
     void refreshModel();
 
-    void exportModel(Model& model);
+    void exportModel(Model& model, QString fileName);
 
 private:
     std::vector<GearInfo> gears;

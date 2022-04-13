@@ -14,6 +14,8 @@
 #include <assimp/Exporter.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <QPushButton>
+#include <QFileDialog>
 
 #include "gamedata.h"
 #include "exhparser.h"
@@ -157,6 +159,9 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     timer->start(1000);
 #endif
 
+    QHBoxLayout* controlLayout = new QHBoxLayout();
+    viewportLayout->addLayout(controlLayout);
+
     QComboBox* raceCombo = new QComboBox();
     for(auto [race, raceName] : raceNames) {
         raceCombo->addItem(raceName.data());
@@ -167,7 +172,19 @@ MainWindow::MainWindow(GameData& data) : data(data) {
         refreshModel();
     });
 
-    viewportLayout->addWidget(raceCombo);
+    controlLayout->addWidget(raceCombo);
+
+    QPushButton* exportButton = new QPushButton("Export");
+
+    connect(exportButton, &QPushButton::clicked, [this] {
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Model"),
+                                                        "model.fbx",
+                                                        tr("FBX Files (*.fbx)"));
+
+        exportModel(vkWindow->models[0].model, fileName);
+    });
+
+    controlLayout->addWidget(exportButton);
 
     connect(listWidget, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
         for(auto& gear : gears) {
@@ -202,47 +219,55 @@ void MainWindow::refreshModel() {
     }
 }
 
-void MainWindow::exportModel(Model& model) {
+void MainWindow::exportModel(Model& model, QString fileName) {
     Assimp::Exporter exporter;
 
     aiScene scene;
     scene.mRootNode = new aiNode();
 
+    scene.mRootNode->mNumChildren = model.lods[0].parts.size();
+    scene.mRootNode->mChildren = new aiNode*[scene.mRootNode->mNumChildren];
+
+    scene.mNumMeshes = model.lods[0].parts.size();
+    scene.mMeshes = new aiMesh*[scene.mNumMeshes];
+
+    for(int i = 0; i < model.lods[0].parts.size(); i++) {
+        scene.mMeshes[i] = new aiMesh();
+        scene.mMeshes[i]->mMaterialIndex = 0;
+
+        auto& node = scene.mRootNode->mChildren[i];
+        node = new aiNode();
+        node->mNumMeshes = 1;
+        node->mMeshes = new unsigned int [scene.mRootNode->mNumMeshes];
+        node->mMeshes[0] = i;
+
+        auto mesh = scene.mMeshes[i];
+        mesh->mNumVertices = model.lods[0].parts[i].vertices.size();
+        mesh->mVertices = new aiVector3D [mesh->mNumVertices];
+        for(int j = 0; j < mesh->mNumVertices; j++) {
+            auto vertex = model.lods[0].parts[i].vertices[j];
+            mesh->mVertices[j] = aiVector3D(vertex.position[0], vertex.position[1], vertex.position[2]);
+        }
+
+        mesh->mNumFaces = model.lods[0].parts[i].indices.size() / 3;
+        mesh->mFaces = new aiFace[mesh->mNumFaces];
+
+        int lastFace = 0;
+        for(int j = 0; j < model.lods[0].parts[i].indices.size(); j += 3) {
+            aiFace& face = mesh->mFaces[lastFace++];
+
+            face.mNumIndices = 3;
+            face.mIndices = new unsigned int[face.mNumIndices];
+
+            face.mIndices[0] = model.lods[0].parts[i].indices[j];
+            face.mIndices[1] = model.lods[0].parts[i].indices[j + 1];
+            face.mIndices[2] = model.lods[0].parts[i].indices[j + 2];
+        }
+    }
+
     scene.mNumMaterials = 1;
     scene.mMaterials = new aiMaterial*[1];
     scene.mMaterials[0] = new aiMaterial();
 
-    scene.mNumMeshes = 1;
-    scene.mMeshes = new aiMesh*[scene.mNumMeshes];
-    scene.mMeshes[0] = new aiMesh();
-    scene.mMeshes[0]->mMaterialIndex = 0;
-
-    scene.mRootNode->mNumMeshes = 1;
-    scene.mRootNode->mMeshes = new unsigned int [scene.mRootNode->mNumMeshes];
-    scene.mRootNode->mMeshes[0] = 0;
-
-    auto mesh = scene.mMeshes[0];
-    mesh->mNumVertices = model.lods[0].parts[0].vertices.size();
-    mesh->mVertices = new aiVector3D [mesh->mNumVertices];
-    for(int i = 0; i < mesh->mNumVertices; i++) {
-        auto vertex = model.lods[0].parts[0].vertices[i];
-        mesh->mVertices[i] = aiVector3D(vertex.position[0], vertex.position[1], vertex.position[2]);
-    }
-
-    mesh->mNumFaces = model.lods[0].parts[0].indices.size() / 3;
-    mesh->mFaces = new aiFace[mesh->mNumFaces];
-
-    int lastFace = 0;
-    for(int i = 0; i < model.lods[0].parts[0].indices.size(); i += 3) {
-        aiFace& face = mesh->mFaces[lastFace++];
-
-        face.mNumIndices = 3;
-        face.mIndices = new unsigned int[face.mNumIndices];
-
-        face.mIndices[0] = model.lods[0].parts[0].indices[i];
-        face.mIndices[1] = model.lods[0].parts[0].indices[i + 1];
-        face.mIndices[2] = model.lods[0].parts[0].indices[i + 2];
-    }
-
-    exporter.Export(&scene, "fbx", "test.fbx");
+    exporter.Export(&scene, "fbx", fileName.toStdString());
 }

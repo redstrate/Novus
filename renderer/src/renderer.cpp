@@ -510,6 +510,7 @@ uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
 
 RenderModel Renderer::addModel(const Model& model) {
     RenderModel renderModel;
+    renderModel.model = model;
 
     for(auto part : model.lods[0].parts) {
         RenderPart renderPart;
