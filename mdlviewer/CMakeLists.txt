@@ -1,10 +1,18 @@
+find_package(assimp REQUIRED)
+
 add_executable(mdlviewer
         src/main.cpp
         src/mainwindow.cpp)
 target_include_directories(mdlviewer
         PUBLIC
         include)
-target_link_libraries(mdlviewer PUBLIC libxiv ${LIBRARIES} Qt5::Core Qt5::Widgets renderer)
+target_link_libraries(mdlviewer PUBLIC
+        libxiv
+        ${LIBRARIES}
+        Qt5::Core
+        Qt5::Widgets
+        renderer
+        assimp::assimp)
 
 install(TARGETS mdlviewer
         DESTINATION "${INSTALL_BIN_PATH}")

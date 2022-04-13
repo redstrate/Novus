@@ -31,7 +31,7 @@ else()
 endif()
 
 # macos
-if(UNIX AND NOT LINUX)
+if(APPLE)
     set(USE_STANDALONE_WINDOW TRUE)
 endif()
 

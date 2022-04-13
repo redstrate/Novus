@@ -50,6 +50,8 @@ public:
 
     void refreshModel();
 
+    void exportModel(Model& model);
+
 private:
     std::vector<GearInfo> gears;
     std::vector<GearInfo*> loadedGears;

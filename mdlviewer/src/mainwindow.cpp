@@ -11,6 +11,9 @@
 #include <QResizeEvent>
 #include <QComboBox>
 #include <QTimer>
+#include <assimp/Exporter.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include "gamedata.h"
 #include "exhparser.h"
@@ -197,4 +200,49 @@ void MainWindow::refreshModel() {
         standaloneWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
 #endif
     }
+}
+
+void MainWindow::exportModel(Model& model) {
+    Assimp::Exporter exporter;
+
+    aiScene scene;
+    scene.mRootNode = new aiNode();
+
+    scene.mNumMaterials = 1;
+    scene.mMaterials = new aiMaterial*[1];
+    scene.mMaterials[0] = new aiMaterial();
+
+    scene.mNumMeshes = 1;
+    scene.mMeshes = new aiMesh*[scene.mNumMeshes];
+    scene.mMeshes[0] = new aiMesh();
+    scene.mMeshes[0]->mMaterialIndex = 0;
+
+    scene.mRootNode->mNumMeshes = 1;
+    scene.mRootNode->mMeshes = new unsigned int [scene.mRootNode->mNumMeshes];
+    scene.mRootNode->mMeshes[0] = 0;
+
+    auto mesh = scene.mMeshes[0];
+    mesh->mNumVertices = model.lods[0].parts[0].vertices.size();
+    mesh->mVertices = new aiVector3D [mesh->mNumVertices];
+    for(int i = 0; i < mesh->mNumVertices; i++) {
+        auto vertex = model.lods[0].parts[0].vertices[i];
+        mesh->mVertices[i] = aiVector3D(vertex.position[0], vertex.position[1], vertex.position[2]);
+    }
+
+    mesh->mNumFaces = model.lods[0].parts[0].indices.size() / 3;
+    mesh->mFaces = new aiFace[mesh->mNumFaces];
+
+    int lastFace = 0;
+    for(int i = 0; i < model.lods[0].parts[0].indices.size(); i += 3) {
+        aiFace& face = mesh->mFaces[lastFace++];
+
+        face.mNumIndices = 3;
+        face.mIndices = new unsigned int[face.mNumIndices];
+
+        face.mIndices[0] = model.lods[0].parts[0].indices[i];
+        face.mIndices[1] = model.lods[0].parts[0].indices[i + 1];
+        face.mIndices[2] = model.lods[0].parts[0].indices[i + 2];
+    }
+
+    exporter.Export(&scene, "fbx", "test.fbx");
 }
