@@ -71,6 +71,7 @@ private:
     std::vector<GearInfo*> loadedGears;
 
     Race currentRace = Race::HyurMidlanderMale;
+    int currentLod = 0;
 
     GameData& data;
 

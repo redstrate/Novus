@@ -508,11 +508,11 @@ uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
     return -1;
 }
 
-RenderModel Renderer::addModel(const Model& model) {
+RenderModel Renderer::addModel(const Model& model, int lod) {
     RenderModel renderModel;
     renderModel.model = model;
 
-    for(auto part : model.lods[0].parts) {
+    for(auto part : model.lods[lod].parts) {
         RenderPart renderPart;
 
         size_t vertexSize = part.vertices.size() * sizeof(Vertex);

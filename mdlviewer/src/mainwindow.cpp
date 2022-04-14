@@ -174,6 +174,18 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
     controlLayout->addWidget(raceCombo);
 
+    auto lodCombo = new QComboBox();
+    lodCombo->addItem("0");
+    lodCombo->addItem("1");
+    lodCombo->addItem("2");
+
+    connect(lodCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        currentLod = index;
+        refreshModel();
+    });
+
+    controlLayout->addWidget(lodCombo);
+
     QPushButton* exportButton = new QPushButton("Export");
 
     connect(exportButton, &QPushButton::clicked, [this] {
@@ -212,7 +224,7 @@ void MainWindow::refreshModel() {
         data.extractFile(resolvedModelPath.toStdString(), "top.mdl");
 
 #ifndef USE_STANDALONE_WINDOW
-        vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
+        vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl"), currentLod));
 #else
         standaloneWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
 #endif

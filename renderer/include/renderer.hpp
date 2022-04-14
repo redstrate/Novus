@@ -26,7 +26,7 @@ public:
     bool initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
 
-    RenderModel addModel(const Model& model);
+    RenderModel addModel(const Model& model, int lod);
 
     void render(std::vector<RenderModel> models);
 
