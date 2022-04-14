@@ -56,3 +56,20 @@ This tool can list known files by libxiv, such as excel sheets.
 You must pass the path to your `sqpack` directory as the first argument.
 
 `explorer.exe C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
+
+## argcracker
+
+This can crack any SqexArg formatted string you throw at it. However there are two
+caveats:
+
+1. You must know the current TickCount() when you got the string, the easiest 
+way is to run your victim program and then run argcracker right after.
+2. You must know at least one known argument (such as `UserPath`) or the decrypted result 
+will
+3. be hard to find.
+
+### Usage
+
+`argcracker.exe [sqexarg string] [tick range] [known arg]`
+
+`argcracker.exe //**sqex0003p8LrsXt9_m9RJAsGzXd66zb3SxeTqZdhV**// 1000 UserPath`
