@@ -117,7 +117,7 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
         GearInfo info = {};
         info.name = row.data[9].data;
-        info.slot = Slot::Body;
+        info.slot = (Slot)row.data[17].uint64Data;
         info.modelInfo.primaryID = parts[0];
 
         gears.push_back(info);

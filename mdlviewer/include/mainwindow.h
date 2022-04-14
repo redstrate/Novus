@@ -6,8 +6,15 @@
 #include "renderer.hpp"
 
 enum class Slot {
-    Body,
-    Legs
+    Head = 3,
+    Hands = 5,
+    Legs = 7,
+    Feet = 8,
+    Body = 4,
+    Earring = 9,
+    Neck = 10,
+    Rings = 12,
+    Wrists = 11
 };
 
 enum class Race {
@@ -36,8 +43,15 @@ struct GearInfo {
 };
 
 inline std::unordered_map<Slot, std::string_view> slotToName = {
+        {Slot::Head, "met"},
+        {Slot::Hands, "glv"},
+        {Slot::Legs, "dwn"},
+        {Slot::Feet, "sho"},
         {Slot::Body, "top"},
-        {Slot::Legs, "dwn"}
+        {Slot::Earring, "ear"},
+        {Slot::Neck, "nek"},
+        {Slot::Rings, "rir"},
+        {Slot::Wrists, "wrs"}
 };
 
 class GameData;
