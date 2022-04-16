@@ -193,7 +193,13 @@ MainWindow::MainWindow(GameData& data) : data(data) {
                                                         "model.fbx",
                                                         tr("FBX Files (*.fbx)"));
 
-        exportModel(vkWindow->models[0].model, fileName);
+        Model model;
+#ifdef USE_STANDALONE_WINDOW
+        model = standaloneWindow->models[0].model;
+#else
+        model = vkWindow->models[0].model;
+#endif
+        exportModel(model, fileName);
     });
 
     controlLayout->addWidget(exportButton);
@@ -226,7 +232,7 @@ void MainWindow::refreshModel() {
 #ifndef USE_STANDALONE_WINDOW
         vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl"), currentLod));
 #else
-        standaloneWindow->models.push_back(renderer->addModel(parseMDL("top.mdl")));
+        standaloneWindow->models.push_back(renderer->addModel(parseMDL("top.mdl"), currentLod));
 #endif
     }
 }
