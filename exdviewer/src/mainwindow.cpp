@@ -24,6 +24,8 @@ MainWindow::MainWindow(GameData& data) : data(data) {
         listWidget->addItem(name.c_str());
     }
 
+    listWidget->setMaximumWidth(200);
+
     auto* pageTabWidget = new QTabWidget();
 
     connect(listWidget, &QListWidget::itemClicked, this, [&data, pageTabWidget](QListWidgetItem* item) {
