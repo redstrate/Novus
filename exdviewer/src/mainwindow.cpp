@@ -53,8 +53,7 @@ MainWindow::MainWindow(GameData& data) : data(data) {
                 path = getEXDFilename(exh, nameLowercase, getLanguageCode(Language::English), page);
             }
 
-            data.extractFile("exd/" + path, path);
-            auto exd = readEXD(exh, path, page);
+            auto exd = readEXD(exh, *data.extractFile("exd/" + path), page);
             for (int i = 0; i < exd.rows.size(); i++) {
                 for (int j = 0; j < exd.rows[i].data.size(); j++) {
                     auto newItem = new QTableWidgetItem(exd.rows[i].data[j].data.c_str());

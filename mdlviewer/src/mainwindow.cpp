@@ -108,8 +108,7 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     auto exh = *data.readExcelSheet("Item");
 
     auto path = getEXDFilename(exh, "item", getLanguageCode(Language::English), exh.pages[1]);
-    data.extractFile("exd/" + path, path);
-    auto exd = readEXD(exh, path, exh.pages[1]);
+    auto exd = readEXD(exh, *data.extractFile("exd/" + path), exh.pages[1]);
     for(auto row : exd.rows) {
         auto primaryModel = row.data[47].uint64Data;
         auto secondaryModel = row.data[48].uint64Data;
@@ -227,12 +226,13 @@ void MainWindow::refreshModel() {
 #endif
 
     for(auto gear : loadedGears) {
-        data.extractFile(build_equipment_path(gear->modelInfo.primaryID, currentRace, gear->slot), "top.mdl");
+        auto mdl_data = data.extractFile(build_equipment_path(gear->modelInfo.primaryID, currentRace, gear->slot));
+        auto model = parseMDL(*mdl_data);
 
 #ifndef USE_STANDALONE_WINDOW
-        vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl"), currentLod));
+        vkWindow->models.push_back(renderer->addModel(model, currentLod));
 #else
-        standaloneWindow->models.push_back(renderer->addModel(parseMDL("top.mdl"), currentLod));
+        standaloneWindow->models.push_back(renderer->addModel(model, currentLod));
 #endif
     }
 }
