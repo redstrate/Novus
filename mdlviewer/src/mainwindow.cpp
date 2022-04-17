@@ -73,6 +73,8 @@ private:
 };
 #else
 #include "standalonewindow.h"
+#include "equipment.h"
+
 #endif
 
 MainWindow::MainWindow(GameData& data) : data(data) {
@@ -117,7 +119,7 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
         GearInfo info = {};
         info.name = row.data[9].data;
-        info.slot = (Slot)row.data[17].uint64Data;
+        info.slot = *get_slot_from_id(row.data[17].uint64Data);
         info.modelInfo.primaryID = parts[0];
 
         gears.push_back(info);
@@ -163,9 +165,12 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     viewportLayout->addLayout(controlLayout);
 
     QComboBox* raceCombo = new QComboBox();
-    for(auto [race, raceName] : raceNames) {
+    raceCombo->addItem("Midlander Male");
+    raceCombo->addItem("Midlander Female");
+
+    /*for(auto [race, raceName] : raceNames) {
         raceCombo->addItem(raceName.data());
-    }
+    }*/
 
     connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
         currentRace = (Race)index;
@@ -222,12 +227,7 @@ void MainWindow::refreshModel() {
 #endif
 
     for(auto gear : loadedGears) {
-        QString modelID = QString("%1").arg(gear->modelInfo.primaryID, 4, 10, QLatin1Char('0'));
-
-        QString resolvedModelPath = QString("chara/equipment/e%1/model/c%2e%3_%4.mdl");
-        resolvedModelPath = resolvedModelPath.arg(modelID, raceIDs[currentRace].data(), modelID, slotToName[gear->slot].data());
-
-        data.extractFile(resolvedModelPath.toStdString(), "top.mdl");
+        data.extractFile(build_equipment_path(gear->modelInfo.primaryID, currentRace, gear->slot), "top.mdl");
 
 #ifndef USE_STANDALONE_WINDOW
         vkWindow->models.push_back(renderer->addModel(parseMDL("top.mdl"), currentLod));
