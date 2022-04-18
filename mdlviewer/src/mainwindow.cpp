@@ -16,6 +16,7 @@
 #include <assimp/postprocess.h>
 #include <QPushButton>
 #include <QFileDialog>
+#include <magic_enum.hpp>
 
 #include "gamedata.h"
 #include "exhparser.h"
@@ -163,29 +164,20 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     QHBoxLayout* controlLayout = new QHBoxLayout();
     viewportLayout->addLayout(controlLayout);
 
-    QComboBox* raceCombo = new QComboBox();
-    raceCombo->addItem("Midlander Male");
-    raceCombo->addItem("Midlander Female");
-
-    /*for(auto [race, raceName] : raceNames) {
-        raceCombo->addItem(raceName.data());
-    }*/
+    raceCombo = new QComboBox();
 
     connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
         currentRace = (Race)index;
-        refreshModel();
+        reloadGearModel();
     });
 
     controlLayout->addWidget(raceCombo);
 
-    auto lodCombo = new QComboBox();
-    lodCombo->addItem("0");
-    lodCombo->addItem("1");
-    lodCombo->addItem("2");
+    lodCombo = new QComboBox();
 
     connect(lodCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
         currentLod = index;
-        refreshModel();
+        reloadGearAppearance();
     });
 
     controlLayout->addWidget(lodCombo);
@@ -210,31 +202,12 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
     connect(listWidget, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
         for(auto& gear : gears) {
-            if(gear.name == item->text().toStdString())
-                loadedGears = {&gear};
+            if(gear.name == item->text().toStdString()) {
+                loadInitialGearInfo(gear);
+                return;
+            }
         }
-
-        refreshModel();
     });
-}
-
-void MainWindow::refreshModel() {
-#ifdef USE_STANDALONE_WINDOW
-    standaloneWindow->models.clear();
-#else
-    vkWindow->models.clear();
-#endif
-
-    for(auto gear : loadedGears) {
-        auto mdl_data = data.extractFile(build_equipment_path(gear->modelInfo.primaryID, currentRace, gear->slot));
-        auto model = parseMDL(*mdl_data);
-
-#ifndef USE_STANDALONE_WINDOW
-        vkWindow->models.push_back(renderer->addModel(model, currentLod));
-#else
-        standaloneWindow->models.push_back(renderer->addModel(model, currentLod));
-#endif
-    }
 }
 
 void MainWindow::exportModel(Model& model, QString fileName) {
@@ -288,4 +261,43 @@ void MainWindow::exportModel(Model& model, QString fileName) {
     scene.mMaterials[0] = new aiMaterial();
 
     exporter.Export(&scene, "fbx", fileName.toStdString());
+}
+
+void MainWindow::loadInitialGearInfo(GearInfo& info) {
+    loadedGear.gearInfo = &info;
+
+    raceCombo->clear();
+    for(auto [race, race_name] : magic_enum::enum_entries<Race>()) {
+        if(data.exists(build_equipment_path(loadedGear.gearInfo->modelInfo.primaryID, race, loadedGear.gearInfo->slot)))
+            raceCombo->addItem(race_name.data());
+    }
+
+    currentLod = 0;
+    currentRace = Race::HyurMidlanderMale;
+
+    reloadGearModel();
+}
+
+void MainWindow::reloadGearModel() {
+    auto mdl_data = data.extractFile(build_equipment_path(loadedGear.gearInfo->modelInfo.primaryID, currentRace, loadedGear.gearInfo->slot));
+    if(mdl_data == std::nullopt)
+        return;
+
+    loadedGear.model = parseMDL(*mdl_data);
+
+    lodCombo->clear();
+    for(int i = 0; i < loadedGear.model.lods.size(); i++)
+        lodCombo->addItem(QString::number(i));
+
+    reloadGearAppearance();
+}
+
+void MainWindow::reloadGearAppearance() {
+    loadedGear.renderModel = renderer->addModel(loadedGear.model, currentLod);
+
+#ifndef USE_STANDALONE_WINDOW
+    vkWindow->models = {loadedGear.renderModel};
+#else
+    standaloneWindow->models = {loadedGear.renderModel};
+#endif
 }

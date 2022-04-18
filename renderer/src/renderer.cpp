@@ -512,6 +512,9 @@ RenderModel Renderer::addModel(const Model& model, int lod) {
     RenderModel renderModel;
     renderModel.model = model;
 
+    if(lod < 0 || lod > model.lods.size())
+        return {};
+
     for(auto part : model.lods[lod].parts) {
         RenderPart renderPart;
 

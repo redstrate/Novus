@@ -12,7 +12,8 @@ target_link_libraries(mdlviewer PUBLIC
         Qt5::Core
         Qt5::Widgets
         renderer
-        assimp::assimp)
+        assimp::assimp
+        magic_enum)
 
 install(TARGETS mdlviewer
         DESTINATION "${INSTALL_BIN_PATH}")

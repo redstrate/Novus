@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <unordered_map>
+#include <QComboBox>
 
 #include "renderer.hpp"
 #include "types/slot.h"
@@ -25,13 +26,24 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(GameData& data);
 
-    void refreshModel();
-
     void exportModel(Model& model, QString fileName);
 
 private:
+    void loadInitialGearInfo(GearInfo& info);
+    void reloadGearModel();
+    void reloadGearAppearance();
+
     std::vector<GearInfo> gears;
-    std::vector<GearInfo*> loadedGears;
+
+    struct LoadedGear {
+        GearInfo* gearInfo;
+        Model model;
+        RenderModel renderModel;
+    };
+
+    LoadedGear loadedGear;
+
+    QComboBox* raceCombo, *lodCombo;
 
     Race currentRace = Race::HyurMidlanderMale;
     int currentLod = 0;

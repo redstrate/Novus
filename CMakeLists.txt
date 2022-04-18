@@ -10,6 +10,8 @@ add_subdirectory(libxiv)
 
 include(FetchContent)
 
+add_subdirectory(extern/magic_enum)
+
 find_package(fmt QUIET)
 
 if(TARGET fmt::fmt)
