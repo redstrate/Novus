@@ -306,6 +306,7 @@ bool Renderer::initSwapchain(VkSurfaceKHR surface, int width, int height) {
 
     vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass);
 
+    initDescriptors();
     initPipeline();
 
     swapchainFramebuffers.resize(swapchainViews.size());
@@ -402,6 +403,25 @@ void Renderer::render(std::vector<RenderModel> models) {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
     for(auto model : models) {
+        // copy bone data
+        {
+            const size_t bufferSize = sizeof(glm::mat4) * 128;
+            void *mapped_data = nullptr;
+            vkMapMemory(device, boneInfoMemory, 0, bufferSize, 0, &mapped_data);
+
+            memcpy(mapped_data, model.boneData.data(), bufferSize);
+
+            VkMappedMemoryRange range = {};
+            range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            range.memory = boneInfoMemory;
+            range.size = bufferSize;
+            vkFlushMappedMemoryRanges(device, 1, &range);
+
+            vkUnmapMemory(device, boneInfoMemory);
+        }
+
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &set, 0, nullptr);
+
         for(auto part : model.parts) {
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
@@ -410,10 +430,17 @@ void Renderer::render(std::vector<RenderModel> models) {
             glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float) swapchainExtent.height,
                                            0.1f, 100.0f);
             p[1][1] *= -1;
-            glm::mat4 v = glm::lookAt(glm::vec3(0, 1, -2.5), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
-            glm::mat4 mvp = p * v;
+            glm::mat4 v = glm::lookAt(glm::vec3(3), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
+            glm::mat4 vp = p * v;
 
-            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &vp);
+
+            glm::mat4 m = glm::mat4(1.0f);
+
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(glm::mat4), sizeof(glm::mat4), &m);
+
+            int test = 0;
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(glm::mat4) * 2, sizeof(int), &test);
 
             vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
         }
@@ -517,6 +544,7 @@ RenderModel Renderer::addModel(const Model& model, int lod) {
 
     for(auto part : model.lods[lod].parts) {
         RenderPart renderPart;
+        renderPart.submeshes = part.submeshes;
 
         size_t vertexSize = part.vertices.size() * sizeof(Vertex);
         auto[vertexBuffer, vertexMemory] = createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -590,6 +618,7 @@ void Renderer::initPipeline() {
 
     VkVertexInputAttributeDescription positionAttribute = {};
     positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+    positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
     positionAttribute.offset = offsetof(Vertex, position);
 
     VkVertexInputAttributeDescription normalAttribute = {};
@@ -597,7 +626,17 @@ void Renderer::initPipeline() {
     normalAttribute.location = 1;
     normalAttribute.offset = offsetof(Vertex, normal);
 
-    std::array<VkVertexInputAttributeDescription, 2> attributes = {positionAttribute, normalAttribute};
+    VkVertexInputAttributeDescription boneWeightAttribute = {};
+    boneWeightAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+    boneWeightAttribute.location = 2;
+    boneWeightAttribute.offset = offsetof(Vertex, boneWeights);
+
+    VkVertexInputAttributeDescription boneIdAttribute = {};
+    boneIdAttribute.format = VK_FORMAT_R8G8B8A8_UINT;
+    boneIdAttribute.location = 3;
+    boneIdAttribute.offset = offsetof(Vertex, boneIds);
+
+    std::array<VkVertexInputAttributeDescription, 4> attributes = {positionAttribute, normalAttribute, boneWeightAttribute, boneIdAttribute};
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -647,13 +686,15 @@ void Renderer::initPipeline() {
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 
     VkPushConstantRange pushConstantRange = {};
-    pushConstantRange.size = sizeof(glm::mat4);
+    pushConstantRange.size = (sizeof(glm::mat4) * 2) + sizeof(int);
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &setLayout;
 
     vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
 
@@ -700,4 +741,59 @@ VkShaderModule Renderer::loadShaderFromDisk(const std::string_view path) {
     file.read(buffer.data(), fileSize);
 
     return createShaderModule(reinterpret_cast<const uint32_t *>(buffer.data()), fileSize);
+}
+
+void Renderer::initDescriptors() {
+    VkDescriptorPoolSize poolSize = {};
+    poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    poolSize.descriptorCount = 1;
+
+    VkDescriptorPoolCreateInfo poolCreateInfo = {};
+    poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolCreateInfo.poolSizeCount = 1;
+    poolCreateInfo.pPoolSizes = &poolSize;
+    poolCreateInfo.maxSets = 1;
+
+    vkCreateDescriptorPool(device, &poolCreateInfo, nullptr, &descriptorPool);
+
+    VkDescriptorSetLayoutBinding boneInfoBufferBinding = {};
+    boneInfoBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    boneInfoBufferBinding.descriptorCount = 1;
+    boneInfoBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    boneInfoBufferBinding.binding = 2;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &boneInfoBufferBinding;
+
+    vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &setLayout);
+
+    const size_t bufferSize = sizeof(glm::mat4) * 128;
+    auto [buffer, memory] = createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+    boneInfoBuffer = buffer;
+    boneInfoMemory = memory;
+
+    VkDescriptorSetAllocateInfo allocateInfo = {};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocateInfo.descriptorPool = descriptorPool;
+    allocateInfo.descriptorSetCount = 1;
+    allocateInfo.pSetLayouts = &setLayout;
+
+    vkAllocateDescriptorSets(device, &allocateInfo, &set);
+
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = boneInfoBuffer;
+    bufferInfo.range = bufferSize;
+
+    VkWriteDescriptorSet descriptorWrite{};
+    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrite.dstSet = set;
+    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    descriptorWrite.descriptorCount = 1;
+    descriptorWrite.pBufferInfo = &bufferInfo;
+    descriptorWrite.dstBinding = 2;
+
+    vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
 }

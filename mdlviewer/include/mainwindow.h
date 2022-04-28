@@ -7,6 +7,7 @@
 #include "renderer.hpp"
 #include "types/slot.h"
 #include "types/race.h"
+#include "havokxmlparser.h"
 
 struct ModelInfo {
     int primaryID;
@@ -47,10 +48,14 @@ private:
 
     Race currentRace = Race::HyurMidlanderMale;
     int currentLod = 0;
+    glm::vec3 currentScale = glm::vec3(1);
+    Bone* currentEditedBone = nullptr;
 
     GameData& data;
 
     Renderer* renderer;
     VulkanWindow* vkWindow;
     StandaloneWindow* standaloneWindow;
+
+    Skeleton skeleton;
 };

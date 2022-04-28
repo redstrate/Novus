@@ -2,7 +2,9 @@ find_package(assimp REQUIRED)
 
 add_executable(mdlviewer
         src/main.cpp
-        src/mainwindow.cpp)
+        src/mainwindow.cpp
+        src/vec3edit.cpp
+        include/vec3edit.h)
 target_include_directories(mdlviewer
         PUBLIC
         include)

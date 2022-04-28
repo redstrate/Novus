@@ -17,11 +17,16 @@
 #include <QPushButton>
 #include <QFileDialog>
 #include <magic_enum.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "gamedata.h"
 #include "exhparser.h"
 #include "exdparser.h"
 #include "mdlparser.h"
+#include "equipment.h"
+#include "glm/glm.hpp"
+#include "vec3edit.h"
 
 #ifndef USE_STANDALONE_WINDOW
 class VulkanWindow : public QWindow
@@ -77,6 +82,22 @@ private:
 #include "equipment.h"
 
 #endif
+
+void calculate_bone_inverse_pose(Skeleton& skeleton, Bone& bone, Bone* parent_bone) {
+    const glm::mat4 parentMatrix = parent_bone == nullptr ? glm::mat4(1.0f) : parent_bone->inversePose;
+
+    glm::mat4 local(1.0f);
+    local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
+    local *= glm::mat4_cast(glm::quat(bone.rotation[3], bone.rotation[0], bone.rotation[1], bone.rotation[2]));
+    local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
+
+    bone.inversePose = parentMatrix * local;
+
+    for(auto& b : skeleton.bones) {
+        if(b.parent != nullptr && b.parent->name == bone.name)
+            calculate_bone_inverse_pose(skeleton, b, &bone);
+    }
+}
 
 MainWindow::MainWindow(GameData& data) : data(data) {
     setWindowTitle("mdlviewer");
@@ -208,6 +229,36 @@ MainWindow::MainWindow(GameData& data) : data(data) {
             }
         }
     });
+
+    skeleton = parseHavokXML("/home/josh/test.xml");
+    calculate_bone_inverse_pose(skeleton, *skeleton.root_bone, nullptr);
+
+    auto boneListWidget = new QListWidget();
+    for(auto& bone : skeleton.bones) {
+        bone.inversePose = glm::inverse(bone.inversePose);
+
+        boneListWidget->addItem(bone.name.c_str());
+    }
+
+    boneListWidget->setMaximumWidth(200);
+
+    connect(boneListWidget, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
+        for(auto& bone : skeleton.bones) {
+            if(bone.name == item->text().toStdString()) {
+                currentScale = glm::make_vec3(bone.scale.data());
+                currentEditedBone = &bone;
+            }
+        }
+    });
+
+    layout->addWidget(boneListWidget);
+
+    Vector3Edit* scaleEdit = new Vector3Edit(currentScale);
+    connect(scaleEdit, &Vector3Edit::onValueChanged, [this] {
+        memcpy(currentEditedBone->scale.data(), glm::value_ptr(currentScale), sizeof(float) * 3);
+        reloadGearAppearance();
+    });
+    layout->addWidget(scaleEdit);
 }
 
 void MainWindow::exportModel(Model& model, QString fileName) {
@@ -292,8 +343,46 @@ void MainWindow::reloadGearModel() {
     reloadGearAppearance();
 }
 
+void calculate_bone(Skeleton& skeleton, Bone& bone, const Bone* parent_bone) {
+    glm::mat4 parent_matrix = glm::mat4(1.0f);
+    if(parent_bone != nullptr)
+        parent_matrix = parent_bone->localTransform;
+
+    glm::mat4 local = glm::mat4(1.0f);
+    local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
+    local *= glm::mat4_cast(glm::quat(bone.rotation[3], bone.rotation[0], bone.rotation[1], bone.rotation[2]));
+    local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
+
+    bone.localTransform = parent_matrix * local;
+    bone.finalTransform = bone.localTransform * bone.inversePose;
+
+    for(auto& b : skeleton.bones) {
+        if(b.parent != nullptr && b.parent->name == bone.name)
+            calculate_bone(skeleton, b, &bone);
+    }
+}
+
 void MainWindow::reloadGearAppearance() {
     loadedGear.renderModel = renderer->addModel(loadedGear.model, currentLod);
+
+    calculate_bone(skeleton, *skeleton.root_bone, nullptr);
+
+    for(int i = 0; i < 128; i++) {
+        loadedGear.renderModel.boneData[i] = glm::mat4(1.0f);
+    }
+
+    // we want to map the actual affected bones to bone ids
+    std::map<int, int> boneMapping;
+    for(int i = 0; i < loadedGear.model.affectedBoneNames.size(); i++) {
+        for(int k = 0; k < skeleton.bones.size(); k++) {
+            if(skeleton.bones[k].name == loadedGear.model.affectedBoneNames[i])
+                boneMapping[i] = k;
+        }
+    }
+
+    for(int i = 0; i < loadedGear.model.affectedBoneNames.size(); i++) {
+        loadedGear.renderModel.boneData[i] = skeleton.bones[boneMapping[i]].finalTransform;
+    }
 
 #ifndef USE_STANDALONE_WINDOW
     vkWindow->models = {loadedGear.renderModel};

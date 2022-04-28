@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <array>
+#include <glm/ext/matrix_float4x4.hpp>
 
 #include "mdlparser.h"
 
@@ -11,11 +12,14 @@ struct RenderPart {
 
     VkBuffer vertexBuffer, indexBuffer;
     VkDeviceMemory vertexMemory, indexMemory;
+
+    std::vector<PartSubmesh> submeshes;
 };
 
 struct RenderModel {
     Model model;
     std::vector<RenderPart> parts;
+    std::array<glm::mat4, 128> boneData;
 };
 
 class Renderer {
@@ -23,6 +27,7 @@ public:
     Renderer();
 
     void initPipeline();
+    void initDescriptors();
     bool initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
 
@@ -45,6 +50,14 @@ public:
     std::array<VkFence, 3> inFlightFences;
     std::array<VkSemaphore, 3> imageAvailableSemaphores, renderFinishedSemaphores;
     uint32_t currentFrame = 0;
+
+    VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+
+    VkBuffer boneInfoBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory boneInfoMemory = VK_NULL_HANDLE;
+    VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
+    VkDescriptorSet set = VK_NULL_HANDLE;
+
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
 
