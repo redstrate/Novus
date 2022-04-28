@@ -230,7 +230,7 @@ MainWindow::MainWindow(GameData& data) : data(data) {
         }
     });
 
-    skeleton = parseHavokXML("/home/josh/test.xml");
+    skeleton = parseHavokXML("test.xml");
     calculate_bone_inverse_pose(skeleton, *skeleton.root_bone, nullptr);
 
     auto boneListWidget = new QListWidget();
