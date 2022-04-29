@@ -18,6 +18,8 @@
 #include <QFileDialog>
 #include <magic_enum.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <QMenuBar>
+#include <QAction>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "gamedata.h"
@@ -102,6 +104,20 @@ void calculate_bone_inverse_pose(Skeleton& skeleton, Bone& bone, Bone* parent_bo
 MainWindow::MainWindow(GameData& data) : data(data) {
     setWindowTitle("mdlviewer");
     setMinimumSize(QSize(640, 480));
+
+    auto fileMenu = menuBar()->addMenu("File");
+
+    auto openMDLFile = fileMenu->addAction("Open MDL...");
+    connect(openMDLFile, &QAction::triggered, [=] {
+        auto fileName = QFileDialog::getOpenFileName(nullptr,
+                                                     "Open MDL File",
+                                                     "~",
+                                                     "FFXIV Model File (*.mdl)");
+
+        loadedGear.model = parseMDL(read_file_to_buffer(fileName.toStdString()));
+
+        reloadGearAppearance();
+    });
 
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
