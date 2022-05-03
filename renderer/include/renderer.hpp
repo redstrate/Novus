@@ -28,6 +28,7 @@ public:
 
     void initPipeline();
     void initDescriptors();
+    void initDepth(int width, int height);
     bool initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
 
@@ -50,6 +51,10 @@ public:
     std::array<VkFence, 3> inFlightFences;
     std::array<VkSemaphore, 3> imageAvailableSemaphores, renderFinishedSemaphores;
     uint32_t currentFrame = 0;
+
+    VkImage depthImage;
+    VkDeviceMemory depthMemory;
+    VkImageView depthView;
 
     VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 
