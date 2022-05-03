@@ -21,6 +21,7 @@
 #include <QMenuBar>
 #include <QAction>
 #include <glm/gtc/type_ptr.hpp>
+#include <QTreeWidget>
 
 #include "gamedata.h"
 #include "exhparser.h"
@@ -98,6 +99,22 @@ void calculate_bone_inverse_pose(Skeleton& skeleton, Bone& bone, Bone* parent_bo
     for(auto& b : skeleton.bones) {
         if(b.parent != nullptr && b.parent->name == bone.name)
             calculate_bone_inverse_pose(skeleton, b, &bone);
+    }
+}
+
+void addItem(Skeleton& skeleton, Bone& bone, QTreeWidget* widget, QTreeWidgetItem* parent_item = nullptr) {
+    auto item = new QTreeWidgetItem();
+    item->setText(0, bone.name.c_str());
+
+    if(parent_item == nullptr) {
+        widget->addTopLevelItem(item);
+    } else {
+        parent_item->addChild(item);
+    }
+
+    for(auto& b : skeleton.bones) {
+        if(b.parent != nullptr && b.parent->name == bone.name)
+            addItem(skeleton, b, widget, item);
     }
 }
 
@@ -249,18 +266,18 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     skeleton = parseHavokXML("test.xml");
     calculate_bone_inverse_pose(skeleton, *skeleton.root_bone, nullptr);
 
-    auto boneListWidget = new QListWidget();
+    auto boneListWidget = new QTreeWidget();
     for(auto& bone : skeleton.bones) {
         bone.inversePose = glm::inverse(bone.inversePose);
-
-        boneListWidget->addItem(bone.name.c_str());
     }
+
+    addItem(skeleton, *skeleton.root_bone, boneListWidget);
 
     boneListWidget->setMaximumWidth(200);
 
-    connect(boneListWidget, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
+    connect(boneListWidget, &QTreeWidget::itemClicked, [this](QTreeWidgetItem* item, int column) {
         for(auto& bone : skeleton.bones) {
-            if(bone.name == item->text().toStdString()) {
+            if(bone.name == item->text(column).toStdString()) {
                 currentScale = glm::make_vec3(bone.scale.data());
                 currentEditedBone = &bone;
             }
@@ -360,9 +377,7 @@ void MainWindow::reloadGearModel() {
 }
 
 void calculate_bone(Skeleton& skeleton, Bone& bone, const Bone* parent_bone) {
-    glm::mat4 parent_matrix = glm::mat4(1.0f);
-    if(parent_bone != nullptr)
-        parent_matrix = parent_bone->localTransform;
+    const glm::mat4 parent_matrix = parent_bone == nullptr ? glm::mat4(1.0f) : parent_bone->localTransform;
 
     glm::mat4 local = glm::mat4(1.0f);
     local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
@@ -382,10 +397,6 @@ void MainWindow::reloadGearAppearance() {
     loadedGear.renderModel = renderer->addModel(loadedGear.model, currentLod);
 
     calculate_bone(skeleton, *skeleton.root_bone, nullptr);
-
-    for(int i = 0; i < 128; i++) {
-        loadedGear.renderModel.boneData[i] = glm::mat4(1.0f);
-    }
 
     // we want to map the actual affected bones to bone ids
     std::map<int, int> boneMapping;
