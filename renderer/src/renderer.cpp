@@ -449,8 +449,7 @@ void Renderer::render(std::vector<RenderModel> models) {
 
             glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float) swapchainExtent.height,
                                            0.1f, 100.0f);
-            p[1][1] *= -1;
-            glm::mat4 v = glm::lookAt(glm::vec3(0, 0, -3), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
+            glm::mat4 v = glm::lookAt(glm::vec3(0, 1, 3), glm::vec3(0, 1, 0), glm::vec3(0, -1, 0));
             glm::mat4 vp = p * v;
 
             vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &vp);

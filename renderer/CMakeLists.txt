@@ -17,6 +17,7 @@ endif()
 add_library(renderer src/renderer.cpp ${EXTRA_SRC})
 target_include_directories(renderer PUBLIC include)
 target_link_libraries(renderer PUBLIC Vulkan::Vulkan fmt::fmt libxiv glm::glm ${EXTRA_LIBRARIES})
+target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE)
 
 if(USE_STANDALONE_WINDOW)
     target_compile_definitions(renderer PUBLIC USE_STANDALONE_WINDOW)
