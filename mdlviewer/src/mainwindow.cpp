@@ -249,7 +249,7 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 #else
         model = vkWindow->models[0].model;
 #endif
-        exportModel(model, fileName);
+        exportModel(model, skeleton, fileName);
     });
 
     controlLayout->addWidget(exportButton);
@@ -294,17 +294,74 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     layout->addWidget(scaleEdit);
 }
 
-void MainWindow::exportModel(Model& model, QString fileName) {
+void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName) {
     Assimp::Exporter exporter;
 
     aiScene scene;
     scene.mRootNode = new aiNode();
 
-    scene.mRootNode->mNumChildren = model.lods[0].parts.size();
+    scene.mRootNode->mNumChildren = model.lods[0].parts.size() + 1; // plus one for the skeleton
     scene.mRootNode->mChildren = new aiNode*[scene.mRootNode->mNumChildren];
 
     scene.mNumMeshes = model.lods[0].parts.size();
     scene.mMeshes = new aiMesh*[scene.mNumMeshes];
+
+    auto skeleton_node = new aiNode();
+    skeleton_node->mName = "Skeleton";
+    skeleton_node->mNumChildren = 1;
+    skeleton_node->mChildren = new aiNode*[skeleton_node->mNumChildren];
+
+    scene.mRootNode->mChildren[scene.mRootNode->mNumChildren - 1] = skeleton_node;
+
+    std::vector<aiNode*> skeletonNodes;
+
+    for(int i = 0; i < model.affectedBoneNames.size(); i++) {
+        auto& node = skeletonNodes.emplace_back();
+        node = new aiNode();
+        node->mName = model.affectedBoneNames[i];
+
+        int real_bone_id = 0;
+        for(int k = 0; k < skeleton.bones.size(); k++) {
+            if(skeleton.bones[k].name == model.affectedBoneNames[i]) {
+                real_bone_id  = k;
+            }
+        }
+
+        node->mChildren = new aiNode*[model.affectedBoneNames.size()];
+
+        auto& real_bone = skeleton.bones[real_bone_id];
+        memcpy(&node->mTransformation, glm::value_ptr(real_bone.finalTransform), sizeof(aiMatrix4x4));
+    }
+
+    // setup parenting
+    for(int i = 0; i < model.affectedBoneNames.size(); i++) {
+        int real_bone_id = 0;
+        for(int k = 0; k < skeleton.bones.size(); k++) {
+            if(skeleton.bones[k].name == model.affectedBoneNames[i]) {
+                real_bone_id  = k;
+            }
+        }
+
+        auto& real_bone = skeleton.bones[real_bone_id];
+        if(real_bone.parent != nullptr) {
+            for(int k = 0; k < model.affectedBoneNames.size(); k++) {
+                if(model.affectedBoneNames[k] == real_bone.parent->name) {
+                    skeletonNodes[i]->mParent = skeletonNodes[k];
+                    skeletonNodes[k]->mChildren[skeletonNodes[k]->mNumChildren++] = skeletonNodes[i];
+                }
+            }
+        }
+    }
+
+    skeleton_node->mChildren[0] = new aiNode();
+    skeleton_node->mChildren[0]->mName = "root";
+    skeleton_node->mChildren[0]->mChildren = new aiNode*[model.affectedBoneNames.size()];
+
+    for(int i = 0; i < skeletonNodes.size(); i++) {
+      if(skeletonNodes[i]->mParent == nullptr) {
+        skeleton_node->mChildren[0]->mChildren[skeleton_node->mChildren[0]->mNumChildren++] = skeletonNodes[i];
+      }
+    }
 
     for(int i = 0; i < model.lods[0].parts.size(); i++) {
         scene.mMeshes[i] = new aiMesh();
@@ -322,6 +379,32 @@ void MainWindow::exportModel(Model& model, QString fileName) {
         for(int j = 0; j < mesh->mNumVertices; j++) {
             auto vertex = model.lods[0].parts[i].vertices[j];
             mesh->mVertices[j] = aiVector3D(vertex.position[0], vertex.position[1], vertex.position[2]);
+        }
+
+        mesh->mNumBones = model.affectedBoneNames.size();
+        mesh->mBones = new aiBone*[mesh->mNumBones];
+        for(int j = 0; j < mesh->mNumBones; j++) {
+            int real_bone_id = j;
+            /*for(int k = 0; k < skeleton.bones.size(); k++) {
+                if(skeleton.bones[k].name == model.affectedBoneNames[j]) {
+                    real_bone_id  = k;
+                }
+            }*/
+
+            mesh->mBones[j] = new aiBone();
+            mesh->mBones[j]->mName = model.affectedBoneNames[j];
+            mesh->mBones[j]->mNumWeights = mesh->mNumVertices;
+            mesh->mBones[j]->mWeights = new aiVertexWeight[mesh->mBones[j]->mNumWeights];
+            mesh->mBones[j]->mNode = skeleton_node->mChildren[j];
+
+            for(int k = 0; k < mesh->mNumVertices; k++) {
+                if(model.lods[0].parts[i].vertices[k].boneIds[0] == real_bone_id) {
+                    auto& weight = mesh->mBones[j]->mWeights[k];
+                    weight.mVertexId = k;
+                    weight.mWeight =
+                        model.lods[0].parts[i].vertices[k].boneWeights[0];
+                }
+            }
         }
 
         mesh->mNumFaces = model.lods[0].parts[i].indices.size() / 3;

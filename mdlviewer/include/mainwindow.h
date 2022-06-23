@@ -27,7 +27,7 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(GameData& data);
 
-    void exportModel(Model& model, QString fileName);
+    void exportModel(Model& model, Skeleton& skeleton, QString fileName);
 
 private:
     void loadInitialGearInfo(GearInfo& info);
