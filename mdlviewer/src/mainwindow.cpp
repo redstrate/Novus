@@ -376,9 +376,14 @@ void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName)
         auto mesh = scene.mMeshes[i];
         mesh->mNumVertices = model.lods[0].parts[i].vertices.size();
         mesh->mVertices = new aiVector3D [mesh->mNumVertices];
+        mesh->mNormals = new aiVector3D [mesh->mNumVertices];
+        mesh->mTextureCoords[0] = new aiVector3D [mesh->mNumVertices];
+        mesh->mNumUVComponents[0] = 2;
         for(int j = 0; j < mesh->mNumVertices; j++) {
             auto vertex = model.lods[0].parts[i].vertices[j];
             mesh->mVertices[j] = aiVector3D(vertex.position[0], vertex.position[1], vertex.position[2]);
+            mesh->mNormals[j] = aiVector3D (vertex.normal[0], vertex.normal[1], vertex.normal[2]);
+            mesh->mTextureCoords[0][j] = aiVector3D(vertex.uv[0], vertex.uv[1], 0.0f);
         }
 
         mesh->mNumBones = model.affectedBoneNames.size();
@@ -393,16 +398,17 @@ void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName)
 
             mesh->mBones[j] = new aiBone();
             mesh->mBones[j]->mName = model.affectedBoneNames[j];
-            mesh->mBones[j]->mNumWeights = mesh->mNumVertices;
+            mesh->mBones[j]->mNumWeights = mesh->mNumVertices * 4;
             mesh->mBones[j]->mWeights = new aiVertexWeight[mesh->mBones[j]->mNumWeights];
             mesh->mBones[j]->mNode = skeleton_node->mChildren[j];
 
             for(int k = 0; k < mesh->mNumVertices; k++) {
-                if(model.lods[0].parts[i].vertices[k].boneIds[0] == real_bone_id) {
-                    auto& weight = mesh->mBones[j]->mWeights[k];
-                    weight.mVertexId = k;
-                    weight.mWeight =
-                        model.lods[0].parts[i].vertices[k].boneWeights[0];
+                for(int z = 0; z < 4; z++) {
+                    if (model.lods[0].parts[i].vertices[k].boneIds[z] == real_bone_id) {
+                        auto &weight = mesh->mBones[j]->mWeights[k * 4 + z];
+                        weight.mVertexId = k;
+                        weight.mWeight =  model.lods[0].parts[i].vertices[k].boneWeights[z];
+                    }
                 }
             }
         }
