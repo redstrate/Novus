@@ -1,5 +1,5 @@
 add_executable(argcracker src/main.cpp src/tickcount.cpp)
-target_link_libraries(argcracker PUBLIC Qt5::Core ${LIBRARIES})
+target_link_libraries(argcracker PUBLIC Qt5::Core ${LIBRARIES} physis z)
 target_include_directories(argcracker PUBLIC include)
 
 if(APPLE)
