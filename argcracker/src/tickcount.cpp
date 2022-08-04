@@ -1,3 +1,5 @@
+#include <cstdint>
+
 #if defined(MACOS)
 #include <sys/sysctl.h>
 #include <mach/mach_time.h>
@@ -22,6 +24,8 @@ uint32_t TickCount() {
 #endif
 
 #if defined(LINUX)
+#include <ctime>
+
 uint32_t TickCount() {
     struct timespec ts;
 
