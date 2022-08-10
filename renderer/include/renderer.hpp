@@ -5,19 +5,17 @@
 #include <array>
 #include <glm/ext/matrix_float4x4.hpp>
 
-#include "mdlparser.h"
+#include <physis.hpp>
 
 struct RenderPart {
     size_t numIndices;
 
     VkBuffer vertexBuffer, indexBuffer;
     VkDeviceMemory vertexMemory, indexMemory;
-
-    std::vector<PartSubmesh> submeshes;
 };
 
 struct RenderModel {
-    Model model;
+    physis_MDL model;
     std::vector<RenderPart> parts;
     std::array<glm::mat4, 128> boneData;
 };
@@ -32,7 +30,7 @@ public:
     bool initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
 
-    RenderModel addModel(const Model& model, int lod);
+    RenderModel addModel(const physis_MDL& model, int lod);
 
     void render(std::vector<RenderModel> models);
 

@@ -22,13 +22,9 @@
 #include <QAction>
 #include <glm/gtc/type_ptr.hpp>
 #include <QTreeWidget>
+#include <physis.hpp>
+#include <glm/glm.hpp>
 
-#include "gamedata.h"
-#include "exhparser.h"
-#include "exdparser.h"
-#include "mdlparser.h"
-#include "equipment.h"
-#include "glm/glm.hpp"
 #include "vec3edit.h"
 
 #ifndef USE_STANDALONE_WINDOW
@@ -86,25 +82,26 @@ private:
 
 #endif
 
-void calculate_bone_inverse_pose(Skeleton& skeleton, Bone& bone, Bone* parent_bone) {
-    const glm::mat4 parentMatrix = parent_bone == nullptr ? glm::mat4(1.0f) : parent_bone->inversePose;
+void MainWindow::calculate_bone_inverse_pose(physis_Skeleton& skeleton, physis_Bone& bone, physis_Bone* parent_bone) {
+    const glm::mat4 parentMatrix = parent_bone == nullptr ? glm::mat4(1.0f) : extraBone[parent_bone->index].inversePose;
 
     glm::mat4 local(1.0f);
     local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
     local *= glm::mat4_cast(glm::quat(bone.rotation[3], bone.rotation[0], bone.rotation[1], bone.rotation[2]));
     local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
 
-    bone.inversePose = parentMatrix * local;
+    extraBone[bone.index].inversePose = parentMatrix * local;
 
-    for(auto& b : skeleton.bones) {
-        if(b.parent != nullptr && b.parent->name == bone.name)
-            calculate_bone_inverse_pose(skeleton, b, &bone);
+    for(int i = 0; i < skeleton.num_bones; i++) {
+        if(skeleton.bones[i].parent_bone != nullptr && strcmp(skeleton.bones[i].parent_bone->name, bone.name) == 0) {
+            calculate_bone_inverse_pose(skeleton, skeleton.bones[i], &bone);
+        }
     }
 }
 
-void addItem(Skeleton& skeleton, Bone& bone, QTreeWidget* widget, QTreeWidgetItem* parent_item = nullptr) {
+void addItem(physis_Skeleton& skeleton, physis_Bone& bone, QTreeWidget* widget, QTreeWidgetItem* parent_item = nullptr) {
     auto item = new QTreeWidgetItem();
-    item->setText(0, bone.name.c_str());
+    item->setText(0, bone.name);
 
     if(parent_item == nullptr) {
         widget->addTopLevelItem(item);
@@ -112,13 +109,13 @@ void addItem(Skeleton& skeleton, Bone& bone, QTreeWidget* widget, QTreeWidgetIte
         parent_item->addChild(item);
     }
 
-    for(auto& b : skeleton.bones) {
-        if(b.parent != nullptr && b.parent->name == bone.name)
-            addItem(skeleton, b, widget, item);
+    for(int i = 0; i < skeleton.num_bones; i++) {
+        if(skeleton.bones[i].parent_bone != nullptr && strcmp(skeleton.bones[i].parent_bone->name, bone.name) == 0)
+            addItem(skeleton, skeleton.bones[i], widget, item);
     }
 }
 
-MainWindow::MainWindow(GameData& data) : data(data) {
+MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     setWindowTitle("mdlviewer");
     setMinimumSize(QSize(640, 480));
 
@@ -131,7 +128,9 @@ MainWindow::MainWindow(GameData& data) : data(data) {
                                                      "~",
                                                      "FFXIV Model File (*.mdl)");
 
-        loadedGear.model = parseMDL(read_file_to_buffer(fileName.toStdString()));
+        auto buffer = physis_read_file(fileName.toStdString().c_str());
+
+        loadedGear.model = physis_mdl_parse(buffer.size, buffer.data);
 
         reloadGearAppearance();
     });
@@ -160,20 +159,20 @@ MainWindow::MainWindow(GameData& data) : data(data) {
         gears.push_back(info);
     }
 
-    auto exh = *data.readExcelSheet("Item");
+    auto exh = physis_gamedata_read_excel_sheet_header(&data, "Item");
+    auto exd = physis_gamedata_read_excel_sheet(&data, "Item", exh, Language::English, 1);
 
-    auto path = getEXDFilename(exh, "item", getLanguageCode(Language::English), exh.pages[1]);
-    auto exd = readEXD(exh, *data.extractFile("exd/" + path), exh.pages[1]);
-    for(auto row : exd.rows) {
-        auto primaryModel = row.data[47].uint64Data;
-        auto secondaryModel = row.data[48].uint64Data;
+    for(int i = 0; i < exd.row_count; i++) {
+        const auto row = exd.row_data[i];
+        auto primaryModel = row.column_data[47].u_int64._0;
+        auto secondaryModel = row.column_data[48].u_int64._0;
 
         int16_t parts[4];
         memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
 
         GearInfo info = {};
-        info.name = row.data[9].data;
-        info.slot = *get_slot_from_id(row.data[17].uint64Data);
+        info.name = row.column_data[9].string._0;
+        info.slot = physis_slot_from_id(row.column_data[17].u_int8._0);
         info.modelInfo.primaryID = parts[0];
 
         gears.push_back(info);
@@ -243,7 +242,7 @@ MainWindow::MainWindow(GameData& data) : data(data) {
                                                         "model.fbx",
                                                         tr("FBX Files (*.fbx)"));
 
-        Model model;
+        physis_MDL model;
 #ifdef USE_STANDALONE_WINDOW
         model = standaloneWindow->models[0].model;
 #else
@@ -263,11 +262,12 @@ MainWindow::MainWindow(GameData& data) : data(data) {
         }
     });
 
-    skeleton = parseHavokXML("test.xml");
+    skeleton = physis_skeleton_from_skel(physis_read_file("c0101b0001.skel"));
+    extraBone.resize(skeleton.num_bones);
     calculate_bone_inverse_pose(skeleton, *skeleton.root_bone, nullptr);
 
     auto boneListWidget = new QTreeWidget();
-    for(auto& bone : skeleton.bones) {
+    for(auto& bone : extraBone) {
         bone.inversePose = glm::inverse(bone.inversePose);
     }
 
@@ -276,10 +276,10 @@ MainWindow::MainWindow(GameData& data) : data(data) {
     boneListWidget->setMaximumWidth(200);
 
     connect(boneListWidget, &QTreeWidget::itemClicked, [this](QTreeWidgetItem* item, int column) {
-        for(auto& bone : skeleton.bones) {
-            if(bone.name == item->text(column).toStdString()) {
-                currentScale = glm::make_vec3(bone.scale.data());
-                currentEditedBone = &bone;
+        for(int i = 0; i < skeleton.num_bones; i++) {
+            if(strcmp(skeleton.bones[i].name, item->text(column).toStdString().c_str()) == 0) {
+                currentScale = glm::make_vec3(skeleton.bones[i].scale);
+                currentEditedBone = &skeleton.bones[i];
             }
         }
     });
@@ -288,22 +288,22 @@ MainWindow::MainWindow(GameData& data) : data(data) {
 
     Vector3Edit* scaleEdit = new Vector3Edit(currentScale);
     connect(scaleEdit, &Vector3Edit::onValueChanged, [this] {
-        memcpy(currentEditedBone->scale.data(), glm::value_ptr(currentScale), sizeof(float) * 3);
+        memcpy(currentEditedBone->scale, glm::value_ptr(currentScale), sizeof(float) * 3);
         reloadGearAppearance();
     });
     layout->addWidget(scaleEdit);
 }
 
-void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName) {
+void MainWindow::exportModel(physis_MDL& model, physis_Skeleton& skeleton, QString fileName) {
     Assimp::Exporter exporter;
 
     aiScene scene;
     scene.mRootNode = new aiNode();
 
-    scene.mRootNode->mNumChildren = model.lods[0].parts.size() + 1; // plus one for the skeleton
+    scene.mRootNode->mNumChildren = model.lods[0].num_parts + 1; // plus one for the skeleton
     scene.mRootNode->mChildren = new aiNode*[scene.mRootNode->mNumChildren];
 
-    scene.mNumMeshes = model.lods[0].parts.size();
+    scene.mNumMeshes = model.lods[0].num_parts;
     scene.mMeshes = new aiMesh*[scene.mNumMeshes];
 
     auto skeleton_node = new aiNode();
@@ -315,37 +315,37 @@ void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName)
 
     std::vector<aiNode*> skeletonNodes;
 
-    for(int i = 0; i < model.affectedBoneNames.size(); i++) {
+    for(int i = 0; i < model.num_affected_bones; i++) {
         auto& node = skeletonNodes.emplace_back();
         node = new aiNode();
-        node->mName = model.affectedBoneNames[i];
+        node->mName = model.affected_bone_names[i];
 
         int real_bone_id = 0;
-        for(int k = 0; k < skeleton.bones.size(); k++) {
-            if(skeleton.bones[k].name == model.affectedBoneNames[i]) {
+        for(int k = 0; k < skeleton.num_bones; k++) {
+            if(strcmp(skeleton.bones[k].name, model.affected_bone_names[i]) == 0) {
                 real_bone_id  = k;
             }
         }
 
-        node->mChildren = new aiNode*[model.affectedBoneNames.size()];
+        node->mChildren = new aiNode*[model.num_affected_bones];
 
         auto& real_bone = skeleton.bones[real_bone_id];
-        memcpy(&node->mTransformation, glm::value_ptr(real_bone.finalTransform), sizeof(aiMatrix4x4));
+        memcpy(&node->mTransformation, glm::value_ptr(extraBone[real_bone.index].finalTransform), sizeof(aiMatrix4x4));
     }
 
     // setup parenting
-    for(int i = 0; i < model.affectedBoneNames.size(); i++) {
+    for(int i = 0; i < model.num_affected_bones; i++) {
         int real_bone_id = 0;
-        for(int k = 0; k < skeleton.bones.size(); k++) {
-            if(skeleton.bones[k].name == model.affectedBoneNames[i]) {
+        for(int k = 0; k < skeleton.num_bones; k++) {
+            if(strcmp(skeleton.bones[k].name, model.affected_bone_names[i]) == 0) {
                 real_bone_id  = k;
             }
         }
 
         auto& real_bone = skeleton.bones[real_bone_id];
-        if(real_bone.parent != nullptr) {
-            for(int k = 0; k < model.affectedBoneNames.size(); k++) {
-                if(model.affectedBoneNames[k] == real_bone.parent->name) {
+        if(real_bone.parent_bone != nullptr) {
+            for(int k = 0; k < model.num_affected_bones; k++) {
+                if(strcmp(model.affected_bone_names[k], real_bone.parent_bone->name) == 0) {
                     skeletonNodes[i]->mParent = skeletonNodes[k];
                     skeletonNodes[k]->mChildren[skeletonNodes[k]->mNumChildren++] = skeletonNodes[i];
                 }
@@ -355,7 +355,7 @@ void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName)
 
     skeleton_node->mChildren[0] = new aiNode();
     skeleton_node->mChildren[0]->mName = "root";
-    skeleton_node->mChildren[0]->mChildren = new aiNode*[model.affectedBoneNames.size()];
+    skeleton_node->mChildren[0]->mChildren = new aiNode*[model.num_affected_bones];
 
     for(int i = 0; i < skeletonNodes.size(); i++) {
       if(skeletonNodes[i]->mParent == nullptr) {
@@ -363,7 +363,7 @@ void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName)
       }
     }
 
-    for(int i = 0; i < model.lods[0].parts.size(); i++) {
+    for(int i = 0; i < model.lods[0].num_parts; i++) {
         scene.mMeshes[i] = new aiMesh();
         scene.mMeshes[i]->mMaterialIndex = 0;
 
@@ -374,7 +374,7 @@ void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName)
         node->mMeshes[0] = i;
 
         auto mesh = scene.mMeshes[i];
-        mesh->mNumVertices = model.lods[0].parts[i].vertices.size();
+        mesh->mNumVertices = model.lods[0].parts[i].num_vertices;
         mesh->mVertices = new aiVector3D [mesh->mNumVertices];
         mesh->mNormals = new aiVector3D [mesh->mNumVertices];
         mesh->mTextureCoords[0] = new aiVector3D [mesh->mNumVertices];
@@ -386,7 +386,7 @@ void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName)
             mesh->mTextureCoords[0][j] = aiVector3D(vertex.uv[0], vertex.uv[1], 0.0f);
         }
 
-        mesh->mNumBones = model.affectedBoneNames.size();
+        mesh->mNumBones = model.num_affected_bones;
         mesh->mBones = new aiBone*[mesh->mNumBones];
         for(int j = 0; j < mesh->mNumBones; j++) {
             int real_bone_id = j;
@@ -397,27 +397,27 @@ void MainWindow::exportModel(Model& model, Skeleton& skeleton, QString fileName)
             }*/
 
             mesh->mBones[j] = new aiBone();
-            mesh->mBones[j]->mName = model.affectedBoneNames[j];
+            mesh->mBones[j]->mName = model.affected_bone_names[j];
             mesh->mBones[j]->mNumWeights = mesh->mNumVertices * 4;
             mesh->mBones[j]->mWeights = new aiVertexWeight[mesh->mBones[j]->mNumWeights];
             mesh->mBones[j]->mNode = skeleton_node->mChildren[j];
 
             for(int k = 0; k < mesh->mNumVertices; k++) {
                 for(int z = 0; z < 4; z++) {
-                    if (model.lods[0].parts[i].vertices[k].boneIds[z] == real_bone_id) {
+                    if (model.lods[0].parts[i].vertices[k].bone_id[z] == real_bone_id) {
                         auto &weight = mesh->mBones[j]->mWeights[k * 4 + z];
                         weight.mVertexId = k;
-                        weight.mWeight =  model.lods[0].parts[i].vertices[k].boneWeights[z];
+                        weight.mWeight =  model.lods[0].parts[i].vertices[k].bone_weight[z];
                     }
                 }
             }
         }
 
-        mesh->mNumFaces = model.lods[0].parts[i].indices.size() / 3;
+        mesh->mNumFaces = model.lods[0].parts[i].num_indices / 3;
         mesh->mFaces = new aiFace[mesh->mNumFaces];
 
         int lastFace = 0;
-        for(int j = 0; j < model.lods[0].parts[i].indices.size(); j += 3) {
+        for(int j = 0; j < model.lods[0].parts[i].num_indices; j += 3) {
             aiFace& face = mesh->mFaces[lastFace++];
 
             face.mNumIndices = 3;
@@ -441,44 +441,45 @@ void MainWindow::loadInitialGearInfo(GearInfo& info) {
 
     raceCombo->clear();
     for(auto [race, race_name] : magic_enum::enum_entries<Race>()) {
-        if(data.exists(build_equipment_path(loadedGear.gearInfo->modelInfo.primaryID, race, loadedGear.gearInfo->slot)))
-            raceCombo->addItem(race_name.data());
+        auto equip_path = physis_build_equipment_path(loadedGear.gearInfo->modelInfo.primaryID, race, currentSubrace, currentGender, loadedGear.gearInfo->slot);
+
+        if(physis_gamedata_exists(&data, equip_path))
+          raceCombo->addItem(race_name.data());
     }
 
     currentLod = 0;
-    currentRace = Race::HyurMidlanderMale;
+    currentRace = Race::Hyur;
 
     reloadGearModel();
 }
 
 void MainWindow::reloadGearModel() {
-    auto mdl_data = data.extractFile(build_equipment_path(loadedGear.gearInfo->modelInfo.primaryID, currentRace, loadedGear.gearInfo->slot));
-    if(mdl_data == std::nullopt)
-        return;
+    auto mdl_data = physis_gamedata_extract_file(&data, physis_build_equipment_path(loadedGear.gearInfo->modelInfo.primaryID, currentRace, currentSubrace, currentGender, loadedGear.gearInfo->slot));
 
-    loadedGear.model = parseMDL(*mdl_data);
+    loadedGear.model = physis_mdl_parse(mdl_data.size, mdl_data.data);
 
     lodCombo->clear();
-    for(int i = 0; i < loadedGear.model.lods.size(); i++)
+    for(int i = 0; i < loadedGear.model.num_lod; i++)
         lodCombo->addItem(QString::number(i));
 
     reloadGearAppearance();
 }
 
-void calculate_bone(Skeleton& skeleton, Bone& bone, const Bone* parent_bone) {
-    const glm::mat4 parent_matrix = parent_bone == nullptr ? glm::mat4(1.0f) : parent_bone->localTransform;
+void MainWindow::calculate_bone(physis_Skeleton& skeleton, physis_Bone& bone, const physis_Bone* parent_bone) {
+    const glm::mat4 parent_matrix = parent_bone == nullptr ? glm::mat4(1.0f) : extraBone[parent_bone->index].localTransform;
 
     glm::mat4 local = glm::mat4(1.0f);
     local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
     local *= glm::mat4_cast(glm::quat(bone.rotation[3], bone.rotation[0], bone.rotation[1], bone.rotation[2]));
     local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
 
-    bone.localTransform = parent_matrix * local;
-    bone.finalTransform = bone.localTransform * bone.inversePose;
+    extraBone[bone.index].localTransform = parent_matrix * local;
+    extraBone[bone.index].finalTransform = extraBone[bone.index].localTransform * extraBone[bone.index].inversePose;
 
-    for(auto& b : skeleton.bones) {
-        if(b.parent != nullptr && b.parent->name == bone.name)
-            calculate_bone(skeleton, b, &bone);
+    for(int i = 0; i < skeleton.num_bones; i++) {
+        if(skeleton.bones[i].parent_bone != nullptr && strcmp(skeleton.bones[i].parent_bone->name, bone.name) == 0) {
+            calculate_bone(skeleton, skeleton.bones[i], &bone);
+        }
     }
 }
 
@@ -489,15 +490,15 @@ void MainWindow::reloadGearAppearance() {
 
     // we want to map the actual affected bones to bone ids
     std::map<int, int> boneMapping;
-    for(int i = 0; i < loadedGear.model.affectedBoneNames.size(); i++) {
-        for(int k = 0; k < skeleton.bones.size(); k++) {
-            if(skeleton.bones[k].name == loadedGear.model.affectedBoneNames[i])
+    for(int i = 0; i < loadedGear.model.num_affected_bones; i++) {
+        for(int k = 0; k < skeleton.num_bones; k++) {
+            if(strcmp(skeleton.bones[k].name, loadedGear.model.affected_bone_names[i]) == 0)
                 boneMapping[i] = k;
         }
     }
 
-    for(int i = 0; i < loadedGear.model.affectedBoneNames.size(); i++) {
-        loadedGear.renderModel.boneData[i] = skeleton.bones[boneMapping[i]].finalTransform;
+    for(int i = 0; i < loadedGear.model.num_affected_bones; i++) {
+        loadedGear.renderModel.boneData[i] = extraBone[boneMapping[i]].finalTransform;
     }
 
 #ifndef USE_STANDALONE_WINDOW

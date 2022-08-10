@@ -442,7 +442,7 @@ void Renderer::render(std::vector<RenderModel> models) {
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &set, 0, nullptr);
 
-        for(auto part : model.parts) {
+        for(const auto& part : model.parts) {
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
             vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
@@ -554,21 +554,22 @@ uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
     return -1;
 }
 
-RenderModel Renderer::addModel(const Model& model, int lod) {
+RenderModel Renderer::addModel(const physis_MDL& model, int lod) {
     RenderModel renderModel;
     renderModel.model = model;
 
-    if(lod < 0 || lod > model.lods.size())
+    if(lod < 0 || lod > model.num_lod)
         return {};
 
-    for(auto part : model.lods[lod].parts) {
+    for(int i = 0; i < model.lods[0].num_parts; i++) {
         RenderPart renderPart;
-        renderPart.submeshes = part.submeshes;
 
-        size_t vertexSize = part.vertices.size() * sizeof(Vertex);
+        const physis_Part part = model.lods[0].parts[i];
+
+        size_t vertexSize = part.num_vertices * sizeof(Vertex);
         auto[vertexBuffer, vertexMemory] = createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-        size_t indexSize = part.indices.size() * sizeof(uint16_t);
+        size_t indexSize = part.num_indices * sizeof(uint16_t);
         auto[indexBuffer, indexMemory] = createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
         // copy vertex data
@@ -576,7 +577,7 @@ RenderModel Renderer::addModel(const Model& model, int lod) {
             void* mapped_data = nullptr;
             vkMapMemory(device, vertexMemory, 0, vertexSize, 0, &mapped_data);
 
-            memcpy(mapped_data, part.vertices.data(), vertexSize);
+            memcpy(mapped_data, part.vertices, vertexSize);
 
             VkMappedMemoryRange range = {};
             range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -592,7 +593,7 @@ RenderModel Renderer::addModel(const Model& model, int lod) {
             void* mapped_data = nullptr;
             vkMapMemory(device, indexMemory, 0, indexSize, 0, &mapped_data);
 
-            memcpy(mapped_data, part.indices.data(), indexSize);
+            memcpy(mapped_data, part.indices, indexSize);
 
             VkMappedMemoryRange range = {};
             range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -603,7 +604,7 @@ RenderModel Renderer::addModel(const Model& model, int lod) {
             vkUnmapMemory(device, indexMemory);
         }
 
-        renderPart.numIndices = part.indices.size();
+        renderPart.numIndices = part.num_indices;
 
         renderPart.vertexBuffer = vertexBuffer;
         renderPart.vertexMemory = vertexMemory;
@@ -648,12 +649,12 @@ void Renderer::initPipeline() {
     VkVertexInputAttributeDescription boneWeightAttribute = {};
     boneWeightAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
     boneWeightAttribute.location = 2;
-    boneWeightAttribute.offset = offsetof(Vertex, boneWeights);
+    boneWeightAttribute.offset = offsetof(Vertex, bone_weight);
 
     VkVertexInputAttributeDescription boneIdAttribute = {};
     boneIdAttribute.format = VK_FORMAT_R8G8B8A8_UINT;
     boneIdAttribute.location = 3;
-    boneIdAttribute.offset = offsetof(Vertex, boneIds);
+    boneIdAttribute.offset = offsetof(Vertex, bone_id);
 
     std::array<VkVertexInputAttributeDescription, 4> attributes = {positionAttribute, normalAttribute, boneWeightAttribute, boneIdAttribute};
 
