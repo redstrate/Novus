@@ -4,6 +4,7 @@
 #include <vector>
 #include <array>
 #include <glm/ext/matrix_float4x4.hpp>
+#include <map>
 
 #include <physis.hpp>
 
@@ -14,10 +15,19 @@ struct RenderPart {
     VkDeviceMemory vertexMemory, indexMemory;
 };
 
+struct RenderTexture {
+    VkImage handle = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    VkImageView view = VK_NULL_HANDLE;
+    VkSampler sampler = VK_NULL_HANDLE;
+};
+
 struct RenderModel {
     physis_MDL model;
     std::vector<RenderPart> parts;
     std::array<glm::mat4, 128> boneData;
+
+    RenderTexture* texture = nullptr;
 };
 
 class Renderer {
@@ -31,6 +41,7 @@ public:
     void resize(VkSurfaceKHR surface, int width, int height);
 
     RenderModel addModel(const physis_MDL& model, int lod);
+    RenderTexture addTexture(uint32_t width, uint32_t height, const uint8_t* data, uint32_t data_size);
 
     void render(std::vector<RenderModel> models);
 
@@ -59,7 +70,8 @@ public:
     VkBuffer boneInfoBuffer = VK_NULL_HANDLE;
     VkDeviceMemory boneInfoMemory = VK_NULL_HANDLE;
     VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
-    VkDescriptorSet set = VK_NULL_HANDLE;
+
+    std::map<VkImage, VkDescriptorSet> cachedDescriptors;
 
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
@@ -71,4 +83,16 @@ public:
     VkShaderModule createShaderModule(const uint32_t *code, const int length);
 
     VkShaderModule loadShaderFromDisk(const std::string_view path);
+
+    VkCommandBuffer beginSingleTimeCommands();
+
+    void endSingleTimeCommands(VkCommandBuffer pT);
+
+    void inlineTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format,
+                                     VkImageAspectFlags aspect, VkImageSubresourceRange range,
+                                     VkImageLayout oldLayout, VkImageLayout newLayout,
+                                     VkPipelineStageFlags src_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                                     VkPipelineStageFlags dst_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+
+    VkDescriptorSet createDescriptorFor(RenderTexture& texture);
 };

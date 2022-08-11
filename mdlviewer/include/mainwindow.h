@@ -1,20 +1,30 @@
 #pragma once
 
-#include <QMainWindow>
-#include <unordered_map>
 #include <QComboBox>
+#include <QMainWindow>
+#include <fmt/format.h>
 #include <physis.hpp>
+#include <unordered_map>
 
 #include "renderer.hpp"
 
 struct ModelInfo {
     int primaryID;
+    int gearVersion = 1;
 };
 
 struct GearInfo {
     std::string name;
     Slot slot;
     ModelInfo modelInfo;
+
+    std::string getMtrlPath(int raceID) {
+        return fmt::format("chara/equipment/e{gearId:04d}/material/v{gearVersion:04d}/mt_c{raceId:04d}e{gearId:04d}_{slot}_a.mtrl",
+                  fmt::arg("gearId", modelInfo.primaryID),
+                  fmt::arg("gearVersion", modelInfo.gearVersion),
+                  fmt::arg("raceId", raceID),
+                  fmt::arg("slot", physis_get_slot_name(slot)));
+    }
 };
 
 class GameData;
@@ -39,7 +49,9 @@ private:
     struct LoadedGear {
         GearInfo* gearInfo;
         physis_MDL model;
+        physis_Material material;
         RenderModel renderModel;
+        RenderTexture renderTexture;
     };
 
     struct BoneExtra {

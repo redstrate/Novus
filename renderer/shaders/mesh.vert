@@ -2,11 +2,13 @@
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec4 inBoneWeights;
-layout(location = 3) in uvec4 inBoneIds;
+layout(location = 2) in vec2 inUV;
+layout(location = 3) in vec4 inBoneWeights;
+layout(location = 4) in uvec4 inBoneIds;
 
 layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec3 outFragPos;
+layout(location = 2) out vec2 outUV;
 
 layout(push_constant) uniform PushConstant {
 	mat4 vp, model;
@@ -31,4 +33,5 @@ void main() {
     gl_Position = vp * bPos;
     outNormal = bNor.xyz;
     outFragPos = vec3(model * vec4(inPosition, 1.0));
+    outUV = inUV;
 }

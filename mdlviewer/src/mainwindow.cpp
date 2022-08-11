@@ -458,6 +458,14 @@ void MainWindow::reloadGearModel() {
 
     loadedGear.model = physis_mdl_parse(mdl_data.size, mdl_data.data);
 
+    std::string mtrl_path = loadedGear.gearInfo->getMtrlPath(101);
+    qDebug() << "MTRL path: " << mtrl_path.c_str();
+
+    if(physis_gamedata_exists(&data, mtrl_path.c_str())) {
+        qDebug() << "loading mtrl...";
+        loadedGear.material = physis_material_parse(physis_gamedata_extract_file(&data, mtrl_path.c_str()));
+    }
+
     lodCombo->clear();
     for(int i = 0; i < loadedGear.model.num_lod; i++)
         lodCombo->addItem(QString::number(i));
@@ -485,6 +493,14 @@ void MainWindow::calculate_bone(physis_Skeleton& skeleton, physis_Bone& bone, co
 
 void MainWindow::reloadGearAppearance() {
     loadedGear.renderModel = renderer->addModel(loadedGear.model, currentLod);
+
+    if(loadedGear.material.num_textures > 0) {
+        auto texture = physis_texture_parse(physis_gamedata_extract_file(&data, loadedGear.material.textures[0]));
+
+        loadedGear.renderTexture = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
+
+        loadedGear.renderModel.texture = &loadedGear.renderTexture;
+    }
 
     calculate_bone(skeleton, *skeleton.root_bone, nullptr);
 
