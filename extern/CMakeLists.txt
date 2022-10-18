@@ -1,7 +1,7 @@
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.2.1
+        GIT_TAG v0.2.2
 )
 
 FetchContent_MakeAvailable(Corrosion)
@@ -9,7 +9,7 @@ FetchContent_MakeAvailable(Corrosion)
 FetchContent_Declare(
         libphysis
         GIT_REPOSITORY https://git.sr.ht/~redstrate/libphysis
-        GIT_TAG        main
+        GIT_TAG        0.1.1
 )
 
 FetchContent_MakeAvailable(libphysis)
