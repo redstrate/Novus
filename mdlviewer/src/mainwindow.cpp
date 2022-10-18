@@ -220,8 +220,10 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     raceCombo = new QComboBox();
 
     connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        currentRace = (Race)index;
-        reloadGearModel();
+        if(index != -1) {
+            currentRace = (Race) index;
+            reloadGearModel();
+        }
     });
 
     controlLayout->addWidget(raceCombo);
