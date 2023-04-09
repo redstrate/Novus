@@ -1,18 +1,20 @@
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.2.2
+        GIT_TAG v0.3.5
 )
 
 FetchContent_MakeAvailable(Corrosion)
 
-FetchContent_Declare(
-        libphysis
-        GIT_REPOSITORY https://git.sr.ht/~redstrate/libphysis
-        GIT_TAG        0.1.1
-)
+#FetchContent_Declare(
+#        libphysis
+#        GIT_REPOSITORY https://git.sr.ht/~redstrate/libphysis
+#        GIT_TAG        0.1.3
+#)
 
-FetchContent_MakeAvailable(libphysis)
+#FetchContent_MakeAvailable(libphysis)
+
+set(libphysis_SOURCE_DIR /home/josh/Development/libphysis)
 
 corrosion_import_crate(MANIFEST_PATH ${libphysis_SOURCE_DIR}/Cargo.toml)
 

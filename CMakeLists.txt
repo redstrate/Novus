@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.25)
 project(Novus)
 
 set(CMAKE_AUTOMOC ON)
@@ -5,8 +6,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(Qt5 COMPONENTS Core Widgets CONFIG REQUIRED)
-
-add_subdirectory(libxiv)
 
 include(FetchContent)
 
