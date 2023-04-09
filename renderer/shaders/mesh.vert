@@ -10,9 +10,15 @@ layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec3 outFragPos;
 layout(location = 2) out vec2 outUV;
 
-layout(push_constant) uniform PushConstant {
+layout(binding = 3) uniform sampler2D diffuseTexture;
+layout(binding = 4) uniform sampler2D normalTexture;
+layout(binding = 5) uniform sampler2D specularTexture;
+layout(binding = 6) uniform sampler2D multiTexture;
+
+layout(std430, push_constant) uniform PushConstant {
 	mat4 vp, model;
 	int boneOffset;
+    int type;
 };
 
 layout(std430, binding = 2) buffer readonly BoneInformation {

@@ -13,6 +13,8 @@ struct RenderPart {
 
     VkBuffer vertexBuffer, indexBuffer;
     VkDeviceMemory vertexMemory, indexMemory;
+
+    int materialIndex = 0;
 };
 
 struct RenderTexture {
@@ -22,12 +24,28 @@ struct RenderTexture {
     VkSampler sampler = VK_NULL_HANDLE;
 };
 
+enum class MaterialType {
+    Object,
+    Skin
+};
+
+struct RenderMaterial {
+    MaterialType type = MaterialType::Object;
+
+    RenderTexture* diffuseTexture = nullptr;
+    RenderTexture* normalTexture = nullptr;
+    RenderTexture* specularTexture = nullptr;
+    RenderTexture* multiTexture = nullptr;
+};
+
 struct RenderModel {
     physis_MDL model;
     std::vector<RenderPart> parts;
     std::array<glm::mat4, 128> boneData;
+    std::vector<RenderMaterial> materials;
 
-    RenderTexture* texture = nullptr;
+    VkBuffer boneInfoBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory boneInfoMemory = VK_NULL_HANDLE;
 };
 
 class Renderer {
@@ -67,11 +85,9 @@ public:
 
     VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 
-    VkBuffer boneInfoBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory boneInfoMemory = VK_NULL_HANDLE;
     VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
 
-    std::map<VkImage, VkDescriptorSet> cachedDescriptors;
+    std::map<int, VkDescriptorSet> cachedDescriptors;
 
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
@@ -94,5 +110,7 @@ public:
                                      VkPipelineStageFlags src_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                      VkPipelineStageFlags dst_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
-    VkDescriptorSet createDescriptorFor(RenderTexture& texture);
+    VkDescriptorSet createDescriptorFor(const RenderModel& model, const RenderMaterial& material);
+
+    int hash(const RenderModel& model, const RenderMaterial& material);
 };

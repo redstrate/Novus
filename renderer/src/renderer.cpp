@@ -469,45 +469,54 @@ void Renderer::render(std::vector<RenderModel> models) {
         {
             const size_t bufferSize = sizeof(glm::mat4) * 128;
             void *mapped_data = nullptr;
-            vkMapMemory(device, boneInfoMemory, 0, bufferSize, 0, &mapped_data);
+            vkMapMemory(device, model.boneInfoMemory, 0, bufferSize, 0, &mapped_data);
 
             memcpy(mapped_data, model.boneData.data(), bufferSize);
 
             VkMappedMemoryRange range = {};
             range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-            range.memory = boneInfoMemory;
+            range.memory = model.boneInfoMemory;
             range.size = bufferSize;
             vkFlushMappedMemoryRanges(device, 1, &range);
 
-            vkUnmapMemory(device, boneInfoMemory);
+            vkUnmapMemory(device, model.boneInfoMemory);
         }
 
-        if(model.texture == nullptr)
+        if(model.materials.empty())
             continue;
 
-        if(!cachedDescriptors.count(model.texture->handle))
-            cachedDescriptors[model.texture->handle] = createDescriptorFor(*model.texture);
-
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &cachedDescriptors[model.texture->handle], 0, nullptr);
-
         for(const auto& part : model.parts) {
+            RenderMaterial& material = model.materials[part.materialIndex];
+
+            int h = hash(model, material);
+            if(!cachedDescriptors.count(h)) {
+                fmt::print("Caching descriptor for hash {}\n", h);
+                cachedDescriptors[h] = createDescriptorFor(model, material);
+            }
+
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &cachedDescriptors[h], 0, nullptr);
+
+
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
             vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
             glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float) swapchainExtent.height,
                                            0.1f, 100.0f);
-            glm::mat4 v = glm::lookAt(glm::vec3(0, 1, 3), glm::vec3(0, 1, 0), glm::vec3(0, -1, 0));
+            glm::mat4 v = glm::lookAt(glm::vec3(0, 1, 1), glm::vec3(0, 1, 0), glm::vec3(0, -1, 0));
             glm::mat4 vp = p * v;
 
-            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &vp);
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
 
             glm::mat4 m = glm::mat4(1.0f);
 
-            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(glm::mat4), sizeof(glm::mat4), &m);
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::mat4), &m);
 
             int test = 0;
-            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(glm::mat4) * 2, sizeof(int), &test);
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4) * 2, sizeof(int), &test);
+
+            int type = (int)material.type;
+            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4) * 2 + sizeof(int), sizeof(int), &type);
 
             vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
         }
@@ -609,10 +618,12 @@ RenderModel Renderer::addModel(const physis_MDL& model, int lod) {
     if(lod < 0 || lod > model.num_lod)
         return {};
 
-    for(int i = 0; i < model.lods[0].num_parts; i++) {
+    for(int i = 0; i < model.lods[lod].num_parts; i++) {
         RenderPart renderPart;
 
-        const physis_Part part = model.lods[0].parts[i];
+        const physis_Part part = model.lods[lod].parts[i];
+
+        renderPart.materialIndex = part.material_index;
 
         size_t vertexSize = part.num_vertices * sizeof(Vertex);
         auto[vertexBuffer, vertexMemory] = createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -662,6 +673,12 @@ RenderModel Renderer::addModel(const physis_MDL& model, int lod) {
 
         renderModel.parts.push_back(renderPart);
     }
+
+    const size_t bufferSize = sizeof(glm::mat4) * 128;
+    auto [buffer, memory] = createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+    renderModel.boneInfoBuffer = buffer;
+    renderModel.boneInfoMemory = memory;
 
     return renderModel;
 }
@@ -759,8 +776,8 @@ void Renderer::initPipeline() {
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 
     VkPushConstantRange pushConstantRange = {};
-    pushConstantRange.size = (sizeof(glm::mat4) * 2) + sizeof(int);
-    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    pushConstantRange.size = (sizeof(glm::mat4) * 2) + sizeof(int) * 2;
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT  | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -852,10 +869,28 @@ void Renderer::initDescriptors() {
     VkDescriptorSetLayoutBinding textureBinding = {};
     textureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     textureBinding.descriptorCount = 1;
-    textureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    textureBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     textureBinding.binding = 3;
 
-    const std::array bindings = {boneInfoBufferBinding, textureBinding};
+    VkDescriptorSetLayoutBinding normalBinding = {};
+    normalBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    normalBinding.descriptorCount = 1;
+    normalBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    normalBinding.binding = 4;
+
+    VkDescriptorSetLayoutBinding specularBinding = {};
+    specularBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    specularBinding.descriptorCount = 1;
+    specularBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    specularBinding.binding = 5;
+
+    VkDescriptorSetLayoutBinding multiBinding = {};
+    multiBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    multiBinding.descriptorCount = 1;
+    multiBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    multiBinding.binding = 6;
+
+    const std::array bindings = {boneInfoBufferBinding, textureBinding, normalBinding, specularBinding, multiBinding};
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -863,12 +898,6 @@ void Renderer::initDescriptors() {
     layoutInfo.pBindings = bindings.data();
 
     vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &setLayout);
-
-    const size_t bufferSize = sizeof(glm::mat4) * 128;
-    auto [buffer, memory] = createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-
-    boneInfoBuffer = buffer;
-    boneInfoMemory = memory;
 }
 
 void Renderer::initDepth(int width, int height) {
@@ -1122,7 +1151,21 @@ void Renderer::inlineTransitionImageLayout(VkCommandBuffer commandBuffer, VkImag
                          nullptr, 0, nullptr, 1, &barrier);
 }
 
-VkDescriptorSet Renderer::createDescriptorFor(RenderTexture &texture) {
+int Renderer::hash(const RenderModel& model, const RenderMaterial& material) {
+    int hash = 0;
+    hash += reinterpret_cast<intptr_t>((void*)&model);
+    if (material.diffuseTexture)
+        hash += reinterpret_cast<intptr_t>((void*)material.diffuseTexture);
+    if (material.normalTexture)
+        hash += reinterpret_cast<intptr_t>((void*)material.normalTexture);
+    if (material.specularTexture)
+        hash += reinterpret_cast<intptr_t>((void*)material.specularTexture);
+    if (material.multiTexture)
+        hash += reinterpret_cast<intptr_t>((void*)material.multiTexture);
+    return hash;
+}
+
+VkDescriptorSet Renderer::createDescriptorFor(const RenderModel& model, const RenderMaterial& material) {
     VkDescriptorSet set;
 
     VkDescriptorSetAllocateInfo allocateInfo = {};
@@ -1135,8 +1178,10 @@ VkDescriptorSet Renderer::createDescriptorFor(RenderTexture &texture) {
 
     const size_t bufferSize = sizeof(glm::mat4) * 128;
 
+    std::vector<VkWriteDescriptorSet> writes;
+
     VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = boneInfoBuffer;
+    bufferInfo.buffer = model.boneInfoBuffer;
     bufferInfo.range = bufferSize;
 
     VkWriteDescriptorSet descriptorWrite = {};
@@ -1147,20 +1192,79 @@ VkDescriptorSet Renderer::createDescriptorFor(RenderTexture &texture) {
     descriptorWrite.pBufferInfo = &bufferInfo;
     descriptorWrite.dstBinding = 2;
 
+    writes.push_back(descriptorWrite);
+
     VkDescriptorImageInfo imageInfo = {};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = texture.view;
-    imageInfo.sampler = texture.sampler;
 
-    VkWriteDescriptorSet descriptorWrite2 = {};
-    descriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrite2.dstSet = set;
-    descriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptorWrite2.descriptorCount = 1;
-    descriptorWrite2.pImageInfo = &imageInfo;
-    descriptorWrite2.dstBinding = 3;
+    if(material.diffuseTexture) {
+        imageInfo.imageView = material.diffuseTexture->view;
+        imageInfo.sampler = material.diffuseTexture->sampler;
 
-    const std::array writes = {descriptorWrite, descriptorWrite2};
+        VkWriteDescriptorSet descriptorWrite2 = {};
+        descriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite2.dstSet = set;
+        descriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrite2.descriptorCount = 1;
+        descriptorWrite2.pImageInfo = &imageInfo;
+        descriptorWrite2.dstBinding = 3;
+
+        writes.push_back(descriptorWrite2);
+    }
+
+    VkDescriptorImageInfo normalImageInfo = {};
+    normalImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    if(material.normalTexture) {
+        normalImageInfo.imageView = material.normalTexture->view;
+        normalImageInfo.sampler = material.normalTexture->sampler;
+
+        VkWriteDescriptorSet normalDescriptorWrite2 = {};
+        normalDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        normalDescriptorWrite2.dstSet = set;
+        normalDescriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        normalDescriptorWrite2.descriptorCount = 1;
+        normalDescriptorWrite2.pImageInfo = &normalImageInfo;
+        normalDescriptorWrite2.dstBinding = 4;
+
+        writes.push_back(normalDescriptorWrite2);
+    }
+
+    VkDescriptorImageInfo specularImageInfo = {};
+    specularImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    if(material.specularTexture) {
+        specularImageInfo.imageView = material.specularTexture->view;
+        specularImageInfo.sampler = material.specularTexture->sampler;
+
+        VkWriteDescriptorSet specularDescriptorWrite2 = {};
+        specularDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        specularDescriptorWrite2.dstSet = set;
+        specularDescriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        specularDescriptorWrite2.descriptorCount = 1;
+        specularDescriptorWrite2.pImageInfo = &specularImageInfo;
+        specularDescriptorWrite2.dstBinding = 5;
+
+        writes.push_back(specularDescriptorWrite2);
+    }
+
+    VkDescriptorImageInfo multiImageInfo = {};
+    multiImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    if (material.multiTexture) {
+        multiImageInfo.imageView = material.multiTexture->view;
+        multiImageInfo.sampler = material.multiTexture->sampler;
+
+        VkWriteDescriptorSet multiDescriptorWrite2 = {};
+        multiDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        multiDescriptorWrite2.dstSet = set;
+        multiDescriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        multiDescriptorWrite2.descriptorCount = 1;
+        multiDescriptorWrite2.pImageInfo = &multiImageInfo;
+        multiDescriptorWrite2.dstBinding = 6;
+
+        writes.push_back(multiDescriptorWrite2);
+    }
 
     vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
 
