@@ -1,10 +1,14 @@
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 add_executable(explorer
         src/main.cpp
-        src/mainwindow.cpp)
+        src/mainwindow.cpp
+        src/filetreewindow.cpp
+        src/filepropertieswindow.cpp)
 target_include_directories(explorer
         PUBLIC
         include)
-target_link_libraries(explorer PUBLIC libxiv ${LIBRARIES} Qt5::Core Qt5::Widgets)
+target_link_libraries(explorer PUBLIC physis z ${LIBRARIES} Qt5::Core Qt5::Widgets)
 
 install(TARGETS explorer
         DESTINATION "${INSTALL_BIN_PATH}")
