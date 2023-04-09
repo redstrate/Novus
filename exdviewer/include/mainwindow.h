@@ -2,12 +2,12 @@
 
 #include <QMainWindow>
 
-class GameData;
+struct GameData;
 
 class MainWindow : public QMainWindow {
 public:
-    MainWindow(GameData& data);
+    MainWindow(GameData* data);
 
 private:
-    GameData& data;
+    GameData* data = nullptr;
 };

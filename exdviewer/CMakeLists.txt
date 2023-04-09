@@ -4,7 +4,7 @@ add_executable(exdviewer
 target_include_directories(exdviewer
         PUBLIC
         include)
-target_link_libraries(exdviewer PUBLIC libxiv ${LIBRARIES} Qt5::Core Qt5::Widgets)
+target_link_libraries(exdviewer PUBLIC physis z ${LIBRARIES} Qt5::Core Qt5::Widgets exdpart)
 
 install(TARGETS exdviewer
         DESTINATION "${INSTALL_BIN_PATH}")
