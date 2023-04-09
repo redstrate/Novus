@@ -4,7 +4,10 @@ add_executable(mdlviewer
         src/main.cpp
         src/mainwindow.cpp
         src/vec3edit.cpp
-        include/vec3edit.h)
+        include/vec3edit.h
+        src/gearview.cpp
+        src/singlegearview.cpp
+        src/fullmodelviewer.cpp)
 target_include_directories(mdlviewer
         PUBLIC
         include)
@@ -15,7 +18,8 @@ target_link_libraries(mdlviewer PUBLIC
         renderer
         assimp::assimp
         magic_enum
-        physis z)
+        physis z
+        mdlpart)
 
 install(TARGETS mdlviewer
         DESTINATION "${INSTALL_BIN_PATH}")
