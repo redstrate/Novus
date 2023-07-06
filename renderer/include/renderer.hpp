@@ -113,4 +113,6 @@ public:
     VkDescriptorSet createDescriptorFor(const RenderModel& model, const RenderMaterial& material);
 
     int hash(const RenderModel& model, const RenderMaterial& material);
+
+    glm::mat4 view;
 };
