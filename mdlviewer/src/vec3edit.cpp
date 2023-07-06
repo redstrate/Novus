@@ -39,20 +39,15 @@ Vector3Edit::Vector3Edit(glm::vec3& vec, QWidget* parent) : QWidget(parent), vec
         vec.z = d;
         emit onValueChanged();
     });
-
-    // TODO: find a better way to do this
-    updateTimer = new QTimer();
-    connect(updateTimer, &QTimer::timeout, [this, &vec]() {
-        if (vec.x != spinBoxes.x->value() || vec.y != spinBoxes.y->value() || vec.z != spinBoxes.z->value()) {
-            spinBoxes.x->setValue(vec.x);
-            spinBoxes.y->setValue(vec.y);
-            spinBoxes.z->setValue(vec.z);
-        }
-    });
-
-    updateTimer->start(1);
 }
 
 Vector3Edit::~Vector3Edit() {
     updateTimer->stop();
+}
+
+void Vector3Edit::setVector(glm::vec3 &vec) {
+    this->vec = vec;
+    spinBoxes.x->setValue(vec.x);
+    spinBoxes.y->setValue(vec.y);
+    spinBoxes.z->setValue(vec.z);
 }

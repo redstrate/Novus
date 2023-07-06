@@ -10,6 +10,8 @@ public:
     explicit Vector3Edit(glm::vec3& vec, QWidget* parent = nullptr);
     ~Vector3Edit();
 
+    void setVector(glm::vec3& vec);
+
 signals:
     void onValueChanged();
 

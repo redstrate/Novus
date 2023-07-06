@@ -7,7 +7,10 @@ add_executable(mdlviewer
         include/vec3edit.h
         src/gearview.cpp
         src/singlegearview.cpp
-        src/fullmodelviewer.cpp)
+        src/fullmodelviewer.cpp
+        src/quaternionedit.cpp
+        src/boneeditor.cpp
+        src/cmpeditor.cpp)
 target_include_directories(mdlviewer
         PUBLIC
         include)
