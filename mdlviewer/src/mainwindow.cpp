@@ -15,21 +15,7 @@
 #include <QTreeWidget>
 #include <physis.hpp>
 
-void addItem(physis_Skeleton& skeleton, physis_Bone& bone, QTreeWidget* widget, QTreeWidgetItem* parent_item = nullptr) {
-    auto item = new QTreeWidgetItem();
-    item->setText(0, bone.name);
-
-    if(parent_item == nullptr) {
-        widget->addTopLevelItem(item);
-    } else {
-        parent_item->addChild(item);
-    }
-
-    for(int i = 0; i < skeleton.num_bones; i++) {
-        if(skeleton.bones[i].parent_bone != nullptr && strcmp(skeleton.bones[i].parent_bone->name, bone.name) == 0)
-            addItem(skeleton, skeleton.bones[i], widget, item);
-    }
-}
+#include "cmpeditor.h"
 
 MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     setWindowTitle("mdlviewer");
@@ -51,6 +37,14 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
 
         reloadGearAppearance();
     });*/
+
+    auto toolsMenu = menuBar()->addMenu("Tools");
+
+    auto cmpEditorMenu = toolsMenu->addAction("CMP Editor");
+    connect(cmpEditorMenu, &QAction::triggered, [=] {
+        auto cmpEditor = new CmpEditor(in_data);
+        cmpEditor->show();
+    });
 
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
@@ -77,7 +71,7 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     }
 
     auto exh = physis_gamedata_read_excel_sheet_header(&data, "Item");
-    auto exd = physis_gamedata_read_excel_sheet(&data, "Item", &exh, Language::English, 1);
+    auto exd = physis_gamedata_read_excel_sheet(&data, "Item", exh, Language::English, 1);
 
     for(int i = 0; i < exd.row_count; i++) {
         const auto row = exd.row_data[i];
@@ -117,34 +111,6 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
             }
         }
     });
-
-    // TODO: reintroduce into SingleGearView
-    /*auto boneListWidget = new QTreeWidget();
-    for(auto& bone : extraBone) {
-        bone.inversePose = glm::inverse(bone.inversePose);
-    }
-
-    addItem(skeleton, *skeleton.root_bone, boneListWidget);
-
-    boneListWidget->setMaximumWidth(200);
-
-    connect(boneListWidget, &QTreeWidget::itemClicked, [this](QTreeWidgetItem* item, int column) {
-        for(int i = 0; i < skeleton.num_bones; i++) {
-            if(strcmp(skeleton.bones[i].name, item->text(column).toStdString().c_str()) == 0) {
-                currentScale = glm::make_vec3(skeleton.bones[i].scale);
-                currentEditedBone = &skeleton.bones[i];
-            }
-        }
-    });
-
-    layout->addWidget(boneListWidget);
-
-    Vector3Edit* scaleEdit = new Vector3Edit(currentScale);
-    connect(scaleEdit, &Vector3Edit::onValueChanged, [this] {
-        memcpy(currentEditedBone->scale, glm::value_ptr(currentScale), sizeof(float) * 3);
-        reloadGearAppearance();
-    });
-    layout->addWidget(scaleEdit);*/
 
     fullModelViewer = new FullModelViewer(&data);
     fullModelViewer->show();
