@@ -1,6 +1,7 @@
 #include "fullmodelviewer.h"
 
 #include "magic_enum.hpp"
+#include "boneeditor.h"
 #include <QVBoxLayout>
 
 FullModelViewer::FullModelViewer(GameData *data) : data(data) {
@@ -12,7 +13,11 @@ FullModelViewer::FullModelViewer(GameData *data) : data(data) {
     setLayout(layout);
 
     gearView = new GearView(data);
-    layout->addWidget(gearView);
+
+    auto viewportLayout = new QHBoxLayout();
+    viewportLayout->addWidget(gearView, 1);
+    viewportLayout->addWidget(new BoneEditor(gearView));
+    layout->addLayout(viewportLayout);
 
     auto controlLayout = new QHBoxLayout();
     layout->addLayout(controlLayout);
