@@ -703,21 +703,20 @@ void Renderer::initPipeline() {
 
     VkVertexInputAttributeDescription positionAttribute = {};
     positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
-    positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
     positionAttribute.offset = offsetof(Vertex, position);
-
-    VkVertexInputAttributeDescription normalAttribute = {};
-    normalAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
-    normalAttribute.location = 1;
-    normalAttribute.offset = offsetof(Vertex, normal);
 
     VkVertexInputAttributeDescription uvAttribute = {};
     uvAttribute.format = VK_FORMAT_R32G32_SFLOAT;
     uvAttribute.location = 2;
     uvAttribute.offset = offsetof(Vertex, uv);
 
+    VkVertexInputAttributeDescription normalAttribute = {};
+    normalAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+    normalAttribute.location = 1;
+    normalAttribute.offset = offsetof(Vertex, normal);
+
     VkVertexInputAttributeDescription boneWeightAttribute = {};
-    boneWeightAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+    boneWeightAttribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
     boneWeightAttribute.location = 3;
     boneWeightAttribute.offset = offsetof(Vertex, bone_weight);
 
