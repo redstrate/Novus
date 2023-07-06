@@ -13,10 +13,28 @@ class StandaloneWindow;
 
 class MDLPart : public QWidget {
     Q_OBJECT
+
 public:
     explicit MDLPart(GameData* data);
 
     void exportModel(const QString& fileName);
+
+    int lastX = -1;
+    int lastY = -1;
+
+    enum class CameraMode {
+        None,
+        Orbit,
+        Move
+    };
+
+    CameraMode cameraMode = CameraMode::None;
+    float pitch = 0.0f;
+    float yaw = 0.0f;
+    float cameraDistance = 5.0f;
+    glm::vec3 position {0, 0, 0};
+
+    std::unique_ptr<physis_Skeleton> skeleton;
 
 Q_SIGNALS:
     void modelChanged();
@@ -35,9 +53,8 @@ public Q_SLOTS:
     /// Clears the current skeleton.
     void clearSkeleton();
 
-private Q_SLOTS:
-    void reloadRenderer();
     void reloadBoneData();
+    void reloadRenderer();
 
 private:
     RenderMaterial createMaterial(const physis_Material& mat);
@@ -48,7 +65,6 @@ private:
     GameData* data = nullptr;
 
     std::vector<RenderModel> models;
-    std::optional<physis_Skeleton> skeleton;
 
     struct BoneData {
         glm::mat4 localTransform, finalTransform, inversePose;
@@ -59,4 +75,5 @@ private:
     Renderer* renderer;
     VulkanWindow* vkWindow;
     StandaloneWindow* standaloneWindow;
+    bool firstTimeSkeletonDataCalculated = false;
 };

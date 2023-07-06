@@ -18,7 +18,7 @@
 class VulkanWindow : public QWindow
 {
 public:
-    VulkanWindow(Renderer* renderer, QVulkanInstance* instance) : m_renderer(renderer), m_instance(instance) {
+    VulkanWindow(MDLPart* part, Renderer* renderer, QVulkanInstance* instance) : part(part), m_renderer(renderer), m_instance(instance) {
         setSurfaceType(VulkanSurface);
         setVulkanInstance(instance);
     }
@@ -38,19 +38,89 @@ public:
     }
 
     bool event(QEvent *e) {
-        if (e->type() == QEvent::UpdateRequest)
+        switch(e->type()) {
+        case QEvent::UpdateRequest:
             render();
-
-        if (e->type() == QEvent::Resize) {
+            break;
+        case QEvent::Resize: {
             QResizeEvent* resizeEvent = (QResizeEvent*)e;
             auto surface = m_instance->surfaceForWindow(this);
             m_renderer->resize(surface, resizeEvent->size().width(), resizeEvent->size().height());
+        } break;
+        case QEvent::MouseButtonPress: {
+            auto mouseEvent = dynamic_cast<QMouseEvent*>(e);
+
+            if (mouseEvent->button() == Qt::MouseButton::LeftButton) {
+                part->lastX = mouseEvent->x();
+                part->lastY = mouseEvent->y();
+                part->cameraMode = MDLPart::CameraMode::Orbit;
+
+                setKeyboardGrabEnabled(true);
+                setMouseGrabEnabled(true);
+            } else if (mouseEvent->button() == Qt::MouseButton::RightButton) {
+                part->lastX = mouseEvent->x();
+                part->lastY = mouseEvent->y();
+                part->cameraMode = MDLPart::CameraMode::Move;
+
+                setKeyboardGrabEnabled(true);
+                setMouseGrabEnabled(true);
+            }
+        } break;
+        case QEvent::MouseButtonRelease: {
+            part->cameraMode = MDLPart::CameraMode::None;
+
+            setKeyboardGrabEnabled(false);
+            setMouseGrabEnabled(false);
+        } break;
+        case QEvent::MouseMove: {
+            auto mouseEvent = dynamic_cast<QMouseEvent*>(e);
+            if (part->cameraMode != MDLPart::CameraMode::None) {
+                const int deltaX = mouseEvent->x() - part->lastX;
+                const int deltaY = mouseEvent->y() - part->lastY;
+
+                if (part->cameraMode == MDLPart::CameraMode::Orbit) {
+                    part->yaw += deltaX * 0.01f; // TODO: remove these magic numbers
+                    part->pitch += deltaY * 0.01f;
+                } else {
+                    glm::vec3 position(
+                            part->cameraDistance * sin(part->yaw),
+                            part->cameraDistance * part->pitch,
+                            part->cameraDistance * cos(part->yaw));
+
+                    glm::quat rot = glm::quatLookAt((part->position + position) - part->position, {0, 1, 0});
+
+                    glm::vec3 up, right;
+                    up = rot * glm::vec3{0, 1, 0};
+                    right = rot * glm::vec3{1, 0, 0};
+
+                    part->position += up * (float)deltaY * 0.01f;
+                    part->position += right * (float)deltaX * 0.01f;
+                }
+
+                part->lastX = mouseEvent->x();
+                part->lastY = mouseEvent->y();
+            }
+        } break;
+        case QEvent::Wheel:
+        {
+            auto scrollEvent = dynamic_cast<QWheelEvent*>(e);
+
+            part->cameraDistance -= scrollEvent->angleDelta().y() / 120.0f; // FIXME: why 120?
+        }
+            break;
         }
 
         return QWindow::event(e);
     }
 
     void render() {
+        glm::vec3 position(
+                    part->cameraDistance * sin(part->yaw),
+                    part->cameraDistance * part->pitch,
+                    part->cameraDistance * cos(part->yaw));
+
+        m_renderer->view = glm::lookAt(part->position + position, part->position, glm::vec3(0, -1, 0));
+
         m_renderer->render(models);
         m_instance->presentQueued(this);
         requestUpdate();
@@ -62,6 +132,7 @@ private:
     bool m_initialized = false;
     Renderer* m_renderer;
     QVulkanInstance* m_instance;
+    MDLPart* part;
 };
 #else
 #include "standalonewindow.h"
@@ -81,7 +152,7 @@ MDLPart::MDLPart(GameData *data) : data(data) {
     inst->setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
     inst->create();
 
-    vkWindow = new VulkanWindow(renderer, inst);
+    vkWindow = new VulkanWindow(this, renderer, inst);
     vkWindow->setVulkanInstance(inst);
 
     auto widget = QWidget::createWindowContainer(vkWindow);
@@ -268,7 +339,9 @@ void MDLPart::addModel(physis_MDL mdl, std::vector<physis_Material> materials, i
 }
 
 void MDLPart::setSkeleton(physis_Skeleton newSkeleton) {
-    skeleton = newSkeleton;
+    skeleton = std::make_unique<physis_Skeleton>(newSkeleton);
+
+    firstTimeSkeletonDataCalculated = false;
 
     Q_EMIT skeletonChanged();
 }
@@ -276,12 +349,12 @@ void MDLPart::setSkeleton(physis_Skeleton newSkeleton) {
 void MDLPart::clearSkeleton() {
     skeleton.reset();
 
+    firstTimeSkeletonDataCalculated = false;
+
     Q_EMIT skeletonChanged();
 }
 
 void MDLPart::reloadRenderer() {
-    qDebug() << "Reloading render models...";
-
     reloadBoneData();
 
 #ifndef USE_STANDALONE_WINDOW
@@ -292,13 +365,16 @@ void MDLPart::reloadRenderer() {
 }
 
 void MDLPart::reloadBoneData() {
-    if(skeleton.has_value()) {
+    if(skeleton) {
         // first-time data, TODO split out
-        boneData.resize(skeleton->num_bones);
-        calculateBoneInversePose(*skeleton, *skeleton->root_bone, nullptr);
+        if (!firstTimeSkeletonDataCalculated) {
+            boneData.resize(skeleton->num_bones);
+            calculateBoneInversePose(*skeleton, *skeleton->root_bone, nullptr);
 
-        for(auto& bone : boneData) {
-            bone.inversePose = glm::inverse(bone.inversePose);
+            for (auto &bone: boneData) {
+                bone.inversePose = glm::inverse(bone.inversePose);
+            }
+            firstTimeSkeletonDataCalculated = true;
         }
 
         // update data
@@ -309,8 +385,9 @@ void MDLPart::reloadBoneData() {
             std::map<int, int> boneMapping;
             for (int i = 0; i < model.model.num_affected_bones; i++) {
                 for (int k = 0; k < skeleton->num_bones; k++) {
-                    if (strcmp(skeleton->bones[k].name, model.model.affected_bone_names[i]) == 0)
+                    if (std::string_view{skeleton->bones[k].name} == std::string_view{model.model.affected_bone_names[i]}) {
                         boneMapping[i] = k;
+                    }
                 }
             }
 
@@ -381,7 +458,7 @@ void MDLPart::calculateBoneInversePose(physis_Skeleton& skeleton, physis_Bone& b
     boneData[bone.index].inversePose = parentMatrix * local;
 
     for(int i = 0; i < skeleton.num_bones; i++) {
-        if(skeleton.bones[i].parent_bone != nullptr && strcmp(skeleton.bones[i].parent_bone->name, bone.name) == 0) {
+        if(skeleton.bones[i].parent_bone != nullptr && std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {
             calculateBoneInversePose(skeleton, skeleton.bones[i], &bone);
         }
     }
@@ -399,7 +476,7 @@ void MDLPart::calculateBone(physis_Skeleton& skeleton, physis_Bone& bone, const 
     boneData[bone.index].finalTransform = boneData[bone.index].localTransform * boneData[bone.index].inversePose;
 
     for(int i = 0; i < skeleton.num_bones; i++) {
-        if(skeleton.bones[i].parent_bone != nullptr && strcmp(skeleton.bones[i].parent_bone->name, bone.name) == 0) {
+        if(skeleton.bones[i].parent_bone != nullptr && std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {
             calculateBone(skeleton, skeleton.bones[i], &bone);
         }
     }
