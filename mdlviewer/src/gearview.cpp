@@ -139,6 +139,12 @@ void GearView::reloadModel() {
             mdlPart->addModel(mdl, materials, currentLod);
         }
     }
+
+    Q_EMIT modelReloaded();
+}
+
+MDLPart &GearView::part() const {
+    return *mdlPart;
 }
 
 #include "moc_gearview.cpp"

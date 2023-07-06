@@ -43,8 +43,11 @@ public:
 
     void exportModel(const QString& fileName);
 
+    MDLPart& part() const;
+
 Q_SIGNALS:
     void gearChanged();
+    void modelReloaded();
 
     void raceChanged();
     void genderChanged();
@@ -58,7 +61,6 @@ public Q_SLOTS:
     void setGender(Gender gender);
     void setLevelOfDetail(int lod);
 
-private Q_SLOTS:
     void reloadModel();
 
 private:
