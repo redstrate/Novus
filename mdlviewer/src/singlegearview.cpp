@@ -17,21 +17,33 @@ SingleGearView::SingleGearView(GameData* data) : data(data) {
     layout->addLayout(controlLayout);
 
     raceCombo = new QComboBox();
-    connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        if(loadingComboData)
-            return;
+    connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged),
+            [this](int index) {
+              if (loadingComboData)
+                return;
 
-        setRace((Race)index);
-    });
+              setRace((Race)index);
+            });
     controlLayout->addWidget(raceCombo);
 
-    genderCombo = new QComboBox();
-    connect(genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        if(loadingComboData)
-            return;
+    subraceCombo = new QComboBox();
+    connect(subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged),
+            [this](int index) {
+              if (loadingComboData)
+                return;
 
-        setGender((Gender)index);
-    });
+              setSubrace((Subrace)index);
+            });
+    controlLayout->addWidget(subraceCombo);
+
+    genderCombo = new QComboBox();
+    connect(genderCombo, qOverload<int>(&QComboBox::currentIndexChanged),
+            [this](int index) {
+              if (loadingComboData)
+                return;
+
+              setGender((Gender)index);
+            });
     controlLayout->addWidget(genderCombo);
 
     lodCombo = new QComboBox();
@@ -89,16 +101,25 @@ void SingleGearView::setGear(GearInfo &info) {
 
 void SingleGearView::setRace(Race race) {
     if (currentRace == race) {
-        return;
+      return;
     }
 
     currentRace = race;
     Q_EMIT raceChanged();
 }
 
+void SingleGearView::setSubrace(Subrace subrace) {
+    if (currentSubrace == subrace) {
+      return;
+    }
+
+    currentSubrace = subrace;
+    Q_EMIT subraceChanged();
+}
+
 void SingleGearView::setGender(Gender gender) {
     if (currentGender == gender) {
-        return;
+      return;
     }
 
     currentGender = gender;
@@ -129,13 +150,15 @@ void SingleGearView::reloadGear() {
         loadingComboData = true;
 
         raceCombo->clear();
-        for(auto race : gearView->supportedRaces()) {
-            raceCombo->addItem(magic_enum::enum_name(race).data());
+        subraceCombo->clear();
+        for (auto [race, subrace] : gearView->supportedRaces()) {
+          raceCombo->addItem(magic_enum::enum_name(race).data());
+          subraceCombo->addItem(magic_enum::enum_name(subrace).data());
         }
 
         genderCombo->clear();
-        for(auto gender : gearView->supportedGenders()) {
-            genderCombo->addItem(magic_enum::enum_name(gender).data());
+        for (auto gender : gearView->supportedGenders()) {
+          genderCombo->addItem(magic_enum::enum_name(gender).data());
         }
 
         lodCombo->clear();

@@ -15,6 +15,7 @@ Q_SIGNALS:
     void gearChanged();
 
     void raceChanged();
+    void subraceChanged();
     void genderChanged();
     void levelOfDetailChanged();
 
@@ -25,6 +26,7 @@ public Q_SLOTS:
     void setGear(GearInfo& info);
 
     void setRace(Race race);
+    void setSubrace(Subrace subrace);
     void setGender(Gender gender);
     void setLevelOfDetail(int lod);
 
@@ -35,12 +37,13 @@ private:
     std::optional<GearInfo> currentGear;
 
     Race currentRace = Race::Hyur;
+    Subrace currentSubrace = Subrace::Midlander;
     Gender currentGender = Gender::Female;
     int currentLod = 0;
 
-    GearView* gearView = nullptr;
-    QComboBox* raceCombo, *genderCombo, *lodCombo;
-    QPushButton* addToFMVButton, *exportButton;
+    GearView *gearView = nullptr;
+    QComboBox *raceCombo, *subraceCombo, *genderCombo, *lodCombo;
+    QPushButton *addToFMVButton, *exportButton;
 
     bool loadingComboData = false;
 
