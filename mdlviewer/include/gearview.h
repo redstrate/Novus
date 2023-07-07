@@ -33,7 +33,7 @@ public:
     explicit GearView(GameData* data);
 
     /// Returns an inclusive list of races supported by the current gearset.
-    std::vector<Race> supportedRaces() const;
+    std::vector<std::pair<Race, Subrace>> supportedRaces() const;
 
     /// Returns an inclusive list of genders supported by the current gearset.
     std::vector<Gender> supportedGenders() const;
@@ -41,31 +41,36 @@ public:
     /// Returns an inclusive list of LoDs supported by the current gearset.
     int lodCount() const;
 
-    void exportModel(const QString& fileName);
+    void exportModel(const QString &fileName);
 
-    MDLPart& part() const;
+    MDLPart &part() const;
 
-Q_SIGNALS:
+    Race currentRace = Race::Hyur;
+    Subrace currentSubrace = Subrace::Midlander;
+    Gender currentGender = Gender::Male;
+
+  Q_SIGNALS:
     void gearChanged();
     void modelReloaded();
 
     void raceChanged();
+    void subraceChanged();
     void genderChanged();
     void levelOfDetailChanged();
 
-public Q_SLOTS:
+  public Q_SLOTS:
     void clear();
     void addGear(GearInfo& gear);
 
     void setRace(Race race);
+    void setSubrace(Subrace subrace);
     void setGender(Gender gender);
     void setLevelOfDetail(int lod);
 
     void reloadModel();
+    void reloadRaceDeforms();
 
-private:
-    Race currentRace = Race::Hyur;
-    Gender currentGender = Gender::Female;
+  private:
     int currentLod = 0;
 
     uint32_t maxLod = 0;

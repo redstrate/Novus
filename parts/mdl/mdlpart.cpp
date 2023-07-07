@@ -1,40 +1,43 @@
 #include "mdlpart.h"
 #include "glm/gtx/transform.hpp"
 
-#include <QWindow>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QResizeEvent>
+#include <QVBoxLayout>
 #include <QVulkanInstance>
 #include <QVulkanWindow>
-#include <QResizeEvent>
+#include <QWindow>
+#include <assimp/Exporter.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
 #include <fmt/core.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <assimp/Exporter.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <QVBoxLayout>
 #include <glm/gtc/type_ptr.inl>
 
 #ifndef USE_STANDALONE_WINDOW
-class VulkanWindow : public QWindow
-{
+class VulkanWindow : public QWindow {
 public:
-    VulkanWindow(MDLPart* part, Renderer* renderer, QVulkanInstance* instance) : part(part), m_renderer(renderer), m_instance(instance) {
-        setSurfaceType(VulkanSurface);
-        setVulkanInstance(instance);
+  VulkanWindow(MDLPart *part, Renderer *renderer, QVulkanInstance *instance)
+      : part(part), m_renderer(renderer), m_instance(instance) {
+    setSurfaceType(VulkanSurface);
+    setVulkanInstance(instance);
+  }
+
+  void exposeEvent(QExposeEvent *) {
+    if (isExposed()) {
+      if (!m_initialized) {
+        m_initialized = true;
+
+        auto surface = m_instance->surfaceForWindow(this);
+        if (!m_renderer->initSwapchain(surface, width(), height()))
+          m_initialized = false;
+        else
+          render();
+      }
     }
-
-    void exposeEvent(QExposeEvent *) {
-        if (isExposed()) {
-            if (!m_initialized) {
-                m_initialized = true;
-
-                auto surface = m_instance->surfaceForWindow(this);
-                if(!m_renderer->initSwapchain(surface, width(), height()))
-                    m_initialized = false;
-                else
-                    render();
-            }
-        }
     }
 
     bool event(QEvent *e) {
@@ -346,6 +349,32 @@ void MDLPart::setSkeleton(physis_Skeleton newSkeleton) {
     Q_EMIT skeletonChanged();
 }
 
+void MDLPart::loadRaceDeformMatrices(physis_Buffer buffer) {
+    QJsonDocument document = QJsonDocument::fromJson(
+        QByteArray((const char *)buffer.data, buffer.size));
+    for (auto boneObj : document.object()["Data"].toArray()) {
+        QJsonArray matrix = boneObj.toObject()["Matrix"].toArray();
+        QString boneName = boneObj.toObject()["Name"].toString();
+
+        glm::mat4 actualMatrix;
+        int i = 0;
+        for (auto val : matrix) {
+            glm::value_ptr(actualMatrix)[i++] = val.toDouble();
+        }
+
+        for (int i = 0; i < skeleton->num_bones; i++) {
+            if (std::string_view{skeleton->bones[i].name} ==
+                boneName.toStdString()) {
+                auto &data = boneData[i];
+
+                data.deformRaceMatrix = actualMatrix;
+            }
+        }
+
+        firstTimeSkeletonDataCalculated = false;
+    }
+}
+
 void MDLPart::clearSkeleton() {
     skeleton.reset();
 
@@ -366,12 +395,14 @@ void MDLPart::reloadRenderer() {
 
 void MDLPart::reloadBoneData() {
     if(skeleton) {
-        // first-time data, TODO split out
         if (!firstTimeSkeletonDataCalculated) {
-            boneData.resize(skeleton->num_bones);
+            if (boneData.empty()) {
+                boneData.resize(skeleton->num_bones);
+            }
+
             calculateBoneInversePose(*skeleton, *skeleton->root_bone, nullptr);
 
-            for (auto &bone: boneData) {
+            for (auto &bone : boneData) {
                 bone.inversePose = glm::inverse(bone.inversePose);
             }
             firstTimeSkeletonDataCalculated = true;
@@ -450,7 +481,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material) {
 void MDLPart::calculateBoneInversePose(physis_Skeleton& skeleton, physis_Bone& bone, physis_Bone* parent_bone) {
     const glm::mat4 parentMatrix = parent_bone == nullptr ? glm::mat4(1.0f) : boneData[parent_bone->index].inversePose;
 
-    glm::mat4 local(1.0f);
+    glm::mat4 local = glm::mat4(1.0f);
     local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
     local *= glm::mat4_cast(glm::quat(bone.rotation[3], bone.rotation[0], bone.rotation[1], bone.rotation[2]));
     local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
@@ -465,18 +496,28 @@ void MDLPart::calculateBoneInversePose(physis_Skeleton& skeleton, physis_Bone& b
 }
 
 void MDLPart::calculateBone(physis_Skeleton& skeleton, physis_Bone& bone, const physis_Bone* parent_bone) {
-    const glm::mat4 parent_matrix = parent_bone == nullptr ? glm::mat4(1.0f) : boneData[parent_bone->index].localTransform;
+    const glm::mat4 parent_matrix =
+        parent_bone == nullptr ? glm::mat4(1.0f)
+                               : boneData[parent_bone->index].localTransform;
 
     glm::mat4 local = glm::mat4(1.0f);
-    local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
-    local *= glm::mat4_cast(glm::quat(bone.rotation[3], bone.rotation[0], bone.rotation[1], bone.rotation[2]));
-    local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
+    local = glm::translate(
+        local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
+    local *= glm::mat4_cast(glm::quat(bone.rotation[3], bone.rotation[0],
+                                      bone.rotation[1], bone.rotation[2]));
+    local = glm::scale(local,
+                       glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
 
     boneData[bone.index].localTransform = parent_matrix * local;
-    boneData[bone.index].finalTransform = boneData[bone.index].localTransform * boneData[bone.index].inversePose;
+    boneData[bone.index].finalTransform =
+        boneData[bone.index].localTransform *
+        boneData[bone.index].deformRaceMatrix *
+        boneData[bone.index].inversePose;
 
-    for(int i = 0; i < skeleton.num_bones; i++) {
-        if(skeleton.bones[i].parent_bone != nullptr && std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {
+    for (int i = 0; i < skeleton.num_bones; i++) {
+        if (skeleton.bones[i].parent_bone != nullptr &&
+            std::string_view{skeleton.bones[i].parent_bone->name} ==
+                std::string_view{bone.name}) {
             calculateBone(skeleton, skeleton.bones[i], &bone);
         }
     }
