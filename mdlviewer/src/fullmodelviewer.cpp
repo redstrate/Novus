@@ -56,23 +56,33 @@ FullModelViewer::FullModelViewer(GameData* data) : data(data) {
     layout->addLayout(controlLayout);
 
     raceCombo = new QComboBox();
-    connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        gearView->setRace((Race)index);
-    });
     controlLayout->addWidget(raceCombo);
 
     for (auto [race, race_name] : magic_enum::enum_entries<Race>()) {
-        raceCombo->addItem(race_name.data());
+        raceCombo->addItem(race_name.data(), (int)race);
     }
+
+    subraceCombo = new QComboBox();
+    connect(subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        gearView->setSubrace((Subrace)subraceCombo->itemData(index).toInt());
+    });
+    controlLayout->addWidget(subraceCombo);
+
+    connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        gearView->setRace((Race)raceCombo->itemData(index).toInt());
+
+        updateSupportedSubraces();
+    });
+    updateSupportedSubraces();
 
     genderCombo = new QComboBox();
     connect(genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        gearView->setGender((Gender)index);
+        gearView->setGender((Gender)genderCombo->itemData(index).toInt());
     });
     controlLayout->addWidget(genderCombo);
 
     for (auto [gender, gender_name] : magic_enum::enum_entries<Gender>()) {
-        genderCombo->addItem(gender_name.data());
+        genderCombo->addItem(gender_name.data(), (int)gender);
     }
 
     connect(this, &FullModelViewer::gearChanged, this, &FullModelViewer::reloadGear);
@@ -180,6 +190,13 @@ void FullModelViewer::updateBustScaling(float scale) {
 void FullModelViewer::updateCharacterParameters() {
     updateHeightScaling(heightScale);
     updateBustScaling(bustScale);
+}
+
+void FullModelViewer::updateSupportedSubraces() {
+    subraceCombo->clear();
+    for (auto subrace : physis_get_supported_subraces(gearView->currentRace).subraces) {
+        subraceCombo->addItem(magic_enum::enum_name(subrace).data(), (int)subrace);
+    }
 }
 
 #include "moc_fullmodelviewer.cpp"

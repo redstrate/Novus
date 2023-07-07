@@ -16,8 +16,11 @@ GearView::GearView(GameData* data) : data(data) {
     connect(this, &GearView::gearChanged, this, [=] {
         reloadModel();
     });
-
     connect(this, &GearView::raceChanged, this, [=] {
+        reloadRaceDeforms();
+        reloadModel();
+    });
+    connect(this, &GearView::subraceChanged, this, [=] {
         reloadRaceDeforms();
         reloadModel();
     });

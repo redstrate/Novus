@@ -25,6 +25,7 @@ private:
     void updateHeightScaling(float scale);
     void updateBustScaling(float scale);
     void updateCharacterParameters();
+    void updateSupportedSubraces();
 
     std::optional<GearInfo> topSlot;
     std::optional<GearInfo> bottomSlot;

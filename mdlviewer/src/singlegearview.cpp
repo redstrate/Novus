@@ -21,7 +21,7 @@ SingleGearView::SingleGearView(GameData* data) : data(data) {
         if (loadingComboData)
             return;
 
-        setRace((Race)index);
+        setRace((Race)raceCombo->itemData(index).toInt());
     });
     controlLayout->addWidget(raceCombo);
 
@@ -30,7 +30,7 @@ SingleGearView::SingleGearView(GameData* data) : data(data) {
         if (loadingComboData)
             return;
 
-        setSubrace((Subrace)index);
+        setSubrace((Subrace)raceCombo->itemData(index).toInt());
     });
     controlLayout->addWidget(subraceCombo);
 
@@ -39,7 +39,7 @@ SingleGearView::SingleGearView(GameData* data) : data(data) {
         if (loadingComboData)
             return;
 
-        setGender((Gender)index);
+        setGender((Gender)genderCombo->itemData(index).toInt());
     });
     controlLayout->addWidget(genderCombo);
 
@@ -71,6 +71,9 @@ SingleGearView::SingleGearView(GameData* data) : data(data) {
     connect(this, &SingleGearView::gearChanged, this, &SingleGearView::reloadGear);
     connect(this, &SingleGearView::raceChanged, this, [=] {
         gearView->setRace(currentRace);
+    });
+    connect(this, &SingleGearView::subraceChanged, this, [=] {
+        gearView->setSubrace(currentSubrace);
     });
     connect(this, &SingleGearView::genderChanged, this, [=] {
         gearView->setGender(currentGender);
@@ -134,6 +137,7 @@ void SingleGearView::reloadGear() {
     gearView->clear();
 
     raceCombo->setEnabled(currentGear.has_value());
+    subraceCombo->setEnabled(currentGear.has_value());
     genderCombo->setEnabled(currentGear.has_value());
     lodCombo->setEnabled(currentGear.has_value());
     addToFMVButton->setEnabled(currentGear.has_value());
@@ -147,13 +151,13 @@ void SingleGearView::reloadGear() {
         raceCombo->clear();
         subraceCombo->clear();
         for (auto [race, subrace] : gearView->supportedRaces()) {
-            raceCombo->addItem(magic_enum::enum_name(race).data());
-            subraceCombo->addItem(magic_enum::enum_name(subrace).data());
+            raceCombo->addItem(magic_enum::enum_name(race).data(), (int)race);
+            subraceCombo->addItem(magic_enum::enum_name(subrace).data(), (int)subrace);
         }
 
         genderCombo->clear();
         for (auto gender : gearView->supportedGenders()) {
-            genderCombo->addItem(magic_enum::enum_name(gender).data());
+            genderCombo->addItem(magic_enum::enum_name(gender).data(), (int)gender);
         }
 
         lodCombo->clear();
