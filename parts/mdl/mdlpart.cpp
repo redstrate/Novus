@@ -282,7 +282,7 @@ void MDLPart::exportModel(const QString &fileName) {
             mesh->mBones[j]->mName = models[0].model.affected_bone_names[j];
             mesh->mBones[j]->mNumWeights = mesh->mNumVertices * 4;
             mesh->mBones[j]->mWeights = new aiVertexWeight[mesh->mBones[j]->mNumWeights];
-            mesh->mBones[j]->mNode = skeleton_node->mChildren[j];
+            // mesh->mBones[j]->mNode = skeleton_node->mChildren[j];
 
             for(int k = 0; k < mesh->mNumVertices; k++) {
                 for(int z = 0; z < 4; z++) {
