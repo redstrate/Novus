@@ -7,39 +7,40 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-#include "vec3edit.h"
-#include "quaternionedit.h"
 #include "gearview.h"
+#include "quaternionedit.h"
+#include "vec3edit.h"
 
-void addItem(physis_Skeleton& skeleton, physis_Bone& bone, QTreeWidget* widget, QTreeWidgetItem* parent_item = nullptr) {
+void addItem(
+    physis_Skeleton& skeleton,
+    physis_Bone& bone,
+    QTreeWidget* widget,
+    QTreeWidgetItem* parent_item = nullptr) {
     auto item = new QTreeWidgetItem();
     item->setText(0, bone.name);
 
-    if(parent_item == nullptr) {
+    if (parent_item == nullptr) {
         widget->addTopLevelItem(item);
     } else {
         parent_item->addChild(item);
     }
 
-    for(int i = 0; i < skeleton.num_bones; i++) {
-        if(skeleton.bones[i].parent_bone != nullptr && strcmp(skeleton.bones[i].parent_bone->name, bone.name) == 0)
+    for (int i = 0; i < skeleton.num_bones; i++) {
+        if (skeleton.bones[i].parent_bone != nullptr && strcmp(skeleton.bones[i].parent_bone->name, bone.name) == 0)
             addItem(skeleton, skeleton.bones[i], widget, item);
     }
 }
 
-BoneEditor::BoneEditor(GearView *gearView, QWidget *parent)
-    : gearView(gearView) {
+BoneEditor::BoneEditor(GearView* gearView, QWidget* parent) : gearView(gearView) {
     auto layout = new QHBoxLayout();
     setLayout(layout);
 
     auto boneListWidget = new QTreeWidget();
 
-    connect(gearView, &GearView::modelReloaded, this,
-            [this, boneListWidget, gearView] {
-              boneListWidget->clear();
-              addItem(*gearView->part().skeleton,
-                      *gearView->part().skeleton->root_bone, boneListWidget);
-            });
+    connect(gearView, &GearView::modelReloaded, this, [this, boneListWidget, gearView] {
+        boneListWidget->clear();
+        addItem(*gearView->part().skeleton, *gearView->part().skeleton->root_bone, boneListWidget);
+    });
 
     boneListWidget->setMaximumWidth(200);
 
@@ -52,30 +53,26 @@ BoneEditor::BoneEditor(GearView *gearView, QWidget *parent)
 
     posEdit = new Vector3Edit(currentPosition);
     connect(posEdit, &Vector3Edit::onValueChanged, [this, gearView] {
-      memcpy(currentEditedBone->position, glm::value_ptr(currentPosition),
-             sizeof(float) * 3);
-      gearView->part().reloadRenderer();
+        memcpy(currentEditedBone->position, glm::value_ptr(currentPosition), sizeof(float) * 3);
+        gearView->part().reloadRenderer();
     });
     transformGroupLayout->addRow("Position", posEdit);
 
     rotationEdit = new QuaternionEdit(currentRotation);
     connect(rotationEdit, &QuaternionEdit::onValueChanged, [this, gearView] {
-      memcpy(currentEditedBone->rotation, glm::value_ptr(currentRotation),
-             sizeof(float) * 4);
-      gearView->part().reloadRenderer();
+        memcpy(currentEditedBone->rotation, glm::value_ptr(currentRotation), sizeof(float) * 4);
+        gearView->part().reloadRenderer();
     });
     transformGroupLayout->addRow("Rotation", rotationEdit);
 
     scaleEdit = new Vector3Edit(currentScale);
     connect(scaleEdit, &Vector3Edit::onValueChanged, [this, gearView] {
-      memcpy(currentEditedBone->scale, glm::value_ptr(currentScale),
-             sizeof(float) * 3);
-      gearView->part().reloadRenderer();
+        memcpy(currentEditedBone->scale, glm::value_ptr(currentScale), sizeof(float) * 3);
+        gearView->part().reloadRenderer();
     });
     transformGroupLayout->addRow("Scale", scaleEdit);
 
-    connect(boneListWidget, &QTreeWidget::itemClicked, this,
-            &BoneEditor::treeItemClicked);
+    connect(boneListWidget, &QTreeWidget::itemClicked, this, &BoneEditor::treeItemClicked);
 
     auto raceDeformGroup = new QGroupBox("Race Deform");
     layout->addWidget(raceDeformGroup);
@@ -92,11 +89,10 @@ BoneEditor::BoneEditor(GearView *gearView, QWidget *parent)
     raceDeformGroupLayout->addRow("Scale", raceDeformScaleEdit);
 }
 
-void BoneEditor::treeItemClicked(QTreeWidgetItem *item, int column) {
-    auto &skeleton = *gearView->part().skeleton;
+void BoneEditor::treeItemClicked(QTreeWidgetItem* item, int column) {
+    auto& skeleton = *gearView->part().skeleton;
     for (int i = 0; i < skeleton.num_bones; i++) {
-        if (strcmp(skeleton.bones[i].name,
-                   item->text(column).toStdString().c_str()) == 0) {
+        if (strcmp(skeleton.bones[i].name, item->text(column).toStdString().c_str()) == 0) {
             currentPosition = glm::make_vec3(skeleton.bones[i].position);
             currentRotation = glm::make_quat(skeleton.bones[i].rotation);
             currentScale = glm::make_vec3(skeleton.bones[i].scale);
@@ -112,8 +108,8 @@ void BoneEditor::treeItemClicked(QTreeWidgetItem *item, int column) {
             glm::vec3 translation;
             glm::vec3 skew;
             glm::vec4 perspective;
-            glm::decompose(gearView->part().boneData[i].deformRaceMatrix, scale,
-                           rotation, translation, skew, perspective);
+            glm::decompose(
+                gearView->part().boneData[i].deformRaceMatrix, scale, rotation, translation, skew, perspective);
 
             currentRacePosition = translation;
             currentRaceRotation = rotation;

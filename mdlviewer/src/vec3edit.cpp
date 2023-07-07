@@ -27,25 +27,34 @@ Vector3Edit::Vector3Edit(glm::vec3& vec, QWidget* parent) : QWidget(parent), vec
     spinBoxes.y->setValue(vec.y);
     spinBoxes.z->setValue(vec.z);
 
-    connect(spinBoxes.x, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
-        vec.x = d;
-        emit onValueChanged();
-    });
-    connect(spinBoxes.y, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
-        vec.y = d;
-        emit onValueChanged();
-    });
-    connect(spinBoxes.z, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
-        vec.z = d;
-        emit onValueChanged();
-    });
+    connect(
+        spinBoxes.x,
+        static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+        [this, &vec](double d) {
+            vec.x = d;
+            emit onValueChanged();
+        });
+    connect(
+        spinBoxes.y,
+        static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+        [this, &vec](double d) {
+            vec.y = d;
+            emit onValueChanged();
+        });
+    connect(
+        spinBoxes.z,
+        static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+        [this, &vec](double d) {
+            vec.z = d;
+            emit onValueChanged();
+        });
 }
 
 Vector3Edit::~Vector3Edit() {
     updateTimer->stop();
 }
 
-void Vector3Edit::setVector(glm::vec3 &vec) {
+void Vector3Edit::setVector(glm::vec3& vec) {
     this->vec = vec;
     spinBoxes.x->setValue(vec.x);
     spinBoxes.y->setValue(vec.y);

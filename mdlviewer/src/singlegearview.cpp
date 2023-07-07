@@ -1,8 +1,8 @@
 #include "singlegearview.h"
 
-#include <QVBoxLayout>
-#include <QPushButton>
 #include <QFileDialog>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 #include "magic_enum.hpp"
 
@@ -17,38 +17,35 @@ SingleGearView::SingleGearView(GameData* data) : data(data) {
     layout->addLayout(controlLayout);
 
     raceCombo = new QComboBox();
-    connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged),
-            [this](int index) {
-              if (loadingComboData)
-                return;
+    connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        if (loadingComboData)
+            return;
 
-              setRace((Race)index);
-            });
+        setRace((Race)index);
+    });
     controlLayout->addWidget(raceCombo);
 
     subraceCombo = new QComboBox();
-    connect(subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged),
-            [this](int index) {
-              if (loadingComboData)
-                return;
+    connect(subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        if (loadingComboData)
+            return;
 
-              setSubrace((Subrace)index);
-            });
+        setSubrace((Subrace)index);
+    });
     controlLayout->addWidget(subraceCombo);
 
     genderCombo = new QComboBox();
-    connect(genderCombo, qOverload<int>(&QComboBox::currentIndexChanged),
-            [this](int index) {
-              if (loadingComboData)
-                return;
+    connect(genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        if (loadingComboData)
+            return;
 
-              setGender((Gender)index);
-            });
+        setGender((Gender)index);
+    });
     controlLayout->addWidget(genderCombo);
 
     lodCombo = new QComboBox();
     connect(lodCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        if(loadingComboData)
+        if (loadingComboData)
             return;
 
         setLevelOfDetail(index);
@@ -57,7 +54,7 @@ SingleGearView::SingleGearView(GameData* data) : data(data) {
 
     addToFMVButton = new QPushButton("Add to FMV");
     connect(addToFMVButton, &QPushButton::clicked, this, [this](bool) {
-        if(currentGear.has_value()) {
+        if (currentGear.has_value()) {
             Q_EMIT addToFullModelViewer(*currentGear);
         }
     });
@@ -65,9 +62,7 @@ SingleGearView::SingleGearView(GameData* data) : data(data) {
 
     exportButton = new QPushButton("Export...");
     connect(exportButton, &QPushButton::clicked, this, [this](bool) {
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Model"),
-                                                        "model.fbx",
-                                                        tr("FBX Files (*.fbx)"));
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Model"), "model.fbx", tr("FBX Files (*.fbx)"));
 
         gearView->exportModel(fileName);
     });
@@ -93,7 +88,7 @@ void SingleGearView::clear() {
     Q_EMIT gearChanged();
 }
 
-void SingleGearView::setGear(GearInfo &info) {
+void SingleGearView::setGear(GearInfo& info) {
     currentGear = info;
 
     Q_EMIT gearChanged();
@@ -101,7 +96,7 @@ void SingleGearView::setGear(GearInfo &info) {
 
 void SingleGearView::setRace(Race race) {
     if (currentRace == race) {
-      return;
+        return;
     }
 
     currentRace = race;
@@ -110,7 +105,7 @@ void SingleGearView::setRace(Race race) {
 
 void SingleGearView::setSubrace(Subrace subrace) {
     if (currentSubrace == subrace) {
-      return;
+        return;
     }
 
     currentSubrace = subrace;
@@ -119,7 +114,7 @@ void SingleGearView::setSubrace(Subrace subrace) {
 
 void SingleGearView::setGender(Gender gender) {
     if (currentGender == gender) {
-      return;
+        return;
     }
 
     currentGender = gender;
@@ -152,17 +147,17 @@ void SingleGearView::reloadGear() {
         raceCombo->clear();
         subraceCombo->clear();
         for (auto [race, subrace] : gearView->supportedRaces()) {
-          raceCombo->addItem(magic_enum::enum_name(race).data());
-          subraceCombo->addItem(magic_enum::enum_name(subrace).data());
+            raceCombo->addItem(magic_enum::enum_name(race).data());
+            subraceCombo->addItem(magic_enum::enum_name(subrace).data());
         }
 
         genderCombo->clear();
         for (auto gender : gearView->supportedGenders()) {
-          genderCombo->addItem(magic_enum::enum_name(gender).data());
+            genderCombo->addItem(magic_enum::enum_name(gender).data());
         }
 
         lodCombo->clear();
-        for(int i = 0; i < gearView->lodCount(); i++)
+        for (int i = 0; i < gearView->lodCount(); i++)
             lodCombo->addItem(QString::number(i));
 
         loadingComboData = false;

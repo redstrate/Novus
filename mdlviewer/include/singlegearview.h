@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QWidget>
-#include <QPushButton>
 #include "gearview.h"
+#include <QPushButton>
+#include <QWidget>
 
 struct GameData;
 
@@ -41,7 +41,7 @@ private:
     Gender currentGender = Gender::Female;
     int currentLod = 0;
 
-    GearView *gearView = nullptr;
+    GearView* gearView = nullptr;
     QComboBox *raceCombo, *subraceCombo, *genderCombo, *lodCombo;
     QPushButton *addToFMVButton, *exportButton;
 

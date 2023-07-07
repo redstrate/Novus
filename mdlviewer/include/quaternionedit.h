@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 class QuaternionEdit : public QWidget {
-Q_OBJECT
+    Q_OBJECT
 public:
     explicit QuaternionEdit(glm::quat& quat, QWidget* parent = nullptr);
 

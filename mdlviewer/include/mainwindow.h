@@ -6,8 +6,8 @@
 #include <physis.hpp>
 #include <unordered_map>
 
-#include "gearview.h"
 #include "fullmodelviewer.h"
+#include "gearview.h"
 #include "singlegearview.h"
 
 struct GameData;

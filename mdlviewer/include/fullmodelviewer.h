@@ -14,14 +14,14 @@ public:
 Q_SIGNALS:
     void gearChanged();
 
-  public Q_SLOTS:
+public Q_SLOTS:
     void clear();
-    void addGear(GearInfo &info);
+    void addGear(GearInfo& info);
 
-  private Q_SLOTS:
+private Q_SLOTS:
     void reloadGear();
 
-  private:
+private:
     void updateHeightScaling(float scale);
     void updateBustScaling(float scale);
     void updateCharacterParameters();
@@ -29,10 +29,10 @@ Q_SIGNALS:
     std::optional<GearInfo> topSlot;
     std::optional<GearInfo> bottomSlot;
 
-    GearView *gearView = nullptr;
-    QComboBox *raceCombo, *genderCombo;
+    GearView* gearView = nullptr;
+    QComboBox *raceCombo, *subraceCombo, *genderCombo;
 
-    GameData *data = nullptr;
+    GameData* data = nullptr;
     physis_CMP cmp;
 
     float heightScale = 0.5f;

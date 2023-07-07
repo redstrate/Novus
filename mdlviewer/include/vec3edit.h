@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 
 class Vector3Edit : public QWidget {
-Q_OBJECT
+    Q_OBJECT
 public:
     explicit Vector3Edit(glm::vec3& vec, QWidget* parent = nullptr);
     ~Vector3Edit();

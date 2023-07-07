@@ -1,8 +1,8 @@
 #pragma once
 
+#include <QDoubleSpinBox>
 #include <QWidget>
 #include <physis.hpp>
-#include <QDoubleSpinBox>
 
 class RaceTreeData : public QObject {
     Q_OBJECT

@@ -1,18 +1,18 @@
 #include "mainwindow.h"
 
 #include <QHBoxLayout>
-#include <QTableWidget>
-#include <QListWidget>
 #include <QLineEdit>
+#include <QListWidget>
+#include <QTableWidget>
 #include <QTimer>
 
-#include <QPushButton>
-#include <QFileDialog>
-#include <magic_enum.hpp>
-#include <QMenuBar>
 #include <QAction>
-#include <glm/gtc/type_ptr.hpp>
+#include <QFileDialog>
+#include <QMenuBar>
+#include <QPushButton>
 #include <QTreeWidget>
+#include <glm/gtc/type_ptr.hpp>
+#include <magic_enum.hpp>
 #include <physis.hpp>
 
 #include "cmpeditor.h"
@@ -73,7 +73,7 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     auto exh = physis_gamedata_read_excel_sheet_header(&data, "Item");
     auto exd = physis_gamedata_read_excel_sheet(&data, "Item", exh, Language::English, 1);
 
-    for(int i = 0; i < exd.row_count; i++) {
+    for (int i = 0; i < exd.row_count; i++) {
         const auto row = exd.row_data[i];
         auto primaryModel = row.column_data[47].u_int64._0;
         auto secondaryModel = row.column_data[48].u_int64._0;
@@ -90,7 +90,7 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     }
 
     auto listWidget = new QListWidget();
-    for(auto gear : gears)
+    for (auto gear : gears)
         listWidget->addItem(gear.name.c_str());
 
     listWidget->setMaximumWidth(200);
@@ -104,8 +104,8 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     layout->addWidget(gearView);
 
     connect(listWidget, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
-        for(auto& gear : gears) {
-            if(gear.name == item->text().toStdString()) {
+        for (auto& gear : gears) {
+            if (gear.name == item->text().toStdString()) {
                 gearView->setGear(gear);
                 return;
             }

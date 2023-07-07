@@ -1,9 +1,9 @@
 #include "cmpeditor.h"
 
-#include <QTreeWidget>
-#include <QHBoxLayout>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QHBoxLayout>
+#include <QTreeWidget>
 
 #include "magic_enum.hpp"
 
@@ -14,63 +14,14 @@ struct RaceTree {
 };
 
 std::vector<RaceTree> raceTree = {
-        {
-            Race::Hyur,
-            {
-                Subrace::Midlander,
-                Subrace::Highlander
-            }
-        },
-        {
-            Race::Elezen,
-            {
-                Subrace::Wildwood,
-                Subrace::Duskwight
-            }
-        },
-        {
-            Race::Miqote,
-            {
-                Subrace::Seeker,
-                Subrace::Keeper
-            }
-        },
-        {
-            Race::Roegadyn,
-            {
-                Subrace::SeaWolf,
-                Subrace::Hellion
-            }
-        },
-        {
-            Race::Lalafell,
-            {
-                Subrace::Plainsfolk,
-                Subrace::Dunesfolk
-            }
-        },
-        {
-            Race::AuRa,
-            {
-                Subrace::Raen,
-                Subrace::Xaela
-            }
-        },
-        {
-            Race::Hrothgar,
-            {
-                Subrace::Hellion,
-                Subrace::Lost
-            }
-        },
-        {
-            Race::Viera,
-            {
-                Subrace::Rava,
-                Subrace::Veena
-            }
-        }
-};
+    {Race::Hyur, {Subrace::Midlander, Subrace::Highlander}},
+    {Race::Elezen, {Subrace::Wildwood, Subrace::Duskwight}},
+    {Race::Miqote, {Subrace::Seeker, Subrace::Keeper}},
+    {Race::Roegadyn, {Subrace::SeaWolf, Subrace::Hellion}},
+    {Race::Lalafell, {Subrace::Plainsfolk, Subrace::Dunesfolk}},
+    {Race::AuRa, {Subrace::Raen, Subrace::Xaela}},
+    {Race::Hrothgar, {Subrace::Hellion, Subrace::Lost}},
+    {Race::Viera, {Subrace::Rava, Subrace::Veena}}};
 
 CmpEditor::CmpEditor(GameData* data) : data(data) {
     auto layout = new QHBoxLayout();
@@ -82,7 +33,7 @@ CmpEditor::CmpEditor(GameData* data) : data(data) {
     raceListWidget->setMaximumWidth(200);
     layout->addWidget(raceListWidget);
 
-    for(auto race : raceTree) {
+    for (auto race : raceTree) {
         auto item = new QTreeWidgetItem();
         item->setText(0, magic_enum::enum_name(race.baseRace).data());
         raceListWidget->addTopLevelItem(item);
