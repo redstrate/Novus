@@ -843,11 +843,11 @@ VkShaderModule Renderer::loadShaderFromDisk(const std::string_view path) {
 void Renderer::initDescriptors() {
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    poolSize.descriptorCount = 50;
+    poolSize.descriptorCount = 150;
 
     VkDescriptorPoolSize poolSize2 = {};
     poolSize2.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSize2.descriptorCount = 50;
+    poolSize2.descriptorCount = 150;
 
     const std::array poolSizes = {poolSize, poolSize2};
 
@@ -855,7 +855,7 @@ void Renderer::initDescriptors() {
     poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolCreateInfo.poolSizeCount = poolSizes.size();
     poolCreateInfo.pPoolSizes = poolSizes.data();
-    poolCreateInfo.maxSets = 50;
+    poolCreateInfo.maxSets = 150;
 
     vkCreateDescriptorPool(device, &poolCreateInfo, nullptr, &descriptorPool);
 
