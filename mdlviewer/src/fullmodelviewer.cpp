@@ -136,6 +136,24 @@ void FullModelViewer::reloadGear() {
 
         gearView->addGear(info);
     }
+
+    // smallclothes hands
+    {
+        GearInfo info = {};
+        info.name = "Smallclothes Hands";
+        info.slot = Slot::Hands;
+
+        gearView->addGear(info);
+    }
+
+    // smallclothes hands
+    {
+        GearInfo info = {};
+        info.name = "Smallclothes Feet";
+        info.slot = Slot::Feet;
+
+        gearView->addGear(info);
+    }
 }
 
 void FullModelViewer::updateHeightScaling(float scale) {
