@@ -8,7 +8,7 @@ add_executable(explorer
 target_include_directories(explorer
         PUBLIC
         include)
-target_link_libraries(explorer PUBLIC physis z ${LIBRARIES} Qt5::Core Qt5::Widgets)
+target_link_libraries(explorer PUBLIC physis z ${LIBRARIES} Qt5::Core Qt5::Widgets NovusCommon)
 
 install(TARGETS explorer
         DESTINATION "${INSTALL_BIN_PATH}")
