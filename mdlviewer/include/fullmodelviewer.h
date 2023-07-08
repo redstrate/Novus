@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QGroupBox>
 
 #include "gearview.h"
 
@@ -27,6 +28,11 @@ private:
     void updateCharacterParameters();
     void updateSupportedSubraces();
 
+    QGroupBox* addFaceGroup();
+    QGroupBox* addHairGroup();
+    QGroupBox* addEarGroup();
+    QGroupBox* addTailGroup();
+
     std::optional<GearInfo> topSlot;
     std::optional<GearInfo> bottomSlot;
 
@@ -37,5 +43,5 @@ private:
     physis_CMP cmp;
 
     float heightScale = 0.5f;
-    float bustScale = 0.5f;
+    float bustScale = 1.0f;
 };

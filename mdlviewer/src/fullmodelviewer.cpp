@@ -2,8 +2,11 @@
 
 #include "boneeditor.h"
 #include "magic_enum.hpp"
+#include <QFileDialog>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QMenuBar>
+#include <QRadioButton>
 #include <QVBoxLayout>
 
 FullModelViewer::FullModelViewer(GameData* data) : data(data) {
@@ -13,6 +16,31 @@ FullModelViewer::FullModelViewer(GameData* data) : data(data) {
 
     auto layout = new QVBoxLayout();
     setLayout(layout);
+
+    auto menuBar = new QMenuBar();
+    layout->addWidget(menuBar);
+
+    auto fileMenu = menuBar->addMenu("File");
+
+    auto datOpenAction = fileMenu->addAction("Load character DAT...");
+    connect(datOpenAction, &QAction::triggered, [=] {
+        auto fileName = QFileDialog::getOpenFileName(nullptr,
+                                                     "Open DAT File",
+                                                     "~",
+                                                     "FFXIV Character DAT File (*.dat)");
+
+        auto buffer = physis_read_file(fileName.toStdString().c_str());
+
+        auto charDat = physis_chardat_parse(buffer);
+
+        gearView->setRace(charDat.race);
+        gearView->setGender(charDat.gender);
+        //gearView->setSubrace(charDat.subrace);
+        gearView->setFace(charDat.head);
+        gearView->setHair(charDat.hair);
+        updateBustScaling((float)charDat.bust / 100.0f);
+        updateHeightScaling((float)charDat.height / 100.0f);
+    });
 
     cmp = physis_cmp_parse(physis_gamedata_extract_file(data, "chara/xls/charamake/human.cmp"));
 
@@ -46,6 +74,11 @@ FullModelViewer::FullModelViewer(GameData* data) : data(data) {
         updateBustScaling(scale);
     });
     characterEditorLayout->addRow("Bust Size", bustSize);
+
+    characterEditorLayout->addWidget(addFaceGroup());
+    characterEditorLayout->addWidget(addHairGroup());
+    characterEditorLayout->addWidget(addEarGroup());
+    characterEditorLayout->addWidget(addTailGroup());
 
     auto tabWidget = new QTabWidget();
     tabWidget->addTab(new BoneEditor(gearView), "Bone Editor");
@@ -215,6 +248,110 @@ void FullModelViewer::updateSupportedSubraces() {
     for (auto subrace : physis_get_supported_subraces(gearView->currentRace).subraces) {
         subraceCombo->addItem(magic_enum::enum_name(subrace).data(), (int)subrace);
     }
+}
+
+QGroupBox* FullModelViewer::addFaceGroup() {
+    auto faceGroup = new QGroupBox("Face");
+    auto faceGroupLayout = new QVBoxLayout();
+    faceGroup->setLayout(faceGroupLayout);
+
+    auto faceRadio1 = new QRadioButton("Face 1");
+    connect(faceRadio1, &QRadioButton::clicked, this, [=] {
+        gearView->setFace(1);
+    });
+    faceGroupLayout->addWidget(faceRadio1);
+
+    auto faceRadio2 = new QRadioButton("Face 2");
+    connect(faceRadio2, &QRadioButton::clicked, this, [=] {
+        gearView->setFace(2);
+    });
+    faceGroupLayout->addWidget(faceRadio2);
+
+    auto faceRadio3 = new QRadioButton("Face 3");
+    connect(faceRadio3, &QRadioButton::clicked, this, [=] {
+        gearView->setFace(3);
+    });
+    faceGroupLayout->addWidget(faceRadio3);
+
+    return faceGroup;
+}
+
+QGroupBox* FullModelViewer::addHairGroup() {
+    auto hairGroup = new QGroupBox("Hair");
+    auto hairGroupLayout = new QVBoxLayout();
+    hairGroup->setLayout(hairGroupLayout);
+
+    auto hairRadio1 = new QRadioButton("Hair 1");
+    connect(hairRadio1, &QRadioButton::clicked, this, [=] {
+        gearView->setHair(1);
+    });
+    hairGroupLayout->addWidget(hairRadio1);
+
+    auto hairRadio2 = new QRadioButton("Hair 2");
+    connect(hairRadio2, &QRadioButton::clicked, this, [=] {
+        gearView->setHair(2);
+    });
+    hairGroupLayout->addWidget(hairRadio2);
+
+    auto hairRadio3 = new QRadioButton("Hair 3");
+    connect(hairRadio3, &QRadioButton::clicked, this, [=] {
+        gearView->setHair(3);
+    });
+    hairGroupLayout->addWidget(hairRadio3);
+
+    return hairGroup;
+}
+
+QGroupBox* FullModelViewer::addEarGroup() {
+    auto earGroup = new QGroupBox("Ears");
+    auto earGroupLayout = new QVBoxLayout();
+    earGroup->setLayout(earGroupLayout);
+
+    auto earRadio1 = new QRadioButton("Ears 1");
+    connect(earRadio1, &QRadioButton::clicked, this, [=] {
+        gearView->setEar(1);
+    });
+    earGroupLayout->addWidget(earRadio1);
+
+    auto earRadio2 = new QRadioButton("Ears 2");
+    connect(earRadio2, &QRadioButton::clicked, this, [=] {
+        gearView->setEar(2);
+    });
+    earGroupLayout->addWidget(earRadio2);
+
+    auto earRadio3 = new QRadioButton("Ears 3");
+    connect(earRadio3, &QRadioButton::clicked, this, [=] {
+        gearView->setEar(3);
+    });
+    earGroupLayout->addWidget(earRadio3);
+
+    return earGroup;
+}
+
+QGroupBox* FullModelViewer::addTailGroup() {
+    auto tailGroup = new QGroupBox("Tail");
+    auto tailGroupLayout = new QVBoxLayout();
+    tailGroup->setLayout(tailGroupLayout);
+
+    auto tailRadio1 = new QRadioButton("Tail 1");
+    connect(tailRadio1, &QRadioButton::clicked, this, [=] {
+        gearView->setTail(1);
+    });
+    tailGroupLayout->addWidget(tailRadio1);
+
+    auto tailRadio2 = new QRadioButton("Tail 2");
+    connect(tailRadio2, &QRadioButton::clicked, this, [=] {
+        gearView->setTail(2);
+    });
+    tailGroupLayout->addWidget(tailRadio2);
+
+    auto tailRadio3 = new QRadioButton("Tail 3");
+    connect(tailRadio3, &QRadioButton::clicked, this, [=] {
+        gearView->setTail(3);
+    });
+    tailGroupLayout->addWidget(tailRadio3);
+
+    return tailGroup;
 }
 
 #include "moc_fullmodelviewer.cpp"
