@@ -20,12 +20,12 @@ void EXDPart::loadSheet(const QString& name) {
 
     auto exh = physis_gamedata_read_excel_sheet_header(data, name.toStdString().c_str());
 
-    for(int i = 0; i < exh.page_count; i++) {
+    for(int i = 0; i < exh->page_count; i++) {
         QTableWidget* tableWidget = new QTableWidget();
 
-        tableWidget->setColumnCount(exh.column_count);
+        tableWidget->setColumnCount(exh->column_count);
 
-        auto exd = physis_gamedata_read_excel_sheet(data, name.toStdString().c_str(), &exh, exh.languages[0], i);
+        auto exd = physis_gamedata_read_excel_sheet(data, name.toStdString().c_str(), exh, exh->languages[0], i);
 
         tableWidget->setRowCount(exd.row_count);
 
