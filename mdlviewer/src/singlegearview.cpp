@@ -91,7 +91,7 @@ void SingleGearView::clear() {
     Q_EMIT gearChanged();
 }
 
-void SingleGearView::setGear(GearInfo& info) {
+void SingleGearView::setGear(const GearInfo& info) {
     currentGear = info;
 
     Q_EMIT gearChanged();

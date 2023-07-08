@@ -23,7 +23,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void clear();
-    void setGear(GearInfo& info);
+    void setGear(const GearInfo& info);
 
     void setRace(Race race);
     void setSubrace(Subrace subrace);

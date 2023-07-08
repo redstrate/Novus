@@ -17,8 +17,6 @@ public:
     explicit MainWindow(GameData* data);
 
 private:
-    std::vector<GearInfo> gears;
-
     SingleGearView* gearView = nullptr;
     FullModelViewer* fullModelViewer = nullptr;
 

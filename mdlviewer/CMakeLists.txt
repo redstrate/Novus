@@ -11,7 +11,9 @@ add_executable(mdlviewer
         src/fullmodelviewer.cpp
         src/quaternionedit.cpp
         src/boneeditor.cpp
-        src/cmpeditor.cpp)
+        src/cmpeditor.cpp
+        src/gearlistwidget.cpp
+        src/gearlistmodel.cpp)
 target_include_directories(mdlviewer
         PUBLIC
         include)

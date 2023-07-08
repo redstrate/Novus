@@ -16,6 +16,7 @@
 #include <physis.hpp>
 
 #include "cmpeditor.h"
+#include "gearlistwidget.h"
 
 MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     setWindowTitle("mdlviewer");
@@ -52,65 +53,18 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     auto layout = new QHBoxLayout();
     dummyWidget->setLayout(layout);
 
-    // smallclothes body
-    {
-        GearInfo info = {};
-        info.name = "Smallclothes Body";
-        info.slot = Slot::Body;
-
-        gears.push_back(info);
-    }
-
-    // smallclothes legs
-    {
-        GearInfo info = {};
-        info.name = "Smallclothes Legs";
-        info.slot = Slot::Legs;
-
-        gears.push_back(info);
-    }
-
-    auto exh = physis_gamedata_read_excel_sheet_header(&data, "Item");
-    auto exd = physis_gamedata_read_excel_sheet(&data, "Item", exh, Language::English, 1);
-
-    for (int i = 0; i < exd.row_count; i++) {
-        const auto row = exd.row_data[i];
-        auto primaryModel = row.column_data[47].u_int64._0;
-        auto secondaryModel = row.column_data[48].u_int64._0;
-
-        int16_t parts[4];
-        memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
-
-        GearInfo info = {};
-        info.name = row.column_data[9].string._0;
-        info.slot = physis_slot_from_id(row.column_data[17].u_int8._0);
-        info.modelInfo.primaryID = parts[0];
-
-        gears.push_back(info);
-    }
-
-    auto listWidget = new QListWidget();
-    for (auto gear : gears)
-        listWidget->addItem(gear.name.c_str());
-
-    listWidget->setMaximumWidth(200);
-
-    layout->addWidget(listWidget);
+    auto gearListWidget = new GearListWidget(&data);
+    gearListWidget->setMaximumWidth(350);
+    connect(gearListWidget, &GearListWidget::gearSelected, this, [=](const GearInfo& gear) {
+        gearView->setGear(gear);
+    });
+    layout->addWidget(gearListWidget);
 
     gearView = new SingleGearView(&data);
     connect(gearView, &SingleGearView::addToFullModelViewer, this, [=](GearInfo& info) {
         fullModelViewer->addGear(info);
     });
     layout->addWidget(gearView);
-
-    connect(listWidget, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
-        for (auto& gear : gears) {
-            if (gear.name == item->text().toStdString()) {
-                gearView->setGear(gear);
-                return;
-            }
-        }
-    });
 
     fullModelViewer = new FullModelViewer(&data);
     fullModelViewer->show();
