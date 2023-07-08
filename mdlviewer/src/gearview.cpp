@@ -207,8 +207,8 @@ void GearView::reloadRaceDeforms() {
     QString skelName = QString{"c%1b0001.skel"}.arg(raceCode, 4, 10, QLatin1Char{'0'});
     mdlPart->setSkeleton(physis_skeleton_from_skel(physis_read_file(skelName.toStdString().c_str())));
 
-    // racial deforms don't work on Hyur, not needed? TODO not sure
-    if (currentRace != Race::Hyur) {
+    // racial deforms don't work on Hyur Midlander, not needed? TODO not sure
+    if (currentSubrace != Subrace::Midlander) {
         QString deformName = QString{"c%1_deform.json"}.arg(raceCode, 4, 10, QLatin1Char{'0'});
         mdlPart->loadRaceDeformMatrices(physis_read_file(deformName.toStdString().c_str()));
     } else {
