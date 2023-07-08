@@ -121,11 +121,11 @@ void CmpEditor::loadRaceData(Race race, Subrace subrace) {
 
     bustMinX->setValue(raceData.bust_min_x);
     bustMinY->setValue(raceData.bust_min_y);
-    bustMinY->setValue(raceData.bust_min_z);
+    bustMinZ->setValue(raceData.bust_min_z);
 
     bustMaxX->setValue(raceData.bust_max_x);
     bustMaxY->setValue(raceData.bust_max_y);
-    bustMaxY->setValue(raceData.bust_max_z);
+    bustMaxZ->setValue(raceData.bust_max_z);
 }
 
 #include "moc_cmpeditor.cpp"
