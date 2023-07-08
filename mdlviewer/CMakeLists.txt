@@ -13,10 +13,13 @@ add_executable(mdlviewer
         src/boneeditor.cpp
         src/cmpeditor.cpp
         src/gearlistwidget.cpp
-        src/gearlistmodel.cpp)
+        src/gearlistmodel.cpp
+        src/aboutwindow.cpp)
 target_include_directories(mdlviewer
         PUBLIC
-        include)
+        include
+        PRIVATE
+        ${CMAKE_BINARY_DIR})
 target_link_libraries(mdlviewer PUBLIC
         ${LIBRARIES}
         Qt5::Core
@@ -43,3 +46,11 @@ if(WIN32)
             COMMAND "${WINDEPLOYQT_ENV_SETUP}" && "${WINDEPLOYQT_EXECUTABLE}" \"$<TARGET_FILE:mdlviewer>\"
             )
 endif()
+
+# meant for including the license text
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE LICENSE_TXT)
+STRING(REPLACE "\n" " \\n" LICENSE_TXT ${LICENSE_TXT})
+STRING(REPLACE "\"" "\"\"" LICENSE_TXT ${LICENSE_TXT})
+
+configure_file(${CMAKE_CURRENT_LIST_DIR}/../cmake/license.h.in
+        ${CMAKE_BINARY_DIR}/license.h)
