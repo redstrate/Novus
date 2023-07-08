@@ -59,6 +59,11 @@ Q_SIGNALS:
     void genderChanged();
     void levelOfDetailChanged();
 
+    void faceChanged();
+    void hairChanged();
+    void earChanged();
+    void tailChanged();
+
 public Q_SLOTS:
     void clear();
     void addGear(GearInfo& gear);
@@ -67,6 +72,11 @@ public Q_SLOTS:
     void setSubrace(Subrace subrace);
     void setGender(Gender gender);
     void setLevelOfDetail(int lod);
+
+    void setFace(int bodyVer);
+    void setHair(int bodyVer);
+    void setEar(int bodyVer);
+    void setTail(int bodyVer);
 
     void reloadModel();
     void reloadRaceDeforms();
@@ -77,6 +87,7 @@ private:
     uint32_t maxLod = 0;
 
     std::vector<GearInfo> gears;
+    std::optional<int> face = 1, hair = 1, ear = 1, tail;
 
     MDLPart* mdlPart = nullptr;
 

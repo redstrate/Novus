@@ -29,6 +29,11 @@ GearView::GearView(GameData* data) : data(data) {
         reloadModel();
     });
     connect(this, &GearView::levelOfDetailChanged, this, &GearView::reloadModel);
+
+    connect(this, &GearView::faceChanged, this, &GearView::reloadModel);
+    connect(this, &GearView::hairChanged, this, &GearView::reloadModel);
+    connect(this, &GearView::earChanged, this, &GearView::reloadModel);
+    connect(this, &GearView::tailChanged, this, &GearView::reloadModel);
 }
 
 std::vector<std::pair<Race, Subrace>> GearView::supportedRaces() const {
@@ -98,6 +103,12 @@ void GearView::setRace(Race race) {
         setSubrace(supportedSubraces.subraces[0]);
     }
 
+    if (race == Race::AuRa || race == Race::Miqote) {
+        setTail(1);
+    } else {
+        setTail(-1);
+    }
+
     Q_EMIT raceChanged();
 }
 
@@ -126,6 +137,62 @@ void GearView::setLevelOfDetail(int lod) {
 
     currentLod = lod;
     Q_EMIT levelOfDetailChanged();
+}
+
+void GearView::setFace(int bodyVer) {
+    if (face == bodyVer) {
+        return;
+    }
+
+    if (bodyVer == -1) {
+        face = std::nullopt;
+    } else {
+        face = bodyVer;
+    }
+
+    Q_EMIT faceChanged();
+}
+
+void GearView::setHair(int bodyVer) {
+    if (hair == bodyVer) {
+        return;
+    }
+
+    if (bodyVer == -1) {
+        hair = std::nullopt;
+    } else {
+        hair = bodyVer;
+    }
+
+    Q_EMIT hairChanged();
+}
+
+void GearView::setEar(int bodyVer) {
+    if (ear == bodyVer) {
+        return;
+    }
+
+    if (bodyVer == -1) {
+        ear = std::nullopt;
+    } else {
+        ear = bodyVer;
+    }
+
+    Q_EMIT earChanged();
+}
+
+void GearView::setTail(int bodyVer) {
+    if (tail == bodyVer) {
+        return;
+    }
+
+    if (bodyVer == -1) {
+        tail = std::nullopt;
+    } else {
+        tail = bodyVer;
+    }
+
+    Q_EMIT tailChanged();
 }
 
 void GearView::reloadModel() {
@@ -192,6 +259,127 @@ void GearView::reloadModel() {
             maxLod = std::max(mdl.num_lod, maxLod);
 
             mdlPart->addModel(mdl, materials, currentLod);
+        }
+    }
+
+    if (face) {
+        auto mdl_data = physis_gamedata_extract_file(
+            data,
+            physis_build_character_path(
+                CharacterCategory::Face, *face, currentRace, currentSubrace, currentGender));
+
+        if (mdl_data.size > 0) {
+            auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
+
+            std::vector<physis_Material> materials;
+            for (int i = 0; i < mdl.num_material_names; i++) {
+                const char* material_name = mdl.material_names[i];
+
+                std::string skinmtrl_path = fmt::format(
+                    "chara/human/c{raceCode:04d}/obj/face/f{bodyCode:04d}/"
+                    "material{}",
+                    material_name,
+                    fmt::arg("raceCode", physis_get_race_code(currentRace, currentSubrace, currentGender)),
+                    fmt::arg("bodyCode", *face));
+
+                fmt::print("oops: {}", skinmtrl_path);
+
+                if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
+                    auto mat = physis_material_parse(physis_gamedata_extract_file(data, skinmtrl_path.c_str()));
+                    materials.push_back(mat);
+                }
+            }
+
+            mdlPart->addModel(mdl, materials, currentLod);
+        }
+    }
+
+    if (hair) {
+        auto mdl_data = physis_gamedata_extract_file(
+            data,
+            physis_build_character_path(
+                CharacterCategory::Hair, *hair, currentRace, currentSubrace, currentGender));
+
+        if (mdl_data.size > 0) {
+            auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
+
+            std::vector<physis_Material> materials;
+            for (int i = 0; i < mdl.num_material_names; i++) {
+                const char* material_name = mdl.material_names[i];
+
+                std::string skinmtrl_path = fmt::format(
+                    "chara/human/c{raceCode:04d}/obj/hair/h{bodyCode:04d}/"
+                    "material/v0001{}",
+                    material_name,
+                    fmt::arg("raceCode", physis_get_race_code(currentRace, currentSubrace, currentGender)),
+                    fmt::arg("bodyCode", *hair));
+
+                fmt::print("oops: {}", skinmtrl_path);
+
+                if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
+                    auto mat = physis_material_parse(physis_gamedata_extract_file(data, skinmtrl_path.c_str()));
+                    materials.push_back(mat);
+                }
+            }
+
+            mdlPart->addModel(mdl, materials, currentLod);
+        }
+    }
+
+    if (ear) {
+        auto mdl_data = physis_gamedata_extract_file(
+            data,
+            physis_build_character_path(
+                CharacterCategory::Hair, *ear, currentRace, currentSubrace, currentGender));
+
+        if (mdl_data.size > 0) {
+            auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
+
+            std::vector<physis_Material> materials;
+            for (int i = 0; i < mdl.num_material_names; i++) {
+                const char* material_name = mdl.material_names[i];
+
+                std::string skinmtrl_path = fmt::format(
+                    "chara/human/c{raceCode:04d}/obj/ear/e{bodyCode:04d}/"
+                    "material/v0001{}",
+                    material_name,
+                    fmt::arg("raceCode", physis_get_race_code(currentRace, currentSubrace, currentGender)),
+                    fmt::arg("bodyCode", *ear));
+
+                fmt::print("oops: {}", skinmtrl_path);
+
+                if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
+                    auto mat = physis_material_parse(physis_gamedata_extract_file(data, skinmtrl_path.c_str()));
+                    materials.push_back(mat);
+                }
+            }
+
+            mdlPart->addModel(mdl, materials, currentLod);
+        }
+    }
+
+    if (tail) {
+        auto mdl_data = physis_gamedata_extract_file(
+            data,
+            physis_build_character_path(
+                CharacterCategory::Tail, *tail, currentRace, currentSubrace, currentGender));
+
+        if (mdl_data.size > 0) {
+            auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
+
+            const char* material_name = mdl.material_names[0];
+
+            std::string skinmtrl_path = fmt::format(
+                "chara/human/c{raceCode:04d}/obj/tail/t{bodyCode:04d}/"
+                "material/v0001{}",
+                material_name,
+                fmt::arg("raceCode", physis_get_race_code(currentRace, currentSubrace, currentGender)),
+                fmt::arg("bodyCode", *tail));
+
+            if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
+                auto mat = physis_material_parse(physis_gamedata_extract_file(data, skinmtrl_path.c_str()));
+                mdlPart->addModel(mdl, {mat}, currentLod);
+            }
         }
     }
 
