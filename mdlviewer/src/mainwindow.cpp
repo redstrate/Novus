@@ -15,6 +15,7 @@
 #include <magic_enum.hpp>
 #include <physis.hpp>
 #include <QApplication>
+#include <QDesktopServices>
 
 #include "aboutwindow.h"
 #include "cmpeditor.h"
@@ -52,6 +53,9 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     auto helpMenu = menuBar()->addMenu("Help");
 
     auto donateAction = helpMenu->addAction("Donate");
+    connect(donateAction, &QAction::triggered, this, [] {
+        QDesktopServices::openUrl(QUrl("https://redstrate.com/fund"));
+    });
     donateAction->setIcon(QIcon::fromTheme("help-donate"));
 
     helpMenu->addSeparator();
