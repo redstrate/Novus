@@ -11,8 +11,8 @@
 
 FullModelViewer::FullModelViewer(GameData* data, FileCache& cache) : data(data) {
     setWindowTitle("Full Model Viewer");
-    setMinimumWidth(640);
-    setMinimumHeight(480);
+    setMinimumWidth(1280);
+    setMinimumHeight(720);
 
     auto layout = new QVBoxLayout();
     setLayout(layout);
@@ -50,6 +50,7 @@ FullModelViewer::FullModelViewer(GameData* data, FileCache& cache) : data(data) 
     connect(gearView, &GearView::modelReloaded, this, &FullModelViewer::updateCharacterParameters);
 
     auto viewportLayout = new QHBoxLayout();
+    viewportLayout->setContentsMargins(0, 0, 0, 0);
     viewportLayout->addWidget(gearView, 1);
     layout->addLayout(viewportLayout);
 

@@ -145,6 +145,7 @@ private:
 
 MDLPart::MDLPart(GameData* data, FileCache& cache) : data(data), cache(cache) {
     auto viewportLayout = new QVBoxLayout();
+    viewportLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(viewportLayout);
 
     renderer = new Renderer();

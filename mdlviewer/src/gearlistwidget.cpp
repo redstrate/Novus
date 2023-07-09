@@ -9,6 +9,7 @@
 
 GearListWidget::GearListWidget(GameData* data, QWidget* parent) : data(data) {
     auto layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
     auto searchModel = new QSortFilterProxyModel();

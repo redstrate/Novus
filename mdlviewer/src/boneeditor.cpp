@@ -46,8 +46,11 @@ BoneEditor::BoneEditor(GearView* gearView, QWidget* parent) : gearView(gearView)
 
     layout->addWidget(boneListWidget);
 
+    auto transformLayout = new QVBoxLayout();
+    layout->addLayout(transformLayout);
+
     auto transformGroup = new QGroupBox("Bone Transform");
-    layout->addWidget(transformGroup);
+    transformLayout->addWidget(transformGroup);
     auto transformGroupLayout = new QFormLayout();
     transformGroup->setLayout(transformGroupLayout);
 
@@ -75,7 +78,7 @@ BoneEditor::BoneEditor(GearView* gearView, QWidget* parent) : gearView(gearView)
     connect(boneListWidget, &QTreeWidget::itemClicked, this, &BoneEditor::treeItemClicked);
 
     auto raceDeformGroup = new QGroupBox("Race Deform");
-    layout->addWidget(raceDeformGroup);
+    transformLayout->addWidget(raceDeformGroup);
     auto raceDeformGroupLayout = new QFormLayout();
     raceDeformGroup->setLayout(raceDeformGroupLayout);
 

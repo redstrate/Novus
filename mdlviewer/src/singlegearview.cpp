@@ -11,6 +11,7 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
     gearView = new GearView(data, cache);
 
     auto layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(gearView);
     setLayout(layout);
 
