@@ -1,7 +1,9 @@
 #pragma once
 
-#include "gearview.h"
 #include <QAbstractItemModel>
+#include <QFutureWatcher>
+
+#include "gearview.h"
 
 enum class TreeType {
     Root,
@@ -37,6 +39,11 @@ public:
     std::optional<GearInfo> getGearFromIndex(const QModelIndex& index);
 
 private:
+    void exdFinished(int index);
+    void finished();
+
+    QFutureWatcher<physis_EXD>* exdFuture;
+
     std::vector<GearInfo> gears;
     QStringList slotNames;
 

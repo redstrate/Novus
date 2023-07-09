@@ -11,6 +11,7 @@
 #include "singlegearview.h"
 
 struct GameData;
+class FileCache;
 
 class MainWindow : public QMainWindow {
 public:
@@ -21,4 +22,5 @@ private:
     FullModelViewer* fullModelViewer = nullptr;
 
     GameData& data;
+    FileCache cache;
 };

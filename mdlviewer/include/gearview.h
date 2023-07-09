@@ -1,5 +1,6 @@
 #pragma once
 
+#include "filecache.h"
 #include "mdlpart.h"
 #include <QComboBox>
 #include <QWidget>
@@ -31,7 +32,7 @@ struct GameData;
 class GearView : public QWidget {
     Q_OBJECT
 public:
-    explicit GearView(GameData* data);
+    explicit GearView(GameData* data, FileCache& cache);
 
     /// Returns an inclusive list of races supported by the current gearset.
     std::vector<std::pair<Race, Subrace>> supportedRaces() const;
@@ -92,4 +93,5 @@ private:
     MDLPart* mdlPart = nullptr;
 
     GameData* data;
+    FileCache& cache;
 };

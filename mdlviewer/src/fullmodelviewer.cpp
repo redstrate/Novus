@@ -9,7 +9,7 @@
 #include <QRadioButton>
 #include <QVBoxLayout>
 
-FullModelViewer::FullModelViewer(GameData* data) : data(data) {
+FullModelViewer::FullModelViewer(GameData* data, FileCache& cache) : data(data) {
     setWindowTitle("Full Model Viewer");
     setMinimumWidth(640);
     setMinimumHeight(480);
@@ -44,7 +44,7 @@ FullModelViewer::FullModelViewer(GameData* data) : data(data) {
 
     cmp = physis_cmp_parse(physis_gamedata_extract_file(data, "chara/xls/charamake/human.cmp"));
 
-    gearView = new GearView(data);
+    gearView = new GearView(data, cache);
     updateCharacterParameters();
 
     connect(gearView, &GearView::modelReloaded, this, &FullModelViewer::updateCharacterParameters);

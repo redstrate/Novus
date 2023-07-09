@@ -20,8 +20,9 @@
 #include "aboutwindow.h"
 #include "cmpeditor.h"
 #include "gearlistwidget.h"
+#include "filecache.h"
 
-MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
+MainWindow::MainWindow(GameData* in_data) : data(*in_data), cache(FileCache{*in_data}) {
     setWindowTitle("mdlviewer");
     setMinimumSize(QSize(800, 600));
 
@@ -84,12 +85,12 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data) {
     });
     layout->addWidget(gearListWidget);
 
-    gearView = new SingleGearView(&data);
+    gearView = new SingleGearView(&data, cache);
     connect(gearView, &SingleGearView::addToFullModelViewer, this, [=](GearInfo& info) {
         fullModelViewer->addGear(info);
     });
     layout->addWidget(gearView);
 
-    fullModelViewer = new FullModelViewer(&data);
+    fullModelViewer = new FullModelViewer(&data, cache);
     fullModelViewer->show();
 }

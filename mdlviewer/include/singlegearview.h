@@ -1,5 +1,6 @@
 #pragma once
 
+#include "filecache.h"
 #include "gearview.h"
 #include <QPushButton>
 #include <QWidget>
@@ -9,7 +10,7 @@ struct GameData;
 class SingleGearView : public QWidget {
     Q_OBJECT
 public:
-    explicit SingleGearView(GameData* data);
+    explicit SingleGearView(GameData* data, FileCache& cache);
 
 Q_SIGNALS:
     void gearChanged();

@@ -23,6 +23,7 @@ target_link_libraries(mdlviewer PUBLIC
         ${LIBRARIES}
         Qt5::Core
         Qt5::Widgets
+        Qt5::Concurrent
         renderer
         assimp::assimp
         magic_enum

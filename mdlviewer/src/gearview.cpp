@@ -1,11 +1,13 @@
 #include "gearview.h"
-#include "magic_enum.hpp"
 
 #include <QDebug>
 #include <QVBoxLayout>
 
-GearView::GearView(GameData* data) : data(data) {
-    mdlPart = new MDLPart(data);
+#include "magic_enum.hpp"
+#include "filecache.h"
+
+GearView::GearView(GameData* data, FileCache& cache) : data(data), cache(cache) {
+    mdlPart = new MDLPart(data, cache);
 
     reloadRaceDeforms();
 
@@ -201,9 +203,7 @@ void GearView::reloadModel() {
     maxLod = 0;
 
     for (const auto& gear : gears) {
-        auto mdl_data = physis_gamedata_extract_file(
-            data,
-            physis_build_equipment_path(
+        auto mdl_data = cache.lookupFile(physis_build_equipment_path(
                 gear.modelInfo.primaryID, currentRace, currentSubrace, currentGender, gear.slot));
 
         // attempt to load the next best race
@@ -211,9 +211,7 @@ void GearView::reloadModel() {
         Race fallbackRace = currentRace;
         Subrace fallbackSubrace = currentSubrace;
         if (mdl_data.size == 0) {
-            mdl_data = physis_gamedata_extract_file(
-                data,
-                physis_build_equipment_path(
+            mdl_data = cache.lookupFile(physis_build_equipment_path(
                     gear.modelInfo.primaryID, Race::Hyur, Subrace::Midlander, currentGender, gear.slot));
             fallbackRace = Race::Hyur;
             fallbackSubrace = Subrace::Midlander;
@@ -246,12 +244,12 @@ void GearView::reloadModel() {
                     fmt::arg("bodyCode", bodyCode));
 
                 if (physis_gamedata_exists(data, mtrl_path.c_str())) {
-                    auto mat = physis_material_parse(physis_gamedata_extract_file(data, mtrl_path.c_str()));
+                    auto mat = physis_material_parse(cache.lookupFile(mtrl_path.c_str()));
                     materials.push_back(mat);
                 }
 
                 if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
-                    auto mat = physis_material_parse(physis_gamedata_extract_file(data, skinmtrl_path.c_str()));
+                    auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                     materials.push_back(mat);
                 }
             }
@@ -263,9 +261,7 @@ void GearView::reloadModel() {
     }
 
     if (face) {
-        auto mdl_data = physis_gamedata_extract_file(
-            data,
-            physis_build_character_path(
+        auto mdl_data = cache.lookupFile(physis_build_character_path(
                 CharacterCategory::Face, *face, currentRace, currentSubrace, currentGender));
 
         if (mdl_data.size > 0) {
@@ -285,7 +281,7 @@ void GearView::reloadModel() {
                 fmt::print("oops: {}", skinmtrl_path);
 
                 if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
-                    auto mat = physis_material_parse(physis_gamedata_extract_file(data, skinmtrl_path.c_str()));
+                    auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                     materials.push_back(mat);
                 }
             }
@@ -295,9 +291,7 @@ void GearView::reloadModel() {
     }
 
     if (hair) {
-        auto mdl_data = physis_gamedata_extract_file(
-            data,
-            physis_build_character_path(
+        auto mdl_data = cache.lookupFile(physis_build_character_path(
                 CharacterCategory::Hair, *hair, currentRace, currentSubrace, currentGender));
 
         if (mdl_data.size > 0) {
@@ -317,7 +311,7 @@ void GearView::reloadModel() {
                 fmt::print("oops: {}", skinmtrl_path);
 
                 if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
-                    auto mat = physis_material_parse(physis_gamedata_extract_file(data, skinmtrl_path.c_str()));
+                    auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                     materials.push_back(mat);
                 }
             }
@@ -327,9 +321,7 @@ void GearView::reloadModel() {
     }
 
     if (ear) {
-        auto mdl_data = physis_gamedata_extract_file(
-            data,
-            physis_build_character_path(
+        auto mdl_data = cache.lookupFile(physis_build_character_path(
                 CharacterCategory::Hair, *ear, currentRace, currentSubrace, currentGender));
 
         if (mdl_data.size > 0) {
@@ -349,7 +341,7 @@ void GearView::reloadModel() {
                 fmt::print("oops: {}", skinmtrl_path);
 
                 if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
-                    auto mat = physis_material_parse(physis_gamedata_extract_file(data, skinmtrl_path.c_str()));
+                    auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                     materials.push_back(mat);
                 }
             }
@@ -359,9 +351,7 @@ void GearView::reloadModel() {
     }
 
     if (tail) {
-        auto mdl_data = physis_gamedata_extract_file(
-            data,
-            physis_build_character_path(
+        auto mdl_data = cache.lookupFile(physis_build_character_path(
                 CharacterCategory::Tail, *tail, currentRace, currentSubrace, currentGender));
 
         if (mdl_data.size > 0) {
@@ -377,7 +367,7 @@ void GearView::reloadModel() {
                 fmt::arg("bodyCode", *tail));
 
             if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
-                auto mat = physis_material_parse(physis_gamedata_extract_file(data, skinmtrl_path.c_str()));
+                auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                 mdlPart->addModel(mdl, {mat}, currentLod);
             }
         }

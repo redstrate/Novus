@@ -1,10 +1,10 @@
 #include "gearlistmodel.h"
 
 #include <QDebug>
+#include <QtConcurrent>
 #include <magic_enum.hpp>
 
 GearListModel::GearListModel(GameData* data) : gameData(data), QAbstractItemModel() {
-    beginResetModel();
     // smallclothes body
     {
         GearInfo info = {};
@@ -25,55 +25,27 @@ GearListModel::GearListModel(GameData* data) : gameData(data), QAbstractItemMode
 
     auto exh = physis_gamedata_read_excel_sheet_header(data, "Item");
 
-    for (int p = 0; p < exh->page_count; p++) {
-        auto exd = physis_gamedata_read_excel_sheet(data, "Item", exh, Language::English, p);
+    exdFuture = new QFutureWatcher<physis_EXD>(this);
+    connect(exdFuture, &QFutureWatcher<physis_EXD>::resultReadyAt, this, &GearListModel::exdFinished);
+    connect(exdFuture, &QFutureWatcher<physis_EXD>::finished, this, &GearListModel::finished);
 
-        for (int i = 0; i < exd.row_count; i++) {
-            const auto row = exd.row_data[i];
-            auto primaryModel = row.column_data[47].u_int64._0;
-            auto secondaryModel = row.column_data[48].u_int64._0;
-
-            int16_t parts[4];
-            memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
-
-            GearInfo info = {};
-            info.name = row.column_data[9].string._0;
-            info.slot = physis_slot_from_id(row.column_data[17].u_int8._0);
-            info.modelInfo.primaryID = parts[0];
-
-            gears.push_back(info);
-        }
+    QVector<int> pages;
+    for(int i = 0; i < exh->page_count; i++) {
+        pages.push_back(i);
     }
+
+    std::function<physis_EXD(int)> loadEXD = [data, exh](const int page) -> physis_EXD {
+        return physis_gamedata_read_excel_sheet(data, "Item", exh, Language::English, page);
+    };
+
+    exdFuture->setFuture(QtConcurrent::mapped(pages, loadEXD));
 
     for (auto slotName : magic_enum::enum_names<Slot>()) {
         slotNames.push_back(slotName.data());
     }
-    endResetModel();
 
     rootItem = new TreeInformation();
     rootItem->type = TreeType::Root;
-
-    int i = 0;
-    for (auto slot : magic_enum::enum_values<Slot>()) {
-        TreeInformation* categoryItem = new TreeInformation();
-        categoryItem->type = TreeType::Category;
-        categoryItem->slotType = slot;
-        categoryItem->parent = rootItem;
-        categoryItem->row = i++;
-        rootItem->children.push_back(categoryItem);
-
-        int j = 0;
-        for (auto gear : gears) {
-            if (gear.slot == slot) {
-                TreeInformation* item = new TreeInformation();
-                item->type = TreeType::Item;
-                item->gear = gear;
-                item->parent = categoryItem;
-                item->row = j++;
-                categoryItem->children.push_back(item);
-            }
-        }
-    }
 }
 
 int GearListModel::rowCount(const QModelIndex& parent) const {
@@ -159,6 +131,53 @@ std::optional<GearInfo> GearListModel::getGearFromIndex(const QModelIndex& index
         return item->gear;
     }
     return {};
+}
+
+void GearListModel::exdFinished(int index) {
+    auto exd = exdFuture->resultAt(index);
+
+    for (int i = 0; i < exd.row_count; i++) {
+        const auto row = exd.row_data[i];
+        auto primaryModel = row.column_data[47].u_int64._0;
+        auto secondaryModel = row.column_data[48].u_int64._0;
+
+        int16_t parts[4];
+        memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
+
+        GearInfo info = {};
+        info.name = row.column_data[9].string._0;
+        info.slot = physis_slot_from_id(row.column_data[17].u_int8._0);
+        info.modelInfo.primaryID = parts[0];
+
+        gears.push_back(info);
+    }
+}
+
+void GearListModel::finished() {
+    beginResetModel();
+
+    int i = 0;
+    for (auto slot : magic_enum::enum_values<Slot>()) {
+        TreeInformation* categoryItem = new TreeInformation();
+        categoryItem->type = TreeType::Category;
+        categoryItem->slotType = slot;
+        categoryItem->parent = rootItem;
+        categoryItem->row = i++;
+        rootItem->children.push_back(categoryItem);
+
+        int j = 0;
+        for (auto gear : gears) {
+            if (gear.slot == slot) {
+                TreeInformation* item = new TreeInformation();
+                item->type = TreeType::Item;
+                item->gear = gear;
+                item->parent = categoryItem;
+                item->row = j++;
+                categoryItem->children.push_back(item);
+            }
+        }
+    }
+    endResetModel();
 }
 
 #include "moc_gearlistmodel.cpp"

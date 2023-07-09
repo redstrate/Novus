@@ -4,10 +4,11 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
+#include "filecache.h"
 #include "magic_enum.hpp"
 
-SingleGearView::SingleGearView(GameData* data) : data(data) {
-    gearView = new GearView(data);
+SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
+    gearView = new GearView(data, cache);
 
     auto layout = new QVBoxLayout();
     layout->addWidget(gearView);

@@ -6,11 +6,12 @@
 #include "gearview.h"
 
 struct GameData;
+class FileCache;
 
 class FullModelViewer : public QWidget {
     Q_OBJECT
 public:
-    explicit FullModelViewer(GameData* data);
+    explicit FullModelViewer(GameData* data, FileCache& cache);
 
 Q_SIGNALS:
     void gearChanged();
