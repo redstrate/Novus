@@ -23,25 +23,8 @@
 #include "filecache.h"
 
 MainWindow::MainWindow(GameData* in_data) : data(*in_data), cache(FileCache{*in_data}) {
-    setWindowTitle("mdlviewer");
+    setWindowTitle("Armoury Editor");
     setMinimumSize(QSize(800, 600));
-
-    auto fileMenu = menuBar()->addMenu("File");
-
-    // TODO: move to a dedicated mdlview?
-    /*auto openMDLFile = fileMenu->addAction("Open MDL...");
-    connect(openMDLFile, &QAction::triggered, [=] {
-        auto fileName = QFileDialog::getOpenFileName(nullptr,
-                                                     "Open MDL File",
-                                                     "~",
-                                                     "FFXIV Model File (*.mdl)");
-
-        auto buffer = physis_read_file(fileName.toStdString().c_str());
-
-        loadedGear.model = physis_mdl_parse(buffer.size, buffer.data);
-
-        reloadGearAppearance();
-    });*/
 
     auto toolsMenu = menuBar()->addMenu("Tools");
 
@@ -61,7 +44,7 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data), cache(FileCache{*in_
 
     helpMenu->addSeparator();
 
-    auto aboutNovusAction = helpMenu->addAction("About mdlviewer");
+    auto aboutNovusAction = helpMenu->addAction("About Armoury Editor");
     aboutNovusAction->setIcon(QIcon::fromTheme("help-about"));
     connect(aboutNovusAction, &QAction::triggered, this, [this] {
         auto window = new AboutWindow(this);

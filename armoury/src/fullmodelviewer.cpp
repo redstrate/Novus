@@ -14,13 +14,13 @@ FullModelViewer::FullModelViewer(GameData* data, FileCache& cache) : data(data) 
     setMinimumWidth(1280);
     setMinimumHeight(720);
 
+    auto dummyWidget = new QWidget();
+    setCentralWidget(dummyWidget);
+
     auto layout = new QVBoxLayout();
-    setLayout(layout);
+    dummyWidget->setLayout(layout);
 
-    auto menuBar = new QMenuBar();
-    layout->addWidget(menuBar);
-
-    auto fileMenu = menuBar->addMenu("File");
+    auto fileMenu = menuBar()->addMenu("File");
 
     auto datOpenAction = fileMenu->addAction("Load character DAT...");
     connect(datOpenAction, &QAction::triggered, [=] {

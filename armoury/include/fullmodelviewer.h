@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QWidget>
+#include <QMainWindow>
 #include <QGroupBox>
 
 #include "gearview.h"
@@ -8,7 +8,7 @@
 struct GameData;
 class FileCache;
 
-class FullModelViewer : public QWidget {
+class FullModelViewer : public QMainWindow {
     Q_OBJECT
 public:
     explicit FullModelViewer(GameData* data, FileCache& cache);

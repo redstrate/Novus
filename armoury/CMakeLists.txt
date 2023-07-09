@@ -1,7 +1,7 @@
 find_package(assimp REQUIRED)
 set_target_properties(assimp::assimp PROPERTIES MAP_IMPORTED_CONFIG_DEBUG Release)
 
-add_executable(mdlviewer
+add_executable(armoury
         src/main.cpp
         src/mainwindow.cpp
         src/vec3edit.cpp
@@ -14,12 +14,12 @@ add_executable(mdlviewer
         src/cmpeditor.cpp
         src/gearlistwidget.cpp
         src/gearlistmodel.cpp)
-target_include_directories(mdlviewer
+target_include_directories(armoury
         PUBLIC
         include
         PRIVATE
         ${CMAKE_BINARY_DIR})
-target_link_libraries(mdlviewer PUBLIC
+target_link_libraries(armoury PUBLIC
         ${LIBRARIES}
         Qt5::Core
         Qt5::Widgets
@@ -31,7 +31,7 @@ target_link_libraries(mdlviewer PUBLIC
         mdlpart
         NovusCommon)
 
-install(TARGETS mdlviewer
+install(TARGETS armoury
         DESTINATION "${INSTALL_BIN_PATH}")
 
 if(WIN32)
@@ -42,8 +42,8 @@ if(WIN32)
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${QT_BIN_DIR}")
 
     # Run windeployqt immediately after build
-    add_custom_command(TARGET mdlviewer
+    add_custom_command(TARGET armoury
             POST_BUILD
-            COMMAND "${WINDEPLOYQT_ENV_SETUP}" && "${WINDEPLOYQT_EXECUTABLE}" \"$<TARGET_FILE:mdlviewer>\"
+            COMMAND "${WINDEPLOYQT_ENV_SETUP}" && "${WINDEPLOYQT_EXECUTABLE}" \"$<TARGET_FILE:armoury>\"
             )
 endif()

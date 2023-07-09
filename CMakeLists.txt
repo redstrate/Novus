@@ -38,7 +38,7 @@ endif()
 
 add_subdirectory(renderer)
 add_subdirectory(exdviewer)
-add_subdirectory(mdlviewer)
+add_subdirectory(armoury)
 add_subdirectory(argcracker)
 add_subdirectory(explorer)
 add_subdirectory(bonedecomp)

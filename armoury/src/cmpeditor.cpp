@@ -24,6 +24,8 @@ std::vector<RaceTree> raceTree = {
     {Race::Viera, {Subrace::Rava, Subrace::Veena}}};
 
 CmpEditor::CmpEditor(GameData* data) : data(data) {
+    setWindowTitle("CMP Editor");
+
     auto layout = new QHBoxLayout();
     setLayout(layout);
 

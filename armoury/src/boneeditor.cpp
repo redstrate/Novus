@@ -36,6 +36,7 @@ BoneEditor::BoneEditor(GearView* gearView, QWidget* parent) : gearView(gearView)
     setLayout(layout);
 
     auto boneListWidget = new QTreeWidget();
+    boneListWidget->setHeaderLabel("Name");
 
     connect(gearView, &GearView::modelReloaded, this, [this, boneListWidget, gearView] {
         boneListWidget->clear();
