@@ -83,6 +83,11 @@ public:
     VkDeviceMemory depthMemory;
     VkImageView depthView;
 
+    VkImage dummyImage;
+    VkDeviceMemory dummyMemory;
+    VkImageView dummyView;
+    VkSampler dummySampler;
+
     VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 
     VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
@@ -115,4 +120,7 @@ public:
     int hash(const RenderModel& model, const RenderMaterial& material);
 
     glm::mat4 view;
+
+private:
+    void createDummyTexture();
 };
