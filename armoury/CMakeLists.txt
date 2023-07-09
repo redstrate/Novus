@@ -1,6 +1,3 @@
-find_package(assimp REQUIRED)
-set_target_properties(assimp::assimp PROPERTIES MAP_IMPORTED_CONFIG_DEBUG Release)
-
 add_executable(armoury
         src/main.cpp
         src/mainwindow.cpp
@@ -25,7 +22,6 @@ target_link_libraries(armoury PUBLIC
         Qt5::Widgets
         Qt5::Concurrent
         renderer
-        assimp::assimp
         magic_enum
         physis z
         mdlpart

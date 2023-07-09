@@ -338,6 +338,10 @@ void MDLPart::addModel(physis_MDL mdl, std::vector<physis_Material> materials, i
             return createMaterial(mat);
         });
 
+    if (materials.empty()) {
+        model.materials.push_back(createMaterial(physis_Material{}));
+    }
+
     models.push_back(model);
 
     Q_EMIT modelChanged();
