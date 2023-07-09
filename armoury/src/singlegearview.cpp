@@ -9,6 +9,9 @@
 
 SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
     gearView = new GearView(data, cache);
+    gearView->setHair(-1);
+    gearView->setEar(-1);
+    gearView->setFace(-1);
 
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
