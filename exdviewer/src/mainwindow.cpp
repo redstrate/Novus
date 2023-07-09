@@ -20,6 +20,12 @@
 MainWindow::MainWindow(GameData* data) : data(data) {
     setWindowTitle("exdviewer");
 
+    auto fileMenu = menuBar()->addMenu("File");
+
+    auto quitAction = fileMenu->addAction("Quit");
+    quitAction->setIcon(QIcon::fromTheme("gtk-quit"));
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
+
     auto helpMenu = menuBar()->addMenu("Help");
 
     auto donateAction = helpMenu->addAction("Donate");

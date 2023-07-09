@@ -29,9 +29,16 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data), cache(FileCache{*in_
     setWindowTitle("Armoury Editor");
     setMinimumSize(QSize(800, 600));
 
+    auto fileMenu = menuBar()->addMenu("File");
+
+    auto quitAction = fileMenu->addAction("Quit");
+    quitAction->setIcon(QIcon::fromTheme("gtk-quit"));
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
+
     auto toolsMenu = menuBar()->addMenu("Tools");
 
     auto cmpEditorMenu = toolsMenu->addAction("CMP Editor");
+    cmpEditorMenu->setIcon(QIcon::fromTheme("document-edit"));
     connect(cmpEditorMenu, &QAction::triggered, [=] {
         auto cmpEditor = new CmpEditor(in_data);
         cmpEditor->show();

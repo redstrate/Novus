@@ -24,6 +24,7 @@ MainWindow::MainWindow(GameData* data) : data(data), cache(FileCache{*data}) {
     auto fileMenu = menuBar()->addMenu("File");
 
     auto openMDLFile = fileMenu->addAction("Open MDL...");
+    openMDLFile->setIcon(QIcon::fromTheme("document-open"));
     connect(openMDLFile, &QAction::triggered, [=] {
         auto fileName = QFileDialog::getOpenFileName(nullptr,
                                                      "Open MDL File",
@@ -34,6 +35,12 @@ MainWindow::MainWindow(GameData* data) : data(data), cache(FileCache{*data}) {
 
         part->addModel(physis_mdl_parse(buffer.size, buffer.data), {}, 0);
     });
+
+    fileMenu->addSeparator();
+
+    auto quitAction = fileMenu->addAction("Quit");
+    quitAction->setIcon(QIcon::fromTheme("gtk-quit"));
+    connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
     auto helpMenu = menuBar()->addMenu("Help");
 

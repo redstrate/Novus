@@ -26,6 +26,7 @@ FullModelViewer::FullModelViewer(GameData* data, FileCache& cache) : data(data) 
     auto fileMenu = menuBar()->addMenu("File");
 
     auto datOpenAction = fileMenu->addAction("Load character DAT...");
+    datOpenAction->setIcon(QIcon::fromTheme("document-open"));
     connect(datOpenAction, &QAction::triggered, [=] {
         auto fileName = QFileDialog::getOpenFileName(nullptr,
                                                      "Open DAT File",
