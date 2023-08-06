@@ -1,9 +1,12 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "exdpart.h"
 
-#include <physis.hpp>
-#include <QTableWidget>
 #include <QDebug>
+#include <QTableWidget>
 #include <QVBoxLayout>
+#include <physis.hpp>
 
 EXDPart::EXDPart(GameData* data) : data(data) {
     pageTabWidget = new QTabWidget();

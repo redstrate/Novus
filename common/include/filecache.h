@@ -1,8 +1,11 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #pragma once
 
-#include <physis.hpp>
-#include <QString>
 #include <QMap>
+#include <QString>
+#include <physis.hpp>
 
 struct GameData;
 

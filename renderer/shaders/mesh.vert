@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: CC0-1.0
+
 #version 450
 
 layout(location = 0) in vec3 inPosition;

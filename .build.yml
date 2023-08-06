@@ -1,0 +1,9 @@
+image: archlinux
+packages:
+  - reuse
+sources:
+  - https://git.sr.ht/~redstrate/novus
+tasks:
+  - reuse: |
+      cd novus
+      reuse lint

@@ -1,10 +1,13 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #pragma once
 
-#include <vulkan/vulkan.h>
-#include <vector>
 #include <array>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <map>
+#include <vector>
+#include <vulkan/vulkan.h>
 
 #include <physis.hpp>
 

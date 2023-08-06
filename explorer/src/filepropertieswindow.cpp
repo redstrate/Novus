@@ -1,12 +1,16 @@
-#include <QHBoxLayout>
-#include <QTreeWidget>
-#include <QLabel>
-#include <QFormLayout>
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include <QDebug>
+#include <QFormLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QTreeWidget>
 
 #include "filepropertieswindow.h"
 
-FilePropertiesWindow::FilePropertiesWindow(GameData *data, QString path, QWidget *parent) : QWidget(parent), data(data) {
+FilePropertiesWindow::FilePropertiesWindow(GameData* data, QString path, QWidget* parent)
+    : QWidget(parent), data(data) {
     setWindowTitle("Properties for " + path);
 
     auto layout = new QFormLayout();

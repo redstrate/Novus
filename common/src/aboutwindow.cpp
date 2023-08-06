@@ -1,10 +1,13 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "aboutwindow.h"
 
+#include <QCoreApplication>
 #include <QLabel>
 #include <QPlainTextEdit>
 #include <QTabWidget>
 #include <QVBoxLayout>
-#include <QCoreApplication>
 
 #include "license.h"
 

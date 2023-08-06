@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "standalonewindow.h"
 
 #include <SDL.h>
@@ -6,7 +9,8 @@
 StandaloneWindow::StandaloneWindow(Renderer* renderer) : m_renderer(renderer) {
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    m_window = SDL_CreateWindow("mdlviewer viewport", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_VULKAN);
+    m_window = SDL_CreateWindow(
+        "mdlviewer viewport", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_VULKAN);
 }
 
 VkSurfaceKHR StandaloneWindow::getSurface(VkInstance instance) {

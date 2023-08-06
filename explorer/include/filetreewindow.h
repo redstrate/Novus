@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #pragma once
 
 #include <QMdiSubWindow>
@@ -7,7 +10,6 @@ struct PathPart {
     uint32_t crcHash;
     QMap<QString, PathPart> children;
 };
-
 
 class FileTreeWindow : public QWidget {
     Q_OBJECT

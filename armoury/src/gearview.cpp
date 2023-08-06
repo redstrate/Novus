@@ -1,10 +1,13 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "gearview.h"
 
 #include <QDebug>
 #include <QVBoxLayout>
 
-#include "magic_enum.hpp"
 #include "filecache.h"
+#include "magic_enum.hpp"
 
 GearView::GearView(GameData* data, FileCache& cache) : data(data), cache(cache) {
     mdlPart = new MDLPart(data, cache);

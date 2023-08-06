@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+# SPDX-License-Identifier: CC0-1.0
+
 add_executable(armoury
         src/main.cpp
         src/mainwindow.cpp

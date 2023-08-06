@@ -1,12 +1,15 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include <cstdint>
 
 #if defined(MACOS)
-#include <sys/sysctl.h>
-#include <mach/mach_time.h>
+    #include <mach/mach_time.h>
+    #include <sys/sysctl.h>
 #endif
 
 #if defined(WIN32)
-#include <windows.h>
+    #include <windows.h>
 #endif
 
 #if defined(MACOS)

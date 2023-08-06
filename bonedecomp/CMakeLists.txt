@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+# SPDX-License-Identifier: CC0-1.0
+
 add_executable(bonedecomp
         src/main.cpp)
 target_link_libraries(bonedecomp PUBLIC libxiv ${LIBRARIES} Qt5::Core Qt5::Widgets magic_enum)
@@ -5,7 +8,7 @@ target_link_libraries(bonedecomp PUBLIC libxiv ${LIBRARIES} Qt5::Core Qt5::Widge
 install(TARGETS bonedecomp
         DESTINATION "${INSTALL_BIN_PATH}")
 
-if(WIN32)
+if (WIN32)
     get_target_property(QMAKE_EXE Qt5::qmake IMPORTED_LOCATION)
     get_filename_component(QT_BIN_DIR "${QMAKE_EXE}" DIRECTORY)
 

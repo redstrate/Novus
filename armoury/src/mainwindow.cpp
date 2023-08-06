@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "mainwindow.h"
 
 #include <QHBoxLayout>
@@ -7,6 +10,8 @@
 #include <QTimer>
 
 #include <QAction>
+#include <QApplication>
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QPushButton>
@@ -14,8 +19,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <magic_enum.hpp>
 #include <physis.hpp>
-#include <QApplication>
-#include <QDesktopServices>
 
 #include "aboutwindow.h"
 #include "cmpeditor.h"

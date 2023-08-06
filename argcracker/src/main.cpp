@@ -1,13 +1,13 @@
-#include <fmt/core.h>
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include <QString>
+#include <fmt/core.h>
 
 #include <physis.hpp>
 
 // from xivdev
-static char ChecksumTable[] = {
-        'f', 'X', '1', 'p', 'G', 't', 'd', 'S',
-        '5', 'C', 'A', 'P', '4', '_', 'V', 'L'
-};
+static char ChecksumTable[] = {'f', 'X', '1', 'p', 'G', 't', 'd', 'S', '5', 'C', 'A', 'P', '4', '_', 'V', 'L'};
 
 inline char GetChecksum(unsigned int key) {
     auto value = key & 0x000F0000;

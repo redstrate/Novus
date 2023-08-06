@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+# SPDX-License-Identifier: CC0-1.0
+
 add_library(NovusCommon STATIC)
 target_sources(NovusCommon PRIVATE
         include/aboutwindow.h

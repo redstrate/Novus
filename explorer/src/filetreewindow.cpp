@@ -1,11 +1,14 @@
-#include <QHBoxLayout>
-#include <QTreeWidget>
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include <QDebug>
+#include <QHBoxLayout>
 #include <QMenu>
+#include <QTreeWidget>
 
 #include "filetreewindow.h"
 
-FileTreeWindow::FileTreeWindow(GameData *data, QWidget *parent) : QWidget(parent), data(data) {
+FileTreeWindow::FileTreeWindow(GameData* data, QWidget* parent) : QWidget(parent), data(data) {
     setWindowTitle("File Tree");
 
     auto layout = new QHBoxLayout();

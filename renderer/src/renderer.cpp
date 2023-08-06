@@ -1,13 +1,16 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "renderer.hpp"
 
-#include <vulkan/vulkan.h>
-#include <fmt/core.h>
 #include <array>
-#include <vector>
-#include <valarray>
+#include <fmt/core.h>
 #include <fstream>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include <valarray>
+#include <vector>
+#include <vulkan/vulkan.h>
 
 VkResult CreateDebugUtilsMessengerEXT(
         VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,

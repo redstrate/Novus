@@ -1,10 +1,11 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "filecache.h"
 
 #include <physis.hpp>
 
-FileCache::FileCache(GameData& data) : data(data) {
-
-}
+FileCache::FileCache(GameData& data) : data(data) {}
 
 physis_Buffer& FileCache::lookupFile(const QString& path) {
     if (!cachedBuffers.contains(path)) {

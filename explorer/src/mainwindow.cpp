@@ -1,14 +1,17 @@
+// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "mainwindow.h"
 
-#include <QDesktopServices>
 #include <QAction>
-#include <QMenuBar>
-#include <QUrl>
 #include <QApplication>
+#include <QDebug>
+#include <QDesktopServices>
 #include <QHBoxLayout>
+#include <QMenuBar>
 #include <QTableWidget>
 #include <QTreeWidget>
-#include <QDebug>
+#include <QUrl>
 
 #include "filetreewindow.h"
 #include "filepropertieswindow.h"
