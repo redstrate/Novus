@@ -1,69 +1,31 @@
 # Novus
 
-This is a collection of cross-platform, FFXIV modding tools. These don't use any pre-existing modding framework (Lumina,
-xivModdingFramework, etc) but instead my own custom modding library, [libxiv](https://git.sr.ht/~redstrate/libxiv).
-
-The goal is to create a good set of tools that isn't based on WPF and C#, and can work cross-platform without having
-to resort to Wine.
+A suite of FFXIV modding tools for Linux.
 
 **Note:** This is alpha level software, not intended to be usable in any capacity at the moment. Thus, I have not tagged
 any stable releases.
 
-## exdviewer
+## Components
 
-This is used to view excel data from the game. It's pretty basic right now but it seems to read anything I throw at it just fine.
+This repository contains many parts of Novus, such as:
 
+* [Argcracker](argcracker), a program that can decrypt game arguments.
+* [Armoury](armoury), a graphical gear and character viewer.
+* [Bone Decompiler](bonedecomp), a tool to decompile Havok skeleton files into TexTools-compatible JSON.
+* [EXD Viewer](exdviewer), a graphical program to view Excel (EXD) sheets from the game.
+* [Explorer](explorer), a graphical interface to explore DAT files.
+* [Model Viewer](mdlviewer), a graphical model viewer for MDL files.
 
-![exdviewer screenshot](misc/exdviewer-screenshot.png)
+## Building
 
-### Usage
+Please refer to the [building document](BUILDING.md) for instructions on how to build Novus.
 
-You must pass the path to your `sqpack` directory as the first argument.
+## Contributing
 
-`exdviewer.exe C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
+Please refer to the [contributing document](CONTRIBUTING.md) for everything you need to know to get started contributing to Novus.
 
-## mdlviewer
+## License
 
-This can display any arbitrary model from the game, as long as it's supported by libxiv.
+![GPLv3](https://www.gnu.org/graphics/gplv3-127x51.png)
 
-![mdlviewer screenshot](misc/mdlviewer-screenshot.png)
-
-### Usage
-
-You must pass the path to your `sqpack` directory as the first argument.
-
-`mdlviewer.exe C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
-
-### Note
-
-The viewport uses Vulkan, so it must be supported on your system in order to work.
-
-If you're running mdlviewer on macOS (where Qt builds usually don't ship with MoltenVK unfortunatey)
-mdlviewer will automatically reconfigure itself to use a standalone SDL2 window.
-
-## explorer
-
-This tool can list known files by libxiv, such as excel sheets.
-
-### Usage
-
-You must pass the path to your `sqpack` directory as the first argument.
-
-`explorer.exe C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack`
-
-## argcracker
-
-This can crack any SqexArg formatted string you throw at it. However there are two
-caveats:
-
-1. You must know the current TickCount() when you got the string, the easiest 
-way is to run your victim program and then run argcracker right after.
-2. You must know at least one known argument (such as `UserPath`) or the decrypted result 
-will
-3. be hard to find.
-
-### Usage
-
-`argcracker.exe [sqexarg string] [tick range] [known arg]`
-
-`argcracker.exe //**sqex0003p8LrsXt9_m9RJAsGzXd66zb3SxeTqZdhV**// 1000 UserPath`
+This project is licensed under the [GNU General Public License 3](LICENSE). Some code or assets may be licensed differently, please refer to the [REUSE](https://reuse.software/spec/) metadata.
