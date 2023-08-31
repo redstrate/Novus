@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+# SPDX-License-Identifier: CC0-1.0
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
