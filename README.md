@@ -1,5 +1,7 @@
 # Novus
 
+[![builds.sr.ht status](https://builds.sr.ht/~redstrate/novus.svg)](https://builds.sr.ht/~redstrate/novus?)
+
 A suite of FFXIV modding tools for Linux.
 
 **Note:** This is alpha level software, not intended to be usable in any capacity at the moment. Thus, I have not tagged
