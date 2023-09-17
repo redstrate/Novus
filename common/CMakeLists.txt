@@ -14,7 +14,7 @@ target_include_directories(NovusCommon PUBLIC
 target_link_libraries(NovusCommon PUBLIC Qt5::Core Qt5::Widgets physis)
 
 # meant for including the license text
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE LICENSE_TXT)
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/../LICENSES/GPL-3.0-or-later.txt LICENSE_TXT)
 STRING(REPLACE "\n" " \\n" LICENSE_TXT ${LICENSE_TXT})
 STRING(REPLACE "\"" "\"\"" LICENSE_TXT ${LICENSE_TXT})
 
