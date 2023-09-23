@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include <QTabWidget>
 #include <QWidget>
-
-struct GameData;
+#include <QTabWidget>
+#include <QMap>
+#include <physis.hpp>
 
 class EXDPart : public QWidget {
 public:
@@ -18,4 +18,11 @@ private:
     GameData* data = nullptr;
 
     QTabWidget* pageTabWidget = nullptr;
+
+    struct CachedExcel {
+        physis_EXH* exh = nullptr;
+        physis_EXD exd;
+    };
+    QMap<QString, CachedExcel> cachedExcelSheets;
+    Language getSuitableLanguage(physis_EXH* pExh);
 };
