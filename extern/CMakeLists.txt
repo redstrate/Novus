@@ -1,13 +1,7 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
-FetchContent_Declare(
-        Corrosion
-        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.3.5
-)
-
-FetchContent_MakeAvailable(Corrosion)
+find_package(Corrosion REQUIRED)
 
 FetchContent_Declare(
         libphysis
