@@ -7,7 +7,7 @@ if(USE_STANDALONE_WINDOW)
     set(EXTRA_LIBRARIES SDL2::SDL2)
 endif()
 
-add_library(renderer src/renderer.cpp ${EXTRA_SRC})
+add_library(renderer STATIC src/renderer.cpp ${EXTRA_SRC})
 target_include_directories(renderer PUBLIC include)
 target_link_libraries(renderer PUBLIC Qt5::Core Vulkan::Vulkan physis z glm::glm ${EXTRA_LIBRARIES})
 target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE)

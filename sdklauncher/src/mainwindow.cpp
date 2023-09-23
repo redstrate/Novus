@@ -3,12 +3,14 @@
 
 #include "mainwindow.h"
 
+#include <KConfig>
+#include <KConfigGroup>
+#include <QComboBox>
+#include <QDebug>
+#include <QFormLayout>
 #include <QListWidget>
 #include <QProcess>
 #include <QVBoxLayout>
-#include <QFormLayout>
-#include <QComboBox>
-#include <QDebug>
 
 static QMap<QString, QString> applications = {
     {"Armoury", "armoury"},
@@ -48,10 +50,13 @@ MainWindow::MainWindow() {
 
     auto formLayout = new QFormLayout();
 
+    KConfig config("novusrc");
+    KConfigGroup game = config.group("Game");
+
     auto gameCombo = new QComboBox();
     formLayout->addRow("Current Game", gameCombo);
     formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-    gameCombo->addItem("Placeholder");
+    gameCombo->addItem(game.readEntry("GameDir"));
 
     auto mainLayout = new QVBoxLayout();
     mainLayout->addWidget(centralFrame);

@@ -24,7 +24,6 @@ target_link_libraries(armoury PUBLIC
         Qt5::Core
         Qt5::Widgets
         Qt5::Concurrent
-        renderer
         magic_enum
         physis z
         mdlpart
