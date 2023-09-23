@@ -19,6 +19,7 @@
 
 MainWindow::MainWindow(GameData* data) : data(data) {
     setWindowTitle("exdviewer");
+    setMinimumSize(1280, 720);
 
     auto fileMenu = menuBar()->addMenu("File");
 
