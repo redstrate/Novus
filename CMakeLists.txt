@@ -10,6 +10,8 @@ set(CMAKE_CXX_STANDARD 17)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Qt5 COMPONENTS Core Widgets Concurrent CONFIG REQUIRED)
+find_package(Vulkan REQUIRED)
+find_package(glm REQUIRED)
 
 include(FetchContent)
 
