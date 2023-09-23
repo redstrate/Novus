@@ -7,3 +7,10 @@ Files: README.md BUILDING.md CONTRIBUTING.md argcracker/README.md armoury/README
 Copyright: Joshua Goins <josh@redstrate.com>
 License: CC0-1.0
 
+Files: extern/tinygltf/*
+Copyright: 2017 Syoyo Fujita
+License: MIT
+
+Files: extern/magic_enum/*
+Copyright: 2019 - 2023 Daniil Goncharov
+License: MIT
