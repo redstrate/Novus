@@ -68,6 +68,7 @@ MainWindow::MainWindow(GameData* data) : data(data), cache(FileCache{*data}) {
     setCentralWidget(dummyWidget);
 
     auto layout = new QHBoxLayout();
+    layout->setMargin(0);
     dummyWidget->setLayout(layout);
 
     part = new MDLPart(data, cache);
