@@ -12,7 +12,6 @@
 #include <QMenuBar>
 #include <QTableWidget>
 #include <QUrl>
-#include <fmt/core.h>
 #include <physis.hpp>
 
 #include "aboutwindow.h"

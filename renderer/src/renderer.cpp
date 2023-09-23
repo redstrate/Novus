@@ -3,8 +3,8 @@
 
 #include "renderer.hpp"
 
+#include <QDebug>
 #include <array>
-#include <fmt/core.h>
 #include <fstream>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
@@ -33,8 +33,7 @@ DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
               VkDebugUtilsMessageTypeFlagsEXT messageType,
               const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
               void* pUserData) {
-
-    fmt::print("{}\n", pCallbackData->pMessage);
+    qInfo() << pCallbackData->pMessage;
 
     return VK_FALSE;
 }
@@ -199,7 +198,7 @@ Renderer::Renderer() {
 
     createDummyTexture();
 
-    fmt::print("Initialized renderer!\n");
+    qInfo() << "Initialized renderer!";
 }
 
 bool Renderer::initSwapchain(VkSurfaceKHR surface, int width, int height) {
@@ -437,7 +436,6 @@ void Renderer::render(std::vector<RenderModel> models) {
             VK_NULL_HANDLE, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        fmt::print("error out of date\n");
         return;
     }
 
@@ -499,7 +497,6 @@ void Renderer::render(std::vector<RenderModel> models) {
 
             const auto h = hash(model, material);
             if(!cachedDescriptors.count(h)) {
-                fmt::print("Caching descriptor for hash {}\n", h);
                 if (auto descriptor = createDescriptorFor(model, material); descriptor != VK_NULL_HANDLE) {
                     cachedDescriptors[h] = descriptor;
                 } else {
@@ -840,7 +837,7 @@ VkShaderModule Renderer::loadShaderFromDisk(const std::string_view path) {
     std::ifstream file(path.data(), std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        throw std::runtime_error(fmt::format("failed to open shader file {}", path));
+        qFatal("Failed to open shader file: %s", path.data());
     }
 
     size_t fileSize = (size_t) file.tellg();
@@ -1187,7 +1184,7 @@ VkDescriptorSet Renderer::createDescriptorFor(const RenderModel& model, const Re
 
     vkAllocateDescriptorSets(device, &allocateInfo, &set);
     if (set == VK_NULL_HANDLE) {
-        fmt::print("Failed to create descriptor set!");
+        qFatal("Failed to create descriptor set!");
         return VK_NULL_HANDLE;
     }
 

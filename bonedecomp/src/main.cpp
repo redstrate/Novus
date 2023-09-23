@@ -7,7 +7,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
-#include <fmt/format.h>
 #include <magic_enum.hpp>
 
 #include "gamedata.h"

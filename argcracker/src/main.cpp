@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QString>
-#include <fmt/core.h>
+#include <QDebug>
 
 #include <physis.hpp>
 
@@ -74,13 +74,13 @@ int main(int argc, char* argv[]) {
 
     uint32_t bottom = TickCount() - tickRange;
 
-    fmt::print("Beginning to crack {}...\n", toCrack);
+    qInfo() << "Beginning to crack" << toCrack << "...";
 
     for(uint32_t i = bottom; i < TickCount(); i++) {
         QString decrypted = decryptGameArg(i, toCrack);
 
         if(decrypted.contains(knownArg)) {
-            fmt::print("Decrypted successfully: {}\n", decrypted.toStdString());
+            qInfo() << "Decrypted successfully:" << decrypted;
             return 0;
         }
     }

@@ -5,34 +5,15 @@ cmake_minimum_required(VERSION 3.25)
 project(Novus)
 
 set(CMAKE_AUTOMOC ON)
-
 set(CMAKE_CXX_STANDARD 17)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Qt5 COMPONENTS Core Widgets Concurrent CONFIG REQUIRED)
 
 include(FetchContent)
 
 add_subdirectory(extern)
-
-find_package(fmt QUIET)
-
-if(TARGET fmt::fmt)
-    message("Using system library for fmt")
-
-    set(LIBRARIES fmt::fmt ${LIBRARIES})
-else()
-    message("Using built-in fmt")
-
-    FetchContent_Declare(
-            fmt
-            GIT_REPOSITORY https://github.com/fmtlib/fmt
-            GIT_TAG        master
-    )
-
-    FetchContent_MakeAvailable(fmt)
-
-    set(LIBRARIES fmt::fmt ${LIBRARIES})
-endif()
 
 # macos
 if(APPLE)
@@ -44,7 +25,7 @@ add_subdirectory(exdviewer)
 add_subdirectory(armoury)
 add_subdirectory(argcracker)
 add_subdirectory(explorer)
-add_subdirectory(bonedecomp)
+#add_subdirectory(bonedecomp) # not yet ported to physis
 add_subdirectory(parts)
 add_subdirectory(common)
 add_subdirectory(mdlviewer)

@@ -227,24 +227,8 @@ void GearView::reloadModel() {
             for (int i = 0; i < mdl.num_material_names; i++) {
                 const char* material_name = mdl.material_names[i];
 
-                // std::string mtrl_path =
-                // loadedGear.gearInfo->getMtrlPath(201);
-                std::string mtrl_path = fmt::format(
-                    "chara/equipment/e{gearId:04d}/material/"
-                    "v{gearVersion:04d}{}",
-                    material_name,
-                    fmt::arg("gearId", gear.modelInfo.primaryID),
-                    fmt::arg("gearVersion", gear.modelInfo.gearVersion));
-
-                int bodyCode = 1;
-
-                // skin path
-                std::string skinmtrl_path = fmt::format(
-                    "chara/human/c{raceCode:04d}/obj/body/b{bodyCode:04d}/"
-                    "material/v0001{}",
-                    material_name,
-                    fmt::arg("raceCode", physis_get_race_code(fallbackRace, fallbackSubrace, currentGender)),
-                    fmt::arg("bodyCode", bodyCode));
+                const std::string mtrl_path = gear.getMtrlPath(material_name);
+                const std::string skinmtrl_path = physis_build_skin_material_path(physis_get_race_code(fallbackRace, fallbackSubrace, currentGender), 1, material_name);
 
                 if (physis_gamedata_exists(data, mtrl_path.c_str())) {
                     auto mat = physis_material_parse(cache.lookupFile(mtrl_path.c_str()));
@@ -273,15 +257,7 @@ void GearView::reloadModel() {
             std::vector<physis_Material> materials;
             for (int i = 0; i < mdl.num_material_names; i++) {
                 const char* material_name = mdl.material_names[i];
-
-                std::string skinmtrl_path = fmt::format(
-                    "chara/human/c{raceCode:04d}/obj/face/f{bodyCode:04d}/"
-                    "material{}",
-                    material_name,
-                    fmt::arg("raceCode", physis_get_race_code(currentRace, currentSubrace, currentGender)),
-                    fmt::arg("bodyCode", *face));
-
-                fmt::print("oops: {}", skinmtrl_path);
+                const std::string skinmtrl_path = physis_build_face_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *face, material_name);
 
                 if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
                     auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
@@ -303,15 +279,7 @@ void GearView::reloadModel() {
             std::vector<physis_Material> materials;
             for (int i = 0; i < mdl.num_material_names; i++) {
                 const char* material_name = mdl.material_names[i];
-
-                std::string skinmtrl_path = fmt::format(
-                    "chara/human/c{raceCode:04d}/obj/hair/h{bodyCode:04d}/"
-                    "material/v0001{}",
-                    material_name,
-                    fmt::arg("raceCode", physis_get_race_code(currentRace, currentSubrace, currentGender)),
-                    fmt::arg("bodyCode", *hair));
-
-                fmt::print("oops: {}", skinmtrl_path);
+                const std::string skinmtrl_path = physis_build_hair_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *hair, material_name);
 
                 if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
                     auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
@@ -333,15 +301,7 @@ void GearView::reloadModel() {
             std::vector<physis_Material> materials;
             for (int i = 0; i < mdl.num_material_names; i++) {
                 const char* material_name = mdl.material_names[i];
-
-                std::string skinmtrl_path = fmt::format(
-                    "chara/human/c{raceCode:04d}/obj/ear/e{bodyCode:04d}/"
-                    "material/v0001{}",
-                    material_name,
-                    fmt::arg("raceCode", physis_get_race_code(currentRace, currentSubrace, currentGender)),
-                    fmt::arg("bodyCode", *ear));
-
-                fmt::print("oops: {}", skinmtrl_path);
+                const std::string skinmtrl_path = physis_build_ear_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *ear, material_name);
 
                 if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
                     auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
@@ -361,13 +321,7 @@ void GearView::reloadModel() {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
 
             const char* material_name = mdl.material_names[0];
-
-            std::string skinmtrl_path = fmt::format(
-                "chara/human/c{raceCode:04d}/obj/tail/t{bodyCode:04d}/"
-                "material/v0001{}",
-                material_name,
-                fmt::arg("raceCode", physis_get_race_code(currentRace, currentSubrace, currentGender)),
-                fmt::arg("bodyCode", *tail));
+            const std::string skinmtrl_path = physis_build_tail_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *tail, material_name);
 
             if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
                 auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));

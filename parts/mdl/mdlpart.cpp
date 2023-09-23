@@ -12,7 +12,6 @@
 #include <QVulkanInstance>
 #include <QVulkanWindow>
 #include <QWindow>
-#include <fmt/core.h>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.inl>
 

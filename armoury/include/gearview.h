@@ -7,7 +7,6 @@
 #include "mdlpart.h"
 #include <QComboBox>
 #include <QWidget>
-#include <fmt/format.h>
 #include <physis.hpp>
 
 struct ModelInfo {
@@ -20,13 +19,8 @@ struct GearInfo {
     Slot slot;
     ModelInfo modelInfo;
 
-    std::string getMtrlPath(int raceID) {
-        return fmt::format(
-            "chara/equipment/e{gearId:04d}/material/v{gearVersion:04d}/mt_c{raceId:04d}e{gearId:04d}_{slot}_a.mtrl",
-            fmt::arg("gearId", modelInfo.primaryID),
-            fmt::arg("gearVersion", modelInfo.gearVersion),
-            fmt::arg("raceId", raceID),
-            fmt::arg("slot", physis_get_slot_name(slot)));
+    std::string getMtrlPath(const std::string_view material_name) const {
+        return physis_build_gear_material_path(modelInfo.primaryID, modelInfo.gearVersion, material_name.data());
     }
 };
 

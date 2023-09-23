@@ -31,9 +31,9 @@ FileTreeWindow::FileTreeWindow(GameData* data, QWidget* parent) : QWidget(parent
         addPath("exd/" + QString(nameLowercase.c_str()) + ".exh");
 
         auto exh = physis_gamedata_read_excel_sheet_header(data, sheetName);
-        for (int j = 0; j < exh.page_count; j++) {
-            for (int z = 0; z < exh.language_count; z++) {
-                std::string path = physis_gamedata_get_exd_filename(nameLowercase.c_str(), &exh, exh.languages[z], j);
+        for (int j = 0; j < exh->page_count; j++) {
+            for (int z = 0; z < exh->language_count; z++) {
+                std::string path = physis_gamedata_get_exd_filename(nameLowercase.c_str(), exh, exh->languages[z], j);
 
                 addPath(("exd/" + path).c_str());
             }

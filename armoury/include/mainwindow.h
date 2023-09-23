@@ -5,7 +5,6 @@
 
 #include <QComboBox>
 #include <QMainWindow>
-#include <fmt/format.h>
 #include <physis.hpp>
 #include <unordered_map>
 
