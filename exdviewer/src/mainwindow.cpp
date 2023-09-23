@@ -3,6 +3,8 @@
 
 #include "mainwindow.h"
 
+#include <KAboutApplicationDialog>
+#include <KAboutData>
 #include <QAction>
 #include <QApplication>
 #include <QDesktopServices>
@@ -14,7 +16,6 @@
 #include <physis.hpp>
 
 #include "exdpart.h"
-#include "aboutwindow.h"
 
 MainWindow::MainWindow(GameData* data) : data(data) {
     setWindowTitle("exdviewer");
@@ -39,7 +40,7 @@ MainWindow::MainWindow(GameData* data) : data(data) {
     auto aboutNovusAction = helpMenu->addAction("About exdviewer");
     aboutNovusAction->setIcon(QIcon::fromTheme("help-about"));
     connect(aboutNovusAction, &QAction::triggered, this, [this] {
-        auto window = new AboutWindow(this);
+        auto window = new KAboutApplicationDialog(KAboutData::applicationData(), this);
         window->show();
     });
 

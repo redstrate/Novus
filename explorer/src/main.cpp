@@ -6,11 +6,15 @@
 #include <QStyle>
 #include <physis.hpp>
 
+#include "aboutdata.h"
 #include "mainwindow.h"
 #include "settings.h"
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
+
+    customizeAboutData(
+        QStringLiteral("explorer"), QStringLiteral("Explorer"), QStringLiteral("Program to explore FFXIV dat files."));
 
     physis_initialize_logging();
 

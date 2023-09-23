@@ -7,7 +7,7 @@ add_executable(mdlviewer
 target_include_directories(mdlviewer
         PUBLIC
         include)
-target_link_libraries(mdlviewer PUBLIC physis z ${LIBRARIES} Qt5::Core Qt5::Widgets mdlpart NovusCommon)
+target_link_libraries(mdlviewer PUBLIC physis z ${LIBRARIES} Qt5::Core Qt5::Widgets KF5::XmlGui mdlpart NovusCommon)
 
 install(TARGETS mdlviewer
         DESTINATION "${INSTALL_BIN_PATH}")

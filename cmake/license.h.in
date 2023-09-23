@@ -1,6 +1,0 @@
-// SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
-// SPDX-License-Identifier: CC0-1.0
-
-#pragma once
-
-const QString license = QStringLiteral("@LICENSE_TXT@");

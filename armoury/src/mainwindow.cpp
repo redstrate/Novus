@@ -9,6 +9,8 @@
 #include <QTableWidget>
 #include <QTimer>
 
+#include <KAboutApplicationDialog>
+#include <KAboutData>
 #include <QAction>
 #include <QApplication>
 #include <QDesktopServices>
@@ -20,10 +22,9 @@
 #include <magic_enum.hpp>
 #include <physis.hpp>
 
-#include "aboutwindow.h"
 #include "cmpeditor.h"
-#include "gearlistwidget.h"
 #include "filecache.h"
+#include "gearlistwidget.h"
 
 MainWindow::MainWindow(GameData* in_data) : data(*in_data), cache(FileCache{*in_data}) {
     setWindowTitle("Armoury Editor");
@@ -57,7 +58,7 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data), cache(FileCache{*in_
     auto aboutNovusAction = helpMenu->addAction("About Armoury Editor");
     aboutNovusAction->setIcon(QIcon::fromTheme("help-about"));
     connect(aboutNovusAction, &QAction::triggered, this, [this] {
-        auto window = new AboutWindow(this);
+        auto window = new KAboutApplicationDialog(KAboutData::applicationData(), this);
         window->show();
     });
 

@@ -4,11 +4,15 @@
 #include <QApplication>
 #include <physis.hpp>
 
+#include "aboutdata.h"
 #include "mainwindow.h"
 #include "settings.h"
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
+
+    customizeAboutData(
+        QStringLiteral("armoury"), QStringLiteral("Armoury"), QStringLiteral("Program to view FFXIV gear."));
 
     physis_initialize_logging();
 

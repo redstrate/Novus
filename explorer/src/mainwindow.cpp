@@ -3,6 +3,8 @@
 
 #include "mainwindow.h"
 
+#include <KAboutApplicationDialog>
+#include <KAboutData>
 #include <QAction>
 #include <QApplication>
 #include <QDebug>
@@ -13,9 +15,8 @@
 #include <QTreeWidget>
 #include <QUrl>
 
-#include "filetreewindow.h"
 #include "filepropertieswindow.h"
-#include "aboutwindow.h"
+#include "filetreewindow.h"
 
 MainWindow::MainWindow(GameData* data) : data(data) {
     setWindowTitle("explorer");
@@ -39,7 +40,7 @@ MainWindow::MainWindow(GameData* data) : data(data) {
     auto aboutNovusAction = helpMenu->addAction("About explorer");
     aboutNovusAction->setIcon(QIcon::fromTheme("help-about"));
     connect(aboutNovusAction, &QAction::triggered, this, [this] {
-        auto window = new AboutWindow(this);
+        auto window = new KAboutApplicationDialog(KAboutData::applicationData(), this);
         window->show();
     });
 

@@ -3,6 +3,8 @@
 
 #include "mainwindow.h"
 
+#include <KAboutApplicationDialog>
+#include <KAboutData>
 #include <QAction>
 #include <QApplication>
 #include <QDesktopServices>
@@ -14,7 +16,6 @@
 #include <QUrl>
 #include <physis.hpp>
 
-#include "aboutwindow.h"
 #include "mdlpart.h"
 
 MainWindow::MainWindow(GameData* data) : data(data), cache(FileCache{*data}) {
@@ -55,7 +56,7 @@ MainWindow::MainWindow(GameData* data) : data(data), cache(FileCache{*data}) {
     auto aboutNovusAction = helpMenu->addAction("About Model Viewer");
     aboutNovusAction->setIcon(QIcon::fromTheme("help-about"));
     connect(aboutNovusAction, &QAction::triggered, this, [this] {
-        auto window = new AboutWindow(this);
+        auto window = new KAboutApplicationDialog(KAboutData::applicationData(), this);
         window->show();
     });
 

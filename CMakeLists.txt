@@ -36,7 +36,7 @@ ecm_setup_version(${PROJECT_VERSION}
 )
 
 find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent CONFIG REQUIRED)
-find_package(KF5 ${KF_MIN_VERSION} REQUIRED COMPONENTS Config)
+find_package(KF5 ${KF_MIN_VERSION} REQUIRED COMPONENTS Config XmlGui)
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 
