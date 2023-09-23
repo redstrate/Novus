@@ -95,7 +95,7 @@ public:
 
     VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
 
-    std::map<int, VkDescriptorSet> cachedDescriptors;
+    std::map<uint64_t, VkDescriptorSet> cachedDescriptors;
 
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
@@ -120,7 +120,7 @@ public:
 
     VkDescriptorSet createDescriptorFor(const RenderModel& model, const RenderMaterial& material);
 
-    int hash(const RenderModel& model, const RenderMaterial& material);
+    uint64_t hash(const RenderModel& model, const RenderMaterial& material);
 
     glm::mat4 view;
 

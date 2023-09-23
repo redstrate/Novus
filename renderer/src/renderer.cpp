@@ -491,12 +491,20 @@ void Renderer::render(std::vector<RenderModel> models) {
             continue;
 
         for(const auto& part : model.parts) {
+            if (part.materialIndex >= model.materials.size()) {
+                continue;
+            }
+
             RenderMaterial& material = model.materials[part.materialIndex];
 
-            int h = hash(model, material);
+            const auto h = hash(model, material);
             if(!cachedDescriptors.count(h)) {
                 fmt::print("Caching descriptor for hash {}\n", h);
-                cachedDescriptors[h] = createDescriptorFor(model, material);
+                if (auto descriptor = createDescriptorFor(model, material); descriptor != VK_NULL_HANDLE) {
+                    cachedDescriptors[h] = descriptor;
+                } else {
+                    continue;
+                }
             }
 
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &cachedDescriptors[h], 0, nullptr);
@@ -1154,8 +1162,8 @@ void Renderer::inlineTransitionImageLayout(VkCommandBuffer commandBuffer, VkImag
                          nullptr, 0, nullptr, 1, &barrier);
 }
 
-int Renderer::hash(const RenderModel& model, const RenderMaterial& material) {
-    int hash = 0;
+uint64_t Renderer::hash(const RenderModel& model, const RenderMaterial& material) {
+    uint64_t hash = 0;
     hash += reinterpret_cast<intptr_t>((void*)&model);
     if (material.diffuseTexture)
         hash += reinterpret_cast<intptr_t>((void*)material.diffuseTexture);
@@ -1178,6 +1186,10 @@ VkDescriptorSet Renderer::createDescriptorFor(const RenderModel& model, const Re
     allocateInfo.pSetLayouts = &setLayout;
 
     vkAllocateDescriptorSets(device, &allocateInfo, &set);
+    if (set == VK_NULL_HANDLE) {
+        fmt::print("Failed to create descriptor set!");
+        return VK_NULL_HANDLE;
+    }
 
     const size_t bufferSize = sizeof(glm::mat4) * 128;
 
