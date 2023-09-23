@@ -23,3 +23,4 @@ target_include_directories(physis INTERFACE ${libphysis_SOURCE_DIR}/target/publi
 target_link_libraries(physis INTERFACE unshield)
 
 add_subdirectory(magic_enum)
+add_subdirectory(tinygltf)

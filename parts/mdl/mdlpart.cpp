@@ -12,15 +12,12 @@
 #include <QVulkanInstance>
 #include <QVulkanWindow>
 #include <QWindow>
-#include <assimp/Exporter.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
 #include <fmt/core.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.inl>
 
 #include "filecache.h"
+#include "tiny_gltf.h"
 
 #ifndef USE_STANDALONE_WINDOW
 class VulkanWindow : public QWindow {
@@ -181,148 +178,184 @@ MDLPart::MDLPart(GameData* data, FileCache& cache) : data(data), cache(cache) {
 }
 
 void MDLPart::exportModel(const QString& fileName) {
-    Assimp::Exporter exporter;
+    const int selectedModel = 0;
+    const int selectedLod = 0;
 
-    aiScene scene;
-    scene.mRootNode = new aiNode();
+    const physis_MDL& model = models[selectedModel].model;
+    const physis_LOD& lod = model.lods[selectedLod];
 
-    // TODO: hardcoded to the first model for now
-    scene.mRootNode->mNumChildren = models[0].model.lods[0].num_parts + 1; // plus one for the skeleton
-    scene.mRootNode->mChildren = new aiNode*[scene.mRootNode->mNumChildren];
+    tinygltf::Model gltfModel;
+    gltfModel.asset.generator = "Novus";
 
-    scene.mNumMeshes = models[0].model.lods[0].num_parts;
-    scene.mMeshes = new aiMesh*[scene.mNumMeshes];
+    auto& gltfSkeletonNode = gltfModel.nodes.emplace_back();
+    gltfSkeletonNode.name = skeleton->root_bone->name;
 
-    auto skeleton_node = new aiNode();
-    skeleton_node->mName = "Skeleton";
-    skeleton_node->mNumChildren = 1;
-    skeleton_node->mChildren = new aiNode*[skeleton_node->mNumChildren];
-
-    scene.mRootNode->mChildren[scene.mRootNode->mNumChildren - 1] = skeleton_node;
-
-    std::vector<aiNode*> skeletonNodes;
-
-    for (int i = 0; i < models[0].model.num_affected_bones; i++) {
-        auto& node = skeletonNodes.emplace_back();
-        node = new aiNode();
-        node->mName = models[0].model.affected_bone_names[i];
+    for (int i = 0; i < model.num_affected_bones; i++) {
+        auto& node = gltfModel.nodes.emplace_back();
+        node.name = model.affected_bone_names[i];
 
         int real_bone_id = 0;
         for (int k = 0; k < skeleton->num_bones; k++) {
-            if (strcmp(skeleton->bones[k].name, models[0].model.affected_bone_names[i]) == 0) {
+            if (strcmp(skeleton->bones[k].name, model.affected_bone_names[i]) == 0) {
                 real_bone_id = k;
             }
         }
 
-        node->mChildren = new aiNode*[models[0].model.num_affected_bones];
-
         auto& real_bone = skeleton->bones[real_bone_id];
-        memcpy(&node->mTransformation, glm::value_ptr(boneData[real_bone.index].finalTransform), sizeof(aiMatrix4x4));
+        node.translation = {real_bone.position[0], real_bone.position[1], real_bone.position[2]};
+        node.rotation = {real_bone.rotation[0], real_bone.rotation[1], real_bone.rotation[2], real_bone.rotation[3]};
+        node.scale = {real_bone.scale[0], real_bone.scale[1], real_bone.scale[2]};
     }
 
     // setup parenting
-    for (int i = 0; i < models[0].model.num_affected_bones; i++) {
+    for (int i = 0; i < model.num_affected_bones; i++) {
         int real_bone_id = 0;
         for (int k = 0; k < skeleton->num_bones; k++) {
-            if (strcmp(skeleton->bones[k].name, models[0].model.affected_bone_names[i]) == 0) {
+            if (strcmp(skeleton->bones[k].name, model.affected_bone_names[i]) == 0) {
                 real_bone_id = k;
             }
         }
 
         auto& real_bone = skeleton->bones[real_bone_id];
         if (real_bone.parent_bone != nullptr) {
-            for (int k = 0; k < models[0].model.num_affected_bones; k++) {
-                if (strcmp(models[0].model.affected_bone_names[k], real_bone.parent_bone->name) == 0) {
-                    skeletonNodes[i]->mParent = skeletonNodes[k];
-                    skeletonNodes[k]->mChildren[skeletonNodes[k]->mNumChildren++] = skeletonNodes[i];
+            for (int k = 0; k < model.num_affected_bones; k++) {
+                if (strcmp(model.affected_bone_names[k], real_bone.parent_bone->name) == 0) {
+                    gltfModel.nodes[k + 1].children.push_back(i + 1); // +1 for the skeleton node taking up the first index
                 }
             }
+        } else {
+            gltfSkeletonNode.children.push_back(i + 1);
         }
     }
 
-    skeleton_node->mChildren[0] = new aiNode();
-    skeleton_node->mChildren[0]->mName = "root";
-    skeleton_node->mChildren[0]->mChildren = new aiNode*[models[0].model.num_affected_bones];
-
-    for (int i = 0; i < skeletonNodes.size(); i++) {
-        if (skeletonNodes[i]->mParent == nullptr) {
-            skeleton_node->mChildren[0]->mChildren[skeleton_node->mChildren[0]->mNumChildren++] = skeletonNodes[i];
-        }
+    auto& gltfSkin = gltfModel.skins.emplace_back();
+    gltfSkin.name = gltfSkeletonNode.name;
+    for (int i = 1; i < gltfModel.nodes.size(); i++) {
+        gltfSkin.joints.push_back(i);
     }
 
-    for (int i = 0; i < models[0].model.lods[0].num_parts; i++) {
-        scene.mMeshes[i] = new aiMesh();
-        scene.mMeshes[i]->mMaterialIndex = 0;
+    // Inverse bind matrices
+    {
+        gltfSkin.inverseBindMatrices = gltfModel.accessors.size();
 
-        auto& node = scene.mRootNode->mChildren[i];
-        node = new aiNode();
-        node->mNumMeshes = 1;
-        node->mMeshes = new unsigned int[scene.mRootNode->mNumMeshes];
-        node->mMeshes[0] = i;
+        auto& inverseAccessor = gltfModel.accessors.emplace_back();
+        inverseAccessor.bufferView = gltfModel.bufferViews.size();
+        inverseAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+        inverseAccessor.count = model.num_affected_bones;
+        inverseAccessor.type = TINYGLTF_TYPE_MAT4;
 
-        auto mesh = scene.mMeshes[i];
-        mesh->mNumVertices = models[0].model.lods[0].parts[i].num_vertices;
-        mesh->mVertices = new aiVector3D[mesh->mNumVertices];
-        mesh->mNormals = new aiVector3D[mesh->mNumVertices];
-        mesh->mTextureCoords[0] = new aiVector3D[mesh->mNumVertices];
-        mesh->mNumUVComponents[0] = 2;
+        auto& inverseBufferView = gltfModel.bufferViews.emplace_back();
+        inverseBufferView.buffer = gltfModel.buffers.size();
 
-        for (int j = 0; j < mesh->mNumVertices; j++) {
-            auto vertex = models[0].model.lods[0].parts[i].vertices[j];
-            mesh->mVertices[j] = aiVector3D(vertex.position[0], vertex.position[1], vertex.position[2]);
-            mesh->mNormals[j] = aiVector3D(vertex.normal[0], vertex.normal[1], vertex.normal[2]);
-            mesh->mTextureCoords[0][j] = aiVector3D(vertex.uv[0], vertex.uv[1], 0.0f);
-        }
-
-        mesh->mNumBones = models[0].model.num_affected_bones;
-        mesh->mBones = new aiBone*[mesh->mNumBones];
-        for (int j = 0; j < mesh->mNumBones; j++) {
-            int real_bone_id = j;
-            // TODO: is this still relevant?5
-            /*for(int k = 0; k < skeleton.bones.size(); k++) {
-                if(skeleton.bones[k].name == model.affectedBoneNames[j]) {
-                    real_bone_id  = k;
-                }
-            }*/
-
-            mesh->mBones[j] = new aiBone();
-            mesh->mBones[j]->mName = models[0].model.affected_bone_names[j];
-            mesh->mBones[j]->mNumWeights = mesh->mNumVertices * 4;
-            mesh->mBones[j]->mWeights = new aiVertexWeight[mesh->mBones[j]->mNumWeights];
-            // mesh->mBones[j]->mNode = skeleton_node->mChildren[j];
-
-            for (int k = 0; k < mesh->mNumVertices; k++) {
-                for (int z = 0; z < 4; z++) {
-                    if (models[0].model.lods[0].parts[i].vertices[k].bone_id[z] == real_bone_id) {
-                        auto& weight = mesh->mBones[j]->mWeights[k * 4 + z];
-                        weight.mVertexId = k;
-                        weight.mWeight = models[0].model.lods[0].parts[i].vertices[k].bone_weight[z];
-                    }
+        auto& inverseBuffer = gltfModel.buffers.emplace_back();
+        for (int i = 0; i < model.num_affected_bones; i++) {
+            int real_bone_id = 0;
+            for (int k = 0; k < skeleton->num_bones; k++) {
+                if (strcmp(skeleton->bones[k].name, model.affected_bone_names[i]) == 0) {
+                    real_bone_id = k;
                 }
             }
+
+            auto& real_bone = skeleton->bones[real_bone_id];
+            auto inverseMatrix = boneData[real_bone.index].inversePose;
+            auto inverseMatrixCPtr = reinterpret_cast<uint8_t*>(glm::value_ptr(inverseMatrix));
+
+            inverseBuffer.data.insert(inverseBuffer.data.end(), inverseMatrixCPtr, inverseMatrixCPtr + sizeof(float) * 16);
         }
 
-        mesh->mNumFaces = models[0].model.lods[0].parts[i].num_indices / 3;
-        mesh->mFaces = new aiFace[mesh->mNumFaces];
+        inverseBufferView.byteLength = inverseBuffer.data.size();
+    }
 
-        int lastFace = 0;
-        for (int j = 0; j < models[0].model.lods[0].parts[i].num_indices; j += 3) {
-            aiFace& face = mesh->mFaces[lastFace++];
+    for (int i = 0; i < lod.num_parts; i++) {
+        auto& gltfNode = gltfModel.nodes.emplace_back();;
+        gltfNode.name = "placeholder Part 0.1";
+        gltfNode.skin = 0;
 
-            face.mNumIndices = 3;
-            face.mIndices = new unsigned int[face.mNumIndices];
+        gltfNode.mesh = gltfModel.meshes.size();
+        auto& gltfMesh = gltfModel.meshes.emplace_back();
 
-            face.mIndices[0] = models[0].model.lods[0].parts[i].indices[j];
-            face.mIndices[1] = models[0].model.lods[0].parts[i].indices[j + 1];
-            face.mIndices[2] = models[0].model.lods[0].parts[i].indices[j + 2];
+        gltfMesh.name = "what?";
+
+        auto& gltfPrimitive = gltfMesh.primitives.emplace_back();
+        gltfPrimitive.attributes["POSITION"] = gltfModel.accessors.size();
+        gltfPrimitive.attributes["TEXCOORD_0"] = gltfModel.accessors.size() + 1;
+        gltfPrimitive.attributes["NORMAL"] = gltfModel.accessors.size() + 2;
+        gltfPrimitive.attributes["WEIGHTS_0"] = gltfModel.accessors.size() + 3;
+        gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 4;
+        gltfPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
+
+        // Vertices
+        {
+            auto& positionAccessor = gltfModel.accessors.emplace_back();
+            positionAccessor.bufferView = gltfModel.bufferViews.size();
+            positionAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+            positionAccessor.count = lod.parts[i].num_vertices;
+            positionAccessor.type = TINYGLTF_TYPE_VEC3;
+
+            auto& uvAccessor = gltfModel.accessors.emplace_back();
+            uvAccessor.bufferView = gltfModel.bufferViews.size();
+            uvAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+            uvAccessor.count = lod.parts[i].num_vertices;
+            uvAccessor.type = TINYGLTF_TYPE_VEC2;
+            uvAccessor.byteOffset = offsetof(Vertex, uv);
+
+            auto& normalAccessor = gltfModel.accessors.emplace_back();
+            normalAccessor.bufferView = gltfModel.bufferViews.size();
+            normalAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+            normalAccessor.count = lod.parts[i].num_vertices;
+            normalAccessor.type = TINYGLTF_TYPE_VEC3;
+            normalAccessor.byteOffset = offsetof(Vertex, normal);
+
+            auto& boneWeightAccessor = gltfModel.accessors.emplace_back();
+            boneWeightAccessor.bufferView = gltfModel.bufferViews.size();
+            boneWeightAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+            boneWeightAccessor.count = lod.parts[i].num_vertices;
+            boneWeightAccessor.type = TINYGLTF_TYPE_VEC4;
+            boneWeightAccessor.byteOffset = offsetof(Vertex, bone_weight);
+
+            auto& boneIdAccessor = gltfModel.accessors.emplace_back();
+            boneIdAccessor.bufferView = gltfModel.bufferViews.size();
+            boneIdAccessor.componentType = TINYGLTF_COMPONENT_TYPE_BYTE;
+            boneIdAccessor.count = lod.parts[i].num_vertices;
+            boneIdAccessor.type = TINYGLTF_TYPE_VEC4;
+            boneIdAccessor.byteOffset = offsetof(Vertex, bone_id);
+
+            auto& vertexBufferView = gltfModel.bufferViews.emplace_back();
+            vertexBufferView.buffer = gltfModel.buffers.size();
+            vertexBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+            auto& vertexBuffer = gltfModel.buffers.emplace_back();
+            vertexBuffer.data.resize(lod.parts[i].num_vertices * sizeof(Vertex));
+            memcpy(vertexBuffer.data.data(), lod.parts[i].vertices, vertexBuffer.data.size());
+
+            vertexBufferView.byteLength = vertexBuffer.data.size();
+            vertexBufferView.byteStride = sizeof(Vertex);
+        }
+
+        // Indices
+        {
+            gltfPrimitive.indices = gltfModel.accessors.size();
+            auto& indexAccessor = gltfModel.accessors.emplace_back();
+            indexAccessor.bufferView = gltfModel.bufferViews.size();
+            indexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
+            indexAccessor.count = lod.parts[i].num_indices;
+            indexAccessor.type = TINYGLTF_TYPE_SCALAR;
+
+            auto& indexBufferView = gltfModel.bufferViews.emplace_back();
+            indexBufferView.buffer = gltfModel.buffers.size();
+            indexBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
+
+            auto& indexBuffer = gltfModel.buffers.emplace_back();
+            indexBuffer.data.resize(lod.parts[i].num_indices * sizeof(uint16_t));
+            memcpy(indexBuffer.data.data(), lod.parts[i].indices, indexBuffer.data.size());
+
+            indexBufferView.byteLength = indexBuffer.data.size();
+            indexBufferView.byteStride = sizeof(uint16_t);
         }
     }
 
-    scene.mNumMaterials = 1;
-    scene.mMaterials = new aiMaterial*[1];
-    scene.mMaterials[0] = new aiMaterial();
-
-    exporter.Export(&scene, "fbx", fileName.toStdString());
+    tinygltf::TinyGLTF loader;
+    loader.WriteGltfSceneToFile(&gltfModel, fileName.toStdString(), true, true, false, true);
 }
 
 void MDLPart::clear() {
