@@ -20,6 +20,7 @@
 
 MainWindow::MainWindow(GameData* data) : data(data), cache(FileCache{*data}) {
     setWindowTitle("Model Viewer");
+    setMinimumSize(640, 480);
 
     auto fileMenu = menuBar()->addMenu("File");
 
