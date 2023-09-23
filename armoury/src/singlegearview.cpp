@@ -6,12 +6,15 @@
 #include <QFileDialog>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QDebug>
 
 #include "filecache.h"
 #include "magic_enum.hpp"
 
 SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
     gearView = new GearView(data, cache);
+
+    // We don't want to see the face in this view
     gearView->setHair(-1);
     gearView->setEar(-1);
     gearView->setFace(-1);
@@ -29,7 +32,7 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
         if (loadingComboData)
             return;
 
-        setRace((Race)raceCombo->itemData(index).toInt());
+        setRace(static_cast<Race>(raceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(raceCombo);
 
@@ -38,7 +41,7 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
         if (loadingComboData)
             return;
 
-        setSubrace((Subrace)raceCombo->itemData(index).toInt());
+        setSubrace(static_cast<Subrace>(raceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(subraceCombo);
 
@@ -47,7 +50,7 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
         if (loadingComboData)
             return;
 
-        setGender((Gender)genderCombo->itemData(index).toInt());
+        setGender(static_cast<Gender>(genderCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(genderCombo);
 
@@ -70,9 +73,12 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
 
     exportButton = new QPushButton("Export...");
     connect(exportButton, &QPushButton::clicked, this, [this](bool) {
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Model"), "model.fbx", tr("FBX Files (*.fbx)"));
+        if (currentGear.has_value()) {
+            QString fileName =
+                QFileDialog::getSaveFileName(this, tr("Save Model"), "model.glb", tr("glTF Binary File (*.glb)"));
 
-        gearView->exportModel(fileName);
+            gearView->exportModel(fileName);
+        }
     });
     controlLayout->addWidget(exportButton);
 
@@ -156,21 +162,51 @@ void SingleGearView::reloadGear() {
 
         loadingComboData = true;
 
+        const auto oldRace = static_cast<Race>(raceCombo->itemData(raceCombo->currentIndex()).toInt());
+        const auto oldSubrace = static_cast<Subrace>(subraceCombo->itemData(subraceCombo->currentIndex()).toInt());
+        const auto oldGender = static_cast<Gender>(genderCombo->itemData(genderCombo->currentIndex()).toInt());
+        const auto oldLod = lodCombo->itemData(lodCombo->currentIndex()).toInt();
+
         raceCombo->clear();
         subraceCombo->clear();
-        for (auto [race, subrace] : gearView->supportedRaces()) {
-            raceCombo->addItem(magic_enum::enum_name(race).data(), (int)race);
-            subraceCombo->addItem(magic_enum::enum_name(subrace).data(), (int)subrace);
+        raceCombo->setCurrentIndex(0);
+        subraceCombo->setCurrentIndex(0);
+
+        const auto supportedRaces = gearView->supportedRaces();
+        QList<Race> addedRaces;
+        for (auto [race, subrace] : supportedRaces) {
+            // TODO: supportedRaces should be designed better
+            if (!addedRaces.contains(race)) {
+                raceCombo->addItem(magic_enum::enum_name(race).data(), static_cast<int>(race));
+                addedRaces.push_back(race);
+            }
+            subraceCombo->addItem(magic_enum::enum_name(subrace).data(), static_cast<int>(subrace));
+        }
+
+        if (auto it = std::find_if(supportedRaces.begin(), supportedRaces.end(), [oldRace](auto p) { return std::get<0>(p) == oldRace; }); it != supportedRaces.end()) {
+            raceCombo->setCurrentIndex(std::distance(supportedRaces.begin(), it));
+        }
+
+        if (auto it = std::find_if(supportedRaces.begin(), supportedRaces.end(), [oldSubrace](auto p) { return std::get<1>(p) == oldSubrace; }); it != supportedRaces.end()) {
+            subraceCombo->setCurrentIndex(std::distance(supportedRaces.begin(), it));
         }
 
         genderCombo->clear();
-        for (auto gender : gearView->supportedGenders()) {
-            genderCombo->addItem(magic_enum::enum_name(gender).data(), (int)gender);
+        genderCombo->setCurrentIndex(0);
+
+        const auto supportedGenders = gearView->supportedGenders();
+        for (auto gender : supportedGenders) {
+            genderCombo->addItem(magic_enum::enum_name(gender).data(), static_cast<int>(gender));
+        }
+
+        if (auto it = std::find_if(supportedGenders.begin(), supportedGenders.end(), [oldGender](auto p) { return p == oldGender; }); it != supportedGenders.end()) {
+            genderCombo->setCurrentIndex(std::distance(supportedGenders.begin(), it));
         }
 
         lodCombo->clear();
-        for (int i = 0; i < gearView->lodCount(); i++)
-            lodCombo->addItem(QString::number(i));
+        for (int i = 0; i < gearView->lodCount(); i++) {
+            lodCombo->addItem(QStringLiteral("LOD %1").arg(i), i);
+        }
 
         loadingComboData = false;
     }

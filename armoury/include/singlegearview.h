@@ -42,7 +42,7 @@ private:
 
     Race currentRace = Race::Hyur;
     Subrace currentSubrace = Subrace::Midlander;
-    Gender currentGender = Gender::Female;
+    Gender currentGender = Gender::Male;
     int currentLod = 0;
 
     GearView* gearView = nullptr;
