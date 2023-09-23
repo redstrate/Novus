@@ -7,6 +7,7 @@
 #include <physis.hpp>
 
 #include "mainwindow.h"
+#include "settings.h"
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
@@ -15,7 +16,9 @@ int main(int argc, char* argv[]) {
 
     app.setStyle("Windows");
 
-    MainWindow w(physis_gamedata_initialize(argv[1]));
+    const QString gameDir{getGameDirectory()};
+    const std::string gameDirStd{gameDir.toStdString()};
+    MainWindow w(physis_gamedata_initialize(gameDirStd.c_str()));
     w.show();
 
     return app.exec();
