@@ -39,6 +39,9 @@ find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent CONFIG REQ
 find_package(KF5 ${KF_MIN_VERSION} REQUIRED COMPONENTS Config XmlGui)
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
+if (NOT TARGET glm::glm)
+    add_library(glm::glm ALIAS glm)
+endif()
 
 add_subdirectory(extern)
 

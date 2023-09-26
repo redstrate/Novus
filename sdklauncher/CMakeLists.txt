@@ -4,5 +4,5 @@
 add_executable(sdklauncher
         src/main.cpp
         src/mainwindow.cpp)
-target_link_libraries(sdklauncher PUBLIC Qt5::Widgets KF5::ConfigCore physis)
+target_link_libraries(sdklauncher PUBLIC Qt5::Widgets KF5::ConfigCore physis z)
 target_include_directories(sdklauncher PUBLIC include)
