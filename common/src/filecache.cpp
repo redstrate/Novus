@@ -15,3 +15,11 @@ physis_Buffer& FileCache::lookupFile(const QString& path) {
     return cachedBuffers[path];
 }
 
+bool FileCache::fileExists(const QLatin1String &path)
+{
+    if (!cachedExist.contains(path)) {
+        cachedExist[path] = physis_gamedata_exists(&data, path.data());
+    }
+
+    return cachedExist[path];
+}

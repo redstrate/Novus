@@ -49,7 +49,7 @@ std::vector<std::pair<Race, Subrace>> GearView::supportedRaces() const {
                 auto equip_path =
                     physis_build_equipment_path(gear.modelInfo.primaryID, race, subrace, currentGender, gear.slot);
 
-                if (physis_gamedata_exists(data, equip_path))
+                if (cache.fileExists(QLatin1String(equip_path)))
                     races.emplace_back(race, subrace);
             }
         }
@@ -65,7 +65,7 @@ std::vector<Gender> GearView::supportedGenders() const {
             auto equip_path = physis_build_equipment_path(
                 gear.modelInfo.primaryID, currentRace, Subrace::Midlander, currentGender, gear.slot);
 
-            if (physis_gamedata_exists(data, equip_path))
+            if (cache.fileExists(QLatin1String(equip_path)))
                 genders.push_back(gender);
         }
     }
@@ -230,12 +230,12 @@ void GearView::reloadModel() {
                 const std::string mtrl_path = gear.getMtrlPath(material_name);
                 const std::string skinmtrl_path = physis_build_skin_material_path(physis_get_race_code(fallbackRace, fallbackSubrace, currentGender), 1, material_name);
 
-                if (physis_gamedata_exists(data, mtrl_path.c_str())) {
+                if (cache.fileExists(QLatin1String(mtrl_path.c_str()))) {
                     auto mat = physis_material_parse(cache.lookupFile(mtrl_path.c_str()));
                     materials.push_back(mat);
                 }
 
-                if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
+                if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                     auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                     materials.push_back(mat);
                 }
@@ -259,7 +259,7 @@ void GearView::reloadModel() {
                 const char* material_name = mdl.material_names[i];
                 const std::string skinmtrl_path = physis_build_face_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *face, material_name);
 
-                if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
+                if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                     auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                     materials.push_back(mat);
                 }
@@ -281,7 +281,7 @@ void GearView::reloadModel() {
                 const char* material_name = mdl.material_names[i];
                 const std::string skinmtrl_path = physis_build_hair_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *hair, material_name);
 
-                if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
+                if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                     auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                     materials.push_back(mat);
                 }
@@ -303,7 +303,7 @@ void GearView::reloadModel() {
                 const char* material_name = mdl.material_names[i];
                 const std::string skinmtrl_path = physis_build_ear_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *ear, material_name);
 
-                if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
+                if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                     auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                     materials.push_back(mat);
                 }
@@ -323,7 +323,7 @@ void GearView::reloadModel() {
             const char* material_name = mdl.material_names[0];
             const std::string skinmtrl_path = physis_build_tail_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *tail, material_name);
 
-            if (physis_gamedata_exists(data, skinmtrl_path.c_str())) {
+            if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                 auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
                 mdlPart->addModel(mdl, {mat}, currentLod);
             }
