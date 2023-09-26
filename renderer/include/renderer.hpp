@@ -51,6 +51,9 @@ struct RenderModel {
     VkDeviceMemory boneInfoMemory = VK_NULL_HANDLE;
 };
 
+class ImGuiPass;
+struct ImGuiContext;
+
 class Renderer {
 public:
     Renderer();
@@ -124,6 +127,10 @@ public:
 
     glm::mat4 view;
 
+    ImGuiContext *ctx = nullptr;
+
 private:
     void createDummyTexture();
+
+    ImGuiPass *imGuiPass = nullptr;
 };

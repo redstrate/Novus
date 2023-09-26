@@ -12,6 +12,9 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
+#include "imgui.h"
+#include "imguipass.h"
+
 VkResult CreateDebugUtilsMessengerEXT(
         VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
         const VkAllocationCallbacks* pAllocator,
@@ -39,6 +42,11 @@ DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 }
 
 Renderer::Renderer() {
+    ctx = ImGui::CreateContext();
+    ImGui::SetCurrentContext(ctx);
+
+    ImGui::StyleColorsDark();
+
     VkApplicationInfo applicationInfo = {};
 
     std::vector<const char*> instanceExtensions = {"VK_EXT_debug_utils"};
@@ -422,6 +430,9 @@ bool Renderer::initSwapchain(VkSurfaceKHR surface, int width, int height) {
         vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
     }
 
+    ImGui::SetCurrentContext(ctx);
+    imGuiPass = new ImGuiPass(*this);
+
     return true;
 }
 
@@ -538,8 +549,12 @@ void Renderer::render(std::vector<RenderModel> models) {
         }
     }
 
-    vkCmdEndRenderPass(commandBuffer);
+    if (imGuiPass != nullptr) {
+        ImGui::SetCurrentContext(ctx);
+        imGuiPass->render(commandBuffer);
+    }
 
+    vkCmdEndRenderPass(commandBuffer);
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo = {};
@@ -1191,7 +1206,7 @@ VkDescriptorSet Renderer::createDescriptorFor(const RenderModel& model, const Re
 
     vkAllocateDescriptorSets(device, &allocateInfo, &set);
     if (set == VK_NULL_HANDLE) {
-        qFatal("Failed to create descriptor set!");
+        // qFatal("Failed to create descriptor set!");
         return VK_NULL_HANDLE;
     }
 

@@ -27,6 +27,7 @@ target_link_libraries(armoury PUBLIC
         magic_enum
         physis z
         mdlpart
+        imgui
         NovusCommon)
 
 install(TARGETS armoury

@@ -16,6 +16,7 @@
 #include <glm/gtc/type_ptr.inl>
 
 #include "filecache.h"
+#include "imgui.h"
 #include "tiny_gltf.h"
 
 #ifndef USE_STANDALONE_WINDOW
@@ -116,8 +117,17 @@ public:
     }
 
     void render() {
+        ImGui::SetCurrentContext(m_renderer->ctx);
+
+        auto &io = ImGui::GetIO();
+        io.DisplaySize = ImVec2(width(), height());
+
+        ImGui::NewFrame();
+
         if (part->requestUpdate)
                 part->requestUpdate();
+
+        ImGui::Render();
 
         glm::vec3 position(
             part->cameraDistance * sin(part->yaw),

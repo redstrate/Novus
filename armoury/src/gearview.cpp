@@ -7,6 +7,7 @@
 #include <QThreadPool>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+#include <imgui.h>
 
 #include "filecache.h"
 #include "magic_enum.hpp"
@@ -21,6 +22,8 @@ GearView::GearView(GameData* data, FileCache& cache) : data(data), cache(cache) 
     setLayout(layout);
 
     mdlPart->requestUpdate = [this] {
+        ImGui::Text("Hello, world!");
+
         if (updating) {
             return;
         }

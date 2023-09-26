@@ -14,3 +14,7 @@ License: MIT
 Files: extern/magic_enum/*
 Copyright: 2019 - 2023 Daniil Goncharov
 License: MIT
+
+Files: extern/imgui/*
+Copyright: 2014-2023 Omar Cornut
+License: MIT

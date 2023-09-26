@@ -18,3 +18,4 @@ target_link_libraries(physis INTERFACE unshield)
 
 add_subdirectory(magic_enum)
 add_subdirectory(tinygltf)
+add_subdirectory(imgui)
