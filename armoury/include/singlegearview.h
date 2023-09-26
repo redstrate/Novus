@@ -34,6 +34,8 @@ public Q_SLOTS:
     void setGender(Gender gender);
     void setLevelOfDetail(int lod);
 
+    void setFMVAvailable(bool available);
+
 private Q_SLOTS:
     void reloadGear();
 
@@ -50,6 +52,7 @@ private:
     QPushButton *addToFMVButton, *exportButton;
 
     bool loadingComboData = false;
+    bool fmvAvailable = false;
 
     GameData* data = nullptr;
 };

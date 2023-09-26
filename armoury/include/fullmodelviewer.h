@@ -18,6 +18,7 @@ public:
 
 Q_SIGNALS:
     void gearChanged();
+    void loadingChanged(bool loading);
 
 public Q_SLOTS:
     void clear();

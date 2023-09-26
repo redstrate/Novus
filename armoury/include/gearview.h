@@ -24,6 +24,11 @@ struct GearInfo {
     }
 };
 
+inline bool operator==(const GearInfo &a, const GearInfo &b)
+{
+    return a.name == b.name && a.slot == b.slot;
+}
+
 struct GameData;
 
 class GearView : public QWidget {
@@ -51,6 +56,7 @@ public:
 Q_SIGNALS:
     void gearChanged();
     void modelReloaded();
+    void loadingChanged(bool loading);
 
     void raceChanged();
     void subraceChanged();
@@ -63,8 +69,8 @@ Q_SIGNALS:
     void tailChanged();
 
 public Q_SLOTS:
-    void clear();
     void addGear(GearInfo& gear);
+    void removeGear(GearInfo &gear);
 
     void setRace(Race race);
     void setSubrace(Subrace subrace);
@@ -76,7 +82,6 @@ public Q_SLOTS:
     void setEar(int bodyVer);
     void setTail(int bodyVer);
 
-    void reloadModel();
     void reloadRaceDeforms();
 
 private:
@@ -84,11 +89,29 @@ private:
 
     uint32_t maxLod = 0;
 
-    std::vector<GearInfo> gears;
+    struct LoadedGear {
+        GearInfo info;
+        physis_MDL mdl;
+    };
+
+    std::vector<LoadedGear> loadedGears;
+    std::vector<LoadedGear> queuedGearAdditions;
+    std::vector<LoadedGear> queuedGearRemovals;
+    bool gearDirty = false;
+
     std::optional<int> face = 1, hair = 1, ear = 1, tail;
+    bool faceDirty = false, hairDirty = false, earDirty = false, tailDirty = false;
+    bool raceDirty = false;
 
     MDLPart* mdlPart = nullptr;
 
     GameData* data;
     FileCache& cache;
+
+    bool updating = false;
+    void updatePart();
+    bool needsUpdate() const;
+
+    void gearUpdate(LoadedGear &gear);
+    void queueGearUpdate(LoadedGear &gear);
 };

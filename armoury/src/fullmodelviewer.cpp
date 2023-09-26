@@ -124,6 +124,13 @@ FullModelViewer::FullModelViewer(GameData* data, FileCache& cache) : data(data) 
     }
 
     connect(this, &FullModelViewer::gearChanged, this, &FullModelViewer::reloadGear);
+    connect(gearView, &GearView::loadingChanged, this, &FullModelViewer::loadingChanged);
+    connect(this, &FullModelViewer::loadingChanged, this, [this, tabWidget](const bool loading) {
+        raceCombo->setEnabled(!loading);
+        subraceCombo->setEnabled(!loading);
+        genderCombo->setEnabled(!loading);
+        tabWidget->setEnabled(!loading);
+    });
 
     reloadGear();
 }
@@ -138,10 +145,14 @@ void FullModelViewer::clear() {
 void FullModelViewer::addGear(GearInfo& info) {
     switch (info.slot) {
         case Slot::Body:
+        if (topSlot ? *topSlot != info : true) {
             topSlot = info;
+        }
             break;
         case Slot::Legs:
+            if (bottomSlot ? *bottomSlot != info : true) {
             bottomSlot = info;
+            }
             break;
         default:
             break;
@@ -150,9 +161,8 @@ void FullModelViewer::addGear(GearInfo& info) {
     Q_EMIT gearChanged();
 }
 
-void FullModelViewer::reloadGear() {
-    gearView->clear();
-
+void FullModelViewer::reloadGear()
+{
     if (topSlot.has_value()) {
         gearView->addGear(*topSlot);
     } else {

@@ -47,6 +47,8 @@ public:
 
     std::vector<BoneData> boneData;
 
+    std::function<void()> requestUpdate;
+
 Q_SIGNALS:
     void modelChanged();
     void skeletonChanged();
@@ -57,6 +59,8 @@ public Q_SLOTS:
 
     /// Adds a new MDL with a list of materials used.
     void addModel(physis_MDL mdl, std::vector<physis_Material> materials, int lod);
+
+    void removeModel(const physis_MDL &mdl);
 
     /// Sets the skeleton any skinned MDLs should bind to.
     void setSkeleton(physis_Skeleton skeleton);

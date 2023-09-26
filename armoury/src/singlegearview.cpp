@@ -100,15 +100,25 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
 }
 
 void SingleGearView::clear() {
+    if (currentGear) {
+        gearView->removeGear(*currentGear);
+    }
     currentGear.reset();
 
     Q_EMIT gearChanged();
 }
 
 void SingleGearView::setGear(const GearInfo& info) {
-    currentGear = info;
+    if (info != currentGear) {
+        if (currentGear) {
+            gearView->removeGear(*currentGear);
+        }
 
-    Q_EMIT gearChanged();
+        currentGear = info;
+        gearView->addGear(*currentGear);
+
+        Q_EMIT gearChanged();
+    }
 }
 
 void SingleGearView::setRace(Race race) {
@@ -147,19 +157,16 @@ void SingleGearView::setLevelOfDetail(int lod) {
     Q_EMIT levelOfDetailChanged();
 }
 
-void SingleGearView::reloadGear() {
-    gearView->clear();
-
+void SingleGearView::reloadGear()
+{
     raceCombo->setEnabled(currentGear.has_value());
     subraceCombo->setEnabled(currentGear.has_value());
     genderCombo->setEnabled(currentGear.has_value());
     lodCombo->setEnabled(currentGear.has_value());
-    addToFMVButton->setEnabled(currentGear.has_value());
+    addToFMVButton->setEnabled(currentGear.has_value() && fmvAvailable);
     exportButton->setEnabled(currentGear.has_value());
 
     if (currentGear.has_value()) {
-        gearView->addGear(*currentGear);
-
         loadingComboData = true;
 
         const auto oldRace = static_cast<Race>(raceCombo->itemData(raceCombo->currentIndex()).toInt());
@@ -209,6 +216,14 @@ void SingleGearView::reloadGear() {
         }
 
         loadingComboData = false;
+    }
+}
+
+void SingleGearView::setFMVAvailable(const bool available)
+{
+    if (fmvAvailable != available) {
+        fmvAvailable = available;
+        addToFMVButton->setEnabled(currentGear.has_value() && available);
     }
 }
 

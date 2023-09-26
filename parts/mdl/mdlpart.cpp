@@ -116,6 +116,9 @@ public:
     }
 
     void render() {
+        if (part->requestUpdate)
+                part->requestUpdate();
+
         glm::vec3 position(
             part->cameraDistance * sin(part->yaw),
             part->cameraDistance * part->pitch,
@@ -552,6 +555,16 @@ void MDLPart::calculateBone(physis_Skeleton& skeleton, physis_Bone& bone, const 
             calculateBone(skeleton, skeleton.bones[i], &bone);
         }
     }
+}
+
+void MDLPart::removeModel(const physis_MDL &mdl)
+{
+    models.erase(std::remove_if(models.begin(),
+                                models.end(),
+                                [mdl](const RenderModel other) {
+                                    return mdl.lods == other.model.lods;
+                                }),
+                 models.end());
 }
 
 #include "moc_mdlpart.cpp"
