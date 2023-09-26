@@ -30,6 +30,6 @@ private:
 
     QTreeWidgetItem* addPartAndChildren(const QString& qString, const PathPart& part, const QString& pathSoFar);
 
-signals:
+Q_SIGNALS:
     void openFileProperties(QString path);
 };

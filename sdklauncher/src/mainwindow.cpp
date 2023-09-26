@@ -12,20 +12,18 @@
 #include <QProcess>
 #include <QVBoxLayout>
 
-static QMap<QString, QString> applications = {
-    {"Armoury", "armoury"},
-    {"EXD Viewer", "exdviewer"},
-    {"Explorer", "explorer"},
-    {"Model Viewer", "mdlviewer"}
-};
+static QMap<QString, QString> applications = {{QStringLiteral("Armoury"), QStringLiteral("armoury")},
+                                              {QStringLiteral("EXD Viewer"), QStringLiteral("exdviewer")},
+                                              {QStringLiteral("Explorer"), QStringLiteral("explorer")},
+                                              {QStringLiteral("Model Viewer"), QStringLiteral("mdlviewer")}};
 
 MainWindow::MainWindow() {
-    setWindowTitle("Novus SDK");
+    setWindowTitle(QStringLiteral("Novus SDK"));
 
     auto appList = new QListWidget();
 
     auto applicationHeader = new QListWidgetItem();
-    applicationHeader->setText("Applications");
+    applicationHeader->setText(QStringLiteral("Applications"));
     applicationHeader->setFlags(Qt::NoItemFlags);
 
     appList->addItem(applicationHeader);
@@ -34,8 +32,8 @@ MainWindow::MainWindow() {
         appList->addItem(name);
     }
 
-    connect(appList, &QListWidget::itemClicked, [this](QListWidgetItem* item) {
-        QString exec = "./" + applications[item->text()];
+    connect(appList, &QListWidget::itemClicked, [this](QListWidgetItem *item) {
+        const QString exec = QStringLiteral("./") + applications[item->text()];
 
         qDebug() << "Launching" << exec;
 
@@ -50,11 +48,11 @@ MainWindow::MainWindow() {
 
     auto formLayout = new QFormLayout();
 
-    KConfig config("novusrc");
+    KConfig config(QStringLiteral("novusrc"));
     KConfigGroup game = config.group("Game");
 
     auto gameCombo = new QComboBox();
-    formLayout->addRow("Current Game", gameCombo);
+    formLayout->addRow(QStringLiteral("Current Game"), gameCombo);
     formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     gameCombo->addItem(game.readEntry("GameDir"));
 

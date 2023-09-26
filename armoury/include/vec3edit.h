@@ -15,7 +15,7 @@ public:
 
     void setVector(glm::vec3& vec);
 
-signals:
+Q_SIGNALS:
     void onValueChanged();
 
 private:

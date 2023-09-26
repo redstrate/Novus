@@ -21,9 +21,9 @@ target_include_directories(armoury
         ${CMAKE_BINARY_DIR})
 target_link_libraries(armoury PUBLIC
         ${LIBRARIES}
-        Qt5::Core
-        Qt5::Widgets
-        Qt5::Concurrent
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::Concurrent
         magic_enum
         physis z
         mdlpart

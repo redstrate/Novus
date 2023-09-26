@@ -44,7 +44,7 @@ GearListModel::GearListModel(GameData* data) : gameData(data), QAbstractItemMode
     exdFuture->setFuture(QtConcurrent::mapped(pages, loadEXD));
 
     for (auto slotName : magic_enum::enum_names<Slot>()) {
-        slotNames.push_back(slotName.data());
+        slotNames.push_back(QLatin1String(slotName.data()));
     }
 
     rootItem = new TreeInformation();
@@ -110,9 +110,9 @@ QVariant GearListModel::data(const QModelIndex& index, int role) const {
     TreeInformation* item = static_cast<TreeInformation*>(index.internalPointer());
 
     if (item->type == TreeType::Category) {
-        return magic_enum::enum_name(*item->slotType).data();
+        return QLatin1String(magic_enum::enum_name(*item->slotType).data());
     } else if (item->type == TreeType::Item) {
-        return item->gear->name.data();
+        return QLatin1String(item->gear->name.data());
     }
 
     return {};
@@ -121,7 +121,7 @@ QVariant GearListModel::data(const QModelIndex& index, int role) const {
 QVariant GearListModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
-            return "Name";
+            return QStringLiteral("Name");
         }
     }
 

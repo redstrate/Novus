@@ -20,7 +20,7 @@ void addItem(
     QTreeWidget* widget,
     QTreeWidgetItem* parent_item = nullptr) {
     auto item = new QTreeWidgetItem();
-    item->setText(0, bone.name);
+    item->setText(0, QLatin1String(bone.name));
 
     if (parent_item == nullptr) {
         widget->addTopLevelItem(item);
@@ -39,7 +39,7 @@ BoneEditor::BoneEditor(GearView* gearView, QWidget* parent) : gearView(gearView)
     setLayout(layout);
 
     auto boneListWidget = new QTreeWidget();
-    boneListWidget->setHeaderLabel("Name");
+    boneListWidget->setHeaderLabel(QStringLiteral("Name"));
 
     connect(gearView, &GearView::modelReloaded, this, [this, boneListWidget, gearView] {
         boneListWidget->clear();
@@ -53,7 +53,7 @@ BoneEditor::BoneEditor(GearView* gearView, QWidget* parent) : gearView(gearView)
     auto transformLayout = new QVBoxLayout();
     layout->addLayout(transformLayout);
 
-    auto transformGroup = new QGroupBox("Bone Transform");
+    auto transformGroup = new QGroupBox(QStringLiteral("Bone Transform"));
     transformLayout->addWidget(transformGroup);
     auto transformGroupLayout = new QFormLayout();
     transformGroup->setLayout(transformGroupLayout);
@@ -63,37 +63,37 @@ BoneEditor::BoneEditor(GearView* gearView, QWidget* parent) : gearView(gearView)
         memcpy(currentEditedBone->position, glm::value_ptr(currentPosition), sizeof(float) * 3);
         gearView->part().reloadRenderer();
     });
-    transformGroupLayout->addRow("Position", posEdit);
+    transformGroupLayout->addRow(QStringLiteral("Position"), posEdit);
 
     rotationEdit = new QuaternionEdit(currentRotation);
     connect(rotationEdit, &QuaternionEdit::onValueChanged, [this, gearView] {
         memcpy(currentEditedBone->rotation, glm::value_ptr(currentRotation), sizeof(float) * 4);
         gearView->part().reloadRenderer();
     });
-    transformGroupLayout->addRow("Rotation", rotationEdit);
+    transformGroupLayout->addRow(QStringLiteral("Rotation"), rotationEdit);
 
     scaleEdit = new Vector3Edit(currentScale);
     connect(scaleEdit, &Vector3Edit::onValueChanged, [this, gearView] {
         memcpy(currentEditedBone->scale, glm::value_ptr(currentScale), sizeof(float) * 3);
         gearView->part().reloadRenderer();
     });
-    transformGroupLayout->addRow("Scale", scaleEdit);
+    transformGroupLayout->addRow(QStringLiteral("Scale"), scaleEdit);
 
     connect(boneListWidget, &QTreeWidget::itemClicked, this, &BoneEditor::treeItemClicked);
 
-    auto raceDeformGroup = new QGroupBox("Race Deform");
+    auto raceDeformGroup = new QGroupBox(QStringLiteral("Race Deform"));
     transformLayout->addWidget(raceDeformGroup);
     auto raceDeformGroupLayout = new QFormLayout();
     raceDeformGroup->setLayout(raceDeformGroupLayout);
 
     raceDeformPosEdit = new Vector3Edit(currentRacePosition);
-    raceDeformGroupLayout->addRow("Position", raceDeformPosEdit);
+    raceDeformGroupLayout->addRow(QStringLiteral("Position"), raceDeformPosEdit);
 
     raceDeformRotationEdit = new QuaternionEdit(currentRaceRotation);
-    raceDeformGroupLayout->addRow("Rotation", raceDeformRotationEdit);
+    raceDeformGroupLayout->addRow(QStringLiteral("Rotation"), raceDeformRotationEdit);
 
     raceDeformScaleEdit = new Vector3Edit(currentRaceScale);
-    raceDeformGroupLayout->addRow("Scale", raceDeformScaleEdit);
+    raceDeformGroupLayout->addRow(QStringLiteral("Scale"), raceDeformScaleEdit);
 }
 
 void BoneEditor::treeItemClicked(QTreeWidgetItem* item, int column) {

@@ -27,7 +27,7 @@ std::vector<RaceTree> raceTree = {
     {Race::Viera, {Subrace::Rava, Subrace::Veena}}};
 
 CmpEditor::CmpEditor(GameData* data) : data(data) {
-    setWindowTitle("CMP Editor");
+    setWindowTitle(QStringLiteral("CMP Editor"));
 
     auto layout = new QHBoxLayout();
     setLayout(layout);
@@ -40,12 +40,12 @@ CmpEditor::CmpEditor(GameData* data) : data(data) {
 
     for (auto race : raceTree) {
         auto item = new QTreeWidgetItem();
-        item->setText(0, magic_enum::enum_name(race.baseRace).data());
+        item->setText(0, QLatin1String(magic_enum::enum_name(race.baseRace).data()));
         raceListWidget->addTopLevelItem(item);
 
         for (auto subrace : race.subRaces) {
             auto subItem = new QTreeWidgetItem();
-            subItem->setText(0, magic_enum::enum_name(subrace).data());
+            subItem->setText(0, QLatin1String(magic_enum::enum_name(subrace).data()));
             subItem->setData(0, Qt::UserRole, QVariant::fromValue(new RaceTreeData(race.baseRace, subrace)));
             item->addChild(subItem);
         }
@@ -65,46 +65,46 @@ CmpEditor::CmpEditor(GameData* data) : data(data) {
     detailBox->setLayout(detailBoxLayout);
 
     maleMinSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Male Min Size", maleMinSize);
+    detailBoxLayout->addRow(QStringLiteral("Male Min Size"), maleMinSize);
 
     maleMaxSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Male Max Size", maleMaxSize);
+    detailBoxLayout->addRow(QStringLiteral("Male Max Size"), maleMaxSize);
 
     maleMinTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Male Min Tail", maleMinTail);
+    detailBoxLayout->addRow(QStringLiteral("Male Min Tail"), maleMinTail);
 
     maleMaxTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Male Max Tail", maleMaxTail);
+    detailBoxLayout->addRow(QStringLiteral("Male Max Tail"), maleMaxTail);
 
     femaleMinSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Female Min Size", femaleMinSize);
+    detailBoxLayout->addRow(QStringLiteral("Female Min Size"), femaleMinSize);
 
     femaleMaxSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Female Max Size", femaleMaxSize);
+    detailBoxLayout->addRow(QStringLiteral("Female Max Size"), femaleMaxSize);
 
     femaleMinTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Female Min Tail", femaleMinTail);
+    detailBoxLayout->addRow(QStringLiteral("Female Min Tail"), femaleMinTail);
 
     femaleMaxTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Female Max Tail", femaleMaxTail);
+    detailBoxLayout->addRow(QStringLiteral("Female Max Tail"), femaleMaxTail);
 
     bustMinX = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Bust Min X", bustMinX);
+    detailBoxLayout->addRow(QStringLiteral("Bust Min X"), bustMinX);
 
     bustMinY = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Bust Min Y", bustMinY);
+    detailBoxLayout->addRow(QStringLiteral("Bust Min Y"), bustMinY);
 
     bustMinZ = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Bust Min Z", bustMinZ);
+    detailBoxLayout->addRow(QStringLiteral("Bust Min Z"), bustMinZ);
 
     bustMaxX = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Bust Max X", bustMaxX);
+    detailBoxLayout->addRow(QStringLiteral("Bust Max X"), bustMaxX);
 
     bustMaxY = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Bust Max Y", bustMaxY);
+    detailBoxLayout->addRow(QStringLiteral("Bust Max Y"), bustMaxY);
 
     bustMaxZ = new QDoubleSpinBox();
-    detailBoxLayout->addRow("Bust Max Z", bustMaxZ);
+    detailBoxLayout->addRow(QStringLiteral("Bust Max Z"), bustMaxZ);
 
     loadRaceData(Race::Hyur, Subrace::Midlander);
 }

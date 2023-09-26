@@ -9,14 +9,14 @@
 #include <QMessageBox>
 
 QString getGameDirectory() {
-    KConfig config("novusrc");
-    KConfigGroup game = config.group("Game");
+    KConfig config(QStringLiteral("novusrc"));
+    KConfigGroup game = config.group(QStringLiteral("Game"));
 
-    if (game.hasKey("GameDir")) {
-        return game.readEntry("GameDir");
+    if (game.hasKey(QStringLiteral("GameDir"))) {
+        return game.readEntry(QStringLiteral("GameDir"));
     } else {
         QMessageBox msgBox;
-        msgBox.setText("The game directory has not been set. Please open the Novus SDK launcher and set it.");
+        msgBox.setText(QStringLiteral("The game directory has not been set. Please open the Novus SDK launcher and set it."));
         msgBox.exec();
         QCoreApplication::quit();
         return {};

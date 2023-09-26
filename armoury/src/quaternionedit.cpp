@@ -9,7 +9,6 @@
 
 QuaternionEdit::QuaternionEdit(glm::quat& quat, QWidget* parent) : QWidget(parent), quat(quat) {
     auto itemsLayout = new QHBoxLayout(this);
-    itemsLayout->setMargin(0);
 
     spinBoxes.x = new QDoubleSpinBox();
     spinBoxes.y = new QDoubleSpinBox();

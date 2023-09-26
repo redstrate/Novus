@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(QT_MIN_VERSION 5.15)
 set(KF_MIN_VERSION 5.100)
 
-find_package(ECM ${KF5_MIN_VERSION} REQUIRED NO_MODULE)
+find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
 list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -35,8 +35,8 @@ ecm_setup_version(${PROJECT_VERSION}
     VERSION_HEADER ${CMAKE_CURRENT_BINARY_DIR}/novus-version.h
 )
 
-find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent CONFIG REQUIRED)
-find_package(KF5 ${KF_MIN_VERSION} REQUIRED COMPONENTS Config XmlGui)
+find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent Core5Compat CONFIG REQUIRED)
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons Config XmlGui)
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 if (NOT TARGET glm::glm)

@@ -35,21 +35,21 @@ Vector3Edit::Vector3Edit(glm::vec3& vec, QWidget* parent) : QWidget(parent), vec
         static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
         [this, &vec](double d) {
             vec.x = d;
-            emit onValueChanged();
+            Q_EMIT onValueChanged();
         });
     connect(
         spinBoxes.y,
         static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
         [this, &vec](double d) {
             vec.y = d;
-            emit onValueChanged();
+            Q_EMIT onValueChanged();
         });
     connect(
         spinBoxes.z,
         static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
         [this, &vec](double d) {
             vec.z = d;
-            emit onValueChanged();
+            Q_EMIT onValueChanged();
         });
 }
 

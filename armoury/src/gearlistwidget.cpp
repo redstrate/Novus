@@ -20,7 +20,7 @@ GearListWidget::GearListWidget(GameData* data, QWidget* parent) : data(data) {
     searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     auto searchEdit = new QLineEdit();
-    searchEdit->setPlaceholderText("Search...");
+    searchEdit->setPlaceholderText(QStringLiteral("Search..."));
     searchEdit->setClearButtonEnabled(true);
     connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString& text) {
         searchModel->setFilterRegularExpression(text);

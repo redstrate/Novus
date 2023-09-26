@@ -7,9 +7,10 @@
 
 FileCache::FileCache(GameData& data) : data(data) {}
 
-physis_Buffer& FileCache::lookupFile(const QString& path) {
+physis_Buffer &FileCache::lookupFile(const QLatin1String &path)
+{
     if (!cachedBuffers.contains(path)) {
-        cachedBuffers[path] = physis_gamedata_extract_file(&data, path.toStdString().c_str());
+        cachedBuffers[path] = physis_gamedata_extract_file(&data, path.data());
     }
 
     return cachedBuffers[path];

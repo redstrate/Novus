@@ -18,34 +18,34 @@
 #include "exdpart.h"
 
 MainWindow::MainWindow(GameData* data) : data(data) {
-    setWindowTitle("exdviewer");
+    setWindowTitle(QStringLiteral("exdviewer"));
     setMinimumSize(1280, 720);
 
-    auto fileMenu = menuBar()->addMenu("File");
+    auto fileMenu = menuBar()->addMenu(QStringLiteral("File"));
 
-    auto quitAction = fileMenu->addAction("Quit");
-    quitAction->setIcon(QIcon::fromTheme("gtk-quit"));
+    auto quitAction = fileMenu->addAction(QStringLiteral("Quit"));
+    quitAction->setIcon(QIcon::fromTheme(QStringLiteral("gtk-quit")));
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
-    auto helpMenu = menuBar()->addMenu("Help");
+    auto helpMenu = menuBar()->addMenu(QStringLiteral("Help"));
 
-    auto donateAction = helpMenu->addAction("Donate");
+    auto donateAction = helpMenu->addAction(QStringLiteral("Donate"));
     connect(donateAction, &QAction::triggered, this, [] {
-        QDesktopServices::openUrl(QUrl("https://redstrate.com/fund"));
+        QDesktopServices::openUrl(QUrl(QStringLiteral("https://redstrate.com/fund")));
     });
-    donateAction->setIcon(QIcon::fromTheme("help-donate"));
+    donateAction->setIcon(QIcon::fromTheme(QStringLiteral("help-donate")));
 
     helpMenu->addSeparator();
 
-    auto aboutNovusAction = helpMenu->addAction("About exdviewer");
-    aboutNovusAction->setIcon(QIcon::fromTheme("help-about"));
+    auto aboutNovusAction = helpMenu->addAction(QStringLiteral("About exdviewer"));
+    aboutNovusAction->setIcon(QIcon::fromTheme(QStringLiteral("help-about")));
     connect(aboutNovusAction, &QAction::triggered, this, [this] {
         auto window = new KAboutApplicationDialog(KAboutData::applicationData(), this);
         window->show();
     });
 
-    auto aboutQtAction = helpMenu->addAction("About Qt");
-    aboutQtAction->setIcon(QIcon(":/qt-project.org/qmessagebox/images/qtlogo-64.png"));
+    auto aboutQtAction = helpMenu->addAction(QStringLiteral("About Qt"));
+    aboutQtAction->setIcon(QIcon(QStringLiteral(":/qt-project.org/qmessagebox/images/qtlogo-64.png")));
     connect(aboutQtAction, &QAction::triggered, QApplication::instance(), &QApplication::aboutQt);
 
     auto dummyWidget = new QWidget();
@@ -58,7 +58,7 @@ MainWindow::MainWindow(GameData* data) : data(data) {
 
     auto names = physis_gamedata_get_all_sheet_names(data);
     for (int i = 0; i < names.name_count; i++) {
-        listWidget->addItem(names.names[i]);
+        listWidget->addItem(QString::fromStdString(names.names[i]));
     }
 
     listWidget->setMaximumWidth(200);
@@ -72,6 +72,6 @@ MainWindow::MainWindow(GameData* data) : data(data) {
         auto name = item->text().toStdString();
         auto nameLowercase = item->text().toLower().toStdString();
 
-        exdPart->loadSheet(name.c_str());
+        exdPart->loadSheet(QString::fromStdString(name.c_str()));
     });
 }

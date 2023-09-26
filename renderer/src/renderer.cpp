@@ -88,12 +88,19 @@ Renderer::Renderer() {
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
+    int preferredDevice = 0;
+    int deviceIndex = 0;
     for (auto device : devices) {
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+            preferredDevice = deviceIndex;
+        }
+        deviceIndex++;
     }
 
-    physicalDevice = devices[0];
+    physicalDevice = devices[preferredDevice];
 
     extensionCount = 0;
     vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr,

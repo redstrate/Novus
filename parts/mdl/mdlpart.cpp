@@ -395,9 +395,9 @@ void MDLPart::setSkeleton(physis_Skeleton newSkeleton) {
 
 void MDLPart::loadRaceDeformMatrices(physis_Buffer buffer) {
     QJsonDocument document = QJsonDocument::fromJson(QByteArray((const char*)buffer.data, buffer.size));
-    for (auto boneObj : document.object()["Data"].toArray()) {
-        QJsonArray matrix = boneObj.toObject()["Matrix"].toArray();
-        QString boneName = boneObj.toObject()["Name"].toString();
+    for (auto boneObj : document.object()[QLatin1String("Data")].toArray()) {
+        QJsonArray matrix = boneObj.toObject()[QLatin1String("Matrix")].toArray();
+        QString boneName = boneObj.toObject()[QLatin1String("Name")].toString();
 
         glm::mat4 actualMatrix;
         int i = 0;
@@ -486,28 +486,28 @@ RenderMaterial MDLPart::createMaterial(const physis_Material& material) {
 
         switch (type) {
             case 'm': {
-                auto texture = physis_texture_parse(cache.lookupFile(material.textures[i]));
-                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
+            auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
+            auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
-                newMaterial.multiTexture = new RenderTexture(tex);
+            newMaterial.multiTexture = new RenderTexture(tex);
             }
             case 'd': {
-                auto texture = physis_texture_parse(cache.lookupFile(material.textures[i]));
-                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
+            auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
+            auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
-                newMaterial.diffuseTexture = new RenderTexture(tex);
+            newMaterial.diffuseTexture = new RenderTexture(tex);
             } break;
             case 'n': {
-                auto texture = physis_texture_parse(cache.lookupFile(material.textures[i]));
-                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
+            auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
+            auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
-                newMaterial.normalTexture = new RenderTexture(tex);
+            newMaterial.normalTexture = new RenderTexture(tex);
             } break;
             case 's': {
-                auto texture = physis_texture_parse(cache.lookupFile(material.textures[i]));
-                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
+            auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
+            auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
-                newMaterial.specularTexture = new RenderTexture(tex);
+            newMaterial.specularTexture = new RenderTexture(tex);
             } break;
             default:
                 qDebug() << "unhandled type" << type;

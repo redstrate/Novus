@@ -3,7 +3,7 @@
 
 add_executable(bonedecomp
         src/main.cpp)
-target_link_libraries(bonedecomp PUBLIC libxiv ${LIBRARIES} Qt5::Core Qt5::Widgets magic_enum)
+target_link_libraries(bonedecomp PUBLIC libxiv ${LIBRARIES} Qt6::Core Qt6::Widgets magic_enum)
 
 install(TARGETS bonedecomp
         DESTINATION "${INSTALL_BIN_PATH}")

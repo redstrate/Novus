@@ -1,8 +1,9 @@
 // SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <QString>
 #include <QDebug>
+#include <QString>
+#include <QStringRef>
 
 #include <physis.hpp>
 
@@ -29,7 +30,7 @@ inline QString encryptGameArg(QString arg) {
     uint8_t* out_data = nullptr;
     uint32_t out_size = 0;
 
-    QByteArray toEncrypt = (QString(" /T =%1").arg(ticks) + arg).toUtf8();
+    QByteArray toEncrypt = (QStringLiteral(" /T =%1").arg(ticks) + arg).toUtf8();
 
     physis_blowfish_encrypt(session,
                             reinterpret_cast<uint8_t*>(toEncrypt.data()), toEncrypt.size(), &out_data, &out_size);
@@ -37,10 +38,10 @@ inline QString encryptGameArg(QString arg) {
     QByteArray encryptedArg = QByteArray::fromRawData(
         reinterpret_cast<const char*>(out_data), out_size);
 
-    QString base64 = encryptedArg.toBase64(QByteArray::Base64Option::Base64UrlEncoding | QByteArray::Base64Option::OmitTrailingEquals);
+    QString base64 = QString::fromUtf8(encryptedArg.toBase64(QByteArray::Base64Option::Base64UrlEncoding | QByteArray::Base64Option::OmitTrailingEquals));
     char checksum = GetChecksum(key);
 
-    return QString("//**sqex0003%1%2**//").arg(base64, QString(checksum));
+    return QStringLiteral("//**sqex0003%1%2**//").arg(base64, QLatin1String(&checksum, 1));
 }
 
 inline QString decryptGameArg(uint32_t tickCount, QString sqexString) {
@@ -64,7 +65,7 @@ inline QString decryptGameArg(uint32_t tickCount, QString sqexString) {
     QByteArray decrypted = QByteArray::fromRawData(
         reinterpret_cast<const char*>(out_data), out_size).trimmed();
 
-    return decrypted;
+    return QString::fromUtf8(decrypted);
 }
 
 int main(int argc, char* argv[]) {
@@ -77,9 +78,9 @@ int main(int argc, char* argv[]) {
     qInfo() << "Beginning to crack" << toCrack << "...";
 
     for(uint32_t i = bottom; i < TickCount(); i++) {
-        QString decrypted = decryptGameArg(i, toCrack);
+        const QString decrypted = decryptGameArg(i, QLatin1String(toCrack));
 
-        if(decrypted.contains(knownArg)) {
+        if (decrypted.contains(QLatin1String(knownArg))) {
             qInfo() << "Decrypted successfully:" << decrypted;
             return 0;
         }

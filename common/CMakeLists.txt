@@ -13,4 +13,4 @@ target_include_directories(NovusCommon PUBLIC
         include
         PRIVATE
         ${CMAKE_BINARY_DIR})
-target_link_libraries(NovusCommon PUBLIC Qt5::Core Qt5::Widgets KF5::ConfigCore KF5::XmlGui physis)
+target_link_libraries(NovusCommon PUBLIC Qt6::Core Qt6::Widgets KF6::CoreAddons KF6::ConfigCore KF6::XmlGui physis)

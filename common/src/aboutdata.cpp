@@ -21,18 +21,16 @@ void customizeAboutData(
         QStringLiteral("josh@redstrate.com"),
         QStringLiteral("https://redstrate.com/"));
     about.setHomepage(QStringLiteral("https://xiv.zone/astra"));
-    about.addComponent(
-        QStringLiteral("physis"),
-        QStringLiteral("Library to access FFXIV data"),
-        physis_get_physis_version(),
-        QStringLiteral("https://xiv.zone/physis"),
-        KAboutLicense::GPL_V3);
-    about.addComponent(
-        QStringLiteral("libphysis"),
-        QStringLiteral("C bindings for physis"),
-        physis_get_libphysis_version(),
-        {},
-        KAboutLicense::GPL_V3);
+    about.addComponent(QStringLiteral("physis"),
+                       QStringLiteral("Library to access FFXIV data"),
+                       QLatin1String(physis_get_physis_version()),
+                       QStringLiteral("https://xiv.zone/physis"),
+                       KAboutLicense::GPL_V3);
+    about.addComponent(QStringLiteral("libphysis"),
+                       QStringLiteral("C bindings for physis"),
+                       QLatin1String(physis_get_libphysis_version()),
+                       {},
+                       KAboutLicense::GPL_V3);
     about.setBugAddress(QByteArrayLiteral("https://lists.sr.ht/~redstrate/public-inbox"));
     about.setComponentName(componentName);
 

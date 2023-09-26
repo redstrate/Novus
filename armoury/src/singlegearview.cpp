@@ -63,7 +63,7 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
     });
     controlLayout->addWidget(lodCombo);
 
-    addToFMVButton = new QPushButton("Add to FMV");
+    addToFMVButton = new QPushButton(QStringLiteral("Add to FMV"));
     connect(addToFMVButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
             Q_EMIT addToFullModelViewer(*currentGear);
@@ -71,11 +71,10 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
     });
     controlLayout->addWidget(addToFMVButton);
 
-    exportButton = new QPushButton("Export...");
+    exportButton = new QPushButton(QStringLiteral("Export..."));
     connect(exportButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
-            QString fileName =
-                QFileDialog::getSaveFileName(this, tr("Save Model"), "model.glb", tr("glTF Binary File (*.glb)"));
+            QString fileName = QFileDialog::getSaveFileName(this, tr("Save Model"), QStringLiteral("model.glb"), tr("glTF Binary File (*.glb)"));
 
             gearView->exportModel(fileName);
         }
@@ -184,10 +183,10 @@ void SingleGearView::reloadGear()
         for (auto [race, subrace] : supportedRaces) {
             // TODO: supportedRaces should be designed better
             if (!addedRaces.contains(race)) {
-                raceCombo->addItem(magic_enum::enum_name(race).data(), static_cast<int>(race));
+                raceCombo->addItem(QLatin1String(magic_enum::enum_name(race).data(), static_cast<int>(race)));
                 addedRaces.push_back(race);
             }
-            subraceCombo->addItem(magic_enum::enum_name(subrace).data(), static_cast<int>(subrace));
+            subraceCombo->addItem(QLatin1String(magic_enum::enum_name(subrace).data(), static_cast<int>(subrace)));
         }
 
         if (auto it = std::find_if(supportedRaces.begin(), supportedRaces.end(), [oldRace](auto p) { return std::get<0>(p) == oldRace; }); it != supportedRaces.end()) {
@@ -203,7 +202,7 @@ void SingleGearView::reloadGear()
 
         const auto supportedGenders = gearView->supportedGenders();
         for (auto gender : supportedGenders) {
-            genderCombo->addItem(magic_enum::enum_name(gender).data(), static_cast<int>(gender));
+            genderCombo->addItem(QLatin1String(magic_enum::enum_name(gender).data(), static_cast<int>(gender)));
         }
 
         if (auto it = std::find_if(supportedGenders.begin(), supportedGenders.end(), [oldGender](auto p) { return p == oldGender; }); it != supportedGenders.end()) {

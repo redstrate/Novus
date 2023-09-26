@@ -15,10 +15,10 @@ public:
     explicit FileCache(GameData& data);
 
     bool fileExists(const QLatin1String &path);
-    physis_Buffer& lookupFile(const QString& path);
+    physis_Buffer &lookupFile(const QLatin1String &path);
 
 private:
-    QMap<QString, physis_Buffer> cachedBuffers;
+    QMap<QLatin1String, physis_Buffer> cachedBuffers;
     QHash<QLatin1String, bool> cachedExist;
     GameData& data;
 };

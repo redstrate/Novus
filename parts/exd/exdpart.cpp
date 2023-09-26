@@ -25,15 +25,16 @@ void EXDPart::loadSheet(const QString& name) {
 
     pageTabWidget->clear();
 
-    QFile definitionFile("Achievement.json");
+    QFile definitionFile(QStringLiteral("Achievement.json"));
     definitionFile.open(QIODevice::ReadOnly);
 
     auto document = QJsonDocument::fromJson(definitionFile.readAll());
-    auto definitionList = document.object()["definitions"].toArray();
+    auto definitionList = document.object()[QLatin1String("definitions")].toArray();
 
     for (auto definition : definitionList) {
-        if (definition.toObject().contains("converter") && definition.toObject()["converter"].toObject()["type"].toString() == "link") {
-            auto linkName = definition.toObject()["converter"].toObject()["target"].toString();
+        if (definition.toObject().contains(QLatin1String("converter"))
+            && definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QStringLiteral("link")) {
+            auto linkName = definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("target")].toString();
 
             auto linkExh = physis_gamedata_read_excel_sheet_header(data, linkName.toStdString().c_str());
             auto linkExd = physis_gamedata_read_excel_sheet(data, linkName.toStdString().c_str(), linkExh, getSuitableLanguage(linkExh), 0);
@@ -61,41 +62,41 @@ void EXDPart::loadSheet(const QString& name) {
             QString columnType;
             switch (columnData.tag) {
                 case physis_ColumnData::Tag::String:
-                    columnType = "String";
-                    break;
+                columnType = QStringLiteral("String");
+                break;
                 case physis_ColumnData::Tag::Bool:
-                    columnType = "Bool";
-                    break;
+                columnType = QStringLiteral("Bool");
+                break;
                 case physis_ColumnData::Tag::Int8:
-                    columnType = "Int8";
-                    break;
+                columnType = QStringLiteral("Int8");
+                break;
                 case physis_ColumnData::Tag::UInt8:
-                    columnType = "UInt8";
-                    break;
+                columnType = QStringLiteral("UInt8");
+                break;
                 case physis_ColumnData::Tag::Int16:
-                    columnType = "Int16";
-                    break;
+                columnType = QStringLiteral("Int16");
+                break;
                 case physis_ColumnData::Tag::UInt16:
-                    columnType = "UInt16";
-                    break;
+                columnType = QStringLiteral("UInt16");
+                break;
                 case physis_ColumnData::Tag::Int32:
-                    columnType = "Int32";
-                    break;
+                columnType = QStringLiteral("Int32");
+                break;
                 case physis_ColumnData::Tag::UInt32:
-                    columnType = "UInt32";
-                    break;
+                columnType = QStringLiteral("UInt32");
+                break;
                 case physis_ColumnData::Tag::Float32:
-                    columnType = "Float32";
-                    break;
+                columnType = QStringLiteral("Float32");
+                break;
                 case physis_ColumnData::Tag::Int64:
-                    columnType = "Int64";
-                    break;
+                columnType = QStringLiteral("Int64");
+                break;
                 case physis_ColumnData::Tag::UInt64:
-                    columnType = "UInt64";
-                    break;
+                columnType = QStringLiteral("UInt64");
+                break;
             }
 
-            columnType = definitionList[z].toObject()["name"].toString();
+            columnType = definitionList[z].toObject()[QLatin1String("name")].toString();
 
             auto headerItem = new QTableWidgetItem();
             headerItem->setText(columnType);
@@ -111,10 +112,10 @@ void EXDPart::loadSheet(const QString& name) {
                 int columnRow;
                 switch (columnData.tag) {
                     case physis_ColumnData::Tag::String:
-                        columnString = QString(columnData.string._0);
+                        columnString = QString::fromStdString(columnData.string._0);
                         break;
                     case physis_ColumnData::Tag::Bool:
-                        columnString = columnData.bool_._0 ? "True" : "False";
+                        columnString = columnData.bool_._0 ? QStringLiteral("True") : QStringLiteral("False");
                         break;
                     case physis_ColumnData::Tag::Int8:
                         columnString = QString::number(columnData.int8._0);
@@ -154,15 +155,16 @@ void EXDPart::loadSheet(const QString& name) {
                 }
 
                 auto definition = definitionList[z].toObject();
-                if (definition.contains("converter") && definition["converter"].toObject()["type"].toString() == "link") {
-                    auto linkName = definition["converter"].toObject()["target"].toString();
+                if (definition.contains(QLatin1String("converter"))
+                    && definition[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QLatin1String("link")) {
+                        auto linkName = definition[QLatin1String("converter")].toObject()[QLatin1String("target")].toString();
 
-                    if (cachedExcelSheets.contains(linkName)) {
-                        auto cachedExcel = cachedExcelSheets[linkName];
-                        if (columnRow < cachedExcel.exd.row_count) {
-                            columnString = cachedExcel.exd.row_data[columnRow].column_data->string._0;
+                        if (cachedExcelSheets.contains(linkName)) {
+                            auto cachedExcel = cachedExcelSheets[linkName];
+                            if (columnRow < cachedExcel.exd.row_count) {
+                                columnString = QString::fromStdString(cachedExcel.exd.row_data[columnRow].column_data->string._0);
+                            }
                         }
-                    }
                 }
 
                 auto newItem = new QTableWidgetItem(columnString);
@@ -173,7 +175,7 @@ void EXDPart::loadSheet(const QString& name) {
 
         tableWidget->resizeColumnsToContents();
 
-        pageTabWidget->addTab(tableWidget, QString("Page %1").arg(i));
+        pageTabWidget->addTab(tableWidget, QStringLiteral("Page %1").arg(i));
     }
 }
 

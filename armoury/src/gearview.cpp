@@ -227,12 +227,12 @@ void GearView::reloadRaceDeforms()
     const int raceCode = physis_get_race_code(currentRace, currentSubrace, currentGender);
     qDebug() << "Race code: " << raceCode;
 
-    QString skelName = QString{"c%1b0001.skel"}.arg(raceCode, 4, 10, QLatin1Char{'0'});
+    QString skelName = QStringLiteral("c%1b0001.skel").arg(raceCode, 4, 10, QLatin1Char{'0'});
     mdlPart->setSkeleton(physis_skeleton_from_skel(physis_read_file(skelName.toStdString().c_str())));
 
     // racial deforms don't work on Hyur Midlander, not needed? TODO not sure
     if (currentSubrace != Subrace::Midlander) {
-        QString deformName = QString{"c%1_deform.json"}.arg(raceCode, 4, 10, QLatin1Char{'0'});
+        QString deformName = QStringLiteral("c%1_deform.json").arg(raceCode, 4, 10, QLatin1Char{'0'});
         mdlPart->loadRaceDeformMatrices(physis_read_file(deformName.toStdString().c_str()));
     } else {
         for (auto &data : mdlPart->boneData) {
@@ -262,16 +262,16 @@ void GearView::updatePart()
 
     if (gearDirty) {
         for (auto &gearAddition : queuedGearAdditions) {
-            auto mdl_data = cache.lookupFile(
-                physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, currentRace, currentSubrace, currentGender, gearAddition.info.slot));
+            auto mdl_data = cache.lookupFile(QLatin1String(
+                physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, currentRace, currentSubrace, currentGender, gearAddition.info.slot)));
 
             // attempt to load the next best race
             // currently hardcoded to hyur midlander
             Race fallbackRace = currentRace;
             Subrace fallbackSubrace = currentSubrace;
             if (mdl_data.size == 0) {
-                mdl_data = cache.lookupFile(
-                    physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, Race::Hyur, Subrace::Midlander, currentGender, gearAddition.info.slot));
+                mdl_data = cache.lookupFile(QLatin1String(
+                    physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, Race::Hyur, Subrace::Midlander, currentGender, gearAddition.info.slot)));
                 fallbackRace = Race::Hyur;
                 fallbackSubrace = Subrace::Midlander;
             }
@@ -288,12 +288,12 @@ void GearView::updatePart()
                         physis_build_skin_material_path(physis_get_race_code(fallbackRace, fallbackSubrace, currentGender), 1, material_name);
 
                     if (cache.fileExists(QLatin1String(mtrl_path.c_str()))) {
-                        auto mat = physis_material_parse(cache.lookupFile(mtrl_path.c_str()));
+                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(mtrl_path.c_str())));
                         materials.push_back(mat);
                     }
 
                     if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                        auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
+                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
                         materials.push_back(mat);
                     }
                 }
@@ -318,7 +318,8 @@ void GearView::updatePart()
     }
 
     if (face) {
-        auto mdl_data = cache.lookupFile(physis_build_character_path(CharacterCategory::Face, *face, currentRace, currentSubrace, currentGender));
+        auto mdl_data =
+            cache.lookupFile(QLatin1String(physis_build_character_path(CharacterCategory::Face, *face, currentRace, currentSubrace, currentGender)));
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
@@ -329,7 +330,7 @@ void GearView::updatePart()
                 const std::string skinmtrl_path = physis_build_face_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *face, material_name);
 
                 if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                    auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
+                    auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
                     materials.push_back(mat);
                 }
             }
@@ -339,7 +340,8 @@ void GearView::updatePart()
     }
 
     if (hair) {
-        auto mdl_data = cache.lookupFile(physis_build_character_path(CharacterCategory::Hair, *hair, currentRace, currentSubrace, currentGender));
+        auto mdl_data =
+            cache.lookupFile(QLatin1String(physis_build_character_path(CharacterCategory::Hair, *hair, currentRace, currentSubrace, currentGender)));
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
@@ -350,7 +352,7 @@ void GearView::updatePart()
                 const std::string skinmtrl_path = physis_build_hair_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *hair, material_name);
 
                 if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                    auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
+                    auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
                     materials.push_back(mat);
                 }
             }
@@ -360,7 +362,7 @@ void GearView::updatePart()
     }
 
     if (ear) {
-        auto mdl_data = cache.lookupFile(physis_build_character_path(CharacterCategory::Hair, *ear, currentRace, currentSubrace, currentGender));
+        auto mdl_data = cache.lookupFile(QLatin1String(physis_build_character_path(CharacterCategory::Hair, *ear, currentRace, currentSubrace, currentGender)));
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
@@ -371,7 +373,7 @@ void GearView::updatePart()
                 const std::string skinmtrl_path = physis_build_ear_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *ear, material_name);
 
                 if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                    auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
+                    auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
                     materials.push_back(mat);
                 }
             }
@@ -381,7 +383,8 @@ void GearView::updatePart()
     }
 
     if (tail) {
-        auto mdl_data = cache.lookupFile(physis_build_character_path(CharacterCategory::Tail, *tail, currentRace, currentSubrace, currentGender));
+        auto mdl_data =
+            cache.lookupFile(QLatin1String(physis_build_character_path(CharacterCategory::Tail, *tail, currentRace, currentSubrace, currentGender)));
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
@@ -390,7 +393,7 @@ void GearView::updatePart()
             const std::string skinmtrl_path = physis_build_tail_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *tail, material_name);
 
             if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                auto mat = physis_material_parse(cache.lookupFile(skinmtrl_path.c_str()));
+                auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
                 mdlPart->addModel(mdl, {mat}, currentLod);
             }
         }
