@@ -15,11 +15,11 @@ void customizeAboutData(
         applicationDescription,
         KAboutLicense::GPL_V3,
         QStringLiteral("© 2023 Joshua Goins"));
-    about.addAuthor(
-        QStringLiteral("Joshua Goins"),
-        QStringLiteral("Maintainer"),
-        QStringLiteral("josh@redstrate.com"),
-        QStringLiteral("https://redstrate.com/"));
+    about.addAuthor(QStringLiteral("Joshua Goins"),
+                    QStringLiteral("Maintainer"),
+                    QStringLiteral("josh@redstrate.com"),
+                    QStringLiteral("https://redstrate.com/"),
+                    QUrl(QStringLiteral("https://redstrate.com/rss-image.png")));
     about.setHomepage(QStringLiteral("https://xiv.zone/astra"));
     about.addComponent(QStringLiteral("physis"),
                        QStringLiteral("Library to access FFXIV data"),
