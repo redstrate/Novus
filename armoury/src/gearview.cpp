@@ -22,7 +22,19 @@ GearView::GearView(GameData* data, FileCache& cache) : data(data), cache(cache) 
     setLayout(layout);
 
     mdlPart->requestUpdate = [this] {
-        ImGui::Text("Hello, world!");
+        auto &io = ImGui::GetIO();
+        if (updating) {
+            if (ImGui::Begin("Loading", nullptr, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs)) {
+                ImGui::SetWindowPos(ImVec2(0, 0));
+                ImGui::SetWindowSize(io.DisplaySize);
+
+                const char *loadingLabel{"Loading gear..."};
+                ImGui::SetCursorPosX((io.DisplaySize.x - ImGui::CalcTextSize(loadingLabel).x) * 0.5f);
+                ImGui::SetCursorPosY((io.DisplaySize.y - ImGui::CalcTextSize(loadingLabel).y) * 0.5f);
+                ImGui::Text("%s", loadingLabel);
+            }
+            ImGui::End();
+        }
 
         if (updating) {
             return;
