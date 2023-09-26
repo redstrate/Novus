@@ -56,8 +56,8 @@ GearView::GearView(GameData* data, FileCache& cache) : data(data), cache(cache) 
 std::vector<std::pair<Race, Subrace>> GearView::supportedRaces() const {
     std::vector<std::pair<Race, Subrace>> races;
     for (const auto &gear : loadedGears) {
-        for (auto [race, race_name] : magic_enum::enum_entries<Race>()) {
-            for (auto subrace : physis_get_supported_subraces(race).subraces) {
+        for (const auto [race, race_name] : magic_enum::enum_entries<Race>()) {
+            for (const auto subrace : physis_get_supported_subraces(race).subraces) {
                 auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, race, subrace, currentGender, gear.info.slot);
 
                 if (cache.fileExists(QLatin1String(equip_path)))
@@ -277,6 +277,7 @@ void GearView::updatePart()
 
     if (gearDirty) {
         for (auto &gearAddition : queuedGearAdditions) {
+            qInfo() << "Looking up" << magic_enum::enum_name(currentRace) << magic_enum::enum_name(currentSubrace) << magic_enum::enum_name(currentGender);
             auto mdl_data = cache.lookupFile(QLatin1String(
                 physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, currentRace, currentSubrace, currentGender, gearAddition.info.slot)));
 

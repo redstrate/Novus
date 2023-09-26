@@ -41,7 +41,7 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
         if (loadingComboData)
             return;
 
-        setSubrace(static_cast<Subrace>(raceCombo->itemData(index).toInt()));
+        setSubrace(static_cast<Subrace>(subraceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(subraceCombo);
 
@@ -81,7 +81,11 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
     });
     controlLayout->addWidget(exportButton);
 
-    connect(this, &SingleGearView::gearChanged, this, &SingleGearView::reloadGear);
+    connect(gearView, &GearView::loadingChanged, this, [this](const bool loading) {
+        if (!loading) {
+            reloadGear();
+        }
+    });
     connect(this, &SingleGearView::raceChanged, this, [=] {
         gearView->setRace(currentRace);
     });
@@ -134,6 +138,8 @@ void SingleGearView::setSubrace(Subrace subrace) {
         return;
     }
 
+    qInfo() << "Setting subrace to" << magic_enum::enum_name(subrace);
+
     currentSubrace = subrace;
     Q_EMIT subraceChanged();
 }
@@ -183,14 +189,20 @@ void SingleGearView::reloadGear()
         for (auto [race, subrace] : supportedRaces) {
             // TODO: supportedRaces should be designed better
             if (!addedRaces.contains(race)) {
-                raceCombo->addItem(QLatin1String(magic_enum::enum_name(race).data(), static_cast<int>(race)));
+                raceCombo->addItem(QLatin1String(magic_enum::enum_name(race).data()), static_cast<int>(race));
                 addedRaces.push_back(race);
             }
-            subraceCombo->addItem(QLatin1String(magic_enum::enum_name(subrace).data(), static_cast<int>(subrace)));
         }
 
         if (auto it = std::find_if(supportedRaces.begin(), supportedRaces.end(), [oldRace](auto p) { return std::get<0>(p) == oldRace; }); it != supportedRaces.end()) {
             raceCombo->setCurrentIndex(std::distance(supportedRaces.begin(), it));
+        }
+
+        const Race selectedRace = static_cast<Race>(raceCombo->currentData().toInt());
+        for (auto [race, subrace] : supportedRaces) {
+            if (race == selectedRace) {
+                subraceCombo->addItem(QLatin1String(magic_enum::enum_name(subrace).data()), static_cast<int>(subrace));
+            }
         }
 
         if (auto it = std::find_if(supportedRaces.begin(), supportedRaces.end(), [oldSubrace](auto p) { return std::get<1>(p) == oldSubrace; }); it != supportedRaces.end()) {
@@ -202,7 +214,7 @@ void SingleGearView::reloadGear()
 
         const auto supportedGenders = gearView->supportedGenders();
         for (auto gender : supportedGenders) {
-            genderCombo->addItem(QLatin1String(magic_enum::enum_name(gender).data(), static_cast<int>(gender)));
+            genderCombo->addItem(QLatin1String(magic_enum::enum_name(gender).data()), static_cast<int>(gender));
         }
 
         if (auto it = std::find_if(supportedGenders.begin(), supportedGenders.end(), [oldGender](auto p) { return p == oldGender; }); it != supportedGenders.end()) {
@@ -212,6 +224,9 @@ void SingleGearView::reloadGear()
         lodCombo->clear();
         for (int i = 0; i < gearView->lodCount(); i++) {
             lodCombo->addItem(QStringLiteral("LOD %1").arg(i), i);
+        }
+        if (oldLod < gearView->lodCount()) {
+            lodCombo->setCurrentIndex(oldLod);
         }
 
         loadingComboData = false;
