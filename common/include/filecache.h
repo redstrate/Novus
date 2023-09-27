@@ -5,6 +5,7 @@
 
 #include <QHash>
 #include <QMap>
+#include <QMutex>
 #include <QString>
 #include <physis.hpp>
 
@@ -21,4 +22,5 @@ private:
     QMap<QLatin1String, physis_Buffer> cachedBuffers;
     QHash<QLatin1String, bool> cachedExist;
     GameData& data;
+    QMutex bufferMutex, existMutex;
 };
