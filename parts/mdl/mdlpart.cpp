@@ -270,13 +270,13 @@ void MDLPart::exportModel(const QString& fileName) {
 
     for (int i = 0; i < lod.num_parts; i++) {
         auto& gltfNode = gltfModel.nodes.emplace_back();;
-        gltfNode.name = "placeholder Part 0.1";
+        gltfNode.name = models[0].name.toStdString() + " Part " + std::to_string(i) + ".0";
         gltfNode.skin = 0;
 
         gltfNode.mesh = gltfModel.meshes.size();
         auto& gltfMesh = gltfModel.meshes.emplace_back();
 
-        gltfMesh.name = "what?";
+        gltfMesh.name = gltfNode.name + " Mesh Attribute";
 
         auto& gltfPrimitive = gltfMesh.primitives.emplace_back();
         gltfPrimitive.attributes["POSITION"] = gltfModel.accessors.size();
@@ -366,10 +366,12 @@ void MDLPart::clear() {
     Q_EMIT modelChanged();
 }
 
-void MDLPart::addModel(physis_MDL mdl, std::vector<physis_Material> materials, int lod) {
+void MDLPart::addModel(physis_MDL mdl, const QString &name, std::vector<physis_Material> materials, int lod)
+{
     qDebug() << "Adding model to MDLPart";
 
     auto model = renderer->addModel(mdl, lod);
+    model.name = name;
 
     std::transform(
         materials.begin(), materials.end(), std::back_inserter(model.materials), [this](const physis_Material& mat) {

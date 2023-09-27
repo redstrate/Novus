@@ -278,7 +278,7 @@ void GearView::updatePart()
 
     if (gearDirty) {
         for (auto &gearAddition : queuedGearAdditions) {
-            QLatin1String mdlPath = QLatin1String(
+            auto mdlPath = QLatin1String(
                 physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, currentRace, currentSubrace, currentGender, gearAddition.info.slot));
 
             qInfo() << "Looking up" << magic_enum::enum_name(currentRace) << magic_enum::enum_name(currentSubrace) << magic_enum::enum_name(currentGender);
@@ -320,7 +320,7 @@ void GearView::updatePart()
 
                 maxLod = std::max(mdl.num_lod, maxLod);
 
-                mdlPart->addModel(mdl, materials, currentLod);
+                mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), materials, currentLod);
                 gearAddition.mdl = mdl;
                 gearAddition.path = mdlPath;
                 loadedGears.push_back(gearAddition);
@@ -339,8 +339,8 @@ void GearView::updatePart()
     }
 
     if (face) {
-        auto mdl_data =
-            cache.lookupFile(QLatin1String(physis_build_character_path(CharacterCategory::Face, *face, currentRace, currentSubrace, currentGender)));
+        const auto mdlPath = QLatin1String(physis_build_character_path(CharacterCategory::Face, *face, currentRace, currentSubrace, currentGender));
+        auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
@@ -356,13 +356,13 @@ void GearView::updatePart()
                 }
             }
 
-            mdlPart->addModel(mdl, materials, currentLod);
+            mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), materials, currentLod);
         }
     }
 
     if (hair) {
-        auto mdl_data =
-            cache.lookupFile(QLatin1String(physis_build_character_path(CharacterCategory::Hair, *hair, currentRace, currentSubrace, currentGender)));
+        const auto mdlPath = QLatin1String(physis_build_character_path(CharacterCategory::Hair, *hair, currentRace, currentSubrace, currentGender));
+        auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
@@ -378,12 +378,13 @@ void GearView::updatePart()
                 }
             }
 
-            mdlPart->addModel(mdl, materials, currentLod);
+            mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), materials, currentLod);
         }
     }
 
     if (ear) {
-        auto mdl_data = cache.lookupFile(QLatin1String(physis_build_character_path(CharacterCategory::Hair, *ear, currentRace, currentSubrace, currentGender)));
+        const auto mdlPath = QLatin1String(physis_build_character_path(CharacterCategory::Ear, *ear, currentRace, currentSubrace, currentGender));
+        auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
@@ -399,13 +400,13 @@ void GearView::updatePart()
                 }
             }
 
-            mdlPart->addModel(mdl, materials, currentLod);
+            mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), materials, currentLod);
         }
     }
 
     if (tail) {
-        auto mdl_data =
-            cache.lookupFile(QLatin1String(physis_build_character_path(CharacterCategory::Tail, *tail, currentRace, currentSubrace, currentGender)));
+        const auto mdlPath = QLatin1String(physis_build_character_path(CharacterCategory::Tail, *tail, currentRace, currentSubrace, currentGender));
+        auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
@@ -415,7 +416,7 @@ void GearView::updatePart()
 
             if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                 auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                mdlPart->addModel(mdl, {mat}, currentLod);
+                mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), {mat}, currentLod);
             }
         }
     }

@@ -58,7 +58,7 @@ public Q_SLOTS:
     void clear();
 
     /// Adds a new MDL with a list of materials used.
-    void addModel(physis_MDL mdl, std::vector<physis_Material> materials, int lod);
+    void addModel(physis_MDL mdl, const QString &name, std::vector<physis_Material> materials, int lod);
 
     void removeModel(const physis_MDL &mdl);
 

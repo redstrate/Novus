@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <QString>
 #include <array>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <map>
@@ -42,6 +43,8 @@ struct RenderMaterial {
 };
 
 struct RenderModel {
+    QString name;
+
     physis_MDL model;
     std::vector<RenderPart> parts;
     std::array<glm::mat4, 128> boneData;
