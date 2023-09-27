@@ -91,7 +91,15 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
     exportButton->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
     connect(exportButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
-            QString fileName = QFileDialog::getSaveFileName(this, tr("Save Model"), QStringLiteral("model.glb"), tr("glTF Binary File (*.glb)"));
+            // TODO: deduplicate
+            const auto sanitizeMdlPath = [](const QString &mdlPath) -> QString {
+                return QString(mdlPath).section(QLatin1Char('/'), -1).remove(QStringLiteral(".mdl"));
+            };
+
+            const QString fileName = QFileDialog::getSaveFileName(this,
+                                                                  tr("Save Model"),
+                                                                  QStringLiteral("%1.glb").arg(sanitizeMdlPath(gearView->getLoadedGearPath())),
+                                                                  tr("glTF Binary File (*.glb)"));
 
             gearView->exportModel(fileName);
         }

@@ -276,6 +276,10 @@ void GearView::updatePart()
         gearDirty = true;
     }
 
+    const auto sanitizeMdlPath = [](const QLatin1String mdlPath) -> QString {
+        return QString(mdlPath).section(QLatin1Char('/'), -1).remove(QStringLiteral(".mdl"));
+    };
+
     if (gearDirty) {
         for (auto &gearAddition : queuedGearAdditions) {
             auto mdlPath = QLatin1String(
@@ -320,7 +324,7 @@ void GearView::updatePart()
 
                 maxLod = std::max(mdl.num_lod, maxLod);
 
-                mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), materials, currentLod);
+                mdlPart->addModel(mdl, sanitizeMdlPath(mdlPath), materials, currentLod);
                 gearAddition.mdl = mdl;
                 gearAddition.path = mdlPath;
                 loadedGears.push_back(gearAddition);
@@ -356,7 +360,7 @@ void GearView::updatePart()
                 }
             }
 
-            mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), materials, currentLod);
+            mdlPart->addModel(mdl, sanitizeMdlPath(mdlPath), materials, currentLod);
         }
     }
 
@@ -378,7 +382,7 @@ void GearView::updatePart()
                 }
             }
 
-            mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), materials, currentLod);
+            mdlPart->addModel(mdl, sanitizeMdlPath(mdlPath), materials, currentLod);
         }
     }
 
@@ -400,7 +404,7 @@ void GearView::updatePart()
                 }
             }
 
-            mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), materials, currentLod);
+            mdlPart->addModel(mdl, sanitizeMdlPath(mdlPath), materials, currentLod);
         }
     }
 
@@ -416,7 +420,7 @@ void GearView::updatePart()
 
             if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                 auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                mdlPart->addModel(mdl, QString(mdlPath).section(QLatin1Char('/'), -1), {mat}, currentLod);
+                mdlPart->addModel(mdl, sanitizeMdlPath(mdlPath), {mat}, currentLod);
             }
         }
     }
