@@ -35,7 +35,7 @@ public:
     CameraMode cameraMode = CameraMode::None;
     float pitch = 0.0f;
     float yaw = 0.0f;
-    float cameraDistance = 5.0f;
+    float cameraDistance = 2.0f;
     glm::vec3 position{0, 0, 0};
 
     std::unique_ptr<physis_Skeleton> skeleton;

@@ -12,6 +12,7 @@
 #include <QVulkanInstance>
 #include <QVulkanWindow>
 #include <QWindow>
+#include <cmath>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.inl>
 
@@ -55,20 +56,14 @@ public:
             case QEvent::MouseButtonPress: {
                 auto mouseEvent = dynamic_cast<QMouseEvent*>(e);
 
-                if (mouseEvent->button() == Qt::MouseButton::LeftButton) {
-                    part->lastX = mouseEvent->x();
-                    part->lastY = mouseEvent->y();
-                    part->cameraMode = MDLPart::CameraMode::Orbit;
+                if (mouseEvent->button() == Qt::MouseButton::LeftButton || mouseEvent->button() == Qt::MouseButton::RightButton) {
+                    part->lastX = mouseEvent->position().x();
+                    part->lastY = mouseEvent->position().y();
+                    part->cameraMode = mouseEvent->button() == Qt::MouseButton::LeftButton ? MDLPart::CameraMode::Orbit : MDLPart::CameraMode::Move;
 
                     setKeyboardGrabEnabled(true);
                     setMouseGrabEnabled(true);
-                } else if (mouseEvent->button() == Qt::MouseButton::RightButton) {
-                    part->lastX = mouseEvent->x();
-                    part->lastY = mouseEvent->y();
-                    part->cameraMode = MDLPart::CameraMode::Move;
-
-                    setKeyboardGrabEnabled(true);
-                    setMouseGrabEnabled(true);
+                    setCursor(Qt::BlankCursor);
                 }
             } break;
             case QEvent::MouseButtonRelease: {
@@ -76,40 +71,37 @@ public:
 
                 setKeyboardGrabEnabled(false);
                 setMouseGrabEnabled(false);
+                setCursor({});
             } break;
             case QEvent::MouseMove: {
                 auto mouseEvent = dynamic_cast<QMouseEvent*>(e);
                 if (part->cameraMode != MDLPart::CameraMode::None) {
-                    const int deltaX = mouseEvent->x() - part->lastX;
-                    const int deltaY = mouseEvent->y() - part->lastY;
+                    const int deltaX = mouseEvent->position().x() - part->lastX;
+                    const int deltaY = mouseEvent->position().y() - part->lastY;
 
                     if (part->cameraMode == MDLPart::CameraMode::Orbit) {
                         part->yaw += deltaX * 0.01f; // TODO: remove these magic numbers
                         part->pitch += deltaY * 0.01f;
                     } else {
-                        glm::vec3 position(
-                            part->cameraDistance * sin(part->yaw),
-                            part->cameraDistance * part->pitch,
-                            part->cameraDistance * cos(part->yaw));
+                        const glm::vec3 position(part->cameraDistance * std::sin(part->yaw),
+                                                 part->cameraDistance * part->pitch,
+                                                 part->cameraDistance * std::cos(part->yaw));
 
-                        glm::quat rot = glm::quatLookAt((part->position + position) - part->position, {0, 1, 0});
+                        const glm::quat rot = glm::quatLookAt((part->position + position) - part->position, {0, 1, 0});
 
-                        glm::vec3 up, right;
-                        up = rot * glm::vec3{0, 1, 0};
-                        right = rot * glm::vec3{1, 0, 0};
-
-                        part->position += up * (float)deltaY * 0.01f;
-                        part->position += right * (float)deltaX * 0.01f;
+                        part->position += glm::vec3{0, 1, 0} * (float)deltaY * 0.01f;
+                        part->position.y = std::clamp(part->position.y, 0.0f, 10.0f);
                     }
 
-                    part->lastX = mouseEvent->x();
-                    part->lastY = mouseEvent->y();
+                    part->lastX = mouseEvent->position().x();
+                    part->lastY = mouseEvent->position().y();
                 }
             } break;
             case QEvent::Wheel: {
                 auto scrollEvent = dynamic_cast<QWheelEvent*>(e);
 
-                part->cameraDistance -= scrollEvent->angleDelta().y() / 120.0f; // FIXME: why 120?
+                part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
+                part->cameraDistance = std::clamp(part->cameraDistance, 1.0f, 4.0f);
             } break;
         }
 
