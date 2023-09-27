@@ -62,7 +62,6 @@ public:
                     part->cameraMode = mouseEvent->button() == Qt::MouseButton::LeftButton ? MDLPart::CameraMode::Orbit : MDLPart::CameraMode::Move;
 
                     setKeyboardGrabEnabled(true);
-                    setMouseGrabEnabled(true);
                     setCursor(Qt::BlankCursor);
                 }
             } break;
@@ -70,7 +69,6 @@ public:
                 part->cameraMode = MDLPart::CameraMode::None;
 
                 setKeyboardGrabEnabled(false);
-                setMouseGrabEnabled(false);
                 setCursor({});
             } break;
             case QEvent::MouseMove: {
