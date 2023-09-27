@@ -83,11 +83,14 @@ MainWindow::MainWindow(GameData* in_data) : data(*in_data), cache(FileCache{*in_
     connect(gearView, &SingleGearView::addToFullModelViewer, this, [=](GearInfo& info) {
         fullModelViewer->addGear(info);
     });
+
+    auto tabWidget = new QTabWidget();
+    tabWidget->addTab(gearView, QStringLiteral("Models"));
+    layout->addWidget(tabWidget);
+
+    fullModelViewer = new FullModelViewer(&data, cache);
     connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [=](const bool loading) {
         gearView->setFMVAvailable(!loading);
     });
-    layout->addWidget(gearView);
-
-    fullModelViewer = new FullModelViewer(&data, cache);
     fullModelViewer->show();
 }

@@ -12,11 +12,15 @@ struct GameData;
 
 class SingleGearView : public QWidget {
     Q_OBJECT
+
 public:
     explicit SingleGearView(GameData* data, FileCache& cache);
 
+    QString getLoadedGearPath() const;
+
 Q_SIGNALS:
     void gearChanged();
+    void gotMDLPath();
 
     void raceChanged();
     void subraceChanged();
@@ -49,7 +53,7 @@ private:
 
     GearView* gearView = nullptr;
     QComboBox *raceCombo, *subraceCombo, *genderCombo, *lodCombo;
-    QPushButton *addToFMVButton, *exportButton;
+    QPushButton *addToFMVButton, *importButton, *exportButton;
 
     bool loadingComboData = false;
     bool fmvAvailable = false;

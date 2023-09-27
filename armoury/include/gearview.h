@@ -53,6 +53,8 @@ public:
     Subrace currentSubrace = Subrace::Midlander;
     Gender currentGender = Gender::Male;
 
+    QString getLoadedGearPath() const;
+
 Q_SIGNALS:
     void gearChanged();
     void modelReloaded();
@@ -92,6 +94,7 @@ private:
     struct LoadedGear {
         GearInfo info;
         physis_MDL mdl;
+        QLatin1String path;
     };
 
     std::vector<LoadedGear> loadedGears;

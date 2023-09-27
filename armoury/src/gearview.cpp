@@ -18,6 +18,7 @@ GearView::GearView(GameData* data, FileCache& cache) : data(data), cache(cache) 
     reloadRaceDeforms();
 
     auto layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mdlPart);
     setLayout(layout);
 
@@ -277,17 +278,20 @@ void GearView::updatePart()
 
     if (gearDirty) {
         for (auto &gearAddition : queuedGearAdditions) {
+            QLatin1String mdlPath = QLatin1String(
+                physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, currentRace, currentSubrace, currentGender, gearAddition.info.slot));
+
             qInfo() << "Looking up" << magic_enum::enum_name(currentRace) << magic_enum::enum_name(currentSubrace) << magic_enum::enum_name(currentGender);
-            auto mdl_data = cache.lookupFile(QLatin1String(
-                physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, currentRace, currentSubrace, currentGender, gearAddition.info.slot)));
+            auto mdl_data = cache.lookupFile(mdlPath);
 
             // attempt to load the next best race
             // currently hardcoded to hyur midlander
             Race fallbackRace = currentRace;
             Subrace fallbackSubrace = currentSubrace;
             if (mdl_data.size == 0) {
-                mdl_data = cache.lookupFile(QLatin1String(
-                    physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, Race::Hyur, Subrace::Midlander, currentGender, gearAddition.info.slot)));
+                mdlPath = QLatin1String(
+                    physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, Race::Hyur, Subrace::Midlander, currentGender, gearAddition.info.slot));
+                mdl_data = cache.lookupFile(mdlPath);
                 fallbackRace = Race::Hyur;
                 fallbackSubrace = Subrace::Midlander;
             }
@@ -318,6 +322,7 @@ void GearView::updatePart()
 
                 mdlPart->addModel(mdl, materials, currentLod);
                 gearAddition.mdl = mdl;
+                gearAddition.path = mdlPath;
                 loadedGears.push_back(gearAddition);
             }
         }
@@ -427,6 +432,14 @@ void GearView::updatePart()
 bool GearView::needsUpdate() const
 {
     return gearDirty || raceDirty || faceDirty || hairDirty || earDirty || tailDirty;
+}
+
+QString GearView::getLoadedGearPath() const
+{
+    if (loadedGears.empty()) {
+        return {};
+    }
+    return loadedGears[0].path;
 }
 
 #include "moc_gearview.cpp"

@@ -3,10 +3,11 @@
 
 #include "singlegearview.h"
 
+#include <QDebug>
 #include <QFileDialog>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
-#include <QDebug>
 
 #include "filecache.h"
 #include "magic_enum.hpp"
@@ -21,11 +22,22 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
 
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(gearView);
     setLayout(layout);
 
+    auto mdlPathEdit = new QLineEdit();
+    mdlPathEdit->setReadOnly(true);
+
+    connect(this, &SingleGearView::gotMDLPath, this, [this, mdlPathEdit] {
+        mdlPathEdit->setText(gearView->getLoadedGearPath());
+    });
+
+    auto topControlLayout = new QHBoxLayout();
     auto controlLayout = new QHBoxLayout();
+
+    layout->addWidget(mdlPathEdit);
     layout->addLayout(controlLayout);
+    layout->addWidget(gearView);
+    layout->addLayout(topControlLayout);
 
     raceCombo = new QComboBox();
     connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
@@ -64,14 +76,19 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
     controlLayout->addWidget(lodCombo);
 
     addToFMVButton = new QPushButton(QStringLiteral("Add to FMV"));
+    addToFMVButton->setIcon(QIcon::fromTheme(QStringLiteral("list-add-user")));
     connect(addToFMVButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
             Q_EMIT addToFullModelViewer(*currentGear);
         }
     });
-    controlLayout->addWidget(addToFMVButton);
+
+    importButton = new QPushButton(QStringLiteral("Import..."));
+    importButton->setIcon(QIcon::fromTheme(QStringLiteral("document-import")));
+    topControlLayout->addWidget(importButton);
 
     exportButton = new QPushButton(QStringLiteral("Export..."));
+    exportButton->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
     connect(exportButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
             QString fileName = QFileDialog::getSaveFileName(this, tr("Save Model"), QStringLiteral("model.glb"), tr("glTF Binary File (*.glb)"));
@@ -79,11 +96,13 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
             gearView->exportModel(fileName);
         }
     });
-    controlLayout->addWidget(exportButton);
+    topControlLayout->addWidget(exportButton);
+    topControlLayout->addWidget(addToFMVButton);
 
     connect(gearView, &GearView::loadingChanged, this, [this](const bool loading) {
         if (!loading) {
             reloadGear();
+            Q_EMIT gotMDLPath();
         }
     });
     connect(this, &SingleGearView::raceChanged, this, [=] {
@@ -239,6 +258,11 @@ void SingleGearView::setFMVAvailable(const bool available)
         fmvAvailable = available;
         addToFMVButton->setEnabled(currentGear.has_value() && available);
     }
+}
+
+QString SingleGearView::getLoadedGearPath() const
+{
+    return gearView->getLoadedGearPath();
 }
 
 #include "moc_singlegearview.cpp"
