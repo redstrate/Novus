@@ -1,9 +1,20 @@
 image: archlinux
 packages:
   - reuse
+  - rsync
 sources:
   - https://git.sr.ht/~redstrate/novus
+secrets:
+  - b748582a-5d31-4fe8-94d6-4a63035e97aa
 tasks:
   - reuse: |
       cd novus
       reuse lint
+  - tarball: |
+      cd novus
+      ./scripts/tarball.sh
+  - upload-tarball: |
+      echo "StrictHostKeyChecking=no" >> ~/.ssh/config
+      rsync -e 'ssh -p 38901' -Wvr novus-source.tar.gz deploy@ryne.moe:/srv/http/astra-distrib/novus/git/
+artifacts:
+  - novus-source.tar.gz
