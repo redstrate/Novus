@@ -1,0 +1,3 @@
+[submodule "extern/libphysis"]
+	path = extern/libphysis
+	url = https://git.sr.ht/~redstrate/libphysis

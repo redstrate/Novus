@@ -3,17 +3,10 @@
 
 find_package(Corrosion REQUIRED)
 
-FetchContent_Declare(
-        libphysis
-        GIT_REPOSITORY https://git.sr.ht/~redstrate/libphysis
-        GIT_TAG        main
-)
 
-FetchContent_MakeAvailable(libphysis)
+corrosion_import_crate(MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/Cargo.toml)
 
-corrosion_import_crate(MANIFEST_PATH ${libphysis_SOURCE_DIR}/Cargo.toml)
-
-target_include_directories(physis INTERFACE ${libphysis_SOURCE_DIR}/target/public)
+target_include_directories(physis INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/target/public)
 target_link_libraries(physis INTERFACE unshield)
 
 add_subdirectory(magic_enum)
