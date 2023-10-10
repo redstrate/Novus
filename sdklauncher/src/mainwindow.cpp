@@ -15,7 +15,7 @@
 static QMap<QString, QString> applications = {{QStringLiteral("Armoury - View and export gear"), QStringLiteral("novus-armoury")},
                                               {QStringLiteral("Karuku - Read Excel sheets"), QStringLiteral("novus-karuku")},
                                               {QStringLiteral("Sagasu - Explore data archives"), QStringLiteral("novus-sagasu")},
-                                              {QStringLiteral("Model Viewer - Preview MDL files"), QStringLiteral("mdlviewer")}};
+                                              {QStringLiteral("Model Viewer - Preview MDL files"), QStringLiteral("novus-mdlviewer")}};
 
 MainWindow::MainWindow() {
     setWindowTitle(QStringLiteral("Novus SDK"));
