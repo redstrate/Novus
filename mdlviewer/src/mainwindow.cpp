@@ -32,7 +32,7 @@ MainWindow::MainWindow(GameData* data) : data(data), cache(FileCache{*data}) {
 
         auto buffer = physis_read_file(fileName.toStdString().c_str());
 
-        part->addModel(physis_mdl_parse(buffer.size, buffer.data), {}, 0);
+        part->addModel(physis_mdl_parse(buffer.size, buffer.data), QStringLiteral("mdl"), {}, 0);
     });
 
     fileMenu->addSeparator();
