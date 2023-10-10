@@ -12,10 +12,10 @@
 #include <QProcess>
 #include <QVBoxLayout>
 
-static QMap<QString, QString> applications = {{QStringLiteral("Armoury"), QStringLiteral("armoury")},
-                                              {QStringLiteral("EXD Viewer"), QStringLiteral("exdviewer")},
-                                              {QStringLiteral("Explorer"), QStringLiteral("explorer")},
-                                              {QStringLiteral("Model Viewer"), QStringLiteral("mdlviewer")}};
+static QMap<QString, QString> applications = {{QStringLiteral("Armoury - View and export gear"), QStringLiteral("novus-armoury")},
+                                              {QStringLiteral("Karuku - Read Excel sheets"), QStringLiteral("novus-karuku")},
+                                              {QStringLiteral("Sagasu - Explore data archives"), QStringLiteral("novus-sagasu")},
+                                              {QStringLiteral("Model Viewer - Preview MDL files"), QStringLiteral("mdlviewer")}};
 
 MainWindow::MainWindow() {
     setWindowTitle(QStringLiteral("Novus SDK"));
