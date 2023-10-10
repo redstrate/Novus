@@ -48,6 +48,8 @@ Renderer::Renderer() {
     ctx = ImGui::CreateContext();
     ImGui::SetCurrentContext(ctx);
 
+    ImGui::GetIO().IniFilename = "";
+
     ImGui::StyleColorsDark();
 
     VkApplicationInfo applicationInfo = {};
