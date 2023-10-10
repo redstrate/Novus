@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include <QMainWindow>
+#include "novusmainwindow.h"
 
 struct GameData;
 
-class MainWindow : public QMainWindow
+class MainWindow : public NovusMainWindow
 {
 public:
     MainWindow(GameData *data);
