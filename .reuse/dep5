@@ -3,7 +3,7 @@ Upstream-Name: Novus
 Upstream-Contact: Joshua Goins <josh@redstrate.com>
 Source: https://git.sr.ht/~redstrate/novus
 
-Files: .gitmodules scripts/* README.md BUILDING.md CONTRIBUTING.md argcracker/README.md armoury/README.md bonedecomp/README.md exdviewer/README.md explorer/README.md mdlviewer/README.md .clang-format .build.yml misc/* renderer/shaders/*.spv
+Files: .gitmodules scripts/* README.md BUILDING.md CONTRIBUTING.md argcracker/README.md armoury/README.md bonedecomp/README.md karuku/README.md sagasu/README.md mdlviewer/README.md renderer/README.md launcher/README.md .clang-format .build.yml misc/* renderer/shaders/*.spv
 Copyright: Joshua Goins <josh@redstrate.com>
 License: CC0-1.0
 
