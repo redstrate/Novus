@@ -22,6 +22,7 @@ MainWindow::MainWindow(GameData *data)
     , data(data)
 {
     setMinimumSize(1280, 720);
+    setupMenubar();
 
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
