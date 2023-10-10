@@ -1,26 +1,36 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
-add_executable(armoury
-        src/main.cpp
-        src/mainwindow.cpp
-        src/vec3edit.cpp
+add_executable(novus-armoury)
+target_sources(novus-armoury PRIVATE
+        include/boneeditor.h
+        include/cmpeditor.h
+        include/fullmodelviewer.h
+        include/gearlistmodel.h
+        include/gearlistwidget.h
+        include/gearview.h
+        include/mainwindow.h
+        include/quaternionedit.h
+        include/singlegearview.h
         include/vec3edit.h
-        src/gearview.cpp
-        src/singlegearview.cpp
-        src/fullmodelviewer.cpp
-        src/quaternionedit.cpp
+
         src/boneeditor.cpp
         src/cmpeditor.cpp
+        src/fullmodelviewer.cpp
+        src/gearlistmodel.cpp
         src/gearlistwidget.cpp
-        src/gearlistmodel.cpp)
-target_include_directories(armoury
+        src/gearview.cpp
+        src/main.cpp
+        src/mainwindow.cpp
+        src/quaternionedit.cpp
+        src/singlegearview.cpp
+        src/vec3edit.cpp)
+target_include_directories(novus-armoury
         PUBLIC
         include
         PRIVATE
         ${CMAKE_BINARY_DIR})
-target_link_libraries(armoury PUBLIC
-        ${LIBRARIES}
+target_link_libraries(novus-armoury PUBLIC
         Qt6::Core
         Qt6::Widgets
         Qt6::Concurrent
@@ -32,8 +42,7 @@ target_link_libraries(armoury PUBLIC
         imgui
         NovusCommon)
 
-install(TARGETS armoury
-        DESTINATION "${INSTALL_BIN_PATH}")
+install(TARGETS novus-armoury ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
 if(WIN32)
     get_target_property(QMAKE_EXE Qt5::qmake IMPORTED_LOCATION)
@@ -43,8 +52,8 @@ if(WIN32)
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${QT_BIN_DIR}")
 
     # Run windeployqt immediately after build
-    add_custom_command(TARGET armoury
+    add_custom_command(TARGET novus-armoury
             POST_BUILD
-            COMMAND "${WINDEPLOYQT_ENV_SETUP}" && "${WINDEPLOYQT_EXECUTABLE}" \"$<TARGET_FILE:armoury>\"
+            COMMAND "${WINDEPLOYQT_ENV_SETUP}" && "${WINDEPLOYQT_EXECUTABLE}" \"$<TARGET_FILE:novus-armoury>\"
             )
 endif()
