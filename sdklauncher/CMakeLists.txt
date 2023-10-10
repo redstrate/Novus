@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
-add_executable(sdklauncher
+add_executable(novus-launcher
         src/main.cpp
         src/mainwindow.cpp)
-target_link_libraries(sdklauncher PUBLIC Qt6::Widgets KF6::ConfigCore physis z)
-target_include_directories(sdklauncher PUBLIC include)
+target_link_libraries(novus-launcher PUBLIC Qt6::Widgets KF6::ConfigCore physis z)
+target_include_directories(novus-launcher PUBLIC include)
