@@ -13,8 +13,7 @@
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
-    customizeAboutData(
-        QStringLiteral("explorer"), QStringLiteral("Explorer"), QStringLiteral("Program to explore FFXIV dat files."));
+    customizeAboutData(QStringLiteral("sagasu"), QStringLiteral("Sagasu"), QStringLiteral("Program to explore FFXIV data archives."));
 
     physis_initialize_logging();
 

@@ -19,7 +19,7 @@
 #include "filetreewindow.h"
 
 MainWindow::MainWindow(GameData* data) : data(data) {
-    setWindowTitle(QStringLiteral("explorer"));
+    setWindowTitle(QStringLiteral("Sagasu"));
 
     auto fileMenu = menuBar()->addMenu(QStringLiteral("File"));
 
@@ -37,7 +37,7 @@ MainWindow::MainWindow(GameData* data) : data(data) {
 
     helpMenu->addSeparator();
 
-    auto aboutNovusAction = helpMenu->addAction(QStringLiteral("About explorer"));
+    auto aboutNovusAction = helpMenu->addAction(QStringLiteral("About Sagasu"));
     aboutNovusAction->setIcon(QIcon::fromTheme(QStringLiteral("help-about")));
     connect(aboutNovusAction, &QAction::triggered, this, [this] {
         auto window = new KAboutApplicationDialog(KAboutData::applicationData(), this);

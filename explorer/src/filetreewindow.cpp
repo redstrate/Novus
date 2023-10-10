@@ -22,7 +22,7 @@ FileTreeWindow::FileTreeWindow(GameData* data, QWidget* parent) : QWidget(parent
 
     addPath(QStringLiteral("exd/root.exl"));
 
-    auto sheetNames = physis_gamedata_get_all_sheet_names(data);
+    /*auto sheetNames = physis_gamedata_get_all_sheet_names(data);
 
     for(int i = 0; i < sheetNames.name_count; i++) {
         auto sheetName = sheetNames.names[i];
@@ -38,7 +38,7 @@ FileTreeWindow::FileTreeWindow(GameData* data, QWidget* parent) : QWidget(parent
                 addPath(QStringLiteral("exd/") + QString::fromStdString(path));
             }
         }
-    }
+    }*/
 
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(treeWidget, &QTreeWidget::customContextMenuRequested, this, [this, treeWidget](const QPoint& pos) {

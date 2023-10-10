@@ -1,11 +1,3 @@
-# explorer
+# Sagasu
 
-This tool can list known files by libxiv, such as excel sheets.
-
-## Usage
-
-You must pass the path to your `sqpack` directory as the first argument.
-
-```bash
-$ explorer "C:\Program Files (x86)\SquareEnix\Final Fantasy XIV\game\sqpack"
-```
+Useful for exploring all known files in FFXIV data archives. It can view models and excel sheets within the program, without having to boot up Karuku or Armoury.
