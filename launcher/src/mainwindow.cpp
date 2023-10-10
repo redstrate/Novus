@@ -20,6 +20,8 @@ static QMap<QString, QString> applications = {{QStringLiteral("Armoury - View an
 MainWindow::MainWindow()
     : NovusMainWindow()
 {
+    setupMenubar();
+
     auto appList = new QListWidget();
 
     auto applicationHeader = new QListWidgetItem();
