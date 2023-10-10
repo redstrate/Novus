@@ -5,7 +5,8 @@
 
 #include <QMainWindow>
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow
+{
 public:
     MainWindow();
 };

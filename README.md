@@ -11,12 +11,11 @@ any stable releases.
 
 This repository contains many parts of Novus, such as:
 
-* [Argcracker](argcracker), a program that can decrypt game arguments.
-* [Armoury](armoury), a graphical gear and character viewer.
-* [Bone Decompiler](bonedecomp), a tool to decompile Havok skeleton files into TexTools-compatible JSON.
-* [EXD Viewer](exdviewer), a graphical program to view Excel (EXD) sheets from the game.
-* [Explorer](explorer), a graphical interface to explore DAT files.
-* [Model Viewer](mdlviewer), a graphical model viewer for MDL files.
+* [Argcracker](argcracker), a program that can help decrypt game arguments.
+* [Armoury](armoury), a graphical gear and character viewer. It also supports GLTF export.
+* [Karuku](karuku), a graphical program to view Excel data sheets.
+* [MDLViewer](mdlviewer), a graphical model viewer for MDL files.
+* [Sagasu](sagasu), a graphical interface to explore FFXIV data archive files.
 
 ## Building
 

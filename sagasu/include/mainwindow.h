@@ -10,14 +10,13 @@
 
 struct GameData;
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow
+{
 public:
-    MainWindow(GameData* data);
+    MainWindow(GameData *data);
 
 private:
+    QMdiArea *mdiArea = nullptr;
 
-    QMdiArea* mdiArea = nullptr;
-
-
-    GameData* data;
+    GameData *data;
 };

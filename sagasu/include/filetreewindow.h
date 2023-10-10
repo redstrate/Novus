@@ -11,24 +11,25 @@ struct PathPart {
     QMap<QString, PathPart> children;
 };
 
-class FileTreeWindow : public QWidget {
+class FileTreeWindow : public QWidget
+{
     Q_OBJECT
 public:
-    explicit FileTreeWindow(GameData* data, QWidget *parent = nullptr);
+    explicit FileTreeWindow(GameData *data, QWidget *parent = nullptr);
 
 private:
-    GameData* data = nullptr;
+    GameData *data = nullptr;
 
     void addPath(QString path);
     void addUnknownPath(QString knownDirectory, uint32_t crcHash);
-    void traversePart(QList<QString> tokens, PathPart& part, QString pathSoFar);
-    std::tuple<bool, QString> traverseUnknownPath(uint32_t crcHash, PathPart& part, QString pathSoFar);
+    void traversePart(QList<QString> tokens, PathPart &part, QString pathSoFar);
+    std::tuple<bool, QString> traverseUnknownPath(uint32_t crcHash, PathPart &part, QString pathSoFar);
 
     QMap<QString, PathPart> rootParts;
 
     void addPaths(QTreeWidget *pWidget);
 
-    QTreeWidgetItem* addPartAndChildren(const QString& qString, const PathPart& part, const QString& pathSoFar);
+    QTreeWidgetItem *addPartAndChildren(const QString &qString, const PathPart &part, const QString &pathSoFar);
 
 Q_SIGNALS:
     void openFileProperties(QString path);

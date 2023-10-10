@@ -8,7 +8,10 @@
 
 #include "filetreewindow.h"
 
-FileTreeWindow::FileTreeWindow(GameData* data, QWidget* parent) : QWidget(parent), data(data) {
+FileTreeWindow::FileTreeWindow(GameData *data, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
+{
     setWindowTitle(QStringLiteral("File Tree"));
 
     auto layout = new QHBoxLayout();
@@ -41,7 +44,7 @@ FileTreeWindow::FileTreeWindow(GameData* data, QWidget* parent) : QWidget(parent
     }*/
 
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(treeWidget, &QTreeWidget::customContextMenuRequested, this, [this, treeWidget](const QPoint& pos) {
+    connect(treeWidget, &QTreeWidget::customContextMenuRequested, this, [this, treeWidget](const QPoint &pos) {
         auto *item = treeWidget->itemAt(pos);
 
         if (item != nullptr) {
@@ -63,7 +66,8 @@ FileTreeWindow::FileTreeWindow(GameData* data, QWidget* parent) : QWidget(parent
     addPaths(treeWidget);
 }
 
-void FileTreeWindow::addPath(QString path) {
+void FileTreeWindow::addPath(QString path)
+{
     auto tokens = path.split(QStringLiteral("/"));
     auto nextToken = tokens[0];
     tokens.pop_front();
@@ -71,8 +75,9 @@ void FileTreeWindow::addPath(QString path) {
     traversePart(tokens, rootParts[nextToken], nextToken);
 }
 
-void FileTreeWindow::traversePart(QList<QString> tokens, PathPart& part, QString pathSoFar) {
-    if(tokens.empty())
+void FileTreeWindow::traversePart(QList<QString> tokens, PathPart &part, QString pathSoFar)
+{
+    if (tokens.empty())
         return;
 
     auto nextToken = tokens[0];
@@ -84,21 +89,23 @@ void FileTreeWindow::traversePart(QList<QString> tokens, PathPart& part, QString
     traversePart(tokens, part.children[nextToken], pathSoFar);
 }
 
-void FileTreeWindow::addPaths(QTreeWidget *pWidget) {
-    for(const auto& name : rootParts.keys()) {
+void FileTreeWindow::addPaths(QTreeWidget *pWidget)
+{
+    for (const auto &name : rootParts.keys()) {
         auto item = addPartAndChildren(name, rootParts.value(name), QStringLiteral(""));
         pWidget->addTopLevelItem(item);
     }
 }
 
-QTreeWidgetItem* FileTreeWindow::addPartAndChildren(const QString& qString, const PathPart& part, const QString& pathSoFar) {
+QTreeWidgetItem *FileTreeWindow::addPartAndChildren(const QString &qString, const PathPart &part, const QString &pathSoFar)
+{
     QString newPath = pathSoFar.isEmpty() ? qString : pathSoFar + QStringLiteral("/") + qString;
 
     auto item = new QTreeWidgetItem();
     item->setData(0, Qt::UserRole, newPath);
     item->setText(0, qString);
 
-    for(const auto& name : part.children.keys()) {
+    for (const auto &name : part.children.keys()) {
         auto childItem = addPartAndChildren(name, part.children.value(name), newPath);
         item->addChild(childItem);
     }
@@ -106,27 +113,29 @@ QTreeWidgetItem* FileTreeWindow::addPartAndChildren(const QString& qString, cons
     return item;
 }
 
-void FileTreeWindow::addUnknownPath(QString knownDirectory, uint32_t crcHash) {
+void FileTreeWindow::addUnknownPath(QString knownDirectory, uint32_t crcHash)
+{
     auto [found, path] = traverseUnknownPath(crcHash, rootParts[knownDirectory], knownDirectory);
-    if(found)
+    if (found)
         addPath(path);
     else
         addPath(knownDirectory + QStringLiteral("/Unknown File Hash ") + QString::number(crcHash));
 }
 
-std::tuple<bool, QString> FileTreeWindow::traverseUnknownPath(uint32_t crcHash, PathPart &part, QString pathSoFar) {
-    if(part.crcHash == crcHash)
+std::tuple<bool, QString> FileTreeWindow::traverseUnknownPath(uint32_t crcHash, PathPart &part, QString pathSoFar)
+{
+    if (part.crcHash == crcHash)
         return {true, pathSoFar};
 
     bool found = false;
     QString childPath = pathSoFar;
-    for(auto path : part.children.keys()) {
+    for (auto path : part.children.keys()) {
         if (path.contains(QStringLiteral("Unknown")))
             continue;
 
         auto [childFound, newPath] = traverseUnknownPath(crcHash, part.children[path], pathSoFar + QStringLiteral("/") + path);
         found |= childFound;
-        if(childFound)
+        if (childFound)
             childPath = newPath;
     }
 

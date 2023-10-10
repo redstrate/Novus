@@ -7,19 +7,21 @@
 #include <KAboutData>
 #include <QAction>
 #include <QApplication>
+#include <QDebug>
 #include <QDesktopServices>
 #include <QHBoxLayout>
-#include <QListWidget>
 #include <QMenuBar>
 #include <QTableWidget>
+#include <QTreeWidget>
 #include <QUrl>
-#include <physis.hpp>
 
-#include "exdpart.h"
+#include "filepropertieswindow.h"
+#include "filetreewindow.h"
 
-MainWindow::MainWindow(GameData* data) : data(data) {
-    setWindowTitle(QStringLiteral("Karuku"));
-    setMinimumSize(1280, 720);
+MainWindow::MainWindow(GameData *data)
+    : data(data)
+{
+    setWindowTitle(QStringLiteral("Sagasu"));
 
     auto fileMenu = menuBar()->addMenu(QStringLiteral("File"));
 
@@ -37,7 +39,7 @@ MainWindow::MainWindow(GameData* data) : data(data) {
 
     helpMenu->addSeparator();
 
-    auto aboutNovusAction = helpMenu->addAction(QStringLiteral("About Karuku"));
+    auto aboutNovusAction = helpMenu->addAction(QStringLiteral("About Sagasu"));
     aboutNovusAction->setIcon(QIcon::fromTheme(QStringLiteral("help-about")));
     connect(aboutNovusAction, &QAction::triggered, this, [this] {
         auto window = new KAboutApplicationDialog(KAboutData::applicationData(), this);
@@ -48,30 +50,15 @@ MainWindow::MainWindow(GameData* data) : data(data) {
     aboutQtAction->setIcon(QIcon(QStringLiteral(":/qt-project.org/qmessagebox/images/qtlogo-64.png")));
     connect(aboutQtAction, &QAction::triggered, QApplication::instance(), &QApplication::aboutQt);
 
-    auto dummyWidget = new QWidget();
-    setCentralWidget(dummyWidget);
+    mdiArea = new QMdiArea();
+    setCentralWidget(mdiArea);
 
-    auto layout = new QHBoxLayout();
-    dummyWidget->setLayout(layout);
-
-    auto listWidget = new QListWidget();
-
-    auto names = physis_gamedata_get_all_sheet_names(data);
-    for (int i = 0; i < names.name_count; i++) {
-        listWidget->addItem(QString::fromStdString(names.names[i]));
-    }
-
-    listWidget->setMaximumWidth(200);
-    listWidget->sortItems();
-    layout->addWidget(listWidget);
-
-    auto exdPart = new EXDPart(data);
-    layout->addWidget(exdPart);
-
-    connect(listWidget, &QListWidget::itemClicked, this, [exdPart](QListWidgetItem* item) {
-        auto name = item->text().toStdString();
-        auto nameLowercase = item->text().toLower().toStdString();
-
-        exdPart->loadSheet(QString::fromStdString(name.c_str()));
+    auto tree = new FileTreeWindow(data);
+    connect(tree, &FileTreeWindow::openFileProperties, this, [=](QString path) {
+        qInfo() << "opening properties window for " << path;
+        auto window = mdiArea->addSubWindow(new FilePropertiesWindow(data, path));
+        window->show();
     });
+
+    mdiArea->addSubWindow(tree);
 }
