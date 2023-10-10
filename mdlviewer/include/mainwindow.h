@@ -3,18 +3,20 @@
 
 #pragma once
 
-#include <QMainWindow>
-
 #include "filecache.h"
+#include "novusmainwindow.h"
 
 struct GameData;
 class MDLPart;
 
-class MainWindow : public QMainWindow {
+class MainWindow : public NovusMainWindow
+{
 public:
     MainWindow(GameData* data);
 
-private:
+protected:
+    void setupFileMenu(QMenu *menu) override;
+
     GameData* data = nullptr;
     MDLPart* part = nullptr;
     FileCache cache;
