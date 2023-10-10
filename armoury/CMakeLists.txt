@@ -81,7 +81,7 @@ target_link_libraries(novus-armoury PUBLIC
         physis-logger
         mdlpart
         imgui
-        NovusCommon)
+        novus-common)
 
 install(TARGETS novus-armoury ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 

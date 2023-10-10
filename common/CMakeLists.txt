@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
-add_library(NovusCommon STATIC)
-target_sources(NovusCommon PRIVATE
+add_library(novus-common STATIC)
+target_sources(novus-common PRIVATE
         include/aboutdata.h
         include/filecache.h
         include/settings.h
@@ -11,8 +11,8 @@ target_sources(NovusCommon PRIVATE
         src/filecache.cpp
         src/settings.cpp
         src/utility.cpp)
-target_include_directories(NovusCommon PUBLIC
+target_include_directories(novus-common PUBLIC
         include
         PRIVATE
         ${CMAKE_BINARY_DIR})
-target_link_libraries(NovusCommon PUBLIC Qt6::Core Qt6::Widgets KF6::CoreAddons KF6::ConfigCore KF6::XmlGui physis)
+target_link_libraries(novus-common PUBLIC Qt6::Core Qt6::Widgets KF6::CoreAddons KF6::ConfigCore KF6::XmlGui physis)
