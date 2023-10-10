@@ -11,6 +11,7 @@
 
 #include "filecache.h"
 #include "magic_enum.hpp"
+#include "utility.h"
 
 GearView::GearView(GameData* data, FileCache& cache) : data(data), cache(cache) {
     mdlPart = new MDLPart(data, cache);
@@ -243,13 +244,13 @@ void GearView::reloadRaceDeforms()
     const int raceCode = physis_get_race_code(currentRace, currentSubrace, currentGender);
     qDebug() << "Race code: " << raceCode;
 
-    QString skelName = QStringLiteral("c%1b0001.skel").arg(raceCode, 4, 10, QLatin1Char{'0'});
-    mdlPart->setSkeleton(physis_skeleton_from_skel(physis_read_file(skelName.toStdString().c_str())));
+    QString skelName = QStringLiteral(":/skeletons/c%1b0001.skel").arg(raceCode, 4, 10, QLatin1Char{'0'});
+    mdlPart->setSkeleton(physis_skeleton_from_skel(utility::readFromQrc(skelName)));
 
     // racial deforms don't work on Hyur Midlander, not needed? TODO not sure
     if (currentSubrace != Subrace::Midlander) {
-        QString deformName = QStringLiteral("c%1_deform.json").arg(raceCode, 4, 10, QLatin1Char{'0'});
-        mdlPart->loadRaceDeformMatrices(physis_read_file(deformName.toStdString().c_str()));
+        QString deformName = QStringLiteral(":/skeletons/c%1_deform.json").arg(raceCode, 4, 10, QLatin1Char{'0'});
+        mdlPart->loadRaceDeformMatrices(utility::readFromQrc(deformName));
     } else {
         for (auto &data : mdlPart->boneData) {
             data.deformRaceMatrix = glm::mat4(1.0f);

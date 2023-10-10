@@ -17,6 +17,7 @@
 #include <physis.hpp>
 
 #include "mdlpart.h"
+#include "utility.h"
 
 MainWindow::MainWindow(GameData* data) : data(data), cache(FileCache{*data}) {
     setWindowTitle(QStringLiteral("Model Viewer"));
@@ -71,8 +72,8 @@ MainWindow::MainWindow(GameData* data) : data(data), cache(FileCache{*data}) {
     part = new MDLPart(data, cache);
 
     const int raceCode = physis_get_race_code(Race::Hyur, Subrace::Midlander, Gender::Male);
-    QString skelName = QStringLiteral("c%1b0001.skel").arg(raceCode, 4, 10, QLatin1Char{'0'});
-    part->setSkeleton(physis_skeleton_from_skel(physis_read_file(skelName.toStdString().c_str())));
+    QString skelName = QStringLiteral(":/skeletons/c%1b0001.skel").arg(raceCode, 4, 10, QLatin1Char{'0'});
+    part->setSkeleton(physis_skeleton_from_skel(utility::readFromQrc(skelName)));
 
     layout->addWidget(part);
 }

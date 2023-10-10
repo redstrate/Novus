@@ -4,6 +4,7 @@
 #include "renderer.hpp"
 
 #include <QDebug>
+#include <QFile>
 #include <array>
 #include <fstream>
 #include <glm/gtc/matrix_transform.hpp>
@@ -42,6 +43,8 @@ DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 }
 
 Renderer::Renderer() {
+    Q_INIT_RESOURCE(shaders);
+
     ctx = ImGui::CreateContext();
     ImGui::SetCurrentContext(ctx);
 
@@ -718,13 +721,13 @@ void Renderer::initPipeline() {
     VkPipelineShaderStageCreateInfo vertexShaderStageInfo = {};
     vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertexShaderStageInfo.module = loadShaderFromDisk("mesh.vert.spv");
+    vertexShaderStageInfo.module = loadShaderFromDisk(":/shaders/mesh.vert.spv");
     vertexShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo fragmentShaderStageInfo = {};
     fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragmentShaderStageInfo.module = loadShaderFromDisk("mesh.frag.spv");
+    fragmentShaderStageInfo.module = loadShaderFromDisk(":/shaders/mesh.frag.spv");
     fragmentShaderStageInfo.pName = "main";
 
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
@@ -856,19 +859,15 @@ VkShaderModule Renderer::createShaderModule(const uint32_t* code, const int leng
 }
 
 VkShaderModule Renderer::loadShaderFromDisk(const std::string_view path) {
-    std::ifstream file(path.data(), std::ios::ate | std::ios::binary);
+    QFile file((QLatin1String(path)));
+    file.open(QFile::ReadOnly);
 
-    if (!file.is_open()) {
+    if (!file.isOpen()) {
         qFatal("Failed to open shader file: %s", path.data());
     }
 
-    size_t fileSize = (size_t) file.tellg();
-    std::vector<char> buffer(fileSize);
-
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-
-    return createShaderModule(reinterpret_cast<const uint32_t *>(buffer.data()), fileSize);
+    auto contents = file.readAll();
+    return createShaderModule(reinterpret_cast<const uint32_t *>(contents.data()), contents.size());
 }
 
 void Renderer::initDescriptors() {

@@ -6,9 +6,11 @@ target_sources(NovusCommon PRIVATE
         include/aboutdata.h
         include/filecache.h
         include/settings.h
+        include/utility.h
         src/aboutdata.cpp
         src/filecache.cpp
-        src/settings.cpp)
+        src/settings.cpp
+        src/utility.cpp)
 target_include_directories(NovusCommon PUBLIC
         include
         PRIVATE

@@ -18,3 +18,7 @@ License: MIT
 Files: extern/imgui/*
 Copyright: 2014-2023 Omar Cornut
 License: MIT
+
+Files: armoury/skeletons/*
+Copyright: TexTools authors and contributors
+License: GPL-3.0-or-later

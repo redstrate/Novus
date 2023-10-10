@@ -171,8 +171,8 @@ void ImGuiPass::createDescriptorSetLayout()
 
 void ImGuiPass::createPipeline()
 {
-    VkShaderModule vertShaderModule = renderer_.loadShaderFromDisk("imgui.vert.spv");
-    VkShaderModule fragShaderModule = renderer_.loadShaderFromDisk("imgui.frag.spv");
+    VkShaderModule vertShaderModule = renderer_.loadShaderFromDisk(":/shaders/imgui.vert.spv");
+    VkShaderModule fragShaderModule = renderer_.loadShaderFromDisk(":/shaders/imgui.frag.spv");
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
