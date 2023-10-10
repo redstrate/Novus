@@ -232,6 +232,7 @@ void MDLPart::exportModel(const QString& fileName) {
 
     auto& gltfSkin = gltfModel.skins.emplace_back();
     gltfSkin.name = gltfSkeletonNode.name;
+    gltfSkin.skeleton = 0;
     for (int i = 1; i < gltfModel.nodes.size(); i++) {
         gltfSkin.joints.push_back(i);
     }
@@ -272,6 +273,8 @@ void MDLPart::exportModel(const QString& fileName) {
         auto& gltfNode = gltfModel.nodes.emplace_back();;
         gltfNode.name = models[0].name.toStdString() + " Part " + std::to_string(i) + ".0";
         gltfNode.skin = 0;
+
+        gltfSkeletonNode.children.push_back(gltfModel.nodes.size());
 
         gltfNode.mesh = gltfModel.meshes.size();
         auto& gltfMesh = gltfModel.meshes.emplace_back();
@@ -355,6 +358,10 @@ void MDLPart::exportModel(const QString& fileName) {
             indexBufferView.byteStride = sizeof(uint16_t);
         }
     }
+
+    auto &scene = gltfModel.scenes.emplace_back();
+    scene.name = models[0].name.toStdString();
+    scene.nodes = {0};
 
     tinygltf::TinyGLTF loader;
     loader.WriteGltfSceneToFile(&gltfModel, fileName.toStdString(), true, true, false, true);
