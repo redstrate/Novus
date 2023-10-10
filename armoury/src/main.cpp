@@ -6,6 +6,7 @@
 
 #include "aboutdata.h"
 #include "mainwindow.h"
+#include "physis_logger.h"
 #include "settings.h"
 
 int main(int argc, char* argv[]) {
@@ -14,7 +15,12 @@ int main(int argc, char* argv[]) {
     customizeAboutData(
         QStringLiteral("armoury"), QStringLiteral("Armoury"), QStringLiteral("Program to view FFXIV gear."));
 
-    physis_initialize_logging();
+    // Default to a sensible message pattern
+    if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {
+        qputenv("QT_MESSAGE_PATTERN", "[%{time yyyy-MM-dd h:mm:ss.zzz}] %{if-category}[%{category}] %{endif}[%{type}] %{message}");
+    }
+
+    setup_physis_logging();
 
     const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};

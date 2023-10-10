@@ -25,7 +25,9 @@ target_link_libraries(armoury PUBLIC
         Qt6::Widgets
         Qt6::Concurrent
         magic_enum
-        physis z
+        physis
+        z
+        physis-logger
         mdlpart
         imgui
         NovusCommon)
