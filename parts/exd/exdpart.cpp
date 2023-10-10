@@ -28,19 +28,22 @@ void EXDPart::loadSheet(const QString& name) {
     QFile definitionFile(QStringLiteral("Achievement.json"));
     definitionFile.open(QIODevice::ReadOnly);
 
-    auto document = QJsonDocument::fromJson(definitionFile.readAll());
-    auto definitionList = document.object()[QLatin1String("definitions")].toArray();
+    QJsonArray definitionList;
+    if (definitionFile.isOpen()) {
+        auto document = QJsonDocument::fromJson(definitionFile.readAll());
+        definitionList = document.object()[QLatin1String("definitions")].toArray();
 
-    for (auto definition : definitionList) {
-        if (definition.toObject().contains(QLatin1String("converter"))
-            && definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QStringLiteral("link")) {
-            auto linkName = definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("target")].toString();
+        for (auto definition : definitionList) {
+            if (definition.toObject().contains(QLatin1String("converter"))
+                && definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QStringLiteral("link")) {
+                auto linkName = definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("target")].toString();
 
-            auto linkExh = physis_gamedata_read_excel_sheet_header(data, linkName.toStdString().c_str());
-            auto linkExd = physis_gamedata_read_excel_sheet(data, linkName.toStdString().c_str(), linkExh, getSuitableLanguage(linkExh), 0);
+                auto linkExh = physis_gamedata_read_excel_sheet_header(data, linkName.toStdString().c_str());
+                auto linkExd = physis_gamedata_read_excel_sheet(data, linkName.toStdString().c_str(), linkExh, getSuitableLanguage(linkExh), 0);
 
-            if (linkExd.p_ptr != nullptr) {
-                cachedExcelSheets[linkName] = CachedExcel{linkExh, linkExd};
+                if (linkExd.p_ptr != nullptr) {
+                    cachedExcelSheets[linkName] = CachedExcel{linkExh, linkExd};
+                }
             }
         }
     }
@@ -96,7 +99,9 @@ void EXDPart::loadSheet(const QString& name) {
                 break;
             }
 
-            columnType = definitionList[z].toObject()[QLatin1String("name")].toString();
+            if (definitionList.contains(z)) {
+                columnType = definitionList[z].toObject()[QLatin1String("name")].toString();
+            }
 
             auto headerItem = new QTableWidgetItem();
             headerItem->setText(columnType);
@@ -154,9 +159,10 @@ void EXDPart::loadSheet(const QString& name) {
                         break;
                 }
 
-                auto definition = definitionList[z].toObject();
-                if (definition.contains(QLatin1String("converter"))
-                    && definition[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QLatin1String("link")) {
+                if (definitionList.contains(z)) {
+                    auto definition = definitionList[z].toObject();
+                    if (definition.contains(QLatin1String("converter"))
+                        && definition[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QLatin1String("link")) {
                         auto linkName = definition[QLatin1String("converter")].toObject()[QLatin1String("target")].toString();
 
                         if (cachedExcelSheets.contains(linkName)) {
@@ -165,6 +171,7 @@ void EXDPart::loadSheet(const QString& name) {
                                 columnString = QString::fromStdString(cachedExcel.exd.row_data[columnRow].column_data->string._0);
                             }
                         }
+                    }
                 }
 
                 auto newItem = new QTableWidgetItem(columnString);
