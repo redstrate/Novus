@@ -5,10 +5,12 @@ add_library(novus-common STATIC)
 target_sources(novus-common PRIVATE
         include/aboutdata.h
         include/filecache.h
+        include/novusmainwindow.h
         include/settings.h
         include/utility.h
         src/aboutdata.cpp
         src/filecache.cpp
+        src/novusmainwindow.cpp
         src/settings.cpp
         src/utility.cpp)
 target_include_directories(novus-common PUBLIC
