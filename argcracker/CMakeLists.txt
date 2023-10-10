@@ -1,18 +1,23 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
-add_executable(argcracker src/main.cpp src/tickcount.cpp)
-target_link_libraries(argcracker PUBLIC Qt6::Core Qt6::Core5Compat ${LIBRARIES} physis z)
-target_include_directories(argcracker PUBLIC include)
+add_executable(novus-argcracker)
+target_sources(novus-argcracker PRIVATE
+    src/main.cpp
+    src/tickcount.cpp)
+target_link_libraries(novus-argcracker PRIVATE Qt6::Core Qt6::Core5Compat physis z)
+target_include_directories(novus-argcracker PUBLIC include)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    target_compile_definitions(argcracker PUBLIC MACOS)
+    target_compile_definitions(novus-argcracker PUBLIC MACOS)
 endif ()
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    target_compile_definitions(argcracker PUBLIC WIN32)
+    target_compile_definitions(novus-argcracker PUBLIC WIN32)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    target_compile_definitions(argcracker PUBLIC LINUX)
+    target_compile_definitions(novus-argcracker PUBLIC LINUX)
 endif()
+
+install(TARGETS novus-argcracker ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})

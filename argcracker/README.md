@@ -9,11 +9,11 @@ caveats:
 ## Usage
 
 ```bash
-$ argcracker.exe [sqexarg string] [tick range] [known arg]`
+$ novus-argcracker [sqexarg string] [tick range] [known arg]`
 ```
 
 Example:
 
 ```bash
-`$ argcracker.exe //**sqex0003p8LrsXt9_m9RJAsGzXd66zb3SxeTqZdhV**// 1000 UserPath`
+`$ novus-argcracker //**sqex0003p8LrsXt9_m9RJAsGzXd66zb3SxeTqZdhV**// 1000 UserPath`
 ```

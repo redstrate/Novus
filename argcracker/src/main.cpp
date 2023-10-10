@@ -69,6 +69,11 @@ inline QString decryptGameArg(uint32_t tickCount, QString sqexString) {
 }
 
 int main(int argc, char* argv[]) {
+    if (argc < 4) {
+        qInfo() << "Usage: novus-argcracker [sqexarg string] [tick range] [known arg]";
+        return 1;
+    }
+
     const char* toCrack = argv[1];
     int tickRange = atoi(argv[2]);
     const char* knownArg = argv[3];
