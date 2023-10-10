@@ -3,14 +3,15 @@
 
 #pragma once
 
-#include <QMainWindow>
 #include <QMap>
 #include <QMdiArea>
 #include <QTreeWidget>
 
+#include "novusmainwindow.h"
+
 struct GameData;
 
-class MainWindow : public QMainWindow
+class MainWindow : public NovusMainWindow
 {
 public:
     MainWindow(GameData *data);
