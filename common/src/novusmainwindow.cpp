@@ -12,12 +12,22 @@
 NovusMainWindow::NovusMainWindow()
 {
     setWindowTitle(KAboutData::applicationData().displayName());
+}
 
+void NovusMainWindow::setupMenubar()
+{
     auto fileMenu = menuBar()->addMenu(QStringLiteral("File"));
+
+    setupFileMenu(fileMenu);
+    if (!fileMenu->isEmpty()) {
+        fileMenu->addSeparator();
+    }
 
     auto quitAction = fileMenu->addAction(QStringLiteral("Quit"));
     quitAction->setIcon(QIcon::fromTheme(QStringLiteral("gtk-quit")));
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
+
+    setupAdditionalMenus(menuBar());
 
     auto helpMenu = menuBar()->addMenu(QStringLiteral("Help"));
 

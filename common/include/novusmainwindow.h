@@ -9,4 +9,14 @@ class NovusMainWindow : public QMainWindow
 {
 public:
     explicit NovusMainWindow();
+
+protected:
+    void setupMenubar();
+
+    virtual void setupFileMenu(QMenu *menu)
+    {
+    }
+    virtual void setupAdditionalMenus(QMenuBar *menuBar)
+    {
+    }
 };
