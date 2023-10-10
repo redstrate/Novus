@@ -4,18 +4,19 @@
 #pragma once
 
 #include <QComboBox>
-#include <QMainWindow>
 #include <physis.hpp>
 #include <unordered_map>
 
 #include "fullmodelviewer.h"
 #include "gearview.h"
+#include "novusmainwindow.h"
 #include "singlegearview.h"
 
 struct GameData;
 class FileCache;
 
-class MainWindow : public QMainWindow {
+class MainWindow : public NovusMainWindow
+{
 public:
     explicit MainWindow(GameData* data);
 
