@@ -4,5 +4,5 @@
 add_executable(novus-launcher
         src/main.cpp
         src/mainwindow.cpp)
-target_link_libraries(novus-launcher PUBLIC Qt6::Widgets KF6::ConfigCore physis z)
+target_link_libraries(novus-launcher PUBLIC Qt6::Widgets KF6::ConfigCore physis z novus-common)
 target_include_directories(novus-launcher PUBLIC include)

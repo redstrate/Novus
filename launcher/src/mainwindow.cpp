@@ -18,9 +18,8 @@ static QMap<QString, QString> applications = {{QStringLiteral("Armoury - View an
                                               {QStringLiteral("Model Viewer - Preview MDL files"), QStringLiteral("novus-mdlviewer")}};
 
 MainWindow::MainWindow()
+    : NovusMainWindow()
 {
-    setWindowTitle(QStringLiteral("Novus SDK"));
-
     auto appList = new QListWidget();
 
     auto applicationHeader = new QListWidgetItem();

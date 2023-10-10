@@ -8,11 +8,16 @@
 #include <QMessageBox>
 #include <physis.hpp>
 
+#include "aboutdata.h"
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    customizeAboutData(QStringLiteral("launcher"),
+                       QStringLiteral("SDK Launcher"),
+                       QStringLiteral("Handles setting up and launching various Novus SDK components."));
 
     KConfig config(QStringLiteral("novusrc"));
     KConfigGroup game = config.group(QStringLiteral("Game"));
