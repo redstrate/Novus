@@ -32,15 +32,7 @@ MainWindow::MainWindow(GameData *in_data)
     , cache(FileCache{*in_data})
 {
     setMinimumSize(QSize(800, 600));
-
-    auto toolsMenu = menuBar()->addMenu(QStringLiteral("Tools"));
-
-    auto cmpEditorMenu = toolsMenu->addAction(QStringLiteral("CMP Editor"));
-    cmpEditorMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
-    connect(cmpEditorMenu, &QAction::triggered, [=] {
-        auto cmpEditor = new CmpEditor(in_data);
-        cmpEditor->show();
-    });
+    setupMenubar();
 
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
@@ -69,4 +61,16 @@ MainWindow::MainWindow(GameData *in_data)
         gearView->setFMVAvailable(!loading);
     });
     fullModelViewer->show();
+}
+
+void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
+{
+    auto toolsMenu = menuBar->addMenu(QStringLiteral("Tools"));
+
+    auto cmpEditorMenu = toolsMenu->addAction(QStringLiteral("CMP Editor"));
+    cmpEditorMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
+    connect(cmpEditorMenu, &QAction::triggered, [this] {
+        auto cmpEditor = new CmpEditor(&data);
+        cmpEditor->show();
+    });
 }

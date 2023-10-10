@@ -20,6 +20,9 @@ class MainWindow : public NovusMainWindow
 public:
     explicit MainWindow(GameData* data);
 
+protected:
+    void setupAdditionalMenus(QMenuBar *menuBar) override;
+
 private:
     SingleGearView* gearView = nullptr;
     FullModelViewer* fullModelViewer = nullptr;
