@@ -11,8 +11,7 @@
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
-    customizeAboutData(
-        QStringLiteral("exdviewer"), QStringLiteral("EXDViewer"), QStringLiteral("Program to view FFXIV Excel files."));
+    customizeAboutData(QStringLiteral("karuku"), QStringLiteral("Karuku"), QStringLiteral("Program to view FFXIV Excel files."));
 
     const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};

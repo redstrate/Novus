@@ -1,16 +1,17 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
-add_executable(exdviewer
+add_executable(novus-karuku
         src/main.cpp
         src/mainwindow.cpp)
-target_include_directories(exdviewer
+target_include_directories(novus-karuku
         PUBLIC
         include)
-target_link_libraries(exdviewer PUBLIC physis z ${LIBRARIES} Qt6::Core Qt6::Widgets exdpart novus-common)
 
-install(TARGETS exdviewer
-        DESTINATION "${INSTALL_BIN_PATH}")
+
+target_link_libraries(novus-karuku PUBLIC physis z ${LIBRARIES} Qt6::Core Qt6::Widgets exdpart novus-common)
+
+install(TARGETS novus-karuku ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
 if(WIN32)
     get_target_property(QMAKE_EXE Qt5::qmake IMPORTED_LOCATION)
@@ -20,8 +21,8 @@ if(WIN32)
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${QT_BIN_DIR}")
 
     # Run windeployqt immediately after build
-    add_custom_command(TARGET exdviewer
+    add_custom_command(TARGET novus-karuku
             POST_BUILD
-            COMMAND "${WINDEPLOYQT_ENV_SETUP}" && "${WINDEPLOYQT_EXECUTABLE}" \"$<TARGET_FILE:exdviewer>\"
+            COMMAND "${WINDEPLOYQT_ENV_SETUP}" && "${WINDEPLOYQT_EXECUTABLE}" \"$<TARGET_FILE:novus-karuku>\"
             )
 endif()

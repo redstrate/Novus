@@ -18,7 +18,7 @@
 #include "exdpart.h"
 
 MainWindow::MainWindow(GameData* data) : data(data) {
-    setWindowTitle(QStringLiteral("exdviewer"));
+    setWindowTitle(QStringLiteral("Karuku"));
     setMinimumSize(1280, 720);
 
     auto fileMenu = menuBar()->addMenu(QStringLiteral("File"));
@@ -37,7 +37,7 @@ MainWindow::MainWindow(GameData* data) : data(data) {
 
     helpMenu->addSeparator();
 
-    auto aboutNovusAction = helpMenu->addAction(QStringLiteral("About exdviewer"));
+    auto aboutNovusAction = helpMenu->addAction(QStringLiteral("About Karuku"));
     aboutNovusAction->setIcon(QIcon::fromTheme(QStringLiteral("help-about")));
     connect(aboutNovusAction, &QAction::triggered, this, [this] {
         auto window = new KAboutApplicationDialog(KAboutData::applicationData(), this);
