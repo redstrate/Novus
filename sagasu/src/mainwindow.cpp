@@ -3,17 +3,11 @@
 
 #include "mainwindow.h"
 
-#include <KAboutApplicationDialog>
-#include <KAboutData>
-#include <QAction>
 #include <QApplication>
-#include <QDebug>
 #include <QDesktopServices>
+#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QMenuBar>
-#include <QTableWidget>
-#include <QTreeWidget>
-#include <QUrl>
 
 #include "filepropertieswindow.h"
 #include "filetreewindow.h"
@@ -29,9 +23,23 @@ MainWindow::MainWindow(GameData *data)
 
     auto tree = new FileTreeWindow(data);
     connect(tree, &FileTreeWindow::openFileProperties, this, [=](QString path) {
-        qInfo() << "opening properties window for " << path;
         auto window = mdiArea->addSubWindow(new FilePropertiesWindow(data, path));
         window->show();
+    });
+    connect(tree, &FileTreeWindow::extractFile, this, [this, data](QString path) {
+        const QFileInfo info(path);
+
+        const QString savePath = QFileDialog::getSaveFileName(this, tr("Save File"), info.fileName(), QStringLiteral("*.%1").arg(info.completeSuffix()));
+        if (!savePath.isEmpty()) {
+            qInfo() << "Saving to" << savePath;
+
+            std::string savePathStd = path.toStdString();
+
+            auto fileData = physis_gamedata_extract_file(data, savePathStd.c_str());
+            QFile file(savePath);
+            file.open(QIODevice::WriteOnly);
+            file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);
+        }
     });
 
     mdiArea->addSubWindow(tree);
