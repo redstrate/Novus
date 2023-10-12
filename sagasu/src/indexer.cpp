@@ -4,9 +4,11 @@
 #include "hashdatabase.h"
 #include "settings.h"
 
-const std::array known_folders{"common", "common/font", "exd"};
+const std::array known_folders{"common", "common/font", "common/graphics", "common/graphics/texture", "common/softwarecursor", "exd"};
 
-const std::array common_font{"common/font/fontIcon_Xinput.tex",
+const std::array common_font{"common/VulgarWordsFilter.dic",
+                             "common/VulgarWordsFilter_party.dic",
+                             "common/font/fontIcon_Xinput.tex",
                              "common/font/gfdata.gfd",
                              "common/font/fontIcon_Ps3.tex",
                              "common/font/gfdata.gfd",
