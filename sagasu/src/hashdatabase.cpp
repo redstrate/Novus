@@ -42,7 +42,7 @@ void HashDatabase::addFile(QString file)
         filename = file.sliced(lastSlash + 1, file.length() - lastSlash - 1);
     }
 
-    qInfo() << filename;
+    qInfo() << "Adding" << filename;
 
     std::string folderStd = filename.toStdString();
 

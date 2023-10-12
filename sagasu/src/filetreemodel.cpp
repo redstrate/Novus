@@ -144,15 +144,21 @@ void FileTreeModel::addKnownFolder(QString string)
             conct += QStringLiteral("/") + children[i];
         }
         std::string conctStd = conct.toStdString();
-        auto folderItem = new TreeInformation();
-        folderItem->name = children[i];
-        folderItem->type = TreeType::Folder;
-        folderItem->parent = parentItem;
-        folderItem->row = i + 1;
-        folderItem->hash = physis_generate_partial_hash(conctStd.c_str());
-        parentItem->children.push_back(folderItem);
-        parentItem = folderItem;
-        knownDirHashes[folderItem->hash] = folderItem;
+        auto hash = physis_generate_partial_hash(conctStd.c_str());
+
+        if (knownDirHashes.contains(hash)) {
+            parentItem = knownDirHashes[hash];
+        } else {
+            auto folderItem = new TreeInformation();
+            folderItem->name = children[i];
+            folderItem->type = TreeType::Folder;
+            folderItem->parent = parentItem;
+            folderItem->row = i + 1;
+            folderItem->hash = hash;
+            parentItem->children.push_back(folderItem);
+            parentItem = folderItem;
+            knownDirHashes[folderItem->hash] = folderItem;
+        }
     }
 }
 
