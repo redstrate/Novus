@@ -18,14 +18,13 @@ MainWindow::MainWindow(GameData *data)
 {
     setupMenubar();
 
-    mdiArea = new QMdiArea();
-    setCentralWidget(mdiArea);
+    auto dummyWidget = new QWidget();
+    setCentralWidget(dummyWidget);
+
+    auto layout = new QHBoxLayout();
+    dummyWidget->setLayout(layout);
 
     auto tree = new FileTreeWindow(data);
-    connect(tree, &FileTreeWindow::openFileProperties, this, [=](QString path) {
-        auto window = mdiArea->addSubWindow(new FilePropertiesWindow(data, path));
-        window->show();
-    });
     connect(tree, &FileTreeWindow::extractFile, this, [this, data](QString path) {
         const QFileInfo info(path);
 
@@ -41,6 +40,30 @@ MainWindow::MainWindow(GameData *data)
             file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);
         }
     });
+    connect(tree, &FileTreeWindow::pathSelected, this, [=](QString path) {
+        refreshParts(path);
+    });
+    tree->setMaximumWidth(200);
+    layout->addWidget(tree);
 
-    mdiArea->addSubWindow(tree);
+    partHolder = new QTabWidget();
+    partHolder->setMinimumWidth(800);
+    partHolder->setMinimumHeight(720);
+    layout->addWidget(partHolder);
+
+    refreshParts({});
+}
+
+void MainWindow::refreshParts(QString path)
+{
+    partHolder->clear();
+
+    std::string pathStd = path.toStdString();
+    if (path.isEmpty() || !physis_gamedata_exists(data, pathStd.c_str())) {
+        return;
+    }
+
+    // Add properties tab
+    auto propertiesWidget = new FilePropertiesWindow(data, path);
+    partHolder->addTab(propertiesWidget, QStringLiteral("Properties"));
 }

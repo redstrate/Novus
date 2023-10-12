@@ -31,17 +31,19 @@ FileTreeWindow::FileTreeWindow(GameData *data, QWidget *parent)
 
             auto menu = new QMenu();
 
-            auto propertiesAction = menu->addAction(QStringLiteral("Properties"));
-            connect(propertiesAction, &QAction::triggered, this, [=] {
-                Q_EMIT openFileProperties(path);
-            });
-
             auto extractAction = menu->addAction(QStringLiteral("Extract.."));
             connect(extractAction, &QAction::triggered, this, [=] {
                 Q_EMIT extractFile(path);
             });
 
             menu->exec(treeWidget->mapToGlobal(pos));
+        }
+    });
+
+    connect(treeWidget, &QTreeView::clicked, [this, treeWidget](const QModelIndex &item) {
+        if (item.isValid()) {
+            auto path = m_fileModel->data(item, Qt::UserRole).toString();
+            Q_EMIT pathSelected(path);
         }
     });
 }

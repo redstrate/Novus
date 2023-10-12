@@ -19,5 +19,7 @@ public:
 private:
     QMdiArea *mdiArea = nullptr;
 
-    GameData *data;
+    GameData *data = nullptr;
+    QTabWidget *partHolder = nullptr;
+    void refreshParts(QString qString);
 };

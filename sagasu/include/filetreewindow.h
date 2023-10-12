@@ -15,8 +15,8 @@ public:
     explicit FileTreeWindow(GameData *data, QWidget *parent = nullptr);
 
 Q_SIGNALS:
-    void openFileProperties(QString path);
     void extractFile(QString path);
+    void pathSelected(QString path);
 
 private:
     GameData *data = nullptr;

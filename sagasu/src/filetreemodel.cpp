@@ -90,6 +90,10 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
 
     auto item = static_cast<TreeInformation *>(index.internalPointer());
     if (role == Qt::UserRole) {
+        if (item->type != TreeType::File || item->name.isEmpty()) {
+            return {};
+        }
+
         // build the full path
         QString path;
         TreeInformation *parent = item;

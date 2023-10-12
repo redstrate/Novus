@@ -18,8 +18,6 @@ int main(int argc, char *argv[])
 
     physis_initialize_logging();
 
-    app.setStyle(QStringLiteral("Windows"));
-
     const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};
     MainWindow w(physis_gamedata_initialize(gameDirStd.c_str()));
