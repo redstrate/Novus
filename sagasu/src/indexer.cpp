@@ -4,7 +4,15 @@
 #include "hashdatabase.h"
 #include "settings.h"
 
-const std::array known_folders{"common", "common/font", "common/graphics", "common/graphics/texture", "common/softwarecursor", "exd"};
+const std::array known_folders{"common",
+                               "common/font",
+                               "common/graphics",
+                               "common/graphics/texture",
+                               "common/softwarecursor",
+                               "exd",
+                               "chara/equipment/e0000/material/v0001",
+                               "chara/equipment/e0000/texture",
+                               "chara/human/c0101/obj/face/f0001/model"};
 
 const std::array common_font{"common/VulgarWordsFilter.dic",
                              "common/VulgarWordsFilter_party.dic",
@@ -148,6 +156,11 @@ int main(int argc, char *argv[])
     }
 
     database.addFile(QStringLiteral("exd/root.exl"));
+    database.addFile(QStringLiteral("exd/achievement.exh"));
+    database.addFile(QStringLiteral("exd/Achievement_0_en.exd"));
+    database.addFile(QStringLiteral("chara/equipment/e0000/material/v0001/mt_c0101e0000_sho_a.mtrl"));
+    database.addFile(QStringLiteral("chara/equipment/e0000/texture/v01_c0101e0000_sho_d.tex"));
+    database.addFile(QStringLiteral("chara/human/c0101/obj/face/f0001/model/c0101f0001_fac.mdl"));
 
     /*const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};

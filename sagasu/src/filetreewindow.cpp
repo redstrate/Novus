@@ -63,7 +63,7 @@ FileTreeWindow::FileTreeWindow(QString gamePath, GameData *data, QWidget *parent
 
     connect(treeWidget, &QTreeView::clicked, [this, treeWidget](const QModelIndex &item) {
         if (item.isValid()) {
-            auto path = m_fileModel->data(item, Qt::UserRole).toString();
+            auto path = m_searchModel->data(item, Qt::UserRole).toString();
             Q_EMIT pathSelected(path);
         }
     });

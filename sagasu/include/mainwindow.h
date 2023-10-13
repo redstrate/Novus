@@ -7,6 +7,7 @@
 #include <QMdiArea>
 #include <QTreeWidget>
 
+#include "filecache.h"
 #include "novusmainwindow.h"
 
 struct GameData;
@@ -21,5 +22,7 @@ private:
 
     GameData *data = nullptr;
     QTabWidget *partHolder = nullptr;
+    FileCache fileCache;
+
     void refreshParts(QString qString);
 };
