@@ -47,6 +47,9 @@ struct RenderModel {
     std::array<glm::mat4, 128> boneData;
     std::vector<RenderMaterial> materials;
 
+    uint16_t from_body_id = 101;
+    uint16_t to_body_id = 101;
+
     VkBuffer boneInfoBuffer = VK_NULL_HANDLE;
     VkDeviceMemory boneInfoMemory = VK_NULL_HANDLE;
 };
