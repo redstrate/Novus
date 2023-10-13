@@ -74,7 +74,7 @@ void EXDPart::loadSheet(QString name, physis_Buffer buffer)
     headerFormLayout->addRow(QStringLiteral("Num Pages"), new QLabel(QString::number(exh->page_count)));
     headerFormLayout->addRow(QStringLiteral("Num Languages"), new QLabel(QString::number(exh->language_count)));
 
-    for(int i = 0; i < exh->page_count; i++) {
+    for (int i = 0; i < exh->page_count; i++) {
         auto tableWidget = new QTableWidget();
 
         tableWidget->setColumnCount(exh->column_count);
@@ -84,42 +84,42 @@ void EXDPart::loadSheet(QString name, physis_Buffer buffer)
 
         tableWidget->setRowCount(exd.row_count);
 
-        for(int z = 0; z < exd.column_count; z++) {
+        for (int z = 0; z < exd.column_count; z++) {
             auto columnData = exd.row_data[0].column_data[z];
 
             QString columnType;
             switch (columnData.tag) {
-                case physis_ColumnData::Tag::String:
+            case physis_ColumnData::Tag::String:
                 columnType = QStringLiteral("String");
                 break;
-                case physis_ColumnData::Tag::Bool:
+            case physis_ColumnData::Tag::Bool:
                 columnType = QStringLiteral("Bool");
                 break;
-                case physis_ColumnData::Tag::Int8:
+            case physis_ColumnData::Tag::Int8:
                 columnType = QStringLiteral("Int8");
                 break;
-                case physis_ColumnData::Tag::UInt8:
+            case physis_ColumnData::Tag::UInt8:
                 columnType = QStringLiteral("UInt8");
                 break;
-                case physis_ColumnData::Tag::Int16:
+            case physis_ColumnData::Tag::Int16:
                 columnType = QStringLiteral("Int16");
                 break;
-                case physis_ColumnData::Tag::UInt16:
+            case physis_ColumnData::Tag::UInt16:
                 columnType = QStringLiteral("UInt16");
                 break;
-                case physis_ColumnData::Tag::Int32:
+            case physis_ColumnData::Tag::Int32:
                 columnType = QStringLiteral("Int32");
                 break;
-                case physis_ColumnData::Tag::UInt32:
+            case physis_ColumnData::Tag::UInt32:
                 columnType = QStringLiteral("UInt32");
                 break;
-                case physis_ColumnData::Tag::Float32:
+            case physis_ColumnData::Tag::Float32:
                 columnType = QStringLiteral("Float32");
                 break;
-                case physis_ColumnData::Tag::Int64:
+            case physis_ColumnData::Tag::Int64:
                 columnType = QStringLiteral("Int64");
                 break;
-                case physis_ColumnData::Tag::UInt64:
+            case physis_ColumnData::Tag::UInt64:
                 columnType = QStringLiteral("UInt64");
                 break;
             }
@@ -135,53 +135,53 @@ void EXDPart::loadSheet(QString name, physis_Buffer buffer)
         }
 
         for (int j = 0; j < exd.row_count; j++) {
-            for(int z = 0; z < exd.column_count; z++) {
+            for (int z = 0; z < exd.column_count; z++) {
                 auto columnData = exd.row_data[j].column_data[z];
 
                 QString columnString;
                 int columnRow;
                 switch (columnData.tag) {
-                    case physis_ColumnData::Tag::String:
-                        columnString = QString::fromStdString(columnData.string._0);
-                        break;
-                    case physis_ColumnData::Tag::Bool:
-                        columnString = columnData.bool_._0 ? QStringLiteral("True") : QStringLiteral("False");
-                        break;
-                    case physis_ColumnData::Tag::Int8:
-                        columnString = QString::number(columnData.int8._0);
-                        columnRow = columnData.int8._0;
-                        break;
-                    case physis_ColumnData::Tag::UInt8:
-                        columnString = QString::number(columnData.u_int8._0);
-                        columnRow = columnData.u_int8._0;
-                        break;
-                    case physis_ColumnData::Tag::Int16:
-                        columnString = QString::number(columnData.int16._0);
-                        columnRow = columnData.int16._0;
-                        break;
-                    case physis_ColumnData::Tag::UInt16:
-                        columnString = QString::number(columnData.u_int16._0);
-                        columnRow = columnData.u_int16._0;
-                        break;
-                    case physis_ColumnData::Tag::Int32:
-                        columnString = QString::number(columnData.int32._0);
-                        columnRow = columnData.int32._0;
-                        break;
-                    case physis_ColumnData::Tag::UInt32:
-                        columnString = QString::number(columnData.u_int32._0);
-                        columnRow = columnData.u_int32._0;
-                        break;
-                    case physis_ColumnData::Tag::Float32:
-                        columnString = QString::number(columnData.float32._0);
-                        break;
-                    case physis_ColumnData::Tag::Int64:
-                        columnString = QString::number(columnData.int64._0);
-                        columnRow = columnData.int64._0;
-                        break;
-                    case physis_ColumnData::Tag::UInt64:
-                        columnString = QString::number(columnData.u_int64._0);
-                        columnRow = columnData.u_int64._0;
-                        break;
+                case physis_ColumnData::Tag::String:
+                    columnString = QString::fromStdString(columnData.string._0);
+                    break;
+                case physis_ColumnData::Tag::Bool:
+                    columnString = columnData.bool_._0 ? QStringLiteral("True") : QStringLiteral("False");
+                    break;
+                case physis_ColumnData::Tag::Int8:
+                    columnString = QString::number(columnData.int8._0);
+                    columnRow = columnData.int8._0;
+                    break;
+                case physis_ColumnData::Tag::UInt8:
+                    columnString = QString::number(columnData.u_int8._0);
+                    columnRow = columnData.u_int8._0;
+                    break;
+                case physis_ColumnData::Tag::Int16:
+                    columnString = QString::number(columnData.int16._0);
+                    columnRow = columnData.int16._0;
+                    break;
+                case physis_ColumnData::Tag::UInt16:
+                    columnString = QString::number(columnData.u_int16._0);
+                    columnRow = columnData.u_int16._0;
+                    break;
+                case physis_ColumnData::Tag::Int32:
+                    columnString = QString::number(columnData.int32._0);
+                    columnRow = columnData.int32._0;
+                    break;
+                case physis_ColumnData::Tag::UInt32:
+                    columnString = QString::number(columnData.u_int32._0);
+                    columnRow = columnData.u_int32._0;
+                    break;
+                case physis_ColumnData::Tag::Float32:
+                    columnString = QString::number(columnData.float32._0);
+                    break;
+                case physis_ColumnData::Tag::Int64:
+                    columnString = QString::number(columnData.int64._0);
+                    columnRow = columnData.int64._0;
+                    break;
+                case physis_ColumnData::Tag::UInt64:
+                    columnString = QString::number(columnData.u_int64._0);
+                    columnRow = columnData.u_int64._0;
+                    break;
                 }
 
                 if (definitionList.contains(z)) {
@@ -211,7 +211,8 @@ void EXDPart::loadSheet(QString name, physis_Buffer buffer)
     }
 }
 
-Language EXDPart::getSuitableLanguage(physis_EXH* pExh) {
+Language EXDPart::getSuitableLanguage(physis_EXH *pExh)
+{
     for (int i = 0; i < pExh->language_count; i++) {
         if (pExh->languages[i] == Language::English) {
             return Language::English;
@@ -220,3 +221,5 @@ Language EXDPart::getSuitableLanguage(physis_EXH* pExh) {
 
     return Language::None;
 }
+
+#include "moc_exdpart.cpp"
