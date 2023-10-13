@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <QtLogging>
+
 #include "physis.hpp"
 #include "qhexview.h"
 
