@@ -48,7 +48,7 @@ FileTreeWindow::FileTreeWindow(QString gamePath, GameData *data, QWidget *parent
         auto index = treeWidget->indexAt(pos);
 
         if (index.isValid()) {
-            auto path = m_fileModel->data(index, Qt::UserRole).toString();
+            auto path = m_searchModel->data(index, Qt::UserRole).toString();
 
             auto menu = new QMenu();
 
