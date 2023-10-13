@@ -11,7 +11,6 @@
 
 FilePropertiesWindow::FilePropertiesWindow(QString path, physis_Buffer buffer, QWidget *parent)
     : QWidget(parent)
-    , data(data)
 {
     setWindowTitle(QStringLiteral("Properties for ") + path);
 

@@ -9,6 +9,7 @@
 class FilePropertiesWindow : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit FilePropertiesWindow(QString path, physis_Buffer buffer, QWidget *parent = nullptr);
 

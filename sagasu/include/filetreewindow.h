@@ -12,6 +12,7 @@
 class FileTreeWindow : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit FileTreeWindow(QString gamePath, GameData *data, QWidget *parent = nullptr);
 

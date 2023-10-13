@@ -92,3 +92,5 @@ QString HashDatabase::getFilename(const uint32_t i)
 
     return query.value(0).toString();
 }
+
+#include "moc_hashdatabase.cpp"

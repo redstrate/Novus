@@ -9,6 +9,8 @@
 
 class HashDatabase : public QObject
 {
+    Q_OBJECT
+
 public:
     HashDatabase(QObject *parent = nullptr);
 
