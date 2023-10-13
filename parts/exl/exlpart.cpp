@@ -25,6 +25,7 @@ void EXLPart::load(physis_Buffer file)
     auto exl = physis_gamedata_read_excel_list(file);
     if (exl.entry_count > 0) {
         m_tableWidget->clear();
+        m_tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         m_tableWidget->setColumnCount(2);
         m_tableWidget->setRowCount(exl.entry_count);
