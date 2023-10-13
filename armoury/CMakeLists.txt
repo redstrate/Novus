@@ -26,46 +26,6 @@ target_sources(novus-armoury PRIVATE
         src/singlegearview.cpp
         src/vec3edit.cpp)
 
-# note, this is temporary until we get dynamic skeleton generation. i really don't want to embed these
-qt_add_resources(novus-armoury "skeletons"
-        PREFIX "/"
-        FILES
-        skeletons/c0101_deform.json
-        skeletons/c0101b0001.skel
-        skeletons/c0201_deform.json
-        skeletons/c0201b0001.skel
-        skeletons/c0301_deform.json
-        skeletons/c0301b0001.skel
-        skeletons/c0401_deform.json
-        skeletons/c0401b0001.skel
-        skeletons/c0501_deform.json
-        skeletons/c0501b0001.skel
-        skeletons/c0601_deform.json
-        skeletons/c0601b0001.skel
-        skeletons/c0701_deform.json
-        skeletons/c0701b0001.skel
-        skeletons/c0701_deform.json
-        skeletons/c0801_deform.json
-        skeletons/c0801b0001.skel
-        skeletons/c0901_deform.json
-        skeletons/c0901b0001.skel
-        skeletons/c1001_deform.json
-        skeletons/c1001b0001.skel
-        skeletons/c1101_deform.json
-        skeletons/c1101b0001.skel
-        skeletons/c1201_deform.json
-        skeletons/c1201b0001.skel
-        skeletons/c1301_deform.json
-        skeletons/c1301b0001.skel
-        skeletons/c1401_deform.json
-        skeletons/c1401b0001.skel
-        skeletons/c1501_deform.json
-        skeletons/c1501b0001.skel
-        skeletons/c1701_deform.json
-        skeletons/c1701b0001.skel
-        skeletons/c1801_deform.json
-        skeletons/c1801b0001.skel)
-
 target_include_directories(novus-armoury
         PUBLIC
         include

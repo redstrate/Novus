@@ -256,18 +256,9 @@ void GearView::reloadRaceDeforms()
     const int raceCode = physis_get_race_code(currentRace, currentSubrace, currentGender);
     qDebug() << "Race code: " << raceCode;
 
-    QString skelName = QStringLiteral(":/skeletons/c%1b0001.skel").arg(raceCode, 4, 10, QLatin1Char{'0'});
-    mdlPart->setSkeleton(physis_skeleton_from_skel(utility::readFromQrc(skelName)));
-
-    // racial deforms don't work on Hyur Midlander, not needed? TODO not sure
-    if (currentSubrace != Subrace::Midlander) {
-        QString deformName = QStringLiteral(":/skeletons/c%1_deform.json").arg(raceCode, 4, 10, QLatin1Char{'0'});
-        mdlPart->loadRaceDeformMatrices(utility::readFromQrc(deformName));
-    } else {
-        for (auto &data : mdlPart->boneData) {
-            data.deformRaceMatrix = glm::mat4(1.0f);
-        }
-    }
+    QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
+    std::string skelNameStd = skelName.toStdString();
+    mdlPart->setSkeleton(physis_parse_skeleton(physis_gamedata_extract_file(data, skelNameStd.c_str())));
 }
 
 MDLPart &GearView::part() const
@@ -313,6 +304,14 @@ void GearView::updatePart()
                 fallbackSubrace = Subrace::Midlander;
             }
 
+            if (fallbackRace != currentRace) {
+                qInfo() << "Fell back to hyur race for" << mdlPath;
+            }
+
+            if (fallbackSubrace != currentSubrace) {
+                qInfo() << "Fell back to midlander subrace for" << mdlPath;
+            }
+
             if (mdl_data.size > 0) {
                 auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
 
@@ -337,7 +336,13 @@ void GearView::updatePart()
 
                 maxLod = std::max(mdl.num_lod, maxLod);
 
-                mdlPart->addModel(mdl, sanitizeMdlPath(mdlPath), materials, currentLod);
+                gearAddition.bodyId = physis_get_race_code(fallbackRace, fallbackSubrace, currentGender);
+                mdlPart->addModel(mdl,
+                                  sanitizeMdlPath(mdlPath),
+                                  materials,
+                                  currentLod,
+                                  physis_get_race_code(currentRace, currentSubrace, currentGender),
+                                  gearAddition.bodyId);
                 gearAddition.mdl = mdl;
                 gearAddition.path = mdlPath;
                 loadedGears.push_back(gearAddition);

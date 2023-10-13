@@ -98,6 +98,7 @@ private:
         GearInfo info;
         physis_MDL mdl;
         QLatin1String path;
+        int bodyId;
     };
 
     std::vector<LoadedGear> loadedGears;

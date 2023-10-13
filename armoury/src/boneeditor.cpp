@@ -40,7 +40,7 @@ BoneEditor::BoneEditor(GearView *gearView, QWidget *parent)
     auto boneListWidget = new QTreeWidget();
     boneListWidget->setHeaderLabel(QStringLiteral("Name"));
 
-    connect(gearView, &GearView::modelReloaded, this, [this, boneListWidget, gearView] {
+    connect(&gearView->part(), &MDLPart::skeletonChanged, this, [this, boneListWidget, gearView] {
         boneListWidget->clear();
         addItem(*gearView->part().skeleton, *gearView->part().skeleton->root_bone, boneListWidget);
     });
@@ -93,6 +93,10 @@ BoneEditor::BoneEditor(GearView *gearView, QWidget *parent)
 
     raceDeformScaleEdit = new Vector3Edit(currentRaceScale);
     raceDeformGroupLayout->addRow(QStringLiteral("Scale"), raceDeformScaleEdit);
+
+    if (gearView->part().skeleton) {
+        addItem(*gearView->part().skeleton, *gearView->part().skeleton->root_bone, boneListWidget);
+    }
 }
 
 void BoneEditor::treeItemClicked(QTreeWidgetItem *item, int column)
@@ -115,7 +119,7 @@ void BoneEditor::treeItemClicked(QTreeWidgetItem *item, int column)
             glm::vec3 translation;
             glm::vec3 skew;
             glm::vec4 perspective;
-            glm::decompose(gearView->part().boneData[i].deformRaceMatrix, scale, rotation, translation, skew, perspective);
+            /*glm::decompose(gearView->part().boneData[i].deformRaceMatrix, scale, rotation, translation, skew, perspective);
 
             currentRacePosition = translation;
             currentRaceRotation = rotation;
@@ -123,7 +127,7 @@ void BoneEditor::treeItemClicked(QTreeWidgetItem *item, int column)
 
             raceDeformPosEdit->setVector(currentRacePosition);
             raceDeformRotationEdit->setQuat(currentRaceRotation);
-            raceDeformScaleEdit->setVector(currentRaceScale);
+            raceDeformScaleEdit->setVector(currentRaceScale);*/
         }
     }
 }

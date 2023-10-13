@@ -157,6 +157,8 @@ MDLPart::MDLPart(GameData *data, FileCache &cache)
     viewportLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(viewportLayout);
 
+    pbd = physis_parse_pbd(physis_gamedata_extract_file(data, "chara/xls/bonedeformer/human.pbd"));
+
     renderer = new Renderer();
 
 #ifndef USE_STANDALONE_WINDOW
@@ -383,12 +385,14 @@ void MDLPart::clear()
     Q_EMIT modelChanged();
 }
 
-void MDLPart::addModel(physis_MDL mdl, const QString &name, std::vector<physis_Material> materials, int lod)
+void MDLPart::addModel(physis_MDL mdl, const QString &name, std::vector<physis_Material> materials, int lod, uint16_t fromBodyId, uint16_t toBodyId)
 {
     qDebug() << "Adding model to MDLPart";
 
     auto model = renderer->addModel(mdl, lod);
     model.name = name;
+    model.from_body_id = fromBodyId;
+    model.to_body_id = toBodyId;
 
     std::transform(materials.begin(), materials.end(), std::back_inserter(model.materials), [this](const physis_Material &mat) {
         return createMaterial(mat);
@@ -410,31 +414,6 @@ void MDLPart::setSkeleton(physis_Skeleton newSkeleton)
     firstTimeSkeletonDataCalculated = false;
 
     Q_EMIT skeletonChanged();
-}
-
-void MDLPart::loadRaceDeformMatrices(physis_Buffer buffer)
-{
-    QJsonDocument document = QJsonDocument::fromJson(QByteArray((const char *)buffer.data, buffer.size));
-    for (auto boneObj : document.object()[QLatin1String("Data")].toArray()) {
-        QJsonArray matrix = boneObj.toObject()[QLatin1String("Matrix")].toArray();
-        QString boneName = boneObj.toObject()[QLatin1String("Name")].toString();
-
-        glm::mat4 actualMatrix;
-        int i = 0;
-        for (auto val : matrix) {
-            glm::value_ptr(actualMatrix)[i++] = val.toDouble();
-        }
-
-        for (int i = 0; i < skeleton->num_bones; i++) {
-            if (std::string_view{skeleton->bones[i].name} == boneName.toStdString()) {
-                auto &data = boneData[i];
-
-                data.deformRaceMatrix = actualMatrix;
-            }
-        }
-
-        firstTimeSkeletonDataCalculated = false;
-    }
 }
 
 void MDLPart::clearSkeleton()
@@ -487,8 +466,43 @@ void MDLPart::reloadBoneData()
                 }
             }
 
+            std::vector<glm::mat4> deformBones(model.model.num_affected_bones);
             for (int i = 0; i < model.model.num_affected_bones; i++) {
-                model.boneData[i] = boneData[boneMapping[i]].finalTransform;
+                deformBones[i] = glm::mat4(1.0f);
+            }
+
+            // get deform matrices
+            auto deform = physis_pbd_get_deform_matrix(pbd, model.from_body_id, model.to_body_id);
+            if (deform.num_bones != 0) {
+                for (int i = 0; i < deform.num_bones; i++) {
+                    auto deformBone = deform.bones[i];
+
+                    for (int k = 0; k < model.model.num_affected_bones; k++) {
+                        if (std::string_view{model.model.affected_bone_names[k]} == std::string_view{deformBone.name}) {
+                            deformBones[k] = glm::mat4{deformBone.deform[0],
+                                                       deformBone.deform[1],
+                                                       deformBone.deform[2],
+                                                       deformBone.deform[3],
+                                                       deformBone.deform[4],
+                                                       deformBone.deform[5],
+                                                       deformBone.deform[6],
+                                                       deformBone.deform[7],
+                                                       deformBone.deform[8],
+                                                       deformBone.deform[9],
+                                                       deformBone.deform[10],
+                                                       deformBone.deform[11],
+                                                       0.0f,
+                                                       0.0f,
+                                                       0.0f,
+                                                       1.0f};
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < model.model.num_affected_bones; i++) {
+                const int originalBoneId = boneMapping[i];
+                model.boneData[i] = boneData[originalBoneId].localTransform * deformBones[i] * boneData[originalBoneId].inversePose;
             }
         }
     }
@@ -561,7 +575,7 @@ void MDLPart::calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &b
 
 void MDLPart::calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone)
 {
-    const glm::mat4 parent_matrix = parent_bone == nullptr ? glm::mat4(1.0f) : boneData[parent_bone->index].localTransform;
+    const glm::mat4 parent_matrix = parent_bone == nullptr ? glm::mat4(1.0f) : (boneData[parent_bone->index].localTransform);
 
     glm::mat4 local = glm::mat4(1.0f);
     local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
@@ -569,7 +583,7 @@ void MDLPart::calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const 
     local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
 
     boneData[bone.index].localTransform = parent_matrix * local;
-    boneData[bone.index].finalTransform = boneData[bone.index].localTransform * boneData[bone.index].deformRaceMatrix * boneData[bone.index].inversePose;
+    boneData[bone.index].finalTransform = parent_matrix;
 
     for (int i = 0; i < skeleton.num_bones; i++) {
         if (skeleton.bones[i].parent_bone != nullptr && std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {

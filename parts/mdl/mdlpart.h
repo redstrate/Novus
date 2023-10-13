@@ -39,7 +39,6 @@ public:
 
     struct BoneData {
         glm::mat4 localTransform, finalTransform, inversePose;
-        glm::mat4 deformRaceMatrix{1.0f};
     };
 
     std::vector<BoneData> boneData;
@@ -55,15 +54,12 @@ public Q_SLOTS:
     void clear();
 
     /// Adds a new MDL with a list of materials used.
-    void addModel(physis_MDL mdl, const QString &name, std::vector<physis_Material> materials, int lod);
+    void addModel(physis_MDL mdl, const QString &name, std::vector<physis_Material> materials, int lod, uint16_t fromBodyId = 101, uint16_t toBodyId = 101);
 
     void removeModel(const physis_MDL &mdl);
 
     /// Sets the skeleton any skinned MDLs should bind to.
     void setSkeleton(physis_Skeleton skeleton);
-
-    /// Sets the race deform matrices
-    void loadRaceDeformMatrices(physis_Buffer buffer);
 
     /// Clears the current skeleton.
     void clearSkeleton();
@@ -79,6 +75,7 @@ private:
 
     GameData *data = nullptr;
     FileCache &cache;
+    physis_PBD pbd;
 
     std::vector<RenderModel> models;
 
