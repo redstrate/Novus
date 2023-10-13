@@ -5,24 +5,37 @@
 
 #include <QDebug>
 #include <QFile>
-#include <QTableWidget>
-#include <QVBoxLayout>
+#include <QGroupBox>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
+#include <QLabel>
+#include <QTableWidget>
+#include <QVBoxLayout>
 #include <physis.hpp>
 
-EXDPart::EXDPart(GameData* data) : data(data) {
-    pageTabWidget = new QTabWidget();
-
+EXDPart::EXDPart(GameData *data)
+    : data(data)
+{
     auto layout = new QVBoxLayout();
-    layout->addWidget(pageTabWidget);
     setLayout(layout);
+
+    auto headerBox = new QGroupBox(QStringLiteral("Header"));
+    layout->addWidget(headerBox);
+    headerFormLayout = new QFormLayout();
+    headerBox->setLayout(headerFormLayout);
+
+    auto contentsBox = new QGroupBox(QStringLiteral("Contents"));
+    layout->addWidget(contentsBox);
+    auto contentsBoxLayout = new QVBoxLayout();
+    contentsBox->setLayout(contentsBoxLayout);
+
+    pageTabWidget = new QTabWidget();
+    contentsBoxLayout->addWidget(pageTabWidget);
 }
 
-void EXDPart::loadSheet(const QString& name) {
-    qDebug() << "Loading" << name;
-
+void EXDPart::loadSheet(QString name, physis_Buffer buffer)
+{
     pageTabWidget->clear();
 
     QFile definitionFile(QStringLiteral("Achievement.json"));
@@ -38,7 +51,7 @@ void EXDPart::loadSheet(const QString& name) {
                 && definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QStringLiteral("link")) {
                 auto linkName = definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("target")].toString();
 
-                auto linkExh = physis_gamedata_read_excel_sheet_header(data, linkName.toStdString().c_str());
+                auto linkExh = physis_parse_excel_sheet_header(buffer);
                 auto linkExd = physis_gamedata_read_excel_sheet(data, linkName.toStdString().c_str(), linkExh, getSuitableLanguage(linkExh), 0);
 
                 if (linkExd.p_ptr != nullptr) {
@@ -48,7 +61,18 @@ void EXDPart::loadSheet(const QString& name) {
         }
     }
 
-    auto exh = physis_gamedata_read_excel_sheet_header(data, name.toStdString().c_str());
+    auto exh = physis_parse_excel_sheet_header(buffer);
+
+    QLayoutItem *child;
+    while ((child = headerFormLayout->takeAt(0)) != 0) {
+        delete child->widget();
+        delete child;
+    }
+
+    headerFormLayout->addRow(QStringLiteral("Num Rows"), new QLabel(QString::number(exh->row_count)));
+    headerFormLayout->addRow(QStringLiteral("Num Columns"), new QLabel(QString::number(exh->column_count)));
+    headerFormLayout->addRow(QStringLiteral("Num Pages"), new QLabel(QString::number(exh->page_count)));
+    headerFormLayout->addRow(QStringLiteral("Num Languages"), new QLabel(QString::number(exh->language_count)));
 
     for(int i = 0; i < exh->page_count; i++) {
         auto tableWidget = new QTableWidget();

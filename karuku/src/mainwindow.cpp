@@ -44,10 +44,14 @@ MainWindow::MainWindow(GameData *data)
     auto exdPart = new EXDPart(data);
     layout->addWidget(exdPart);
 
-    connect(listWidget, &QListWidget::itemClicked, this, [exdPart](QListWidgetItem *item) {
-        auto name = item->text().toStdString();
-        auto nameLowercase = item->text().toLower().toStdString();
+    connect(listWidget, &QListWidget::itemClicked, this, [data, exdPart](QListWidgetItem *item) {
+        auto nameLowercase = item->text().toLower();
 
-        exdPart->loadSheet(QString::fromStdString(name.c_str()));
+        auto path = QStringLiteral("exd/%1.exh").arg(nameLowercase);
+        auto pathStd = path.toStdString();
+
+        auto file = physis_gamedata_extract_file(data, pathStd.c_str());
+
+        exdPart->loadSheet(item->text(), file);
     });
 }

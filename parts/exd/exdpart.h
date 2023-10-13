@@ -3,21 +3,24 @@
 
 #pragma once
 
-#include <QWidget>
-#include <QTabWidget>
+#include <QFormLayout>
 #include <QMap>
+#include <QTabWidget>
+#include <QWidget>
 #include <physis.hpp>
 
+// TODO: rename to "EXDH" or "Excel" part or something similar because you cannot preview EXD on it's own
 class EXDPart : public QWidget {
 public:
     explicit EXDPart(GameData* data);
 
-    void loadSheet(const QString& name);
+    void loadSheet(QString name, physis_Buffer buffer);
 
 private:
     GameData* data = nullptr;
 
     QTabWidget* pageTabWidget = nullptr;
+    QFormLayout *headerFormLayout = nullptr;
 
     struct CachedExcel {
         physis_EXH* exh = nullptr;
