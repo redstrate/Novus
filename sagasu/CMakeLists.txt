@@ -22,6 +22,6 @@ target_sources(novus-sagasu PRIVATE
         src/filepropertieswindow.cpp
         src/filetreemodel.cpp)
 target_include_directories(novus-sagasu PRIVATE include)
-target_link_libraries(novus-sagasu PRIVATE Qt6::Concurrent hexpart exlpart mdlpart exdpart texpart novus-sagasu-static)
+target_link_libraries(novus-sagasu PRIVATE Qt6::Concurrent shpkpart hexpart exlpart mdlpart exdpart texpart novus-sagasu-static)
 
 install(TARGETS novus-sagasu ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})

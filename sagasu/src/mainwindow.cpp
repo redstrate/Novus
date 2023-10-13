@@ -16,6 +16,7 @@
 #include "filetreewindow.h"
 #include "hexpart.h"
 #include "mdlpart.h"
+#include "shpkpart.h"
 #include "texpart.h"
 
 MainWindow::MainWindow(QString gamePath, GameData *data)
@@ -92,6 +93,10 @@ void MainWindow::refreshParts(QString path)
         auto texWidget = new TexPart(data);
         texWidget->load(file);
         partHolder->addTab(texWidget, QStringLiteral("Texture"));
+    } else if (info.completeSuffix() == QStringLiteral("shpk")) {
+        auto shpkWidget = new SHPKPart(data);
+        shpkWidget->load(file);
+        partHolder->addTab(shpkWidget, QStringLiteral("Shader Package"));
     }
 
     auto hexWidget = new HexPart();
