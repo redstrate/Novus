@@ -55,3 +55,5 @@ MainWindow::MainWindow(GameData *data)
         exdPart->loadSheet(item->text(), file);
     });
 }
+
+#include "moc_mainwindow.cpp"

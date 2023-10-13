@@ -9,6 +9,8 @@ struct GameData;
 
 class MainWindow : public NovusMainWindow
 {
+    Q_OBJECT
+
 public:
     MainWindow(GameData *data);
 
