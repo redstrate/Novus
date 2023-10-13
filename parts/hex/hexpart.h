@@ -10,6 +10,8 @@
 
 class HexPart : public QHexView
 {
+    Q_OBJECT
+
 public:
     explicit HexPart(QWidget *parent = nullptr);
 

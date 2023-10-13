@@ -15,3 +15,5 @@ void HexPart::loadFile(physis_Buffer buffer)
     setDocument(QHexDocument::fromMemory<QMemoryRefBuffer>(reinterpret_cast<char *>(buffer.data), buffer.size));
     setReadOnly(true);
 }
+
+#include "moc_hexpart.cpp"
