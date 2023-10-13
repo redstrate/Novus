@@ -4,8 +4,7 @@
 
 A suite of FFXIV modding tools for Linux.
 
-**Note:** This is alpha level software, not intended to be usable in any capacity at the moment. Thus, I have not tagged
-any stable releases.
+![Screenshot of some of the applications](misc/screenshot-main.png)
 
 ## Components
 

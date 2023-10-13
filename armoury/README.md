@@ -2,7 +2,7 @@
 
 The Armoury can display gear pieces from FFXIV, and includes a full model viewer and export functionality. Basic character and bone editing is also supported.
 
-![Screenshot](../misc/mdlviewer-screenshot.png)
+![Screenshot](../misc/armoury-screenshot.png)
 
 ## Note
 
