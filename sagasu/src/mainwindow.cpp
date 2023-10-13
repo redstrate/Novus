@@ -18,6 +18,7 @@
 #include "hexpart.h"
 #include "mdlpart.h"
 #include "shpkpart.h"
+#include "sklbpart.h"
 #include "texpart.h"
 
 MainWindow::MainWindow(QString gamePath, GameData *data)
@@ -102,6 +103,10 @@ void MainWindow::refreshParts(QString path)
         auto cmpWidget = new CmpPart(data);
         cmpWidget->load(file);
         partHolder->addTab(cmpWidget, QStringLiteral("Chara Make Params"));
+    } else if (info.completeSuffix() == QStringLiteral("sklb")) {
+        auto sklbWidget = new SklbPart();
+        sklbWidget->load(physis_parse_skeleton(file));
+        partHolder->addTab(sklbWidget, QStringLiteral("Skeleton"));
     }
 
     auto hexWidget = new HexPart();

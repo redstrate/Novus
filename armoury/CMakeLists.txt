@@ -10,9 +10,7 @@ target_sources(novus-armoury PRIVATE
         include/gearlistwidget.h
         include/gearview.h
         include/mainwindow.h
-        include/quaternionedit.h
         include/singlegearview.h
-        include/vec3edit.h
 
         src/boneeditor.cpp
         src/cmpeditor.cpp
@@ -22,9 +20,7 @@ target_sources(novus-armoury PRIVATE
         src/gearview.cpp
         src/main.cpp
         src/mainwindow.cpp
-        src/quaternionedit.cpp
-        src/singlegearview.cpp
-        src/vec3edit.cpp)
+        src/singlegearview.cpp)
 
 target_include_directories(novus-armoury
         PUBLIC
@@ -40,6 +36,7 @@ target_link_libraries(novus-armoury PUBLIC
         physis-logger
         mdlpart
         cmppart
+        sklbpart
         imgui
         novus-common)
 
