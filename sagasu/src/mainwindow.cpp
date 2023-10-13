@@ -16,6 +16,7 @@
 #include "filetreewindow.h"
 #include "hexpart.h"
 #include "mdlpart.h"
+#include "texpart.h"
 
 MainWindow::MainWindow(QString gamePath, GameData *data)
     : NovusMainWindow()
@@ -87,6 +88,10 @@ void MainWindow::refreshParts(QString path)
         auto mdlWidget = new MDLPart(data, fileCache);
         mdlWidget->addModel(physis_mdl_parse(file.size, file.data), QStringLiteral("mdl"), {}, 0);
         partHolder->addTab(mdlWidget, QStringLiteral("Model"));
+    } else if (info.completeSuffix() == QStringLiteral("tex")) {
+        auto texWidget = new TexPart(data);
+        texWidget->load(file);
+        partHolder->addTab(texWidget, QStringLiteral("Texture"));
     }
 
     auto hexWidget = new HexPart();
