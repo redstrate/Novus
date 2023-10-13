@@ -313,7 +313,7 @@ void GearView::updatePart()
             }
 
             if (mdl_data.size > 0) {
-                auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
+                auto mdl = physis_mdl_parse(mdl_data);
 
                 std::vector<physis_Material> materials;
                 for (int i = 0; i < mdl.num_material_names; i++) {
@@ -365,7 +365,7 @@ void GearView::updatePart()
         auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
-            auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
+            auto mdl = physis_mdl_parse(mdl_data);
 
             std::vector<physis_Material> materials;
             for (int i = 0; i < mdl.num_material_names; i++) {
@@ -388,7 +388,7 @@ void GearView::updatePart()
         auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
-            auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
+            auto mdl = physis_mdl_parse(mdl_data);
 
             std::vector<physis_Material> materials;
             for (int i = 0; i < mdl.num_material_names; i++) {
@@ -411,7 +411,7 @@ void GearView::updatePart()
         auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
-            auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
+            auto mdl = physis_mdl_parse(mdl_data);
 
             std::vector<physis_Material> materials;
             for (int i = 0; i < mdl.num_material_names; i++) {
@@ -434,7 +434,7 @@ void GearView::updatePart()
         auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
-            auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
+            auto mdl = physis_mdl_parse(mdl_data);
 
             const char *material_name = mdl.material_names[0];
             const std::string skinmtrl_path =
