@@ -55,7 +55,6 @@ add_subdirectory(karuku)
 add_subdirectory(armoury)
 add_subdirectory(argcracker)
 add_subdirectory(sagasu)
-#add_subdirectory(bonedecomp) # not yet ported to physis
 add_subdirectory(parts)
 add_subdirectory(common)
 add_subdirectory(mdlviewer)
