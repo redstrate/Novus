@@ -8,7 +8,8 @@
 #include <QCoreApplication>
 #include <QMessageBox>
 
-QString getGameDirectory() {
+QString getGameDirectory()
+{
     KConfig config(QStringLiteral("novusrc"));
     KConfigGroup game = config.group(QStringLiteral("Game"));
 

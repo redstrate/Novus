@@ -5,7 +5,10 @@
 
 #include <physis.hpp>
 
-FileCache::FileCache(GameData& data) : data(data) {}
+FileCache::FileCache(GameData &data)
+    : data(data)
+{
+}
 
 physis_Buffer &FileCache::lookupFile(const QLatin1String &path)
 {
