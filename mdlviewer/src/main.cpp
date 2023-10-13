@@ -8,11 +8,11 @@
 #include "mainwindow.h"
 #include "settings.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
     QApplication app(argc, argv);
 
-    customizeAboutData(
-        QStringLiteral("mdlviewer"), QStringLiteral("MDLViewer"), QStringLiteral("Program to view FFXIV MDL files."));
+    customizeAboutData(QStringLiteral("mdlviewer"), QStringLiteral("MDLViewer"), QStringLiteral("Program to view FFXIV MDL files."));
 
     const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};

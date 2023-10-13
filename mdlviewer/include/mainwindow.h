@@ -11,13 +11,15 @@ class MDLPart;
 
 class MainWindow : public NovusMainWindow
 {
+    Q_OBJECT
+
 public:
-    MainWindow(GameData* data);
+    MainWindow(GameData *data);
 
 protected:
     void setupFileMenu(QMenu *menu) override;
 
-    GameData* data = nullptr;
-    MDLPart* part = nullptr;
+    GameData *data = nullptr;
+    MDLPart *part = nullptr;
     FileCache cache;
 };

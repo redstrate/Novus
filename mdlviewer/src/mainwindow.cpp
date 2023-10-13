@@ -51,3 +51,5 @@ void MainWindow::setupFileMenu(QMenu *menu)
         part->addModel(physis_mdl_parse(buffer.size, buffer.data), QStringLiteral("mdl"), {}, 0);
     });
 }
+
+#include "moc_mainwindow.cpp"
