@@ -4,22 +4,43 @@
 #include "filetreewindow.h"
 
 #include <QHBoxLayout>
+#include <QLineEdit>
 #include <QMenu>
 #include <QTreeWidget>
 
 FileTreeWindow::FileTreeWindow(QString gamePath, GameData *data, QWidget *parent)
     : QWidget(parent)
+    , m_gamePath(gamePath)
     , data(data)
 {
-    setWindowTitle(QStringLiteral("File Tree"));
-
-    auto layout = new QHBoxLayout();
+    auto layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    m_fileModel = new FileTreeModel(gamePath, data);
+    m_searchModel = new QSortFilterProxyModel();
+    m_searchModel->setRecursiveFilteringEnabled(true);
+    m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
+
+    auto searchLayout = new QHBoxLayout();
+    layout->addLayout(searchLayout);
+
+    auto searchEdit = new QLineEdit();
+    searchEdit->setPlaceholderText(QStringLiteral("Search..."));
+    searchEdit->setClearButtonEnabled(true);
+    connect(searchEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
+        m_searchModel->setFilterRegularExpression(text);
+    });
+    searchLayout->addWidget(searchEdit);
+
+    m_unknownCheckbox = new QCheckBox();
+    m_unknownCheckbox->setToolTip(QStringLiteral("Show unknown files and folders."));
+    connect(m_unknownCheckbox, &QCheckBox::clicked, this, [this] {
+        refreshModel();
+    });
+    searchLayout->addWidget(m_unknownCheckbox);
 
     auto treeWidget = new QTreeView();
-    treeWidget->setModel(m_fileModel);
+    treeWidget->setModel(m_searchModel);
     layout->addWidget(treeWidget);
 
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -46,6 +67,15 @@ FileTreeWindow::FileTreeWindow(QString gamePath, GameData *data, QWidget *parent
             Q_EMIT pathSelected(path);
         }
     });
+
+    refreshModel();
+}
+
+void FileTreeWindow::refreshModel()
+{
+    // TODO: this should really be handled by the proxy
+    m_fileModel = new FileTreeModel(m_unknownCheckbox->isChecked(), m_gamePath, data);
+    m_searchModel->setSourceModel(m_fileModel);
 }
 
 #include "moc_filetreewindow.cpp"

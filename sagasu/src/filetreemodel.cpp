@@ -6,8 +6,9 @@
 
 #include <QtConcurrent>
 
-FileTreeModel::FileTreeModel(QString gamePath, GameData *data)
+FileTreeModel::FileTreeModel(bool showUnknown, QString gamePath, GameData *data)
     : gameData(data)
+    , m_showUnknown(showUnknown)
     , QAbstractItemModel()
 {
     rootItem = new TreeInformation();
@@ -176,6 +177,10 @@ void FileTreeModel::addKnownFolder(QString string)
 
 void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, QString realName)
 {
+    if (realName.isEmpty() && !m_showUnknown) {
+        return;
+    }
+
     auto fileItem = new TreeInformation();
     fileItem->hash = name;
     fileItem->name = realName;
@@ -187,6 +192,10 @@ void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, QString 
 
 void FileTreeModel::addFolder(TreeInformation *parentItem, uint32_t name)
 {
+    if (!m_showUnknown) {
+        return;
+    }
+
     auto fileItem = new TreeInformation();
     fileItem->hash = name;
     fileItem->type = TreeType::Folder;

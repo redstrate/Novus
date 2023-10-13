@@ -26,7 +26,7 @@ class FileTreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit FileTreeModel(QString gamePath, GameData *data);
+    explicit FileTreeModel(bool showUnknown, QString gamePath, GameData *data);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -48,4 +48,5 @@ private:
     QHash<uint32_t, TreeInformation *> knownDirHashes;
 
     HashDatabase m_database;
+    bool m_showUnknown = false;
 };

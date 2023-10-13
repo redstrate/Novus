@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include <QMdiSubWindow>
+#include <QCheckBox>
+#include <QSortFilterProxyModel>
 #include <physis.hpp>
 
 #include "filetreemodel.h"
@@ -19,6 +20,11 @@ Q_SIGNALS:
     void pathSelected(QString path);
 
 private:
+    void refreshModel();
+
     GameData *data = nullptr;
     FileTreeModel *m_fileModel;
+    QSortFilterProxyModel *m_searchModel;
+    QCheckBox *m_unknownCheckbox;
+    QString m_gamePath;
 };
