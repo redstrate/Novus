@@ -8,6 +8,7 @@
 class ImageLabel : public QLabel
 {
     Q_OBJECT
+
 public:
     explicit ImageLabel(QWidget *parent = nullptr);
 

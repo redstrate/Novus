@@ -40,3 +40,5 @@ void ImageLabel::resizeEvent(QResizeEvent *e)
         QLabel::setPixmap(scaledPixmap());
     }
 }
+
+#include "moc_imagelabel.cpp"

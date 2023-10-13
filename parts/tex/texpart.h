@@ -10,6 +10,8 @@
 
 class TexPart : public QWidget
 {
+    Q_OBJECT
+
 public:
     explicit TexPart(GameData *data);
 

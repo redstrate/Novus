@@ -23,3 +23,5 @@ void TexPart::load(physis_Buffer file)
     QImage image(tex.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
     m_label->setQPixmap(QPixmap::fromImage(image));
 }
+
+#include "moc_texpart.cpp"
