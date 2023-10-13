@@ -15,22 +15,19 @@ class VulkanWindow;
 class StandaloneWindow;
 class FileCache;
 
-class MDLPart : public QWidget {
+class MDLPart : public QWidget
+{
     Q_OBJECT
 
 public:
-    explicit MDLPart(GameData* data, FileCache& cache);
+    explicit MDLPart(GameData *data, FileCache &cache);
 
-    void exportModel(const QString& fileName);
+    void exportModel(const QString &fileName);
 
     int lastX = -1;
     int lastY = -1;
 
-    enum class CameraMode {
-        None,
-        Orbit,
-        Move
-    };
+    enum class CameraMode { None, Orbit, Move };
 
     CameraMode cameraMode = CameraMode::None;
     float pitch = 0.0f;
@@ -75,18 +72,18 @@ public Q_SLOTS:
     void reloadRenderer();
 
 private:
-    RenderMaterial createMaterial(const physis_Material& mat);
+    RenderMaterial createMaterial(const physis_Material &mat);
 
-    void calculateBoneInversePose(physis_Skeleton& skeleton, physis_Bone& bone, physis_Bone* parent_bone);
-    void calculateBone(physis_Skeleton& skeleton, physis_Bone& bone, const physis_Bone* parent_bone);
+    void calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone);
+    void calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone);
 
-    GameData* data = nullptr;
-    FileCache& cache;
+    GameData *data = nullptr;
+    FileCache &cache;
 
     std::vector<RenderModel> models;
 
-    Renderer* renderer;
-    VulkanWindow* vkWindow;
-    StandaloneWindow* standaloneWindow;
+    Renderer *renderer;
+    VulkanWindow *vkWindow;
+    StandaloneWindow *standaloneWindow;
     bool firstTimeSkeletonDataCalculated = false;
 };

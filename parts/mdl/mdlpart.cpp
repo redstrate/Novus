@@ -21,15 +21,20 @@
 #include "tiny_gltf.h"
 
 #ifndef USE_STANDALONE_WINDOW
-class VulkanWindow : public QWindow {
+class VulkanWindow : public QWindow
+{
 public:
-    VulkanWindow(MDLPart* part, Renderer* renderer, QVulkanInstance* instance)
-        : part(part), m_renderer(renderer), m_instance(instance) {
+    VulkanWindow(MDLPart *part, Renderer *renderer, QVulkanInstance *instance)
+        : part(part)
+        , m_renderer(renderer)
+        , m_instance(instance)
+    {
         setSurfaceType(VulkanSurface);
         setVulkanInstance(instance);
     }
 
-    void exposeEvent(QExposeEvent*) {
+    void exposeEvent(QExposeEvent *)
+    {
         if (isExposed()) {
             if (!m_initialized) {
                 m_initialized = true;
@@ -43,70 +48,72 @@ public:
         }
     }
 
-    bool event(QEvent* e) {
+    bool event(QEvent *e)
+    {
         switch (e->type()) {
-            case QEvent::UpdateRequest:
-                render();
-                break;
-            case QEvent::Resize: {
-                QResizeEvent* resizeEvent = (QResizeEvent*)e;
-                auto surface = m_instance->surfaceForWindow(this);
-                m_renderer->resize(surface, resizeEvent->size().width(), resizeEvent->size().height());
-            } break;
-            case QEvent::MouseButtonPress: {
-                auto mouseEvent = dynamic_cast<QMouseEvent*>(e);
+        case QEvent::UpdateRequest:
+            render();
+            break;
+        case QEvent::Resize: {
+            QResizeEvent *resizeEvent = (QResizeEvent *)e;
+            auto surface = m_instance->surfaceForWindow(this);
+            m_renderer->resize(surface, resizeEvent->size().width(), resizeEvent->size().height());
+        } break;
+        case QEvent::MouseButtonPress: {
+            auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
 
-                if (mouseEvent->button() == Qt::MouseButton::LeftButton || mouseEvent->button() == Qt::MouseButton::RightButton) {
-                    part->lastX = mouseEvent->position().x();
-                    part->lastY = mouseEvent->position().y();
-                    part->cameraMode = mouseEvent->button() == Qt::MouseButton::LeftButton ? MDLPart::CameraMode::Orbit : MDLPart::CameraMode::Move;
+            if (mouseEvent->button() == Qt::MouseButton::LeftButton || mouseEvent->button() == Qt::MouseButton::RightButton) {
+                part->lastX = mouseEvent->position().x();
+                part->lastY = mouseEvent->position().y();
+                part->cameraMode = mouseEvent->button() == Qt::MouseButton::LeftButton ? MDLPart::CameraMode::Orbit : MDLPart::CameraMode::Move;
 
-                    setKeyboardGrabEnabled(true);
-                    setCursor(Qt::BlankCursor);
+                setKeyboardGrabEnabled(true);
+                setCursor(Qt::BlankCursor);
+            }
+        } break;
+        case QEvent::MouseButtonRelease: {
+            part->cameraMode = MDLPart::CameraMode::None;
+
+            setKeyboardGrabEnabled(false);
+            setCursor({});
+        } break;
+        case QEvent::MouseMove: {
+            auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
+            if (part->cameraMode != MDLPart::CameraMode::None) {
+                const int deltaX = mouseEvent->position().x() - part->lastX;
+                const int deltaY = mouseEvent->position().y() - part->lastY;
+
+                if (part->cameraMode == MDLPart::CameraMode::Orbit) {
+                    part->yaw += deltaX * 0.01f; // TODO: remove these magic numbers
+                    part->pitch += deltaY * 0.01f;
+                } else {
+                    const glm::vec3 position(part->cameraDistance * std::sin(part->yaw),
+                                             part->cameraDistance * part->pitch,
+                                             part->cameraDistance * std::cos(part->yaw));
+
+                    const glm::quat rot = glm::quatLookAt((part->position + position) - part->position, {0, 1, 0});
+
+                    part->position += glm::vec3{0, 1, 0} * (float)deltaY * 0.01f;
+                    part->position.y = std::clamp(part->position.y, 0.0f, 10.0f);
                 }
-            } break;
-            case QEvent::MouseButtonRelease: {
-                part->cameraMode = MDLPart::CameraMode::None;
 
-                setKeyboardGrabEnabled(false);
-                setCursor({});
-            } break;
-            case QEvent::MouseMove: {
-                auto mouseEvent = dynamic_cast<QMouseEvent*>(e);
-                if (part->cameraMode != MDLPart::CameraMode::None) {
-                    const int deltaX = mouseEvent->position().x() - part->lastX;
-                    const int deltaY = mouseEvent->position().y() - part->lastY;
+                part->lastX = mouseEvent->position().x();
+                part->lastY = mouseEvent->position().y();
+            }
+        } break;
+        case QEvent::Wheel: {
+            auto scrollEvent = dynamic_cast<QWheelEvent *>(e);
 
-                    if (part->cameraMode == MDLPart::CameraMode::Orbit) {
-                        part->yaw += deltaX * 0.01f; // TODO: remove these magic numbers
-                        part->pitch += deltaY * 0.01f;
-                    } else {
-                        const glm::vec3 position(part->cameraDistance * std::sin(part->yaw),
-                                                 part->cameraDistance * part->pitch,
-                                                 part->cameraDistance * std::cos(part->yaw));
-
-                        const glm::quat rot = glm::quatLookAt((part->position + position) - part->position, {0, 1, 0});
-
-                        part->position += glm::vec3{0, 1, 0} * (float)deltaY * 0.01f;
-                        part->position.y = std::clamp(part->position.y, 0.0f, 10.0f);
-                    }
-
-                    part->lastX = mouseEvent->position().x();
-                    part->lastY = mouseEvent->position().y();
-                }
-            } break;
-            case QEvent::Wheel: {
-                auto scrollEvent = dynamic_cast<QWheelEvent*>(e);
-
-                part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
-                part->cameraDistance = std::clamp(part->cameraDistance, 1.0f, 4.0f);
-            } break;
+            part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
+            part->cameraDistance = std::clamp(part->cameraDistance, 1.0f, 4.0f);
+        } break;
         }
 
         return QWindow::event(e);
     }
 
-    void render() {
+    void render()
+    {
         ImGui::SetCurrentContext(m_renderer->ctx);
 
         auto &io = ImGui::GetIO();
@@ -115,14 +122,11 @@ public:
         ImGui::NewFrame();
 
         if (part->requestUpdate)
-                part->requestUpdate();
+            part->requestUpdate();
 
         ImGui::Render();
 
-        glm::vec3 position(
-            part->cameraDistance * sin(part->yaw),
-            part->cameraDistance * part->pitch,
-            part->cameraDistance * cos(part->yaw));
+        glm::vec3 position(part->cameraDistance * sin(part->yaw), part->cameraDistance * part->pitch, part->cameraDistance * cos(part->yaw));
 
         m_renderer->view = glm::lookAt(part->position + position, part->position, glm::vec3(0, -1, 0));
 
@@ -135,17 +139,20 @@ public:
 
 private:
     bool m_initialized = false;
-    Renderer* m_renderer;
-    QVulkanInstance* m_instance;
-    MDLPart* part;
+    Renderer *m_renderer;
+    QVulkanInstance *m_instance;
+    MDLPart *part;
 };
 #else
-    #include "equipment.h"
-    #include "standalonewindow.h"
+#include "equipment.h"
+#include "standalonewindow.h"
 
 #endif
 
-MDLPart::MDLPart(GameData* data, FileCache& cache) : data(data), cache(cache) {
+MDLPart::MDLPart(GameData *data, FileCache &cache)
+    : data(data)
+    , cache(cache)
+{
     auto viewportLayout = new QVBoxLayout();
     viewportLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(viewportLayout);
@@ -168,7 +175,7 @@ MDLPart::MDLPart(GameData* data, FileCache& cache) : data(data), cache(cache) {
     standaloneWindow = new StandaloneWindow(renderer);
     renderer->initSwapchain(standaloneWindow->getSurface(renderer->instance), 640, 480);
 
-    QTimer* timer = new QTimer();
+    QTimer *timer = new QTimer();
     connect(timer, &QTimer::timeout, this, [this] {
         standaloneWindow->render();
     });
@@ -179,21 +186,22 @@ MDLPart::MDLPart(GameData* data, FileCache& cache) : data(data), cache(cache) {
     connect(this, &MDLPart::skeletonChanged, this, &MDLPart::reloadBoneData);
 }
 
-void MDLPart::exportModel(const QString& fileName) {
+void MDLPart::exportModel(const QString &fileName)
+{
     const int selectedModel = 0;
     const int selectedLod = 0;
 
-    const physis_MDL& model = models[selectedModel].model;
-    const physis_LOD& lod = model.lods[selectedLod];
+    const physis_MDL &model = models[selectedModel].model;
+    const physis_LOD &lod = model.lods[selectedLod];
 
     tinygltf::Model gltfModel;
     gltfModel.asset.generator = "Novus";
 
-    auto& gltfSkeletonNode = gltfModel.nodes.emplace_back();
+    auto &gltfSkeletonNode = gltfModel.nodes.emplace_back();
     gltfSkeletonNode.name = skeleton->root_bone->name;
 
     for (int i = 0; i < model.num_affected_bones; i++) {
-        auto& node = gltfModel.nodes.emplace_back();
+        auto &node = gltfModel.nodes.emplace_back();
         node.name = model.affected_bone_names[i];
 
         int real_bone_id = 0;
@@ -203,7 +211,7 @@ void MDLPart::exportModel(const QString& fileName) {
             }
         }
 
-        auto& real_bone = skeleton->bones[real_bone_id];
+        auto &real_bone = skeleton->bones[real_bone_id];
         node.translation = {real_bone.position[0], real_bone.position[1], real_bone.position[2]};
         node.rotation = {real_bone.rotation[0], real_bone.rotation[1], real_bone.rotation[2], real_bone.rotation[3]};
         node.scale = {real_bone.scale[0], real_bone.scale[1], real_bone.scale[2]};
@@ -218,7 +226,7 @@ void MDLPart::exportModel(const QString& fileName) {
             }
         }
 
-        auto& real_bone = skeleton->bones[real_bone_id];
+        auto &real_bone = skeleton->bones[real_bone_id];
         if (real_bone.parent_bone != nullptr) {
             for (int k = 0; k < model.num_affected_bones; k++) {
                 if (strcmp(model.affected_bone_names[k], real_bone.parent_bone->name) == 0) {
@@ -230,7 +238,7 @@ void MDLPart::exportModel(const QString& fileName) {
         }
     }
 
-    auto& gltfSkin = gltfModel.skins.emplace_back();
+    auto &gltfSkin = gltfModel.skins.emplace_back();
     gltfSkin.name = gltfSkeletonNode.name;
     gltfSkin.skeleton = 0;
     for (int i = 1; i < gltfModel.nodes.size(); i++) {
@@ -241,16 +249,16 @@ void MDLPart::exportModel(const QString& fileName) {
     {
         gltfSkin.inverseBindMatrices = gltfModel.accessors.size();
 
-        auto& inverseAccessor = gltfModel.accessors.emplace_back();
+        auto &inverseAccessor = gltfModel.accessors.emplace_back();
         inverseAccessor.bufferView = gltfModel.bufferViews.size();
         inverseAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
         inverseAccessor.count = model.num_affected_bones;
         inverseAccessor.type = TINYGLTF_TYPE_MAT4;
 
-        auto& inverseBufferView = gltfModel.bufferViews.emplace_back();
+        auto &inverseBufferView = gltfModel.bufferViews.emplace_back();
         inverseBufferView.buffer = gltfModel.buffers.size();
 
-        auto& inverseBuffer = gltfModel.buffers.emplace_back();
+        auto &inverseBuffer = gltfModel.buffers.emplace_back();
         for (int i = 0; i < model.num_affected_bones; i++) {
             int real_bone_id = 0;
             for (int k = 0; k < skeleton->num_bones; k++) {
@@ -259,9 +267,9 @@ void MDLPart::exportModel(const QString& fileName) {
                 }
             }
 
-            auto& real_bone = skeleton->bones[real_bone_id];
+            auto &real_bone = skeleton->bones[real_bone_id];
             auto inverseMatrix = boneData[real_bone.index].inversePose;
-            auto inverseMatrixCPtr = reinterpret_cast<uint8_t*>(glm::value_ptr(inverseMatrix));
+            auto inverseMatrixCPtr = reinterpret_cast<uint8_t *>(glm::value_ptr(inverseMatrix));
 
             inverseBuffer.data.insert(inverseBuffer.data.end(), inverseMatrixCPtr, inverseMatrixCPtr + sizeof(float) * 16);
         }
@@ -270,18 +278,19 @@ void MDLPart::exportModel(const QString& fileName) {
     }
 
     for (int i = 0; i < lod.num_parts; i++) {
-        auto& gltfNode = gltfModel.nodes.emplace_back();;
+        auto &gltfNode = gltfModel.nodes.emplace_back();
+        ;
         gltfNode.name = models[0].name.toStdString() + " Part " + std::to_string(i) + ".0";
         gltfNode.skin = 0;
 
         gltfSkeletonNode.children.push_back(gltfModel.nodes.size());
 
         gltfNode.mesh = gltfModel.meshes.size();
-        auto& gltfMesh = gltfModel.meshes.emplace_back();
+        auto &gltfMesh = gltfModel.meshes.emplace_back();
 
         gltfMesh.name = gltfNode.name + " Mesh Attribute";
 
-        auto& gltfPrimitive = gltfMesh.primitives.emplace_back();
+        auto &gltfPrimitive = gltfMesh.primitives.emplace_back();
         gltfPrimitive.attributes["POSITION"] = gltfModel.accessors.size();
         gltfPrimitive.attributes["TEXCOORD_0"] = gltfModel.accessors.size() + 1;
         gltfPrimitive.attributes["NORMAL"] = gltfModel.accessors.size() + 2;
@@ -291,45 +300,45 @@ void MDLPart::exportModel(const QString& fileName) {
 
         // Vertices
         {
-            auto& positionAccessor = gltfModel.accessors.emplace_back();
+            auto &positionAccessor = gltfModel.accessors.emplace_back();
             positionAccessor.bufferView = gltfModel.bufferViews.size();
             positionAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
             positionAccessor.count = lod.parts[i].num_vertices;
             positionAccessor.type = TINYGLTF_TYPE_VEC3;
 
-            auto& uvAccessor = gltfModel.accessors.emplace_back();
+            auto &uvAccessor = gltfModel.accessors.emplace_back();
             uvAccessor.bufferView = gltfModel.bufferViews.size();
             uvAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
             uvAccessor.count = lod.parts[i].num_vertices;
             uvAccessor.type = TINYGLTF_TYPE_VEC2;
             uvAccessor.byteOffset = offsetof(Vertex, uv);
 
-            auto& normalAccessor = gltfModel.accessors.emplace_back();
+            auto &normalAccessor = gltfModel.accessors.emplace_back();
             normalAccessor.bufferView = gltfModel.bufferViews.size();
             normalAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
             normalAccessor.count = lod.parts[i].num_vertices;
             normalAccessor.type = TINYGLTF_TYPE_VEC3;
             normalAccessor.byteOffset = offsetof(Vertex, normal);
 
-            auto& boneWeightAccessor = gltfModel.accessors.emplace_back();
+            auto &boneWeightAccessor = gltfModel.accessors.emplace_back();
             boneWeightAccessor.bufferView = gltfModel.bufferViews.size();
             boneWeightAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
             boneWeightAccessor.count = lod.parts[i].num_vertices;
             boneWeightAccessor.type = TINYGLTF_TYPE_VEC4;
             boneWeightAccessor.byteOffset = offsetof(Vertex, bone_weight);
 
-            auto& boneIdAccessor = gltfModel.accessors.emplace_back();
+            auto &boneIdAccessor = gltfModel.accessors.emplace_back();
             boneIdAccessor.bufferView = gltfModel.bufferViews.size();
             boneIdAccessor.componentType = TINYGLTF_COMPONENT_TYPE_BYTE;
             boneIdAccessor.count = lod.parts[i].num_vertices;
             boneIdAccessor.type = TINYGLTF_TYPE_VEC4;
             boneIdAccessor.byteOffset = offsetof(Vertex, bone_id);
 
-            auto& vertexBufferView = gltfModel.bufferViews.emplace_back();
+            auto &vertexBufferView = gltfModel.bufferViews.emplace_back();
             vertexBufferView.buffer = gltfModel.buffers.size();
             vertexBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-            auto& vertexBuffer = gltfModel.buffers.emplace_back();
+            auto &vertexBuffer = gltfModel.buffers.emplace_back();
             vertexBuffer.data.resize(lod.parts[i].num_vertices * sizeof(Vertex));
             memcpy(vertexBuffer.data.data(), lod.parts[i].vertices, vertexBuffer.data.size());
 
@@ -340,17 +349,17 @@ void MDLPart::exportModel(const QString& fileName) {
         // Indices
         {
             gltfPrimitive.indices = gltfModel.accessors.size();
-            auto& indexAccessor = gltfModel.accessors.emplace_back();
+            auto &indexAccessor = gltfModel.accessors.emplace_back();
             indexAccessor.bufferView = gltfModel.bufferViews.size();
             indexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
             indexAccessor.count = lod.parts[i].num_indices;
             indexAccessor.type = TINYGLTF_TYPE_SCALAR;
 
-            auto& indexBufferView = gltfModel.bufferViews.emplace_back();
+            auto &indexBufferView = gltfModel.bufferViews.emplace_back();
             indexBufferView.buffer = gltfModel.buffers.size();
             indexBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
 
-            auto& indexBuffer = gltfModel.buffers.emplace_back();
+            auto &indexBuffer = gltfModel.buffers.emplace_back();
             indexBuffer.data.resize(lod.parts[i].num_indices * sizeof(uint16_t));
             memcpy(indexBuffer.data.data(), lod.parts[i].indices, indexBuffer.data.size());
 
@@ -367,7 +376,8 @@ void MDLPart::exportModel(const QString& fileName) {
     loader.WriteGltfSceneToFile(&gltfModel, fileName.toStdString(), true, true, false, true);
 }
 
-void MDLPart::clear() {
+void MDLPart::clear()
+{
     models.clear();
 
     Q_EMIT modelChanged();
@@ -380,10 +390,9 @@ void MDLPart::addModel(physis_MDL mdl, const QString &name, std::vector<physis_M
     auto model = renderer->addModel(mdl, lod);
     model.name = name;
 
-    std::transform(
-        materials.begin(), materials.end(), std::back_inserter(model.materials), [this](const physis_Material& mat) {
-            return createMaterial(mat);
-        });
+    std::transform(materials.begin(), materials.end(), std::back_inserter(model.materials), [this](const physis_Material &mat) {
+        return createMaterial(mat);
+    });
 
     if (materials.empty()) {
         model.materials.push_back(createMaterial(physis_Material{}));
@@ -394,7 +403,8 @@ void MDLPart::addModel(physis_MDL mdl, const QString &name, std::vector<physis_M
     Q_EMIT modelChanged();
 }
 
-void MDLPart::setSkeleton(physis_Skeleton newSkeleton) {
+void MDLPart::setSkeleton(physis_Skeleton newSkeleton)
+{
     skeleton = std::make_unique<physis_Skeleton>(newSkeleton);
 
     firstTimeSkeletonDataCalculated = false;
@@ -402,8 +412,9 @@ void MDLPart::setSkeleton(physis_Skeleton newSkeleton) {
     Q_EMIT skeletonChanged();
 }
 
-void MDLPart::loadRaceDeformMatrices(physis_Buffer buffer) {
-    QJsonDocument document = QJsonDocument::fromJson(QByteArray((const char*)buffer.data, buffer.size));
+void MDLPart::loadRaceDeformMatrices(physis_Buffer buffer)
+{
+    QJsonDocument document = QJsonDocument::fromJson(QByteArray((const char *)buffer.data, buffer.size));
     for (auto boneObj : document.object()[QLatin1String("Data")].toArray()) {
         QJsonArray matrix = boneObj.toObject()[QLatin1String("Matrix")].toArray();
         QString boneName = boneObj.toObject()[QLatin1String("Name")].toString();
@@ -416,7 +427,7 @@ void MDLPart::loadRaceDeformMatrices(physis_Buffer buffer) {
 
         for (int i = 0; i < skeleton->num_bones; i++) {
             if (std::string_view{skeleton->bones[i].name} == boneName.toStdString()) {
-                auto& data = boneData[i];
+                auto &data = boneData[i];
 
                 data.deformRaceMatrix = actualMatrix;
             }
@@ -426,7 +437,8 @@ void MDLPart::loadRaceDeformMatrices(physis_Buffer buffer) {
     }
 }
 
-void MDLPart::clearSkeleton() {
+void MDLPart::clearSkeleton()
+{
     skeleton.reset();
 
     firstTimeSkeletonDataCalculated = false;
@@ -434,7 +446,8 @@ void MDLPart::clearSkeleton() {
     Q_EMIT skeletonChanged();
 }
 
-void MDLPart::reloadRenderer() {
+void MDLPart::reloadRenderer()
+{
     reloadBoneData();
 
 #ifndef USE_STANDALONE_WINDOW
@@ -444,7 +457,8 @@ void MDLPart::reloadRenderer() {
 #endif
 }
 
-void MDLPart::reloadBoneData() {
+void MDLPart::reloadBoneData()
+{
     if (skeleton) {
         if (!firstTimeSkeletonDataCalculated) {
             if (boneData.empty()) {
@@ -453,7 +467,7 @@ void MDLPart::reloadBoneData() {
 
             calculateBoneInversePose(*skeleton, *skeleton->root_bone, nullptr);
 
-            for (auto& bone : boneData) {
+            for (auto &bone : boneData) {
                 bone.inversePose = glm::inverse(bone.inversePose);
             }
             firstTimeSkeletonDataCalculated = true;
@@ -462,13 +476,12 @@ void MDLPart::reloadBoneData() {
         // update data
         calculateBone(*skeleton, *skeleton->root_bone, nullptr);
 
-        for (auto& model : models) {
+        for (auto &model : models) {
             // we want to map the actual affected bones to bone ids
             std::map<int, int> boneMapping;
             for (int i = 0; i < model.model.num_affected_bones; i++) {
                 for (int k = 0; k < skeleton->num_bones; k++) {
-                    if (std::string_view{skeleton->bones[k].name} ==
-                        std::string_view{model.model.affected_bone_names[i]}) {
+                    if (std::string_view{skeleton->bones[k].name} == std::string_view{model.model.affected_bone_names[i]}) {
                         boneMapping[i] = k;
                     }
                 }
@@ -481,7 +494,8 @@ void MDLPart::reloadBoneData() {
     }
 }
 
-RenderMaterial MDLPart::createMaterial(const physis_Material& material) {
+RenderMaterial MDLPart::createMaterial(const physis_Material &material)
+{
     RenderMaterial newMaterial;
 
     for (int i = 0; i < material.num_textures; i++) {
@@ -494,40 +508,41 @@ RenderMaterial MDLPart::createMaterial(const physis_Material& material) {
         char type = t[t.length() - 5];
 
         switch (type) {
-            case 'm': {
+        case 'm': {
             auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
             auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
             newMaterial.multiTexture = new RenderTexture(tex);
-            }
-            case 'd': {
+        }
+        case 'd': {
             auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
             auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
             newMaterial.diffuseTexture = new RenderTexture(tex);
-            } break;
-            case 'n': {
+        } break;
+        case 'n': {
             auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
             auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
             newMaterial.normalTexture = new RenderTexture(tex);
-            } break;
-            case 's': {
+        } break;
+        case 's': {
             auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
             auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
             newMaterial.specularTexture = new RenderTexture(tex);
-            } break;
-            default:
-                qDebug() << "unhandled type" << type;
-                break;
+        } break;
+        default:
+            qDebug() << "unhandled type" << type;
+            break;
         }
     }
 
     return newMaterial;
 }
 
-void MDLPart::calculateBoneInversePose(physis_Skeleton& skeleton, physis_Bone& bone, physis_Bone* parent_bone) {
+void MDLPart::calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone)
+{
     const glm::mat4 parentMatrix = parent_bone == nullptr ? glm::mat4(1.0f) : boneData[parent_bone->index].inversePose;
 
     glm::mat4 local = glm::mat4(1.0f);
@@ -538,16 +553,15 @@ void MDLPart::calculateBoneInversePose(physis_Skeleton& skeleton, physis_Bone& b
     boneData[bone.index].inversePose = parentMatrix * local;
 
     for (int i = 0; i < skeleton.num_bones; i++) {
-        if (skeleton.bones[i].parent_bone != nullptr &&
-            std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {
+        if (skeleton.bones[i].parent_bone != nullptr && std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {
             calculateBoneInversePose(skeleton, skeleton.bones[i], &bone);
         }
     }
 }
 
-void MDLPart::calculateBone(physis_Skeleton& skeleton, physis_Bone& bone, const physis_Bone* parent_bone) {
-    const glm::mat4 parent_matrix =
-        parent_bone == nullptr ? glm::mat4(1.0f) : boneData[parent_bone->index].localTransform;
+void MDLPart::calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone)
+{
+    const glm::mat4 parent_matrix = parent_bone == nullptr ? glm::mat4(1.0f) : boneData[parent_bone->index].localTransform;
 
     glm::mat4 local = glm::mat4(1.0f);
     local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
@@ -555,12 +569,10 @@ void MDLPart::calculateBone(physis_Skeleton& skeleton, physis_Bone& bone, const 
     local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
 
     boneData[bone.index].localTransform = parent_matrix * local;
-    boneData[bone.index].finalTransform =
-        boneData[bone.index].localTransform * boneData[bone.index].deformRaceMatrix * boneData[bone.index].inversePose;
+    boneData[bone.index].finalTransform = boneData[bone.index].localTransform * boneData[bone.index].deformRaceMatrix * boneData[bone.index].inversePose;
 
     for (int i = 0; i < skeleton.num_bones; i++) {
-        if (skeleton.bones[i].parent_bone != nullptr &&
-            std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {
+        if (skeleton.bones[i].parent_bone != nullptr && std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {
             calculateBone(skeleton, skeleton.bones[i], &bone);
         }
     }
