@@ -7,7 +7,7 @@
 #include <QMenu>
 #include <QTreeWidget>
 
-FileTreeWindow::FileTreeWindow(GameData *data, QWidget *parent)
+FileTreeWindow::FileTreeWindow(QString gamePath, GameData *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {
@@ -16,7 +16,7 @@ FileTreeWindow::FileTreeWindow(GameData *data, QWidget *parent)
     auto layout = new QHBoxLayout();
     setLayout(layout);
 
-    m_fileModel = new FileTreeModel(data);
+    m_fileModel = new FileTreeModel(gamePath, data);
 
     auto treeWidget = new QTreeView();
     treeWidget->setModel(m_fileModel);

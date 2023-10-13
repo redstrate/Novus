@@ -14,7 +14,7 @@ struct GameData;
 class MainWindow : public NovusMainWindow
 {
 public:
-    MainWindow(GameData *data);
+    MainWindow(QString gamePath, GameData *data);
 
 private:
     QMdiArea *mdiArea = nullptr;

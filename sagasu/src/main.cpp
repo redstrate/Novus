@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
     const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};
-    MainWindow w(physis_gamedata_initialize(gameDirStd.c_str()));
+    MainWindow w(gameDir, physis_gamedata_initialize(gameDirStd.c_str()));
     w.show();
 
     return app.exec();

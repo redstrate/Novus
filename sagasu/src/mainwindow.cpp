@@ -13,7 +13,7 @@
 #include "filetreewindow.h"
 #include "hexpart.h"
 
-MainWindow::MainWindow(GameData *data)
+MainWindow::MainWindow(QString gamePath, GameData *data)
     : NovusMainWindow()
     , data(data)
 {
@@ -25,7 +25,7 @@ MainWindow::MainWindow(GameData *data)
     auto layout = new QHBoxLayout();
     dummyWidget->setLayout(layout);
 
-    auto tree = new FileTreeWindow(data);
+    auto tree = new FileTreeWindow(gamePath, data);
     connect(tree, &FileTreeWindow::extractFile, this, [this, data](QString path) {
         const QFileInfo info(path);
 

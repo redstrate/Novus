@@ -6,7 +6,7 @@
 
 #include <QtConcurrent>
 
-FileTreeModel::FileTreeModel(GameData *data)
+FileTreeModel::FileTreeModel(QString gamePath, GameData *data)
     : gameData(data)
     , QAbstractItemModel()
 {
@@ -17,16 +17,24 @@ FileTreeModel::FileTreeModel(GameData *data)
         addKnownFolder(knownFolder);
     }
 
-    auto indexEntries = physis_index_parse("/home/josh/.local/share/astra/game/{1973dab7-aa23-4af1-8a48-bfec78dd6c8e}/game/sqpack/ffxiv/000000.win32.index");
-    for (int i = 0; i < indexEntries.num_entries; i++) {
-        if (knownDirHashes.contains(indexEntries.dir_entries[i])) {
-            QString name;
-            if (m_database.knowsFile(indexEntries.filename_entries[i])) {
-                name = m_database.getFilename(indexEntries.filename_entries[i]);
+    QDirIterator it(QStringLiteral("%1/sqpack/ffxiv").arg(gamePath));
+    while (it.hasNext()) {
+        it.next();
+        QFileInfo info = it.fileInfo();
+        if (info.exists() && (info.completeSuffix() == QStringLiteral("win32.index") || info.completeSuffix() == QStringLiteral("win32.index2"))) {
+            std::string pathStd = info.filePath().toStdString();
+            auto indexEntries = physis_index_parse(pathStd.c_str());
+            for (int i = 0; i < indexEntries.num_entries; i++) {
+                if (knownDirHashes.contains(indexEntries.dir_entries[i])) {
+                    QString name;
+                    if (m_database.knowsFile(indexEntries.filename_entries[i])) {
+                        name = m_database.getFilename(indexEntries.filename_entries[i]);
+                    }
+                    addFile(knownDirHashes[indexEntries.dir_entries[i]], indexEntries.filename_entries[i], name);
+                } else {
+                    addFolder(rootItem, indexEntries.dir_entries[i]);
+                }
             }
-            addFile(knownDirHashes[indexEntries.dir_entries[i]], indexEntries.filename_entries[i], name);
-        } else {
-            addFolder(rootItem, indexEntries.dir_entries[i]);
         }
     }
 }

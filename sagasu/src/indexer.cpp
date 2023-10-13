@@ -147,6 +147,8 @@ int main(int argc, char *argv[])
         database.addFile(QLatin1String(file));
     }
 
+    database.addFile(QStringLiteral("exd/root.exl"));
+
     /*const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};
     auto data = physis_gamedata_initialize(gameDirStd.c_str());
