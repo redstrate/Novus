@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QMenuBar>
 
+#include "cmppart.h"
 #include "exdpart.h"
 #include "exlpart.h"
 #include "filepropertieswindow.h"
@@ -97,6 +98,10 @@ void MainWindow::refreshParts(QString path)
         auto shpkWidget = new SHPKPart(data);
         shpkWidget->load(file);
         partHolder->addTab(shpkWidget, QStringLiteral("Shader Package"));
+    } else if (info.completeSuffix() == QStringLiteral("cmp")) {
+        auto cmpWidget = new CmpPart(data);
+        cmpWidget->load(file);
+        partHolder->addTab(cmpWidget, QStringLiteral("Chara Make Params"));
     }
 
     auto hexWidget = new HexPart();

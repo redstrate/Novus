@@ -14,7 +14,8 @@ const std::array known_folders{"common",
                                "chara/equipment/e0000/texture",
                                "chara/human/c0101/obj/face/f0001/model",
                                "shader/sm5/shpk",
-                               "chara/xls/bonedeformer"};
+                               "chara/xls/bonedeformer",
+                               "chara/xls/charamake"};
 
 const std::array common_font{"common/VulgarWordsFilter.dic",
                              "common/VulgarWordsFilter_party.dic",
@@ -165,6 +166,7 @@ int main(int argc, char *argv[])
     database.addFile(QStringLiteral("chara/human/c0101/obj/face/f0001/model/c0101f0001_fac.mdl"));
     database.addFile(QStringLiteral("shader/sm5/shpk/character.shpk"));
     database.addFile(QStringLiteral("chara/xls/bonedeformer/human.pbd"));
+    database.addFile(QStringLiteral("chara/xls/charamake/human.cmp"));
 
     /*const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};

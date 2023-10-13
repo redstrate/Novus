@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
+add_subdirectory(cmp)
 add_subdirectory(exd)
 add_subdirectory(exl)
 add_subdirectory(hex)
