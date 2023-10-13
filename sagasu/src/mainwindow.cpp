@@ -11,6 +11,7 @@
 
 #include "filepropertieswindow.h"
 #include "filetreewindow.h"
+#include "hexpart.h"
 
 MainWindow::MainWindow(GameData *data)
     : NovusMainWindow()
@@ -63,7 +64,13 @@ void MainWindow::refreshParts(QString path)
         return;
     }
 
+    auto file = physis_gamedata_extract_file(data, path.toStdString().c_str());
+
     // Add properties tab
-    auto propertiesWidget = new FilePropertiesWindow(data, path);
+    auto propertiesWidget = new FilePropertiesWindow(path, file);
     partHolder->addTab(propertiesWidget, QStringLiteral("Properties"));
+
+    auto hexWidget = new HexPart();
+    hexWidget->loadFile(file);
+    partHolder->addTab(hexWidget, QStringLiteral("Raw Hex"));
 }

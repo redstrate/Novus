@@ -9,7 +9,7 @@
 
 #include "filepropertieswindow.h"
 
-FilePropertiesWindow::FilePropertiesWindow(GameData *data, QString path, QWidget *parent)
+FilePropertiesWindow::FilePropertiesWindow(QString path, physis_Buffer buffer, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {
@@ -24,9 +24,7 @@ FilePropertiesWindow::FilePropertiesWindow(GameData *data, QString path, QWidget
     auto typeLabel = new QLabel(QStringLiteral("Unknown type"));
     layout->addRow(QStringLiteral("Type"), typeLabel);
 
-    auto file = physis_gamedata_extract_file(data, path.toStdString().c_str());
-
-    auto sizeLabel = new QLabel(QString::number(file.size));
+    auto sizeLabel = new QLabel(QString::number(buffer.size));
     layout->addRow(QStringLiteral("Size (in bytes)"), sizeLabel);
 }
 
