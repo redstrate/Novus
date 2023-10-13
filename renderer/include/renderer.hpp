@@ -28,18 +28,15 @@ struct RenderTexture {
     VkSampler sampler = VK_NULL_HANDLE;
 };
 
-enum class MaterialType {
-    Object,
-    Skin
-};
+enum class MaterialType { Object, Skin };
 
 struct RenderMaterial {
     MaterialType type = MaterialType::Object;
 
-    RenderTexture* diffuseTexture = nullptr;
-    RenderTexture* normalTexture = nullptr;
-    RenderTexture* specularTexture = nullptr;
-    RenderTexture* multiTexture = nullptr;
+    RenderTexture *diffuseTexture = nullptr;
+    RenderTexture *normalTexture = nullptr;
+    RenderTexture *specularTexture = nullptr;
+    RenderTexture *multiTexture = nullptr;
 };
 
 struct RenderModel {
@@ -57,7 +54,8 @@ struct RenderModel {
 class ImGuiPass;
 struct ImGuiContext;
 
-class Renderer {
+class Renderer
+{
 public:
     Renderer();
 
@@ -67,8 +65,8 @@ public:
     bool initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
 
-    RenderModel addModel(const physis_MDL& model, int lod);
-    RenderTexture addTexture(uint32_t width, uint32_t height, const uint8_t* data, uint32_t data_size);
+    RenderModel addModel(const physis_MDL &model, int lod);
+    RenderTexture addTexture(uint32_t width, uint32_t height, const uint8_t *data, uint32_t data_size);
 
     void render(std::vector<RenderModel> models);
 
@@ -118,15 +116,19 @@ public:
 
     void endSingleTimeCommands(VkCommandBuffer pT);
 
-    void inlineTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format,
-                                     VkImageAspectFlags aspect, VkImageSubresourceRange range,
-                                     VkImageLayout oldLayout, VkImageLayout newLayout,
+    void inlineTransitionImageLayout(VkCommandBuffer commandBuffer,
+                                     VkImage image,
+                                     VkFormat format,
+                                     VkImageAspectFlags aspect,
+                                     VkImageSubresourceRange range,
+                                     VkImageLayout oldLayout,
+                                     VkImageLayout newLayout,
                                      VkPipelineStageFlags src_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                      VkPipelineStageFlags dst_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
-    VkDescriptorSet createDescriptorFor(const RenderModel& model, const RenderMaterial& material);
+    VkDescriptorSet createDescriptorFor(const RenderModel &model, const RenderMaterial &material);
 
-    uint64_t hash(const RenderModel& model, const RenderMaterial& material);
+    uint64_t hash(const RenderModel &model, const RenderMaterial &material);
 
     glm::mat4 view;
 
