@@ -16,12 +16,12 @@ class FileCache
 public:
     explicit FileCache(GameData &data);
 
-    bool fileExists(const QLatin1String &path);
-    physis_Buffer &lookupFile(const QLatin1String &path);
+    bool fileExists(const QString &path);
+    physis_Buffer &lookupFile(const QString &path);
 
 private:
-    QMap<QLatin1String, physis_Buffer> cachedBuffers;
-    QHash<QLatin1String, bool> cachedExist;
+    QMap<QString, physis_Buffer> cachedBuffers;
+    QHash<QString, bool> cachedExist;
     GameData &data;
     QMutex bufferMutex, existMutex;
 };
