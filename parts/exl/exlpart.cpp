@@ -43,3 +43,5 @@ void EXLPart::load(physis_Buffer file)
         m_tableWidget->resizeColumnsToContents();
     }
 }
+
+#include "moc_exlpart.cpp"
