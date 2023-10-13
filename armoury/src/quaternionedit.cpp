@@ -7,7 +7,10 @@
 #include <QTimer>
 #include <glm/gtc/quaternion.hpp>
 
-QuaternionEdit::QuaternionEdit(glm::quat& quat, QWidget* parent) : QWidget(parent), quat(quat) {
+QuaternionEdit::QuaternionEdit(glm::quat &quat, QWidget *parent)
+    : QWidget(parent)
+    , quat(quat)
+{
     auto itemsLayout = new QHBoxLayout(this);
 
     spinBoxes.x = new QDoubleSpinBox();
@@ -36,36 +39,34 @@ QuaternionEdit::QuaternionEdit(glm::quat& quat, QWidget* parent) : QWidget(paren
     spinBoxes.y->setValue(euler.y);
     spinBoxes.z->setValue(euler.z);
 
-    connect(
-        spinBoxes.x, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
-            auto euler = glm::eulerAngles(this->quat);
-            euler.x = glm::radians(d);
+    connect(spinBoxes.x, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
+        auto euler = glm::eulerAngles(this->quat);
+        euler.x = glm::radians(d);
 
-            this->quat = glm::quat(euler);
+        this->quat = glm::quat(euler);
 
-            Q_EMIT onValueChanged();
-        });
-    connect(
-        spinBoxes.y, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
-            auto euler = glm::eulerAngles(this->quat);
-            euler.y = glm::radians(d);
+        Q_EMIT onValueChanged();
+    });
+    connect(spinBoxes.y, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
+        auto euler = glm::eulerAngles(this->quat);
+        euler.y = glm::radians(d);
 
-            this->quat = glm::quat(euler);
+        this->quat = glm::quat(euler);
 
-            Q_EMIT onValueChanged();
-        });
-    connect(
-        spinBoxes.z, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
-            auto euler = glm::eulerAngles(this->quat);
-            euler.z = glm::radians(d);
+        Q_EMIT onValueChanged();
+    });
+    connect(spinBoxes.z, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
+        auto euler = glm::eulerAngles(this->quat);
+        euler.z = glm::radians(d);
 
-            this->quat = glm::quat(euler);
+        this->quat = glm::quat(euler);
 
-            Q_EMIT onValueChanged();
-        });
+        Q_EMIT onValueChanged();
+    });
 }
 
-void QuaternionEdit::setQuat(glm::quat& quat) {
+void QuaternionEdit::setQuat(glm::quat &quat)
+{
     this->quat = quat;
     auto euler = glm::eulerAngles(quat);
     euler.x = glm::degrees(euler.x);

@@ -10,7 +10,10 @@
 
 #include "gearlistmodel.h"
 
-GearListWidget::GearListWidget(GameData* data, QWidget* parent) : data(data) {
+GearListWidget::GearListWidget(GameData *data, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
+{
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
@@ -22,7 +25,7 @@ GearListWidget::GearListWidget(GameData* data, QWidget* parent) : data(data) {
     auto searchEdit = new QLineEdit();
     searchEdit->setPlaceholderText(QStringLiteral("Search..."));
     searchEdit->setClearButtonEnabled(true);
-    connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString& text) {
+    connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
         searchModel->setFilterRegularExpression(text);
     });
     layout->addWidget(searchEdit);
@@ -33,7 +36,7 @@ GearListWidget::GearListWidget(GameData* data, QWidget* parent) : data(data) {
     listWidget = new QTreeView();
     listWidget->setModel(searchModel);
 
-    connect(listWidget, &QTreeView::clicked, [this, searchModel, originalModel](const QModelIndex& item) {
+    connect(listWidget, &QTreeView::clicked, [this, searchModel, originalModel](const QModelIndex &item) {
         if (auto gear = originalModel->getGearFromIndex(searchModel->mapToSource(item))) {
             Q_EMIT gearSelected(*gear);
         }

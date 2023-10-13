@@ -16,17 +16,19 @@ struct RaceTree {
     std::vector<Subrace> subRaces;
 };
 
-std::vector<RaceTree> raceTree = {
-    {Race::Hyur, {Subrace::Midlander, Subrace::Highlander}},
-    {Race::Elezen, {Subrace::Wildwood, Subrace::Duskwight}},
-    {Race::Miqote, {Subrace::Seeker, Subrace::Keeper}},
-    {Race::Roegadyn, {Subrace::SeaWolf, Subrace::Hellion}},
-    {Race::Lalafell, {Subrace::Plainsfolk, Subrace::Dunesfolk}},
-    {Race::AuRa, {Subrace::Raen, Subrace::Xaela}},
-    {Race::Hrothgar, {Subrace::Hellion, Subrace::Lost}},
-    {Race::Viera, {Subrace::Rava, Subrace::Veena}}};
+std::vector<RaceTree> raceTree = {{Race::Hyur, {Subrace::Midlander, Subrace::Highlander}},
+                                  {Race::Elezen, {Subrace::Wildwood, Subrace::Duskwight}},
+                                  {Race::Miqote, {Subrace::Seeker, Subrace::Keeper}},
+                                  {Race::Roegadyn, {Subrace::SeaWolf, Subrace::Hellion}},
+                                  {Race::Lalafell, {Subrace::Plainsfolk, Subrace::Dunesfolk}},
+                                  {Race::AuRa, {Subrace::Raen, Subrace::Xaela}},
+                                  {Race::Hrothgar, {Subrace::Hellion, Subrace::Lost}},
+                                  {Race::Viera, {Subrace::Rava, Subrace::Veena}}};
 
-CmpEditor::CmpEditor(GameData* data) : data(data) {
+CmpEditor::CmpEditor(GameData *data, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
+{
     setWindowTitle(QStringLiteral("CMP Editor"));
 
     auto layout = new QHBoxLayout();
@@ -53,8 +55,8 @@ CmpEditor::CmpEditor(GameData* data) : data(data) {
 
     raceListWidget->expandAll();
 
-    connect(raceListWidget, &QTreeWidget::itemClicked, [this](QTreeWidgetItem* item, int column) {
-        if (auto treeData = qvariant_cast<RaceTreeData*>(item->data(0, Qt::UserRole))) {
+    connect(raceListWidget, &QTreeWidget::itemClicked, [this](QTreeWidgetItem *item, int column) {
+        if (auto treeData = qvariant_cast<RaceTreeData *>(item->data(0, Qt::UserRole))) {
             loadRaceData(treeData->race, treeData->subrace);
         }
     });
@@ -109,7 +111,8 @@ CmpEditor::CmpEditor(GameData* data) : data(data) {
     loadRaceData(Race::Hyur, Subrace::Midlander);
 }
 
-void CmpEditor::loadRaceData(Race race, Subrace subrace) {
+void CmpEditor::loadRaceData(Race race, Subrace subrace)
+{
     auto raceData = physis_cmp_get_racial_scaling_parameters(cmp, race, subrace);
 
     maleMinSize->setValue(raceData.male_min_size);

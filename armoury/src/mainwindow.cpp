@@ -42,13 +42,13 @@ MainWindow::MainWindow(GameData *in_data)
 
     auto gearListWidget = new GearListWidget(&data);
     gearListWidget->setMaximumWidth(350);
-    connect(gearListWidget, &GearListWidget::gearSelected, this, [=](const GearInfo& gear) {
+    connect(gearListWidget, &GearListWidget::gearSelected, this, [=](const GearInfo &gear) {
         gearView->setGear(gear);
     });
     layout->addWidget(gearListWidget);
 
     gearView = new SingleGearView(&data, cache);
-    connect(gearView, &SingleGearView::addToFullModelViewer, this, [=](GearInfo& info) {
+    connect(gearView, &SingleGearView::addToFullModelViewer, this, [=](GearInfo &info) {
         fullModelViewer->addGear(info);
     });
 
@@ -74,3 +74,5 @@ void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
         cmpEditor->show();
     });
 }
+
+#include "moc_mainwindow.cpp"

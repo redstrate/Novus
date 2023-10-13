@@ -12,7 +12,10 @@
 #include <QRadioButton>
 #include <QVBoxLayout>
 
-FullModelViewer::FullModelViewer(GameData* data, FileCache& cache) : data(data) {
+FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *parent)
+    : QMainWindow(parent)
+    , data(data)
+{
     setWindowTitle(QStringLiteral("Full Model Viewer"));
     setMinimumWidth(1280);
     setMinimumHeight(720);
@@ -37,7 +40,7 @@ FullModelViewer::FullModelViewer(GameData* data, FileCache& cache) : data(data) 
 
         gearView->setRace(charDat.race);
         gearView->setGender(charDat.gender);
-        //gearView->setSubrace(charDat.subrace);
+        // gearView->setSubrace(charDat.subrace);
         gearView->setFace(charDat.head);
         gearView->setHair(charDat.hair);
         updateBustScaling((float)charDat.bust / 100.0f);
@@ -133,27 +136,29 @@ FullModelViewer::FullModelViewer(GameData* data, FileCache& cache) : data(data) 
     reloadGear();
 }
 
-void FullModelViewer::clear() {
+void FullModelViewer::clear()
+{
     topSlot.reset();
     bottomSlot.reset();
 
     Q_EMIT gearChanged();
 }
 
-void FullModelViewer::addGear(GearInfo& info) {
+void FullModelViewer::addGear(GearInfo &info)
+{
     switch (info.slot) {
-        case Slot::Body:
+    case Slot::Body:
         if (topSlot ? *topSlot != info : true) {
             topSlot = info;
         }
-            break;
-        case Slot::Legs:
-            if (bottomSlot ? *bottomSlot != info : true) {
+        break;
+    case Slot::Legs:
+        if (bottomSlot ? *bottomSlot != info : true) {
             bottomSlot = info;
-            }
-            break;
-        default:
-            break;
+        }
+        break;
+    default:
+        break;
     }
 
     Q_EMIT gearChanged();
@@ -202,18 +207,16 @@ void FullModelViewer::reloadGear()
     }
 }
 
-void FullModelViewer::updateHeightScaling(float scale) {
-    auto& boneData = *gearView->part().skeleton;
+void FullModelViewer::updateHeightScaling(float scale)
+{
+    auto &boneData = *gearView->part().skeleton;
     for (int i = 0; i < boneData.num_bones; i++) {
         const std::string_view name{boneData.bones[i].name};
         if (name == "n_root") {
-            auto racialScaling =
-                physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentSubrace);
+            auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentSubrace);
 
-            const float minSize =
-                gearView->currentGender == Gender::Male ? racialScaling.male_min_size : racialScaling.female_min_size;
-            const float maxSize =
-                gearView->currentGender == Gender::Male ? racialScaling.male_max_size : racialScaling.female_max_size;
+            const float minSize = gearView->currentGender == Gender::Male ? racialScaling.male_min_size : racialScaling.female_min_size;
+            const float maxSize = gearView->currentGender == Gender::Male ? racialScaling.male_max_size : racialScaling.female_max_size;
 
             const float size = glm::mix(minSize, maxSize, scale);
 
@@ -228,13 +231,13 @@ void FullModelViewer::updateHeightScaling(float scale) {
     heightScale = scale;
 }
 
-void FullModelViewer::updateBustScaling(float scale) {
-    auto& boneData = *gearView->part().skeleton;
+void FullModelViewer::updateBustScaling(float scale)
+{
+    auto &boneData = *gearView->part().skeleton;
     for (int i = 0; i < boneData.num_bones; i++) {
         const std::string_view name{boneData.bones[i].name};
         if (name == "j_mune_l" || name == "j_mune_r") {
-            auto racialScaling =
-                physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentSubrace);
+            auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentSubrace);
 
             const float rangeX = glm::mix(racialScaling.bust_min_x, racialScaling.bust_max_x, scale);
             const float rangeY = glm::mix(racialScaling.bust_min_y, racialScaling.bust_max_y, scale);
@@ -251,19 +254,22 @@ void FullModelViewer::updateBustScaling(float scale) {
     bustScale = scale;
 }
 
-void FullModelViewer::updateCharacterParameters() {
+void FullModelViewer::updateCharacterParameters()
+{
     updateHeightScaling(heightScale);
     updateBustScaling(bustScale);
 }
 
-void FullModelViewer::updateSupportedSubraces() {
+void FullModelViewer::updateSupportedSubraces()
+{
     subraceCombo->clear();
     for (auto subrace : physis_get_supported_subraces(gearView->currentRace).subraces) {
         subraceCombo->addItem(QLatin1String(magic_enum::enum_name(subrace).data()), (int)subrace);
     }
 }
 
-QGroupBox* FullModelViewer::addFaceGroup() {
+QGroupBox *FullModelViewer::addFaceGroup()
+{
     auto faceGroup = new QGroupBox(QStringLiteral("Face"));
     auto faceGroupLayout = new QVBoxLayout();
     faceGroup->setLayout(faceGroupLayout);
@@ -289,7 +295,8 @@ QGroupBox* FullModelViewer::addFaceGroup() {
     return faceGroup;
 }
 
-QGroupBox* FullModelViewer::addHairGroup() {
+QGroupBox *FullModelViewer::addHairGroup()
+{
     auto hairGroup = new QGroupBox(QStringLiteral("Hair"));
     auto hairGroupLayout = new QVBoxLayout();
     hairGroup->setLayout(hairGroupLayout);
@@ -315,7 +322,8 @@ QGroupBox* FullModelViewer::addHairGroup() {
     return hairGroup;
 }
 
-QGroupBox* FullModelViewer::addEarGroup() {
+QGroupBox *FullModelViewer::addEarGroup()
+{
     auto earGroup = new QGroupBox(QStringLiteral("Ears"));
     auto earGroupLayout = new QVBoxLayout();
     earGroup->setLayout(earGroupLayout);
@@ -341,7 +349,8 @@ QGroupBox* FullModelViewer::addEarGroup() {
     return earGroup;
 }
 
-QGroupBox* FullModelViewer::addTailGroup() {
+QGroupBox *FullModelViewer::addTailGroup()
+{
     auto tailGroup = new QGroupBox(QStringLiteral("Tail"));
     auto tailGroupLayout = new QVBoxLayout();
     tailGroup->setLayout(tailGroupLayout);

@@ -7,7 +7,10 @@
 #include <QtConcurrent>
 #include <magic_enum.hpp>
 
-GearListModel::GearListModel(GameData* data) : gameData(data), QAbstractItemModel() {
+GearListModel::GearListModel(GameData *data, QObject *parent)
+    : QAbstractItemModel(parent)
+    , gameData(data)
+{
     // smallclothes body
     {
         GearInfo info = {};
@@ -26,14 +29,14 @@ GearListModel::GearListModel(GameData* data) : gameData(data), QAbstractItemMode
         gears.push_back(info);
     }
 
-    auto exh = physis_gamedata_read_excel_sheet_header(data, "Item");
+    auto exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(data, "exd/item.exh"));
 
     exdFuture = new QFutureWatcher<physis_EXD>(this);
     connect(exdFuture, &QFutureWatcher<physis_EXD>::resultReadyAt, this, &GearListModel::exdFinished);
     connect(exdFuture, &QFutureWatcher<physis_EXD>::finished, this, &GearListModel::finished);
 
     QVector<int> pages;
-    for(int i = 0; i < exh->page_count; i++) {
+    for (int i = 0; i < exh->page_count; i++) {
         pages.push_back(i);
     }
 
@@ -51,46 +54,50 @@ GearListModel::GearListModel(GameData* data) : gameData(data), QAbstractItemMode
     rootItem->type = TreeType::Root;
 }
 
-int GearListModel::rowCount(const QModelIndex& parent) const {
-    TreeInformation* parentItem;
+int GearListModel::rowCount(const QModelIndex &parent) const
+{
+    TreeInformation *parentItem;
     if (parent.column() > 0)
         return 0;
 
     if (!parent.isValid())
         parentItem = rootItem;
     else
-        parentItem = static_cast<TreeInformation*>(parent.internalPointer());
+        parentItem = static_cast<TreeInformation *>(parent.internalPointer());
 
     return parentItem->children.size();
 }
 
-int GearListModel::columnCount(const QModelIndex& parent) const {
+int GearListModel::columnCount(const QModelIndex &parent) const
+{
     return 1;
 }
 
-QModelIndex GearListModel::index(int row, int column, const QModelIndex& parent) const {
+QModelIndex GearListModel::index(int row, int column, const QModelIndex &parent) const
+{
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    TreeInformation* parentItem;
+    TreeInformation *parentItem;
 
     if (!parent.isValid())
         parentItem = rootItem;
     else
-        parentItem = static_cast<TreeInformation*>(parent.internalPointer());
+        parentItem = static_cast<TreeInformation *>(parent.internalPointer());
 
-    TreeInformation* childItem = parentItem->children[row];
+    TreeInformation *childItem = parentItem->children[row];
     if (childItem)
         return createIndex(row, column, childItem);
     return QModelIndex();
 }
 
-QModelIndex GearListModel::parent(const QModelIndex& index) const {
+QModelIndex GearListModel::parent(const QModelIndex &index) const
+{
     if (!index.isValid())
         return QModelIndex();
 
-    TreeInformation* childItem = static_cast<TreeInformation*>(index.internalPointer());
-    TreeInformation* parentItem = childItem->parent;
+    TreeInformation *childItem = static_cast<TreeInformation *>(index.internalPointer());
+    TreeInformation *parentItem = childItem->parent;
 
     if (parentItem == rootItem)
         return QModelIndex();
@@ -98,7 +105,8 @@ QModelIndex GearListModel::parent(const QModelIndex& index) const {
     return createIndex(parentItem->row, 0, parentItem);
 }
 
-QVariant GearListModel::data(const QModelIndex& index, int role) const {
+QVariant GearListModel::data(const QModelIndex &index, int role) const
+{
     if (!index.isValid())
         return {};
     if (!index.isValid())
@@ -107,7 +115,7 @@ QVariant GearListModel::data(const QModelIndex& index, int role) const {
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    TreeInformation* item = static_cast<TreeInformation*>(index.internalPointer());
+    TreeInformation *item = static_cast<TreeInformation *>(index.internalPointer());
 
     if (item->type == TreeType::Category) {
         return QLatin1String(magic_enum::enum_name(*item->slotType).data());
@@ -118,7 +126,8 @@ QVariant GearListModel::data(const QModelIndex& index, int role) const {
     return {};
 }
 
-QVariant GearListModel::headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant GearListModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
             return QStringLiteral("Name");
@@ -128,15 +137,17 @@ QVariant GearListModel::headerData(int section, Qt::Orientation orientation, int
     return QAbstractItemModel::headerData(section, orientation, role);
 }
 
-std::optional<GearInfo> GearListModel::getGearFromIndex(const QModelIndex& index) {
-    TreeInformation* item = static_cast<TreeInformation*>(index.internalPointer());
+std::optional<GearInfo> GearListModel::getGearFromIndex(const QModelIndex &index)
+{
+    TreeInformation *item = static_cast<TreeInformation *>(index.internalPointer());
     if (item->type == TreeType::Item) {
         return item->gear;
     }
     return {};
 }
 
-void GearListModel::exdFinished(int index) {
+void GearListModel::exdFinished(int index)
+{
     auto exd = exdFuture->resultAt(index);
 
     for (int i = 0; i < exd.row_count; i++) {
@@ -156,12 +167,13 @@ void GearListModel::exdFinished(int index) {
     }
 }
 
-void GearListModel::finished() {
+void GearListModel::finished()
+{
     beginResetModel();
 
     int i = 0;
     for (auto slot : magic_enum::enum_values<Slot>()) {
-        TreeInformation* categoryItem = new TreeInformation();
+        TreeInformation *categoryItem = new TreeInformation();
         categoryItem->type = TreeType::Category;
         categoryItem->slotType = slot;
         categoryItem->parent = rootItem;
@@ -171,7 +183,7 @@ void GearListModel::finished() {
         int j = 0;
         for (auto gear : gears) {
             if (gear.slot == slot) {
-                TreeInformation* item = new TreeInformation();
+                TreeInformation *item = new TreeInformation();
                 item->type = TreeType::Item;
                 item->gear = gear;
                 item->parent = categoryItem;

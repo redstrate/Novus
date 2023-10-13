@@ -17,16 +17,18 @@ class FileCache;
 
 class MainWindow : public NovusMainWindow
 {
+    Q_OBJECT
+
 public:
-    explicit MainWindow(GameData* data);
+    explicit MainWindow(GameData *data);
 
 protected:
     void setupAdditionalMenus(QMenuBar *menuBar) override;
 
 private:
-    SingleGearView* gearView = nullptr;
-    FullModelViewer* fullModelViewer = nullptr;
+    SingleGearView *gearView = nullptr;
+    FullModelViewer *fullModelViewer = nullptr;
 
-    GameData& data;
+    GameData &data;
     FileCache cache;
 };

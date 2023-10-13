@@ -10,11 +10,12 @@
 
 struct GameData;
 
-class SingleGearView : public QWidget {
+class SingleGearView : public QWidget
+{
     Q_OBJECT
 
 public:
-    explicit SingleGearView(GameData* data, FileCache& cache);
+    explicit SingleGearView(GameData *data, FileCache &cache, QWidget *parent = nullptr);
 
     QString getLoadedGearPath() const;
 
@@ -27,11 +28,11 @@ Q_SIGNALS:
     void genderChanged();
     void levelOfDetailChanged();
 
-    void addToFullModelViewer(GearInfo& info);
+    void addToFullModelViewer(GearInfo &info);
 
 public Q_SLOTS:
     void clear();
-    void setGear(const GearInfo& info);
+    void setGear(const GearInfo &info);
 
     void setRace(Race race);
     void setSubrace(Subrace subrace);
@@ -51,12 +52,12 @@ private:
     Gender currentGender = Gender::Male;
     int currentLod = 0;
 
-    GearView* gearView = nullptr;
+    GearView *gearView = nullptr;
     QComboBox *raceCombo, *subraceCombo, *genderCombo, *lodCombo;
     QPushButton *addToFMVButton, *importButton, *exportButton;
 
     bool loadingComboData = false;
     bool fmvAvailable = false;
 
-    GameData* data = nullptr;
+    GameData *data = nullptr;
 };

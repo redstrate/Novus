@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "quaternionedit.h"
-#include "vec3edit.h"
 #include <QSpinBox>
 #include <QTreeWidgetItem>
 #include <QWidget>
@@ -12,18 +10,22 @@
 #include <glm/glm.hpp>
 #include <physis.hpp>
 
+#include "quaternionedit.h"
+#include "vec3edit.h"
+
 class GearView;
 
-class BoneEditor : public QWidget {
+class BoneEditor : public QWidget
+{
     Q_OBJECT
 
 public:
-    explicit BoneEditor(GearView* gearView, QWidget* parent = nullptr);
+    explicit BoneEditor(GearView *gearView, QWidget *parent = nullptr);
 
 private:
-    void treeItemClicked(QTreeWidgetItem* item, int column);
+    void treeItemClicked(QTreeWidgetItem *item, int column);
 
-    GearView* gearView;
+    GearView *gearView;
 
     glm::vec3 currentPosition;
     glm::quat currentRotation;
@@ -33,13 +35,13 @@ private:
     glm::quat currentRaceRotation;
     glm::vec3 currentRaceScale;
 
-    physis_Bone* currentEditedBone;
+    physis_Bone *currentEditedBone = nullptr;
 
-    Vector3Edit* posEdit;
-    QuaternionEdit* rotationEdit;
-    Vector3Edit* scaleEdit;
+    Vector3Edit *posEdit = nullptr;
+    QuaternionEdit *rotationEdit = nullptr;
+    Vector3Edit *scaleEdit = nullptr;
 
-    Vector3Edit* raceDeformPosEdit;
-    QuaternionEdit* raceDeformRotationEdit;
-    Vector3Edit* raceDeformScaleEdit;
+    Vector3Edit *raceDeformPosEdit = nullptr;
+    QuaternionEdit *raceDeformRotationEdit = nullptr;
+    Vector3Edit *raceDeformScaleEdit = nullptr;
 };

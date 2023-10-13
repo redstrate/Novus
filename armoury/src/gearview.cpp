@@ -13,7 +13,11 @@
 #include "magic_enum.hpp"
 #include "utility.h"
 
-GearView::GearView(GameData* data, FileCache& cache) : data(data), cache(cache) {
+GearView::GearView(GameData *data, FileCache &cache, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
+    , cache(cache)
+{
     mdlPart = new MDLPart(data, cache);
 
     reloadRaceDeforms();
@@ -55,7 +59,8 @@ GearView::GearView(GameData* data, FileCache& cache) : data(data), cache(cache) 
     };
 }
 
-std::vector<std::pair<Race, Subrace>> GearView::supportedRaces() const {
+std::vector<std::pair<Race, Subrace>> GearView::supportedRaces() const
+{
     std::vector<std::pair<Race, Subrace>> races;
     for (const auto &gear : loadedGears) {
         for (const auto [race, race_name] : magic_enum::enum_entries<Race>()) {
@@ -71,7 +76,8 @@ std::vector<std::pair<Race, Subrace>> GearView::supportedRaces() const {
     return races;
 }
 
-std::vector<Gender> GearView::supportedGenders() const {
+std::vector<Gender> GearView::supportedGenders() const
+{
     std::vector<Gender> genders;
     for (const auto &gear : loadedGears) {
         for (auto [gender, gender_name] : magic_enum::enum_entries<Gender>()) {
@@ -85,11 +91,13 @@ std::vector<Gender> GearView::supportedGenders() const {
     return genders;
 }
 
-int GearView::lodCount() const {
+int GearView::lodCount() const
+{
     return maxLod;
 }
 
-void GearView::exportModel(const QString& fileName) {
+void GearView::exportModel(const QString &fileName)
+{
     mdlPart->exportModel(fileName);
 }
 
@@ -113,7 +121,8 @@ void GearView::removeGear(GearInfo &gear)
     Q_EMIT gearChanged();
 }
 
-void GearView::setRace(Race race) {
+void GearView::setRace(Race race)
+{
     if (currentRace == race) {
         return;
     }
@@ -136,7 +145,8 @@ void GearView::setRace(Race race) {
     Q_EMIT raceChanged();
 }
 
-void GearView::setSubrace(Subrace subrace) {
+void GearView::setSubrace(Subrace subrace)
+{
     if (currentSubrace == subrace) {
         return;
     }
@@ -151,7 +161,8 @@ void GearView::setSubrace(Subrace subrace) {
     Q_EMIT subraceChanged();
 }
 
-void GearView::setGender(Gender gender) {
+void GearView::setGender(Gender gender)
+{
     if (currentGender == gender) {
         return;
     }
@@ -163,7 +174,8 @@ void GearView::setGender(Gender gender) {
     Q_EMIT genderChanged();
 }
 
-void GearView::setLevelOfDetail(int lod) {
+void GearView::setLevelOfDetail(int lod)
+{
     if (currentLod == lod) {
         return;
     }
@@ -352,8 +364,9 @@ void GearView::updatePart()
 
             std::vector<physis_Material> materials;
             for (int i = 0; i < mdl.num_material_names; i++) {
-                const char* material_name = mdl.material_names[i];
-                const std::string skinmtrl_path = physis_build_face_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *face, material_name);
+                const char *material_name = mdl.material_names[i];
+                const std::string skinmtrl_path =
+                    physis_build_face_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *face, material_name);
 
                 if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                     auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
@@ -374,8 +387,9 @@ void GearView::updatePart()
 
             std::vector<physis_Material> materials;
             for (int i = 0; i < mdl.num_material_names; i++) {
-                const char* material_name = mdl.material_names[i];
-                const std::string skinmtrl_path = physis_build_hair_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *hair, material_name);
+                const char *material_name = mdl.material_names[i];
+                const std::string skinmtrl_path =
+                    physis_build_hair_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *hair, material_name);
 
                 if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                     auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
@@ -396,8 +410,9 @@ void GearView::updatePart()
 
             std::vector<physis_Material> materials;
             for (int i = 0; i < mdl.num_material_names; i++) {
-                const char* material_name = mdl.material_names[i];
-                const std::string skinmtrl_path = physis_build_ear_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *ear, material_name);
+                const char *material_name = mdl.material_names[i];
+                const std::string skinmtrl_path =
+                    physis_build_ear_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *ear, material_name);
 
                 if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                     auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
@@ -416,8 +431,9 @@ void GearView::updatePart()
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data.size, mdl_data.data);
 
-            const char* material_name = mdl.material_names[0];
-            const std::string skinmtrl_path = physis_build_tail_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *tail, material_name);
+            const char *material_name = mdl.material_names[0];
+            const std::string skinmtrl_path =
+                physis_build_tail_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *tail, material_name);
 
             if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                 auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));

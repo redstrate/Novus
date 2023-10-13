@@ -8,12 +8,14 @@
 
 #include <glm/glm.hpp>
 
-class QuaternionEdit : public QWidget {
+class QuaternionEdit : public QWidget
+{
     Q_OBJECT
-public:
-    explicit QuaternionEdit(glm::quat& quat, QWidget* parent = nullptr);
 
-    void setQuat(glm::quat& quat);
+public:
+    explicit QuaternionEdit(glm::quat &quat, QWidget *parent = nullptr);
+
+    void setQuat(glm::quat &quat);
 
 Q_SIGNALS:
     void onValueChanged();
@@ -23,5 +25,5 @@ private:
         QDoubleSpinBox *x, *y, *z;
     } spinBoxes;
 
-    glm::quat& quat;
+    glm::quat &quat;
 };

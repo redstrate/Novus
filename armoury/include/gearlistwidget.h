@@ -9,17 +9,18 @@
 
 #include "gearview.h"
 
-class GearListWidget : public QWidget {
+class GearListWidget : public QWidget
+{
     Q_OBJECT
 
 public:
-    explicit GearListWidget(GameData* data, QWidget* parent = nullptr);
+    explicit GearListWidget(GameData *data, QWidget *parent = nullptr);
 
 Q_SIGNALS:
-    void gearSelected(const GearInfo& gear);
+    void gearSelected(const GearInfo &gear);
 
 private:
-    QTreeView* listWidget = nullptr;
+    QTreeView *listWidget = nullptr;
 
-    GameData* data = nullptr;
+    GameData *data = nullptr;
 };

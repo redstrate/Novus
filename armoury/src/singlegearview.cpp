@@ -12,7 +12,10 @@
 #include "filecache.h"
 #include "magic_enum.hpp"
 
-SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
+SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
+{
     gearView = new GearView(data, cache);
 
     // We don't want to see the face in this view
@@ -129,7 +132,8 @@ SingleGearView::SingleGearView(GameData* data, FileCache& cache) : data(data) {
     reloadGear();
 }
 
-void SingleGearView::clear() {
+void SingleGearView::clear()
+{
     if (currentGear) {
         gearView->removeGear(*currentGear);
     }
@@ -138,7 +142,8 @@ void SingleGearView::clear() {
     Q_EMIT gearChanged();
 }
 
-void SingleGearView::setGear(const GearInfo& info) {
+void SingleGearView::setGear(const GearInfo &info)
+{
     if (info != currentGear) {
         if (currentGear) {
             gearView->removeGear(*currentGear);
@@ -151,7 +156,8 @@ void SingleGearView::setGear(const GearInfo& info) {
     }
 }
 
-void SingleGearView::setRace(Race race) {
+void SingleGearView::setRace(Race race)
+{
     if (currentRace == race) {
         return;
     }
@@ -160,7 +166,8 @@ void SingleGearView::setRace(Race race) {
     Q_EMIT raceChanged();
 }
 
-void SingleGearView::setSubrace(Subrace subrace) {
+void SingleGearView::setSubrace(Subrace subrace)
+{
     if (currentSubrace == subrace) {
         return;
     }
@@ -171,7 +178,8 @@ void SingleGearView::setSubrace(Subrace subrace) {
     Q_EMIT subraceChanged();
 }
 
-void SingleGearView::setGender(Gender gender) {
+void SingleGearView::setGender(Gender gender)
+{
     if (currentGender == gender) {
         return;
     }
@@ -180,7 +188,8 @@ void SingleGearView::setGender(Gender gender) {
     Q_EMIT genderChanged();
 }
 
-void SingleGearView::setLevelOfDetail(int lod) {
+void SingleGearView::setLevelOfDetail(int lod)
+{
     if (currentLod == lod) {
         return;
     }
@@ -221,7 +230,12 @@ void SingleGearView::reloadGear()
             }
         }
 
-        if (auto it = std::find_if(supportedRaces.begin(), supportedRaces.end(), [oldRace](auto p) { return std::get<0>(p) == oldRace; }); it != supportedRaces.end()) {
+        if (auto it = std::find_if(supportedRaces.begin(),
+                                   supportedRaces.end(),
+                                   [oldRace](auto p) {
+                                       return std::get<0>(p) == oldRace;
+                                   });
+            it != supportedRaces.end()) {
             raceCombo->setCurrentIndex(std::distance(supportedRaces.begin(), it));
         }
 
@@ -232,7 +246,12 @@ void SingleGearView::reloadGear()
             }
         }
 
-        if (auto it = std::find_if(supportedRaces.begin(), supportedRaces.end(), [oldSubrace](auto p) { return std::get<1>(p) == oldSubrace; }); it != supportedRaces.end()) {
+        if (auto it = std::find_if(supportedRaces.begin(),
+                                   supportedRaces.end(),
+                                   [oldSubrace](auto p) {
+                                       return std::get<1>(p) == oldSubrace;
+                                   });
+            it != supportedRaces.end()) {
             subraceCombo->setCurrentIndex(std::distance(supportedRaces.begin(), it));
         }
 
@@ -244,7 +263,12 @@ void SingleGearView::reloadGear()
             genderCombo->addItem(QLatin1String(magic_enum::enum_name(gender).data()), static_cast<int>(gender));
         }
 
-        if (auto it = std::find_if(supportedGenders.begin(), supportedGenders.end(), [oldGender](auto p) { return p == oldGender; }); it != supportedGenders.end()) {
+        if (auto it = std::find_if(supportedGenders.begin(),
+                                   supportedGenders.end(),
+                                   [oldGender](auto p) {
+                                       return p == oldGender;
+                                   });
+            it != supportedGenders.end()) {
             genderCombo->setCurrentIndex(std::distance(supportedGenders.begin(), it));
         }
 

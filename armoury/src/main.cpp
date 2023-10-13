@@ -9,11 +9,11 @@
 #include "physis_logger.h"
 #include "settings.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
     QApplication app(argc, argv);
 
-    customizeAboutData(
-        QStringLiteral("armoury"), QStringLiteral("Armoury"), QStringLiteral("Program to view FFXIV gear."));
+    customizeAboutData(QStringLiteral("armoury"), QStringLiteral("Armoury"), QStringLiteral("Program to view FFXIV gear."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

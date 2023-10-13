@@ -11,10 +11,12 @@
 struct GameData;
 class FileCache;
 
-class FullModelViewer : public QMainWindow {
+class FullModelViewer : public QMainWindow
+{
     Q_OBJECT
+
 public:
-    explicit FullModelViewer(GameData* data, FileCache& cache);
+    explicit FullModelViewer(GameData *data, FileCache &cache, QWidget *parent = nullptr);
 
 Q_SIGNALS:
     void gearChanged();
@@ -22,7 +24,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void clear();
-    void addGear(GearInfo& info);
+    void addGear(GearInfo &info);
 
 private Q_SLOTS:
     void reloadGear();
@@ -33,18 +35,18 @@ private:
     void updateCharacterParameters();
     void updateSupportedSubraces();
 
-    QGroupBox* addFaceGroup();
-    QGroupBox* addHairGroup();
-    QGroupBox* addEarGroup();
-    QGroupBox* addTailGroup();
+    QGroupBox *addFaceGroup();
+    QGroupBox *addHairGroup();
+    QGroupBox *addEarGroup();
+    QGroupBox *addTailGroup();
 
     std::optional<GearInfo> topSlot;
     std::optional<GearInfo> bottomSlot;
 
-    GearView* gearView = nullptr;
-    QComboBox *raceCombo, *subraceCombo, *genderCombo;
+    GearView *gearView = nullptr;
+    QComboBox *raceCombo = nullptr, *subraceCombo = nullptr, *genderCombo = nullptr;
 
-    GameData* data = nullptr;
+    GameData *data = nullptr;
     physis_CMP cmp;
 
     float heightScale = 0.5f;

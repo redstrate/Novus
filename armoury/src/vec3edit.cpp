@@ -6,8 +6,11 @@
 #include <QHBoxLayout>
 #include <QTimer>
 
-Vector3Edit::Vector3Edit(glm::vec3& vec, QWidget* parent) : QWidget(parent), vec(vec) {
-    QHBoxLayout* itemsLayout = new QHBoxLayout(this);
+Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
+    : QWidget(parent)
+    , vec(vec)
+{
+    QHBoxLayout *itemsLayout = new QHBoxLayout(this);
 
     spinBoxes.x = new QDoubleSpinBox();
     spinBoxes.y = new QDoubleSpinBox();
@@ -30,36 +33,31 @@ Vector3Edit::Vector3Edit(glm::vec3& vec, QWidget* parent) : QWidget(parent), vec
     spinBoxes.y->setValue(vec.y);
     spinBoxes.z->setValue(vec.z);
 
-    connect(
-        spinBoxes.x,
-        static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-        [this, &vec](double d) {
-            vec.x = d;
-            Q_EMIT onValueChanged();
-        });
-    connect(
-        spinBoxes.y,
-        static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-        [this, &vec](double d) {
-            vec.y = d;
-            Q_EMIT onValueChanged();
-        });
-    connect(
-        spinBoxes.z,
-        static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-        [this, &vec](double d) {
-            vec.z = d;
-            Q_EMIT onValueChanged();
-        });
+    connect(spinBoxes.x, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
+        vec.x = d;
+        Q_EMIT onValueChanged();
+    });
+    connect(spinBoxes.y, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
+        vec.y = d;
+        Q_EMIT onValueChanged();
+    });
+    connect(spinBoxes.z, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
+        vec.z = d;
+        Q_EMIT onValueChanged();
+    });
 }
 
-Vector3Edit::~Vector3Edit() {
+Vector3Edit::~Vector3Edit()
+{
     updateTimer->stop();
 }
 
-void Vector3Edit::setVector(glm::vec3& vec) {
+void Vector3Edit::setVector(glm::vec3 &vec)
+{
     this->vec = vec;
     spinBoxes.x->setValue(vec.x);
     spinBoxes.y->setValue(vec.y);
     spinBoxes.z->setValue(vec.z);
 }
+
+#include "moc_vec3edit.cpp"

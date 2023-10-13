@@ -19,7 +19,8 @@ struct GearInfo {
     Slot slot;
     ModelInfo modelInfo;
 
-    std::string getMtrlPath(const std::string_view material_name) const {
+    std::string getMtrlPath(const std::string_view material_name) const
+    {
         return physis_build_gear_material_path(modelInfo.primaryID, modelInfo.gearVersion, material_name.data());
     }
 };
@@ -31,10 +32,12 @@ inline bool operator==(const GearInfo &a, const GearInfo &b)
 
 struct GameData;
 
-class GearView : public QWidget {
+class GearView : public QWidget
+{
     Q_OBJECT
+
 public:
-    explicit GearView(GameData* data, FileCache& cache);
+    explicit GearView(GameData *data, FileCache &cache, QWidget *parent = nullptr);
 
     /// Returns an inclusive list of races supported by the current gearset.
     std::vector<std::pair<Race, Subrace>> supportedRaces() const;
@@ -45,9 +48,9 @@ public:
     /// Returns an inclusive list of LoDs supported by the current gearset.
     int lodCount() const;
 
-    void exportModel(const QString& fileName);
+    void exportModel(const QString &fileName);
 
-    MDLPart& part() const;
+    MDLPart &part() const;
 
     Race currentRace = Race::Hyur;
     Subrace currentSubrace = Subrace::Midlander;
@@ -71,7 +74,7 @@ Q_SIGNALS:
     void tailChanged();
 
 public Q_SLOTS:
-    void addGear(GearInfo& gear);
+    void addGear(GearInfo &gear);
     void removeGear(GearInfo &gear);
 
     void setRace(Race race);
@@ -106,15 +109,12 @@ private:
     bool faceDirty = false, hairDirty = false, earDirty = false, tailDirty = false;
     bool raceDirty = false;
 
-    MDLPart* mdlPart = nullptr;
+    MDLPart *mdlPart = nullptr;
 
-    GameData* data;
-    FileCache& cache;
+    GameData *data;
+    FileCache &cache;
 
     bool updating = false;
     void updatePart();
     bool needsUpdate() const;
-
-    void gearUpdate(LoadedGear &gear);
-    void queueGearUpdate(LoadedGear &gear);
 };
