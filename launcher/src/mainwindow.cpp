@@ -66,3 +66,5 @@ MainWindow::MainWindow()
 
     setCentralWidget(centralWidget);
 }
+
+#include "moc_mainwindow.cpp"
