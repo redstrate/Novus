@@ -18,11 +18,11 @@ FileTreeModel::FileTreeModel(bool showUnknown, QString gamePath, GameData *data)
         addKnownFolder(knownFolder);
     }
 
-    QDirIterator it(QStringLiteral("%1/sqpack/ffxiv").arg(gamePath));
+    QDirIterator it(QStringLiteral("%1/sqpack").arg(gamePath), QDirIterator::Subdirectories);
     while (it.hasNext()) {
         it.next();
         QFileInfo info = it.fileInfo();
-        if (info.exists() && (info.completeSuffix() == QStringLiteral("win32.index") || info.completeSuffix() == QStringLiteral("win32.index2"))) {
+        if (info.exists() && (info.completeSuffix() == QStringLiteral("win32.index"))) {
             std::string pathStd = info.filePath().toStdString();
             auto indexEntries = physis_index_parse(pathStd.c_str());
             for (int i = 0; i < indexEntries.num_entries; i++) {
