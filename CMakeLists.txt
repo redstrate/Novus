@@ -35,7 +35,7 @@ ecm_setup_version(${PROJECT_VERSION}
     VERSION_HEADER ${CMAKE_CURRENT_BINARY_DIR}/novus-version.h
 )
 
-find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent Core5Compat Sql CONFIG REQUIRED)
+find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent Core5Compat Sql HttpServer CONFIG REQUIRED)
 find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons Config XmlGui)
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
@@ -44,12 +44,6 @@ if (NOT TARGET glm::glm)
 endif()
 
 add_subdirectory(extern)
-
-# macos
-if(APPLE)
-    set(USE_STANDALONE_WINDOW TRUE)
-endif()
-
 add_subdirectory(renderer)
 add_subdirectory(karuku)
 add_subdirectory(armoury)

@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "hashdatabase.h"
+#include "physis.hpp"
 #include "settings.h"
+#include <QCommandLineParser>
+#include <QCoreApplication>
+#include <QHttpServer>
+#include <QJsonObject>
+#include <QJsonParseError>
 
 const std::array known_folders{"common",
                                "common/font",
@@ -147,13 +153,94 @@ const std::array common_font{"common/VulgarWordsFilter.dic",
                              "common/font/Jupiter_90_lobby.fdt",
                              "common/font/Jupiter_45_lobby.fdt"};
 
+static std::optional<QJsonObject> byteArrayToJsonObject(const QByteArray &arr)
+{
+    QJsonParseError err;
+    const auto json = QJsonDocument::fromJson(arr, &err);
+    if (err.error || !json.isObject())
+        return std::nullopt;
+    return json.object();
+}
+
 int main(int argc, char *argv[])
 {
+    QCoreApplication app(argc, argv);
+
+    QCommandLineParser parser;
+
+    QCommandLineOption indexExcelOption(QStringLiteral("excel"), QStringLiteral("Enable the indexing of known Excel files, will take a very long time."));
+    parser.addOption(indexExcelOption);
+
+    QCommandLineOption listenOption(QStringLiteral("listen"), QStringLiteral("Listen for incoming filename requests, for the SqPackIndexer Dalamud plugin."));
+    parser.addOption(listenOption);
+
+    parser.process(app);
+
     HashDatabase database;
+
+    if (parser.isSet(indexExcelOption)) {
+        const QString gameDir{getGameDirectory()};
+        const std::string gameDirStd{gameDir.toStdString()};
+        auto data = physis_gamedata_initialize(gameDirStd.c_str());
+
+        auto sheetNames = physis_gamedata_get_all_sheet_names(data);
+
+        for (int i = 0; i < sheetNames.name_count; i++) {
+            auto sheetName = sheetNames.names[i];
+            auto nameLowercase = QString::fromStdString(sheetName).toLower().toStdString();
+
+            QString headerName = QStringLiteral("exd/") + QLatin1String(nameLowercase.c_str()) + QStringLiteral(".exh");
+
+            database.addFile(headerName);
+
+            std::string headerNameStd = headerName.toStdString();
+            auto exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(data, headerNameStd.c_str()));
+            for (int j = 0; j < exh->page_count; j++) {
+                for (int z = 0; z < exh->language_count; z++) {
+                    std::string path = physis_gamedata_get_exd_filename(nameLowercase.c_str(), exh, exh->languages[z], j);
+
+                    database.addFile(QStringLiteral("exd/") + QString::fromStdString(path));
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    if (parser.isSet(listenOption)) {
+        QHttpServer server;
+
+        server.route(QStringLiteral("/add_hash"), QHttpServerRequest::Method::Post, [&database](const QHttpServerRequest &request) {
+            const auto json = byteArrayToJsonObject(request.body());
+            if (!json)
+                return QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest);
+
+            const QString filename = (*json)[QLatin1String("filename")].toString();
+            int lastSlashIndex = filename.lastIndexOf(QStringLiteral("/"));
+            QString folder = filename.left(lastSlashIndex);
+
+            qInfo() << "Adding hash for file" << filename;
+
+            qInfo() << "Adding hash for folder" << folder;
+
+            database.addFile(filename);
+            database.addFolder(folder);
+
+            return QHttpServerResponse(QHttpServerResponder::StatusCode::Ok);
+        });
+
+        server.listen(QHostAddress::Any, 3500);
+
+        qInfo() << "Now listening on port 3500.";
+
+        return QCoreApplication::exec();
+    }
 
     for (auto &folder : known_folders) {
         database.addFolder(QLatin1String(folder));
     }
+
+    qInfo() << "No special options set, adding all known static files.";
 
     for (auto &file : common_font) {
         database.addFile(QLatin1String(file));
@@ -170,29 +257,5 @@ int main(int argc, char *argv[])
     database.addFile(QStringLiteral("chara/xls/charamake/human.cmp"));
     database.addFile(QStringLiteral("chara/human/c0101/skeleton/base/b0001/skl_c0101b0001.sklb"));
 
-    /*const QString gameDir{getGameDirectory()};
-    const std::string gameDirStd{gameDir.toStdString()};
-    auto data = physis_gamedata_initialize(gameDirStd.c_str());
-
-    addPath(QStringLiteral("common/font/AXIS_12.fdt"));
-
-    addPath(QStringLiteral("exd/root.exl"));
-
-    auto sheetNames = physis_gamedata_get_all_sheet_names(data);
-
-    for(int i = 0; i < sheetNames.name_count; i++) {
-        auto sheetName = sheetNames.names[i];
-        auto nameLowercase = QString::fromStdString(sheetName).toLower().toStdString();
-
-        addPath(QStringLiteral("exd/") + QLatin1String(nameLowercase.c_str()) + QStringLiteral(".exh"));
-
-        auto exh = physis_gamedata_read_excel_sheet_header(data, sheetName);
-        for (int j = 0; j < exh->page_count; j++) {
-            for (int z = 0; z < exh->language_count; z++) {
-                std::string path = physis_gamedata_get_exd_filename(nameLowercase.c_str(), exh, exh->languages[z], j);
-
-                addPath(QStringLiteral("exd/") + QString::fromStdString(path));
-            }
-        }
-    }*/
+    return 0;
 }
