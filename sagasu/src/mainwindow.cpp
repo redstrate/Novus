@@ -91,7 +91,7 @@ void MainWindow::refreshParts(QString path)
         auto mdlWidget = new MDLPart(data, fileCache);
         mdlWidget->addModel(physis_mdl_parse(file), QStringLiteral("mdl"), {}, 0);
         partHolder->addTab(mdlWidget, QStringLiteral("Model"));
-    } else if (info.completeSuffix() == QStringLiteral("tex")) {
+    } else if (info.completeSuffix() == QStringLiteral("tex") || info.completeSuffix() == QStringLiteral("atex")) {
         auto texWidget = new TexPart(data);
         texWidget->load(file);
         partHolder->addTab(texWidget, QStringLiteral("Texture"));
