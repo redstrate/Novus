@@ -3,6 +3,10 @@
 
 add_library(mdlpart STATIC)
 target_sources(mdlpart PRIVATE
+        mdlexport.cpp
+        mdlexport.h
+        mdlimport.cpp
+        mdlimport.h
         mdlpart.cpp
         mdlpart.h
         vulkanwindow.cpp

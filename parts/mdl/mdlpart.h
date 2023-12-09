@@ -7,6 +7,7 @@
 #include <optional>
 #include <physis.hpp>
 
+#include "mdlexport.h"
 #include "renderer.hpp"
 
 struct GameData;
@@ -37,10 +38,6 @@ public:
     glm::vec3 position{0, 0, 0};
 
     std::unique_ptr<physis_Skeleton> skeleton;
-
-    struct BoneData {
-        glm::mat4 localTransform, finalTransform, inversePose;
-    };
 
     std::vector<BoneData> boneData;
 
