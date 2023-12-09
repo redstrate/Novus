@@ -20,7 +20,6 @@
 #include "imgui.h"
 #include "tiny_gltf.h"
 
-#ifndef USE_STANDALONE_WINDOW
 class VulkanWindow : public QWindow
 {
 public:
@@ -143,11 +142,6 @@ private:
     QVulkanInstance *m_instance;
     MDLPart *part;
 };
-#else
-#include "equipment.h"
-#include "standalonewindow.h"
-
-#endif
 
 MDLPart::MDLPart(GameData *data, FileCache &cache)
     : data(data)
@@ -161,7 +155,6 @@ MDLPart::MDLPart(GameData *data, FileCache &cache)
 
     renderer = new Renderer();
 
-#ifndef USE_STANDALONE_WINDOW
     auto inst = new QVulkanInstance();
     inst->setVkInstance(renderer->instance);
     inst->setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
@@ -173,16 +166,6 @@ MDLPart::MDLPart(GameData *data, FileCache &cache)
     auto widget = QWidget::createWindowContainer(vkWindow);
 
     viewportLayout->addWidget(widget);
-#else
-    standaloneWindow = new StandaloneWindow(renderer);
-    renderer->initSwapchain(standaloneWindow->getSurface(renderer->instance), 640, 480);
-
-    QTimer *timer = new QTimer();
-    connect(timer, &QTimer::timeout, this, [this] {
-        standaloneWindow->render();
-    });
-    timer->start(1000);
-#endif
 
     connect(this, &MDLPart::modelChanged, this, &MDLPart::reloadRenderer);
     connect(this, &MDLPart::skeletonChanged, this, &MDLPart::reloadBoneData);
@@ -482,11 +465,7 @@ void MDLPart::reloadRenderer()
 {
     reloadBoneData();
 
-#ifndef USE_STANDALONE_WINDOW
     vkWindow->models = models;
-#else
-    standaloneWindow->models = models;
-#endif
 }
 
 void MDLPart::reloadBoneData()
