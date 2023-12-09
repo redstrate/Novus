@@ -39,7 +39,7 @@ public:
                 m_initialized = true;
 
                 auto surface = m_instance->surfaceForWindow(this);
-                if (!m_renderer->initSwapchain(surface, width(), height()))
+                if (!m_renderer->initSwapchain(surface, width() * screen()->devicePixelRatio(), height() * screen()->devicePixelRatio()))
                     m_initialized = false;
                 else
                     render();
@@ -56,7 +56,9 @@ public:
         case QEvent::Resize: {
             QResizeEvent *resizeEvent = (QResizeEvent *)e;
             auto surface = m_instance->surfaceForWindow(this);
-            m_renderer->resize(surface, resizeEvent->size().width(), resizeEvent->size().height());
+            m_renderer->resize(surface,
+                               resizeEvent->size().width() * screen()->devicePixelRatio(),
+                               resizeEvent->size().height() * screen()->devicePixelRatio());
         } break;
         case QEvent::MouseButtonPress: {
             auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
