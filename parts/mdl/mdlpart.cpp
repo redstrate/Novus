@@ -199,6 +199,9 @@ void MDLPart::exportModel(const QString &fileName)
     tinygltf::Model gltfModel;
     gltfModel.asset.generator = "Novus";
 
+    // TODO: just write the code better! dummy!!
+    gltfModel.nodes.reserve(1 + model.num_affected_bones + lod.num_parts);
+
     auto &gltfSkeletonNode = gltfModel.nodes.emplace_back();
     gltfSkeletonNode.name = skeleton->root_bone->name;
 
@@ -230,10 +233,18 @@ void MDLPart::exportModel(const QString &fileName)
 
         auto &real_bone = skeleton->bones[real_bone_id];
         if (real_bone.parent_bone != nullptr) {
+            bool found = false;
             for (int k = 0; k < model.num_affected_bones; k++) {
                 if (strcmp(model.affected_bone_names[k], real_bone.parent_bone->name) == 0) {
                     gltfModel.nodes[k + 1].children.push_back(i + 1); // +1 for the skeleton node taking up the first index
+                    found = true;
                 }
+            }
+
+            // Find the next closest bone that isn't a direct descendant
+            // of n_root, but won't have a parent anyway
+            if (!found) {
+                gltfSkeletonNode.children.push_back(i + 1);
             }
         } else {
             gltfSkeletonNode.children.push_back(i + 1);
@@ -280,12 +291,12 @@ void MDLPart::exportModel(const QString &fileName)
     }
 
     for (int i = 0; i < lod.num_parts; i++) {
+        gltfSkeletonNode.children.push_back(gltfModel.nodes.size());
+
         auto &gltfNode = gltfModel.nodes.emplace_back();
-        ;
+
         gltfNode.name = models[0].name.toStdString() + " Part " + std::to_string(i) + ".0";
         gltfNode.skin = 0;
-
-        gltfSkeletonNode.children.push_back(gltfModel.nodes.size());
 
         gltfNode.mesh = gltfModel.meshes.size();
         auto &gltfMesh = gltfModel.meshes.emplace_back();
@@ -295,9 +306,11 @@ void MDLPart::exportModel(const QString &fileName)
         auto &gltfPrimitive = gltfMesh.primitives.emplace_back();
         gltfPrimitive.attributes["POSITION"] = gltfModel.accessors.size();
         gltfPrimitive.attributes["TEXCOORD_0"] = gltfModel.accessors.size() + 1;
-        gltfPrimitive.attributes["NORMAL"] = gltfModel.accessors.size() + 2;
-        gltfPrimitive.attributes["WEIGHTS_0"] = gltfModel.accessors.size() + 3;
-        gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 4;
+        gltfPrimitive.attributes["TEXCOORD_1"] = gltfModel.accessors.size() + 2;
+        gltfPrimitive.attributes["NORMAL"] = gltfModel.accessors.size() + 3;
+        gltfPrimitive.attributes["COLOR_0"] = gltfModel.accessors.size() + 6;
+        gltfPrimitive.attributes["WEIGHTS_0"] = gltfModel.accessors.size() + 7;
+        gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 8;
         gltfPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
 
         // Vertices
@@ -308,12 +321,19 @@ void MDLPart::exportModel(const QString &fileName)
             positionAccessor.count = lod.parts[i].num_vertices;
             positionAccessor.type = TINYGLTF_TYPE_VEC3;
 
-            auto &uvAccessor = gltfModel.accessors.emplace_back();
-            uvAccessor.bufferView = gltfModel.bufferViews.size();
-            uvAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-            uvAccessor.count = lod.parts[i].num_vertices;
-            uvAccessor.type = TINYGLTF_TYPE_VEC2;
-            uvAccessor.byteOffset = offsetof(Vertex, uv);
+            auto &uv0Accessor = gltfModel.accessors.emplace_back();
+            uv0Accessor.bufferView = gltfModel.bufferViews.size();
+            uv0Accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+            uv0Accessor.count = lod.parts[i].num_vertices;
+            uv0Accessor.type = TINYGLTF_TYPE_VEC2;
+            uv0Accessor.byteOffset = offsetof(Vertex, uv0);
+
+            auto &uv1Accessor = gltfModel.accessors.emplace_back();
+            uv1Accessor.bufferView = gltfModel.bufferViews.size();
+            uv1Accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+            uv1Accessor.count = lod.parts[i].num_vertices;
+            uv1Accessor.type = TINYGLTF_TYPE_VEC2;
+            uv1Accessor.byteOffset = offsetof(Vertex, uv1);
 
             auto &normalAccessor = gltfModel.accessors.emplace_back();
             normalAccessor.bufferView = gltfModel.bufferViews.size();
@@ -321,6 +341,27 @@ void MDLPart::exportModel(const QString &fileName)
             normalAccessor.count = lod.parts[i].num_vertices;
             normalAccessor.type = TINYGLTF_TYPE_VEC3;
             normalAccessor.byteOffset = offsetof(Vertex, normal);
+
+            auto &tangent1Accessor = gltfModel.accessors.emplace_back();
+            tangent1Accessor.bufferView = gltfModel.bufferViews.size();
+            tangent1Accessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+            tangent1Accessor.count = lod.parts[i].num_vertices;
+            tangent1Accessor.type = TINYGLTF_TYPE_VEC4;
+            tangent1Accessor.byteOffset = offsetof(Vertex, tangent1);
+
+            auto &tangent2Accessor = gltfModel.accessors.emplace_back();
+            tangent2Accessor.bufferView = gltfModel.bufferViews.size();
+            tangent2Accessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+            tangent2Accessor.count = lod.parts[i].num_vertices;
+            tangent2Accessor.type = TINYGLTF_TYPE_VEC4;
+            tangent2Accessor.byteOffset = offsetof(Vertex, tangent2);
+
+            auto &colorAccessor = gltfModel.accessors.emplace_back();
+            colorAccessor.bufferView = gltfModel.bufferViews.size();
+            colorAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+            colorAccessor.count = lod.parts[i].num_vertices;
+            colorAccessor.type = TINYGLTF_TYPE_VEC4;
+            colorAccessor.byteOffset = offsetof(Vertex, color);
 
             auto &boneWeightAccessor = gltfModel.accessors.emplace_back();
             boneWeightAccessor.bufferView = gltfModel.bufferViews.size();
@@ -331,7 +372,7 @@ void MDLPart::exportModel(const QString &fileName)
 
             auto &boneIdAccessor = gltfModel.accessors.emplace_back();
             boneIdAccessor.bufferView = gltfModel.bufferViews.size();
-            boneIdAccessor.componentType = TINYGLTF_COMPONENT_TYPE_BYTE;
+            boneIdAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
             boneIdAccessor.count = lod.parts[i].num_vertices;
             boneIdAccessor.type = TINYGLTF_TYPE_VEC4;
             boneIdAccessor.byteOffset = offsetof(Vertex, bone_id);
@@ -376,6 +417,18 @@ void MDLPart::exportModel(const QString &fileName)
 
     tinygltf::TinyGLTF loader;
     loader.WriteGltfSceneToFile(&gltfModel, fileName.toStdString(), true, true, false, true);
+}
+
+RenderModel &MDLPart::getModel(const int index)
+{
+    return models[index];
+}
+
+void MDLPart::reloadModel(const int index)
+{
+    renderer->reloadModel(models[index], 0);
+
+    Q_EMIT modelChanged();
 }
 
 void MDLPart::clear()

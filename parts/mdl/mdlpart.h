@@ -23,6 +23,8 @@ public:
     explicit MDLPart(GameData *data, FileCache &cache);
 
     void exportModel(const QString &fileName);
+    RenderModel &getModel(int index);
+    void reloadModel(int index);
 
     int lastX = -1;
     int lastY = -1;

@@ -45,6 +45,8 @@ private Q_SLOTS:
     void reloadGear();
 
 private:
+    void importModel(const QString &filename);
+
     std::optional<GearInfo> currentGear;
 
     Race currentRace = Race::Hyur;

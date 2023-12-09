@@ -638,13 +638,22 @@ RenderModel Renderer::addModel(const physis_MDL &model, int lod)
     RenderModel renderModel;
     renderModel.model = model;
 
-    if (lod < 0 || lod > model.num_lod)
-        return {};
+    reloadModel(renderModel, lod);
 
-    for (int i = 0; i < model.lods[lod].num_parts; i++) {
+    return renderModel;
+}
+
+void Renderer::reloadModel(RenderModel &renderModel, int lod)
+{
+    if (lod < 0 || lod > renderModel.model.num_lod)
+        return;
+
+    renderModel.parts.clear();
+
+    for (int i = 0; i < renderModel.model.lods[lod].num_parts; i++) {
         RenderPart renderPart;
 
-        const physis_Part part = model.lods[lod].parts[i];
+        const physis_Part part = renderModel.model.lods[lod].parts[i];
 
         renderPart.materialIndex = part.material_index;
 
@@ -702,8 +711,6 @@ RenderModel Renderer::addModel(const physis_MDL &model, int lod)
 
     renderModel.boneInfoBuffer = buffer;
     renderModel.boneInfoMemory = memory;
-
-    return renderModel;
 }
 
 void Renderer::initPipeline()
@@ -729,27 +736,55 @@ void Renderer::initPipeline()
     positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
     positionAttribute.offset = offsetof(Vertex, position);
 
-    VkVertexInputAttributeDescription uvAttribute = {};
-    uvAttribute.format = VK_FORMAT_R32G32_SFLOAT;
-    uvAttribute.location = 2;
-    uvAttribute.offset = offsetof(Vertex, uv);
+    VkVertexInputAttributeDescription uv0Attribute = {};
+    uv0Attribute.format = VK_FORMAT_R32G32_SFLOAT;
+    uv0Attribute.location = 1;
+    uv0Attribute.offset = offsetof(Vertex, uv0);
+
+    VkVertexInputAttributeDescription uv1Attribute = {};
+    uv1Attribute.format = VK_FORMAT_R32G32_SFLOAT;
+    uv1Attribute.location = 2;
+    uv1Attribute.offset = offsetof(Vertex, uv1);
 
     VkVertexInputAttributeDescription normalAttribute = {};
     normalAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
-    normalAttribute.location = 1;
+    normalAttribute.location = 3;
     normalAttribute.offset = offsetof(Vertex, normal);
+
+    VkVertexInputAttributeDescription tangent1Attribute = {};
+    tangent1Attribute.format = VK_FORMAT_R8G8B8A8_UINT;
+    tangent1Attribute.location = 4;
+    tangent1Attribute.offset = offsetof(Vertex, tangent1);
+
+    VkVertexInputAttributeDescription tangent2Attribute = {};
+    tangent2Attribute.format = VK_FORMAT_R8G8B8A8_UINT;
+    tangent2Attribute.location = 5;
+    tangent2Attribute.offset = offsetof(Vertex, tangent2);
+
+    VkVertexInputAttributeDescription colorAttribute = {};
+    colorAttribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    colorAttribute.location = 6;
+    colorAttribute.offset = offsetof(Vertex, color);
 
     VkVertexInputAttributeDescription boneWeightAttribute = {};
     boneWeightAttribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    boneWeightAttribute.location = 3;
+    boneWeightAttribute.location = 7;
     boneWeightAttribute.offset = offsetof(Vertex, bone_weight);
 
     VkVertexInputAttributeDescription boneIdAttribute = {};
     boneIdAttribute.format = VK_FORMAT_R8G8B8A8_UINT;
-    boneIdAttribute.location = 4;
+    boneIdAttribute.location = 8;
     boneIdAttribute.offset = offsetof(Vertex, bone_id);
 
-    const std::array attributes = {positionAttribute, normalAttribute, uvAttribute, boneWeightAttribute, boneIdAttribute};
+    const std::array attributes = {positionAttribute,
+                                   uv0Attribute,
+                                   uv1Attribute,
+                                   normalAttribute,
+                                   tangent1Attribute,
+                                   tangent2Attribute,
+                                   colorAttribute,
+                                   boneWeightAttribute,
+                                   boneIdAttribute};
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
