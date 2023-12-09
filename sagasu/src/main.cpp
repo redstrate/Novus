@@ -3,7 +3,6 @@
 
 #include <QApplication>
 
-#include <QStyle>
 #include <physis.hpp>
 
 #include "aboutdata.h"

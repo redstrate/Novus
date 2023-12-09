@@ -14,7 +14,7 @@ class MainWindow : public NovusMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(GameData *data);
+    explicit MainWindow(GameData *data);
 
 protected:
     void setupFileMenu(QMenu *menu) override;

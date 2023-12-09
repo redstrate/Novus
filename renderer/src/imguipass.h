@@ -12,7 +12,7 @@ struct RenderTarget;
 class ImGuiPass
 {
 public:
-    ImGuiPass(Renderer &renderer);
+    explicit ImGuiPass(Renderer &renderer);
     ~ImGuiPass();
 
     void render(VkCommandBuffer commandBuffer);

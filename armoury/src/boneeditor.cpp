@@ -6,7 +6,7 @@
 #include "gearview.h"
 
 BoneEditor::BoneEditor(GearView *gearView, QWidget *parent)
-    : SklbPart()
+    : SklbPart(parent)
     , gearView(gearView)
 {
     connect(&gearView->part(), &MDLPart::skeletonChanged, this, [this, gearView] {

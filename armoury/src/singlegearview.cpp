@@ -337,7 +337,7 @@ void SingleGearView::importModel(const QString &filename)
             qInfo() << "Importing" << node.name;
 
             const QStringList parts = QString::fromStdString(node.name).split(QLatin1Char(' '));
-            const QString name = parts[0];
+            const QString &name = parts[0];
             const QStringList lodPartNumber = parts[2].split(QLatin1Char('.'));
 
             const int lodNumber = lodPartNumber[0].toInt();

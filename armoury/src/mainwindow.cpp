@@ -9,18 +9,13 @@
 #include <QTableWidget>
 #include <QTimer>
 
-#include <KAboutApplicationDialog>
 #include <KAboutData>
 #include <QAction>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMenuBar>
-#include <QPushButton>
-#include <QTreeWidget>
-#include <glm/gtc/type_ptr.hpp>
 #include <magic_enum.hpp>
-#include <physis.hpp>
 
 #include "cmpeditor.h"
 #include "filecache.h"

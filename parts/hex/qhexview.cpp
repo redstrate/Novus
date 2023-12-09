@@ -6,7 +6,6 @@
 #include <QApplication>
 #include <QFontDatabase>
 #include <QHelpEvent>
-#include <QPaintEvent>
 #include <QPainter>
 #include <QScrollBar>
 #include <QToolTip>

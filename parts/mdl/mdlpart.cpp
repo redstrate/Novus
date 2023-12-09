@@ -11,7 +11,6 @@
 #include <QVBoxLayout>
 #include <QVulkanInstance>
 #include <QVulkanWindow>
-#include <QWindow>
 #include <cmath>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.inl>
@@ -505,7 +504,7 @@ void MDLPart::removeModel(const physis_MDL &mdl)
 {
     models.erase(std::remove_if(models.begin(),
                                 models.end(),
-                                [mdl](const RenderModel other) {
+                                [mdl](const RenderModel &other) {
                                     return mdl.lods == other.model.lods;
                                 }),
                  models.end());

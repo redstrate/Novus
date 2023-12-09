@@ -6,7 +6,7 @@
 
 #include <QtConcurrent>
 
-FileTreeModel::FileTreeModel(bool showUnknown, QString gamePath, GameData *data)
+FileTreeModel::FileTreeModel(bool showUnknown, const QString &gamePath, GameData *data)
     : gameData(data)
     , m_showUnknown(showUnknown)
     , QAbstractItemModel()
@@ -14,7 +14,7 @@ FileTreeModel::FileTreeModel(bool showUnknown, QString gamePath, GameData *data)
     rootItem = new TreeInformation();
     rootItem->type = TreeType::Root;
 
-    for (auto knownFolder : m_database.getKnownFolders()) {
+    for (const auto &knownFolder : m_database.getKnownFolders()) {
         addKnownFolder(knownFolder);
     }
 
@@ -146,7 +146,7 @@ QVariant FileTreeModel::headerData(int section, Qt::Orientation orientation, int
     return QAbstractItemModel::headerData(section, orientation, role);
 }
 
-void FileTreeModel::addKnownFolder(QString string)
+void FileTreeModel::addKnownFolder(const QString &string)
 {
     auto children = string.split(QStringLiteral("/"));
 
@@ -175,7 +175,7 @@ void FileTreeModel::addKnownFolder(QString string)
     }
 }
 
-void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, QString realName)
+void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, const QString &realName)
 {
     if (realName.isEmpty() && !m_showUnknown) {
         return;

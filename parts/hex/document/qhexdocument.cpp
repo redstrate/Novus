@@ -5,7 +5,6 @@
 #include <QApplication>
 #include <QBuffer>
 #include <QClipboard>
-#include <QFile>
 
 QHexDocument::QHexDocument(QHexBuffer *buffer, QObject *parent)
     : QObject(parent)

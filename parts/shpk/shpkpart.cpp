@@ -26,7 +26,7 @@ void SHPKPart::load(physis_Buffer buffer)
 
     pageTabWidget->clear();
 
-    const auto addShader = [this](physis_Shader shader, QString name) {
+    const auto addShader = [this](physis_Shader shader, const QString &name) {
         auto shaderTextEdit = new QTextEdit();
         shaderTextEdit->setReadOnly(true);
 

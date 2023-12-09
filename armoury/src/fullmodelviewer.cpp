@@ -148,12 +148,12 @@ void FullModelViewer::addGear(GearInfo &info)
 {
     switch (info.slot) {
     case Slot::Body:
-        if (topSlot ? *topSlot != info : true) {
+        if (!topSlot || *topSlot != info) {
             topSlot = info;
         }
         break;
     case Slot::Legs:
-        if (bottomSlot ? *bottomSlot != info : true) {
+        if (!bottomSlot || *bottomSlot != info) {
             bottomSlot = info;
         }
         break;

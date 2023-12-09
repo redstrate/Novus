@@ -3,7 +3,6 @@
 
 #include "gearlistmodel.h"
 
-#include <QDebug>
 #include <QtConcurrent>
 #include <magic_enum.hpp>
 
@@ -76,7 +75,7 @@ int GearListModel::columnCount(const QModelIndex &parent) const
 QModelIndex GearListModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
-        return QModelIndex();
+        return {};
 
     TreeInformation *parentItem;
 
@@ -88,19 +87,19 @@ QModelIndex GearListModel::index(int row, int column, const QModelIndex &parent)
     TreeInformation *childItem = parentItem->children[row];
     if (childItem)
         return createIndex(row, column, childItem);
-    return QModelIndex();
+    return {};
 }
 
 QModelIndex GearListModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return QModelIndex();
+        return {};
 
-    TreeInformation *childItem = static_cast<TreeInformation *>(index.internalPointer());
+    auto childItem = static_cast<TreeInformation *>(index.internalPointer());
     TreeInformation *parentItem = childItem->parent;
 
     if (parentItem == rootItem)
-        return QModelIndex();
+        return {};
 
     return createIndex(parentItem->row, 0, parentItem);
 }
@@ -109,13 +108,11 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return {};
-    if (!index.isValid())
-        return QVariant();
 
     if (role != Qt::DisplayRole)
-        return QVariant();
+        return {};
 
-    TreeInformation *item = static_cast<TreeInformation *>(index.internalPointer());
+    auto item = static_cast<TreeInformation *>(index.internalPointer());
 
     if (item->type == TreeType::Category) {
         return QLatin1String(magic_enum::enum_name(*item->slotType).data());
@@ -139,7 +136,7 @@ QVariant GearListModel::headerData(int section, Qt::Orientation orientation, int
 
 std::optional<GearInfo> GearListModel::getGearFromIndex(const QModelIndex &index)
 {
-    TreeInformation *item = static_cast<TreeInformation *>(index.internalPointer());
+    auto item = static_cast<TreeInformation *>(index.internalPointer());
     if (item->type == TreeType::Item) {
         return item->gear;
     }
@@ -173,7 +170,7 @@ void GearListModel::finished()
 
     int i = 0;
     for (auto slot : magic_enum::enum_values<Slot>()) {
-        TreeInformation *categoryItem = new TreeInformation();
+        auto categoryItem = new TreeInformation();
         categoryItem->type = TreeType::Category;
         categoryItem->slotType = slot;
         categoryItem->parent = rootItem;
@@ -181,9 +178,9 @@ void GearListModel::finished()
         rootItem->children.push_back(categoryItem);
 
         int j = 0;
-        for (auto gear : gears) {
+        for (const auto &gear : gears) {
             if (gear.slot == slot) {
-                TreeInformation *item = new TreeInformation();
+                auto item = new TreeInformation();
                 item->type = TreeType::Item;
                 item->gear = gear;
                 item->parent = categoryItem;

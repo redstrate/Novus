@@ -19,7 +19,7 @@ class SklbPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit SklbPart();
+    explicit SklbPart(QWidget *parent = nullptr);
 
     void clear();
     void load(physis_Skeleton file);

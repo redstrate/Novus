@@ -14,18 +14,18 @@ class FileTreeWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit FileTreeWindow(QString gamePath, GameData *data, QWidget *parent = nullptr);
+    explicit FileTreeWindow(const QString &gamePath, GameData *data, QWidget *parent = nullptr);
 
 Q_SIGNALS:
-    void extractFile(QString path);
-    void pathSelected(QString path);
+    void extractFile(const QString &path);
+    void pathSelected(const QString &path);
 
 private:
     void refreshModel();
 
     GameData *data = nullptr;
-    FileTreeModel *m_fileModel;
-    QSortFilterProxyModel *m_searchModel;
-    QCheckBox *m_unknownCheckbox;
+    FileTreeModel *m_fileModel = nullptr;
+    QSortFilterProxyModel *m_searchModel = nullptr;
+    QCheckBox *m_unknownCheckbox = nullptr;
     QString m_gamePath;
 };

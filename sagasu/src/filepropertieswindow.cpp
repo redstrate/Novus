@@ -9,7 +9,7 @@
 
 #include "filepropertieswindow.h"
 
-FilePropertiesWindow::FilePropertiesWindow(QString path, physis_Buffer buffer, QWidget *parent)
+FilePropertiesWindow::FilePropertiesWindow(const QString &path, physis_Buffer buffer, QWidget *parent)
     : QWidget(parent)
 {
     setWindowTitle(QStringLiteral("Properties for ") + path);

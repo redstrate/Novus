@@ -4,7 +4,7 @@
 #include "cmpeditor.h"
 
 CmpEditor::CmpEditor(GameData *data, QWidget *parent)
-    : CmpPart(data)
+    : CmpPart(data, parent)
 {
     setWindowTitle(QStringLiteral("CMP Editor"));
 

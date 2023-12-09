@@ -15,7 +15,7 @@ struct GameData;
 class MainWindow : public NovusMainWindow
 {
 public:
-    MainWindow(QString gamePath, GameData *data);
+    MainWindow(const QString &gamePath, GameData *data);
 
 private:
     QMdiArea *mdiArea = nullptr;
@@ -24,5 +24,5 @@ private:
     QTabWidget *partHolder = nullptr;
     FileCache fileCache;
 
-    void refreshParts(QString qString);
+    void refreshParts(const QString &path);
 };

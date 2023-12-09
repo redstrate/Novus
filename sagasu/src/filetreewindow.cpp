@@ -8,10 +8,10 @@
 #include <QMenu>
 #include <QTreeWidget>
 
-FileTreeWindow::FileTreeWindow(QString gamePath, GameData *data, QWidget *parent)
+FileTreeWindow::FileTreeWindow(const QString &gamePath, GameData *data, QWidget *parent)
     : QWidget(parent)
-    , m_gamePath(gamePath)
     , data(data)
+    , m_gamePath(gamePath)
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);

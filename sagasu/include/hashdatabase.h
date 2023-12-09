@@ -12,16 +12,16 @@ class HashDatabase : public QObject
     Q_OBJECT
 
 public:
-    HashDatabase(QObject *parent = nullptr);
+    explicit HashDatabase(QObject *parent = nullptr);
 
-    void addFolder(QString folder);
-    void addFile(QString file);
+    void addFolder(const QString &folder);
+    void addFile(const QString &file);
 
     QVector<QString> getKnownFolders();
 
-    bool knowsFile(const uint32_t i);
+    bool knowsFile(uint32_t i);
 
-    QString getFilename(const uint32_t i);
+    QString getFilename(uint32_t i);
 
 private:
     QSqlDatabase m_db;

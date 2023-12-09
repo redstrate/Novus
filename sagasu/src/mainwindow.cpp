@@ -21,7 +21,7 @@
 #include "sklbpart.h"
 #include "texpart.h"
 
-MainWindow::MainWindow(QString gamePath, GameData *data)
+MainWindow::MainWindow(const QString &gamePath, GameData *data)
     : NovusMainWindow()
     , data(data)
     , fileCache(*data)
@@ -35,7 +35,7 @@ MainWindow::MainWindow(QString gamePath, GameData *data)
     dummyWidget->setLayout(layout);
 
     auto tree = new FileTreeWindow(gamePath, data);
-    connect(tree, &FileTreeWindow::extractFile, this, [this, data](QString path) {
+    connect(tree, &FileTreeWindow::extractFile, this, [this, data](const QString &path) {
         const QFileInfo info(path);
 
         const QString savePath = QFileDialog::getSaveFileName(this, tr("Save File"), info.fileName(), QStringLiteral("*.%1").arg(info.completeSuffix()));
@@ -50,7 +50,7 @@ MainWindow::MainWindow(QString gamePath, GameData *data)
             file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);
         }
     });
-    connect(tree, &FileTreeWindow::pathSelected, this, [=](QString path) {
+    connect(tree, &FileTreeWindow::pathSelected, this, [=](const QString &path) {
         refreshParts(path);
     });
     tree->setMaximumWidth(200);
@@ -64,7 +64,7 @@ MainWindow::MainWindow(QString gamePath, GameData *data)
     refreshParts({});
 }
 
-void MainWindow::refreshParts(QString path)
+void MainWindow::refreshParts(const QString &path)
 {
     partHolder->clear();
 

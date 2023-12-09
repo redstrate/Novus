@@ -22,7 +22,7 @@ Q_SIGNALS:
 
 private:
     struct {
-        QDoubleSpinBox *x, *y, *z;
+        QDoubleSpinBox *x = nullptr, *y = nullptr, *z = nullptr;
     } spinBoxes;
 
     glm::quat &quat;

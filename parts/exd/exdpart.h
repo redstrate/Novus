@@ -17,7 +17,7 @@ class EXDPart : public QWidget
 public:
     explicit EXDPart(GameData *data);
 
-    void loadSheet(QString name, physis_Buffer buffer);
+    void loadSheet(const QString &name, physis_Buffer buffer);
 
 private:
     GameData *data = nullptr;
@@ -27,7 +27,7 @@ private:
 
     struct CachedExcel {
         physis_EXH *exh = nullptr;
-        physis_EXD exd;
+        physis_EXD exd{};
     };
     QMap<QString, CachedExcel> cachedExcelSheets;
     Language getSuitableLanguage(physis_EXH *pExh);

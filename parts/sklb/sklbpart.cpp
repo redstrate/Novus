@@ -7,7 +7,6 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
 
 #include "quaternionedit.h"
 #include "vec3edit.h"
@@ -29,7 +28,8 @@ void addItem(physis_Skeleton &skeleton, physis_Bone &bone, QTreeWidget *widget, 
     }
 }
 
-SklbPart::SklbPart()
+SklbPart::SklbPart(QWidget *parent)
+    : QWidget(parent)
 {
     auto layout = new QHBoxLayout();
     setLayout(layout);

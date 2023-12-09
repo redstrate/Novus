@@ -25,8 +25,9 @@ const std::vector<RaceTree> raceTree = {{Race::Hyur, {Subrace::Midlander, Subrac
                                         {Race::Hrothgar, {Subrace::Hellion, Subrace::Lost}},
                                         {Race::Viera, {Subrace::Rava, Subrace::Veena}}};
 
-CmpPart::CmpPart(GameData *data)
-    : data(data)
+CmpPart::CmpPart(GameData *data, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
 {
     layout = new QHBoxLayout();
     setLayout(layout);
@@ -41,7 +42,7 @@ void CmpPart::load(physis_Buffer file)
     raceListWidget->setHeaderLabel(QStringLiteral("Race"));
     layout->addWidget(raceListWidget);
 
-    for (auto race : raceTree) {
+    for (const auto &race : raceTree) {
         auto item = new QTreeWidgetItem();
         item->setText(0, QLatin1String(magic_enum::enum_name(race.baseRace).data()));
         raceListWidget->addTopLevelItem(item);

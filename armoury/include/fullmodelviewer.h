@@ -47,7 +47,7 @@ private:
     QComboBox *raceCombo = nullptr, *subraceCombo = nullptr, *genderCombo = nullptr;
 
     GameData *data = nullptr;
-    physis_CMP cmp;
+    physis_CMP cmp{};
 
     float heightScale = 0.5f;
     float bustScale = 1.0f;

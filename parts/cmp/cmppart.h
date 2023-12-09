@@ -28,7 +28,7 @@ class CmpPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit CmpPart(GameData *data);
+    explicit CmpPart(GameData *data, QWidget *parent = nullptr);
 
     void load(physis_Buffer file);
 
@@ -36,7 +36,7 @@ private:
     void loadRaceData(Race race, Subrace subrace);
 
     GameData *data = nullptr;
-    physis_CMP cmp;
+    physis_CMP cmp{};
 
     QDoubleSpinBox *maleMinSize = nullptr;
     QDoubleSpinBox *maleMaxSize = nullptr;

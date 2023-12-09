@@ -3,7 +3,6 @@
 
 #include "gearview.h"
 
-#include <QDebug>
 #include <QThreadPool>
 #include <QVBoxLayout>
 #include <QtConcurrent>
@@ -353,7 +352,7 @@ void GearView::updatePart()
             mdlPart->removeModel(queuedRemoval.mdl);
             loadedGears.erase(std::remove_if(loadedGears.begin(),
                                              loadedGears.end(),
-                                             [queuedRemoval](const LoadedGear other) {
+                                             [queuedRemoval](const LoadedGear &other) {
                                                  return queuedRemoval.info == other.info;
                                              }),
                               loadedGears.end());

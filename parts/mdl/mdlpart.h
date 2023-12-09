@@ -12,7 +12,6 @@
 struct GameData;
 
 class VulkanWindow;
-class StandaloneWindow;
 class FileCache;
 
 class MDLPart : public QWidget
@@ -77,12 +76,11 @@ private:
 
     GameData *data = nullptr;
     FileCache &cache;
-    physis_PBD pbd;
+    physis_PBD pbd{};
 
     std::vector<RenderModel> models;
 
-    Renderer *renderer;
-    VulkanWindow *vkWindow;
-    StandaloneWindow *standaloneWindow;
+    Renderer *renderer = nullptr;
+    VulkanWindow *vkWindow = nullptr;
     bool firstTimeSkeletonDataCalculated = false;
 };

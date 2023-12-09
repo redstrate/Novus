@@ -34,7 +34,7 @@ EXDPart::EXDPart(GameData *data)
     contentsBoxLayout->addWidget(pageTabWidget);
 }
 
-void EXDPart::loadSheet(QString name, physis_Buffer buffer)
+void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 {
     pageTabWidget->clear();
 
@@ -64,7 +64,7 @@ void EXDPart::loadSheet(QString name, physis_Buffer buffer)
     auto exh = physis_parse_excel_sheet_header(buffer);
 
     QLayoutItem *child;
-    while ((child = headerFormLayout->takeAt(0)) != 0) {
+    while ((child = headerFormLayout->takeAt(0)) != nullptr) {
         delete child->widget();
         delete child;
     }

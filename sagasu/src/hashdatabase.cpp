@@ -21,7 +21,7 @@ HashDatabase::HashDatabase(QObject *parent)
     query.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS file_hashes (hash INTEGER PRIMARY KEY, name TEXT NOT NULL)"));
 }
 
-void HashDatabase::addFolder(QString folder)
+void HashDatabase::addFolder(const QString &folder)
 {
     std::string folderStd = folder.toStdString();
 
@@ -34,7 +34,7 @@ void HashDatabase::addFolder(QString folder)
     query.exec();
 }
 
-void HashDatabase::addFile(QString file)
+void HashDatabase::addFile(const QString &file)
 {
     QString filename = file;
     if (file.contains(QStringLiteral("/"))) {
