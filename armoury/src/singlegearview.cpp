@@ -3,6 +3,8 @@
 
 #include "singlegearview.h"
 
+#include <KConfig>
+#include <KConfigGroup>
 #include <QDebug>
 #include <QFileDialog>
 #include <QLineEdit>
@@ -320,6 +322,16 @@ void SingleGearView::importModel(const QString &filename)
     ::importModel(mdl.model, filename);
 
     gearView->part().reloadModel(0);
+
+    KConfig config(QStringLiteral("novusrc"));
+    KConfigGroup game = config.group("Armoury");
+    QString outputDirectory = game.readEntry("PenumbraOutputDirectory");
+
+    auto buffer = physis_mdl_write(&mdl.model);
+    QFile file(QStringLiteral("%1/%2").arg(outputDirectory, gearView->getLoadedGearPath()));
+    file.open(QIODevice::WriteOnly);
+    file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
+    file.close();
 
     qInfo() << "Successfully imported model!";
 }
