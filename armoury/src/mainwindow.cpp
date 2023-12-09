@@ -20,6 +20,7 @@
 #include "cmpeditor.h"
 #include "filecache.h"
 #include "gearlistwidget.h"
+#include "settingswindow.h"
 
 MainWindow::MainWindow(GameData *in_data)
     : NovusMainWindow()
@@ -67,6 +68,12 @@ void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
     connect(cmpEditorMenu, &QAction::triggered, [this] {
         auto cmpEditor = new CmpEditor(&data);
         cmpEditor->show();
+    });
+
+    auto settingsMenu = toolsMenu->addAction(QStringLiteral("Settings..."));
+    connect(settingsMenu, &QAction::triggered, [this] {
+        auto settingsWindow = new SettingsWindow();
+        settingsWindow->show();
     });
 }
 

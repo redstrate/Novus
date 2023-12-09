@@ -10,6 +10,7 @@ target_sources(novus-armoury PRIVATE
         include/gearlistwidget.h
         include/gearview.h
         include/mainwindow.h
+        include/settingswindow.h
         include/singlegearview.h
 
         src/boneeditor.cpp
@@ -20,6 +21,7 @@ target_sources(novus-armoury PRIVATE
         src/gearview.cpp
         src/main.cpp
         src/mainwindow.cpp
+        src/settingswindow.cpp
         src/singlegearview.cpp)
 
 target_include_directories(novus-armoury
