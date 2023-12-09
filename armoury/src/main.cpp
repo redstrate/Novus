@@ -15,11 +15,6 @@ int main(int argc, char *argv[])
 
     customizeAboutData(QStringLiteral("armoury"), QStringLiteral("Armoury"), QStringLiteral("Program to view FFXIV gear."));
 
-    // Default to a sensible message pattern
-    if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {
-        qputenv("QT_MESSAGE_PATTERN", "[%{time yyyy-MM-dd h:mm:ss.zzz}] %{if-category}[%{category}] %{endif}[%{type}] %{message}");
-    }
-
     setup_physis_logging();
 
     const QString gameDir{getGameDirectory()};
