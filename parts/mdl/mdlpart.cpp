@@ -24,9 +24,9 @@ class VulkanWindow : public QWindow
 {
 public:
     VulkanWindow(MDLPart *part, Renderer *renderer, QVulkanInstance *instance)
-        : part(part)
-        , m_renderer(renderer)
+        : m_renderer(renderer)
         , m_instance(instance)
+        , part(part)
     {
         setSurfaceType(VulkanSurface);
         setVulkanInstance(instance);
