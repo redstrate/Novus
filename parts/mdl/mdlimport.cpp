@@ -52,14 +52,33 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             const auto &indexView = model.bufferViews[indexAccessor.bufferView];
             const auto &indexBuffer = model.buffers[indexView.buffer];
 
+            const int newVertexCount = vertexAccessor.count;
+            const int oldVertexCount = existingModel.lods[lodNumber].parts[partNumber].num_vertices;
+
+            if (newVertexCount != oldVertexCount) {
+                qInfo() << "- Difference in vertex count!" << newVertexCount << "old:" << oldVertexCount;
+            }
+
+            const int newIndexCount = indexAccessor.count;
+            const int oldIndexCount = existingModel.lods[lodNumber].parts[partNumber].num_indices;
+
+            if (newIndexCount != oldIndexCount) {
+                qInfo() << "- Difference in index count!" << newIndexCount << "old:" << oldIndexCount;
+            }
+
             qInfo() << "- Importing mesh of" << vertexAccessor.count << "vertices and" << indexAccessor.count << "indices.";
 
             std::vector<Vertex> newVertices;
             for (int i = 0; i < vertexAccessor.count; i++) {
-                auto vertexData = (glm::vec3 *)(vertexBuffer.data.data() + (vertexView.byteStride * i) + vertexView.byteOffset + vertexAccessor.byteOffset);
+                auto vertexData = (glm::vec3 *)(vertexBuffer.data.data() + (std::max(vertexView.byteStride, sizeof(float) * 3) * i) + vertexView.byteOffset
+                                                + vertexAccessor.byteOffset);
 
                 // Replace position data
-                auto vertex = existingModel.lods[lodNumber].parts[partNumber].vertices[i];
+                Vertex vertex;
+                if (i < existingModel.lods[lodNumber].parts[partNumber].num_vertices) {
+                    vertex = existingModel.lods[lodNumber].parts[partNumber].vertices[i];
+                }
+
                 vertex.position[0] = vertexData->x;
                 vertex.position[1] = vertexData->y;
                 vertex.position[2] = vertexData->z;
@@ -67,9 +86,9 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 newVertices.push_back(vertex);
             }
 
-            auto indexData = (const uint16_t *)(&indexBuffer.data.at(0) + indexView.byteOffset + indexAccessor.byteOffset);
+            auto indexData = (const uint16_t *)(indexBuffer.data.data() + indexView.byteOffset + indexAccessor.byteOffset);
 
-            physis_mdl_replace_vertices(&existingModel, lodNumber, partNumber, vertexAccessor.count, newVertices.data(), indexAccessor.count, indexData);
+            physis_mdl_replace_vertices(&existingModel, lodNumber, partNumber, newVertices.size(), newVertices.data(), indexAccessor.count, indexData);
         }
     }
 
