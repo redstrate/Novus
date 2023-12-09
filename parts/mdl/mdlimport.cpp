@@ -33,8 +33,9 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             const QString &name = parts[0];
             const QStringList lodPartNumber = parts[2].split(QLatin1Char('.'));
 
-            const int lodNumber = lodPartNumber[0].toInt();
-            const int partNumber = lodPartNumber[1].toInt();
+            // const int lodNumber = lodPartNumber[0].toInt();
+            const int lodNumber = 0;
+            const int partNumber = lodPartNumber[0].toInt();
 
             qInfo() << "- LOD:" << lodNumber;
             qInfo() << "- Part:" << partNumber;
@@ -53,20 +54,20 @@ void importModel(physis_MDL &existingModel, const QString &filename)
 
             qInfo() << "- Importing mesh of" << vertexAccessor.count << "vertices and" << indexAccessor.count << "indices.";
 
-            auto vertexData = (glm::vec3 *)(&vertexBuffer.data.at(0) + vertexView.byteOffset);
-
             std::vector<Vertex> newVertices;
             for (int i = 0; i < vertexAccessor.count; i++) {
+                auto vertexData = (glm::vec3 *)(vertexBuffer.data.data() + (vertexView.byteStride * i) + vertexView.byteOffset + vertexAccessor.byteOffset);
+
                 // Replace position data
                 auto vertex = existingModel.lods[lodNumber].parts[partNumber].vertices[i];
-                vertex.position[0] = vertexData[i].x;
-                vertex.position[1] = vertexData[i].y;
-                vertex.position[2] = vertexData[i].z;
+                vertex.position[0] = vertexData->x;
+                vertex.position[1] = vertexData->y;
+                vertex.position[2] = vertexData->z;
 
                 newVertices.push_back(vertex);
             }
 
-            auto indexData = (const uint16_t *)(&indexBuffer.data.at(0) + indexView.byteOffset);
+            auto indexData = (const uint16_t *)(&indexBuffer.data.at(0) + indexView.byteOffset + indexAccessor.byteOffset);
 
             physis_mdl_replace_vertices(&existingModel, lodNumber, partNumber, vertexAccessor.count, newVertices.data(), indexAccessor.count, indexData);
         }
