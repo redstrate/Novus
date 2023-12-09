@@ -9,6 +9,6 @@ target_include_directories(novus-karuku
         PUBLIC
         include)
 
-target_link_libraries(novus-karuku PRIVATE physis z Qt6::Core Qt6::Widgets exdpart novus-common)
+target_link_libraries(novus-karuku PRIVATE physis physis-logger z Qt6::Core Qt6::Widgets exdpart novus-common)
 
 install(TARGETS novus-karuku ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
