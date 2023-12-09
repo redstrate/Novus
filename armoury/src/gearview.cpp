@@ -348,14 +348,23 @@ void GearView::updatePart()
         }
 
         for (auto &queuedRemoval : queuedGearRemovals) {
-            mdlPart->removeModel(queuedRemoval.mdl);
-            loadedGears.erase(std::remove_if(loadedGears.begin(),
-                                             loadedGears.end(),
-                                             [queuedRemoval](const LoadedGear &other) {
-                                                 return queuedRemoval.info == other.info;
-                                             }),
-                              loadedGears.end());
+            auto it = std::find_if(loadedGears.cbegin(), loadedGears.cend(), [queuedRemoval](const LoadedGear &other) {
+                return queuedRemoval.info == other.info;
+            });
+
+            if (it != loadedGears.cend()) {
+                mdlPart->removeModel((*it).mdl);
+                loadedGears.erase(std::remove_if(loadedGears.begin(),
+                                                 loadedGears.end(),
+                                                 [queuedRemoval](const LoadedGear &other) {
+                                                     return queuedRemoval.info == other.info;
+                                                 }),
+                                  loadedGears.end());
+            }
         }
+
+        queuedGearAdditions.clear();
+        queuedGearRemovals.clear();
     }
 
     if (face) {

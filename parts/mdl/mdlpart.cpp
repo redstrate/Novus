@@ -278,9 +278,10 @@ void MDLPart::removeModel(const physis_MDL &mdl)
     models.erase(std::remove_if(models.begin(),
                                 models.end(),
                                 [mdl](const RenderModel &other) {
-                                    return mdl.lods == other.model.lods;
+                                    return mdl.p_ptr == other.model.p_ptr;
                                 }),
                  models.end());
+    Q_EMIT modelChanged();
 }
 
 #include "moc_mdlpart.cpp"
