@@ -10,7 +10,6 @@
 
 #include "filecache.h"
 #include "magic_enum.hpp"
-#include "utility.h"
 
 GearView::GearView(GameData *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)

@@ -17,7 +17,6 @@
 #include <physis.hpp>
 
 #include "mdlpart.h"
-#include "utility.h"
 
 MainWindow::MainWindow(GameData *data)
     : NovusMainWindow()
