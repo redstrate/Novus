@@ -20,16 +20,19 @@ VulkanWindow::VulkanWindow(MDLPart *part, Renderer *renderer, QVulkanInstance *i
 
 void VulkanWindow::exposeEvent(QExposeEvent *)
 {
-    if (isExposed()) {
-        if (!m_initialized) {
-            m_initialized = true;
+    if (isExposed() && !m_initialized) {
+        m_initialized = true;
 
-            auto surface = m_instance->surfaceForWindow(this);
-            if (!m_renderer->initSwapchain(surface, width() * screen()->devicePixelRatio(), height() * screen()->devicePixelRatio()))
-                m_initialized = false;
-            else
-                render();
-        }
+        auto surface = m_instance->surfaceForWindow(this);
+        if (!m_renderer->initSwapchain(surface, width() * screen()->devicePixelRatio(), height() * screen()->devicePixelRatio()))
+            m_initialized = false;
+        else
+            render();
+    }
+
+    if (!isExposed() && m_initialized) {
+        m_initialized = false;
+        m_renderer->destroySwapchain();
     }
 }
 
@@ -42,8 +45,17 @@ bool VulkanWindow::event(QEvent *e)
     case QEvent::Resize: {
         QResizeEvent *resizeEvent = (QResizeEvent *)e;
         auto surface = m_instance->surfaceForWindow(this);
-        m_renderer->resize(surface, resizeEvent->size().width() * screen()->devicePixelRatio(), resizeEvent->size().height() * screen()->devicePixelRatio());
+        if (surface != nullptr) {
+            m_renderer->resize(surface,
+                               resizeEvent->size().width() * screen()->devicePixelRatio(),
+                               resizeEvent->size().height() * screen()->devicePixelRatio());
+        }
     } break;
+    case QEvent::PlatformSurface:
+        if (static_cast<QPlatformSurfaceEvent *>(e)->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed && m_initialized) {
+            m_renderer->destroySwapchain();
+        }
+        break;
     case QEvent::MouseButtonPress: {
         auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
 

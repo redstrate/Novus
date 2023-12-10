@@ -68,6 +68,8 @@ public:
     bool initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
 
+    void destroySwapchain();
+
     RenderModel addModel(const physis_MDL &model, int lod);
     void reloadModel(RenderModel &model, uint32_t lod);
     RenderTexture addTexture(uint32_t width, uint32_t height, const uint8_t *data, uint32_t data_size);

@@ -426,6 +426,14 @@ void Renderer::resize(VkSurfaceKHR surface, int width, int height)
     initSwapchain(surface, width, height);
 }
 
+void Renderer::destroySwapchain()
+{
+    if (swapchain != VK_NULL_HANDLE) {
+        vkDestroySwapchainKHR(device, swapchain, nullptr);
+        swapchain = VK_NULL_HANDLE;
+    }
+}
+
 void Renderer::render(std::vector<RenderModel> models)
 {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
