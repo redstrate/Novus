@@ -8,7 +8,6 @@
 
 void exportModel(const QString &name, const physis_MDL &model, const physis_Skeleton &skeleton, const std::vector<BoneData> &boneData, const QString &fileName)
 {
-    const int selectedModel = 0;
     const int selectedLod = 0;
 
     const physis_LOD &lod = model.lods[selectedLod];
