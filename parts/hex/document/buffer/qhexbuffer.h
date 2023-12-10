@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2014 Dax89
 // SPDX-License-Identifier: MIT
 
-#ifndef QHEXBUFFER_H
-#define QHEXBUFFER_H
+#pragma once
 
 #include <QIODevice>
 #include <QObject>
@@ -32,5 +31,3 @@ public:
     virtual qint64 indexOf(const QByteArray &ba, qint64 from) = 0;
     virtual qint64 lastIndexOf(const QByteArray &ba, qint64 from) = 0;
 };
-
-#endif // QHEXBUFFER_H

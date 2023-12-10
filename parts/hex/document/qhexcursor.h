@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2014 Dax89
 // SPDX-License-Identifier: MIT
 
-#ifndef QHEXCURSOR_H
-#define QHEXCURSOR_H
+#pragma once
 
 #include <QObject>
 
@@ -82,5 +81,3 @@ private:
     quint8 m_lineWidth;
     QHexPosition m_position, m_selection;
 };
-
-#endif // QHEXCURSOR_H

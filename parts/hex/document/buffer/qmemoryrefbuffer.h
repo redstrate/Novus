@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2014 Dax89
 // SPDX-License-Identifier: MIT
 
-#ifndef QMEMORYREFBUFFER_H
-#define QMEMORYREFBUFFER_H
+#pragma once
 
 #include "qbuffer.h"
 #include "qhexbuffer.h"
@@ -26,5 +25,3 @@ public:
 private:
     QBuffer *m_buffer;
 };
-
-#endif // QMEMORYREFBUFFER_H

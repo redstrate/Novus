@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2014 Dax89
 // SPDX-License-Identifier: MIT
 
-#ifndef QHEXMETADATA_H
-#define QHEXMETADATA_H
+#pragma once
 
 #include <QColor>
 #include <QHash>
@@ -66,5 +65,3 @@ private:
     QHash<quint64, QHexLineMetadata> m_metadata;
     QVector<QHexMetadataAbsoluteItem> m_absoluteMetadata;
 };
-
-#endif // QHEXMETADATA_H

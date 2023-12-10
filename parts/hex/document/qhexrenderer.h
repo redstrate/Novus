@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2014 Dax89
 // SPDX-License-Identifier: MIT
 
-#ifndef QHEXRENDERER_H
-#define QHEXRENDERER_H
+#pragma once
 
 /*
  * Nibble encoding:
@@ -78,5 +77,3 @@ private:
     int m_selectedarea;
     bool m_cursorenabled;
 };
-
-#endif // QHEXRENDERER_H

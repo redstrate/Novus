@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2014 Dax89
 // SPDX-License-Identifier: MIT
 
-#ifndef QHEXDOCUMENT_H
-#define QHEXDOCUMENT_H
+#pragma once
 
 #include "buffer/qhexbuffer.h"
 #include "qhexcursor.h"
@@ -131,5 +130,3 @@ QHexDocument *QHexDocument::fromMemory(const QByteArray &ba, QObject *parent)
     hexbuffer->read(ba);
     return new QHexDocument(hexbuffer, parent);
 }
-
-#endif // QHEXEDITDATA_H

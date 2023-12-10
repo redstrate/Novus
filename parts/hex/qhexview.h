@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2014 Dax89
 // SPDX-License-Identifier: MIT
 
-#ifndef QHEXVIEW_H
-#define QHEXVIEW_H
+#pragma once
 
 #include "document/qhexdocument.h"
 #include "document/qhexrenderer.h"
@@ -61,5 +60,3 @@ private:
     QTimer *m_blinktimer;
     bool m_readonly;
 };
-
-#endif // QHEXVIEW_H
