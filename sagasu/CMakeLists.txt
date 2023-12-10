@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(novus-sagasu-static STATIC)
-target_sources(novus-sagasu-static PRIVATE
+target_sources(novus-sagasu-static
+        PRIVATE
         include/hashdatabase.h
         src/hashdatabase.cpp)
 target_link_libraries(novus-sagasu-static
@@ -14,8 +15,7 @@ target_link_libraries(novus-sagasu-static
 target_include_directories(novus-sagasu-static PRIVATE include)
 
 add_executable(novus-sagasu-indexer)
-target_sources(novus-sagasu-indexer PRIVATE
-        src/indexer.cpp)
+target_sources(novus-sagasu-indexer PRIVATE src/indexer.cpp)
 target_link_libraries(novus-sagasu-indexer
         PRIVATE
         novus-sagasu-static
@@ -23,7 +23,8 @@ target_link_libraries(novus-sagasu-indexer
 target_include_directories(novus-sagasu-indexer PRIVATE include)
 
 add_executable(novus-sagasu)
-target_sources(novus-sagasu PRIVATE
+target_sources(novus-sagasu
+        PRIVATE
         src/main.cpp
         src/mainwindow.cpp
         src/filetreewindow.cpp

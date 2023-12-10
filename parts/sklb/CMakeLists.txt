@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(sklbpart STATIC)
-target_sources(sklbpart PRIVATE
+target_sources(sklbpart
+        PRIVATE
         sklbpart.cpp
         sklbpart.h)
 target_link_libraries(sklbpart

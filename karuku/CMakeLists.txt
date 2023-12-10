@@ -2,13 +2,15 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_executable(novus-karuku)
-target_sources(novus-karuku PRIVATE
+target_sources(novus-karuku
+        PRIVATE
+        include/mainwindow.h
+
         src/main.cpp
         src/mainwindow.cpp)
 target_include_directories(novus-karuku
         PUBLIC
         include)
-
 target_link_libraries(novus-karuku
         PRIVATE
         Novus::Common

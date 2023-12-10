@@ -27,8 +27,8 @@ include(FeatureSummary)
 include(FetchContent)
 
 ecm_setup_version(${PROJECT_VERSION}
-    VARIABLE_PREFIX NOVUS
-    VERSION_HEADER ${CMAKE_CURRENT_BINARY_DIR}/novus-version.h
+        VARIABLE_PREFIX NOVUS
+        VERSION_HEADER ${CMAKE_CURRENT_BINARY_DIR}/novus-version.h
 )
 
 find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent Core5Compat Sql HttpServer CONFIG REQUIRED)
@@ -37,7 +37,7 @@ find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 if (NOT TARGET glm::glm)
     add_library(glm::glm ALIAS glm)
-endif()
+endif ()
 
 add_subdirectory(extern)
 add_subdirectory(renderer)

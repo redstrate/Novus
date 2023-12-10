@@ -2,12 +2,15 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(renderer STATIC)
-target_sources(renderer PRIVATE
+target_sources(renderer
+        PRIVATE
         include/renderer.hpp
+
         src/renderer.cpp
         src/imguipass.cpp
         src/imguipass.h)
-qt_add_resources(renderer "shaders"
+qt_add_resources(renderer
+        "shaders"
         PREFIX "/"
         FILES
         shaders/imgui.frag.spv
@@ -15,7 +18,8 @@ qt_add_resources(renderer "shaders"
         shaders/mesh.frag.spv
         shaders/mesh.vert.spv)
 target_include_directories(renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(renderer PUBLIC
+target_link_libraries(renderer
+        PUBLIC
         Qt6::Core
         Vulkan::Vulkan
         Physis::Physis

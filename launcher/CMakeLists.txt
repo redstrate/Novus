@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_executable(novus-launcher)
-target_sources(novus-launcher PRIVATE
+target_sources(novus-launcher
+        PRIVATE
+        include/mainwindow.h
+
         src/main.cpp
         src/mainwindow.cpp)
 target_link_libraries(novus-launcher

@@ -7,7 +7,8 @@ find_package(SPIRV-Headers REQUIRED)
 
 add_library(shpkpart STATIC)
 target_sources(shpkpart PRIVATE shpkpart.cpp)
-target_link_libraries(shpkpart PUBLIC
+target_link_libraries(shpkpart
+        PUBLIC
         Novus::Common
         Physis::Physis
         dxbc

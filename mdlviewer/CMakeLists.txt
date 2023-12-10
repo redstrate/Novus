@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_executable(novus-mdlviewer)
-target_sources(novus-mdlviewer PRIVATE
+target_sources(novus-mdlviewer
+        PRIVATE
+        include/mainwindow.h
+
         src/main.cpp
         src/mainwindow.cpp)
 target_include_directories(novus-mdlviewer

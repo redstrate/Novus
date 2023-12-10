@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(mdlpart STATIC)
-target_sources(mdlpart PRIVATE
+target_sources(mdlpart
+        PRIVATE
         mdlexport.cpp
         mdlexport.h
         mdlimport.cpp
@@ -10,9 +11,9 @@ target_sources(mdlpart PRIVATE
         mdlpart.cpp
         mdlpart.h
         vulkanwindow.cpp
-        vulkanwindow.h
-)
-target_link_libraries(mdlpart PUBLIC
+        vulkanwindow.h)
+target_link_libraries(mdlpart
+        PUBLIC
         Novus::Renderer
         Novus::Common
         Physis::Physis

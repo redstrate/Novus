@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_executable(novus-armoury)
-target_sources(novus-armoury PRIVATE
+target_sources(novus-armoury
+        PRIVATE
         include/boneeditor.h
         include/cmpeditor.h
         include/fullmodelviewer.h
@@ -23,7 +24,6 @@ target_sources(novus-armoury PRIVATE
         src/mainwindow.cpp
         src/settingswindow.cpp
         src/singlegearview.cpp)
-
 target_include_directories(novus-armoury
         PUBLIC
         include
