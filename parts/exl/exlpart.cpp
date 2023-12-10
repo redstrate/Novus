@@ -3,7 +3,6 @@
 
 #include "exlpart.h"
 
-#include <QDebug>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>

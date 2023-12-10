@@ -44,7 +44,7 @@ inline QString encryptGameArg(const QString &arg)
     return QStringLiteral("//**sqex0003%1%2**//").arg(base64, QLatin1String(&checksum, 1));
 }
 
-inline QString decryptGameArg(uint32_t tickCount, QString sqexString)
+inline QString decryptGameArg(uint32_t tickCount, const QString &sqexString)
 {
     unsigned int ticks = tickCount & 0xFFFFFFFFu;
     unsigned int key = ticks & 0xFFFF0000u;

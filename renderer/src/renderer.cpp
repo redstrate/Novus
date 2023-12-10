@@ -434,7 +434,7 @@ void Renderer::destroySwapchain()
     }
 }
 
-void Renderer::render(std::vector<RenderModel> models)
+void Renderer::render(const std::vector<RenderModel> &models)
 {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 

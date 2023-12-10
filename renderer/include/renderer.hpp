@@ -74,7 +74,7 @@ public:
     void reloadModel(RenderModel &model, uint32_t lod);
     RenderTexture addTexture(uint32_t width, uint32_t height, const uint8_t *data, uint32_t data_size);
 
-    void render(std::vector<RenderModel> models);
+    void render(const std::vector<RenderModel> &models);
 
     VkInstance instance = VK_NULL_HANDLE;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -114,9 +114,9 @@ public:
 
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-    VkShaderModule createShaderModule(const uint32_t *code, const int length);
+    VkShaderModule createShaderModule(const uint32_t *code, int length);
 
-    VkShaderModule loadShaderFromDisk(const std::string_view path);
+    VkShaderModule loadShaderFromDisk(std::string_view path);
 
     VkCommandBuffer beginSingleTimeCommands();
 

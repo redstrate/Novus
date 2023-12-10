@@ -10,7 +10,7 @@ Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
     : QWidget(parent)
     , vec(vec)
 {
-    QHBoxLayout *itemsLayout = new QHBoxLayout(this);
+    auto itemsLayout = new QHBoxLayout(this);
 
     spinBoxes.x = new QDoubleSpinBox();
     spinBoxes.y = new QDoubleSpinBox();

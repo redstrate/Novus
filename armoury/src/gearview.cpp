@@ -52,7 +52,7 @@ GearView::GearView(GameData *data, FileCache &cache, QWidget *parent)
             Q_UNUSED(QtConcurrent::run(QThreadPool::globalInstance(), [this] {
                 updatePart();
                 Q_EMIT loadingChanged(false);
-            }));
+            }))
         }
     };
 }

@@ -3,15 +3,11 @@
 
 #include "mainwindow.h"
 
-#include <KAboutApplicationDialog>
-#include <KAboutData>
-#include <QAction>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QHBoxLayout>
 #include <QListWidget>
 #include <QMenuBar>
-#include <QTableWidget>
 #include <QUrl>
 #include <physis.hpp>
 

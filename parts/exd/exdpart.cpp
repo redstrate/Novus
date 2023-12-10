@@ -3,7 +3,6 @@
 
 #include "exdpart.h"
 
-#include <QDebug>
 #include <QFile>
 #include <QGroupBox>
 #include <QJsonArray>

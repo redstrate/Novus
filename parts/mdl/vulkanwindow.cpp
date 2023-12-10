@@ -44,7 +44,7 @@ bool VulkanWindow::event(QEvent *e)
         render();
         break;
     case QEvent::Resize: {
-        QResizeEvent *resizeEvent = (QResizeEvent *)e;
+        auto resizeEvent = (QResizeEvent *)e;
         auto surface = m_instance->surfaceForWindow(this);
         if (surface != nullptr) {
             m_renderer->resize(surface,
@@ -53,7 +53,7 @@ bool VulkanWindow::event(QEvent *e)
         }
     } break;
     case QEvent::PlatformSurface:
-        if (static_cast<QPlatformSurfaceEvent *>(e)->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed && m_initialized) {
+        if (dynamic_cast<QPlatformSurfaceEvent *>(e)->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed && m_initialized) {
             m_renderer->destroySwapchain();
         }
         break;
