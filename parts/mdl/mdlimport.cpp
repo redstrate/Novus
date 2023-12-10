@@ -39,6 +39,11 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             qInfo() << "- LOD:" << lodNumber;
             qInfo() << "- Part:" << partNumber;
 
+            if (partNumber >= existingModel.lods[lodNumber].num_parts) {
+                qInfo() << "- Skipping because of missing part...";
+                continue;
+            }
+
             auto &mesh = model.meshes[node.mesh];
             auto &primitive = mesh.primitives[0];
 
