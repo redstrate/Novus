@@ -98,10 +98,21 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
                 return QString(mdlPath).section(QLatin1Char('/'), -1).remove(QStringLiteral(".mdl"));
             };
 
-            const QString fileName = QFileDialog::getOpenFileName(this,
-                                                                  tr("Import Model"),
-                                                                  QStringLiteral("%1.glb").arg(sanitizeMdlPath(gearView->getLoadedGearPath())),
-                                                                  tr("glTF Binary File (*.glb)"));
+            KConfig config(QStringLiteral("novusrc"));
+            KConfigGroup game = config.group(QStringLiteral("Armoury"));
+            QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));
+
+            // TODO: deduplicate
+            QString path = QStringLiteral("%1/%2/%3/%4")
+                               .arg(sourceDirectory)
+                               .arg(QString::fromStdString(magic_enum::enum_name(currentGear->slot).data()))
+                               .arg(QString::fromStdString(currentGear->name))
+                               .arg(QStringLiteral("3D"));
+
+            if (!QDir().exists(path))
+                QDir().mkpath(path);
+
+            const QString fileName = QFileDialog::getOpenFileName(this, tr("Import Model"), path, tr("glTF Binary File (*.glb)"));
             if (!fileName.isEmpty()) {
                 importModel(fileName);
             }
@@ -118,10 +129,22 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
                 return QString(mdlPath).section(QLatin1Char('/'), -1).remove(QStringLiteral(".mdl"));
             };
 
-            const QString fileName = QFileDialog::getSaveFileName(this,
-                                                                  tr("Save Model"),
-                                                                  QStringLiteral("%1.glb").arg(sanitizeMdlPath(gearView->getLoadedGearPath())),
-                                                                  tr("glTF Binary File (*.glb)"));
+            KConfig config(QStringLiteral("novusrc"));
+            KConfigGroup game = config.group(QStringLiteral("Armoury"));
+            QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));
+            QString newFilename = QStringLiteral("%1.glb").arg(sanitizeMdlPath(gearView->getLoadedGearPath()));
+
+            QString path = QStringLiteral("%1/%2/%3/%4")
+                               .arg(sourceDirectory)
+                               .arg(QString::fromStdString(magic_enum::enum_name(currentGear->slot).data()))
+                               .arg(QString::fromStdString(currentGear->name))
+                               .arg(QStringLiteral("3D"));
+
+            if (!QDir().exists(path))
+                QDir().mkpath(path);
+
+            const QString fileName =
+                QFileDialog::getSaveFileName(this, tr("Export Model"), QStringLiteral("%1/%2").arg(path, newFilename), tr("glTF Binary File (*.glb)"));
 
             gearView->exportModel(fileName);
         }

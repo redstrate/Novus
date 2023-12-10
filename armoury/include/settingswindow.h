@@ -14,5 +14,6 @@ public:
 private:
     void applySettings();
 
+    QLineEdit *m_sourcesLineEdit = nullptr;
     QLineEdit *m_outputLineEdit = nullptr;
 };

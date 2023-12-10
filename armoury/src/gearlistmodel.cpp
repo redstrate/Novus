@@ -13,7 +13,7 @@ GearListModel::GearListModel(GameData *data, QObject *parent)
     // smallclothes body
     {
         GearInfo info = {};
-        info.name = "Smallclothes Body";
+        info.name = "SmallClothes Body";
         info.slot = Slot::Body;
 
         gears.push_back(info);
@@ -22,7 +22,7 @@ GearListModel::GearListModel(GameData *data, QObject *parent)
     // smallclothes legs
     {
         GearInfo info = {};
-        info.name = "Smallclothes Legs";
+        info.name = "SmallClothes Legs";
         info.slot = Slot::Legs;
 
         gears.push_back(info);
