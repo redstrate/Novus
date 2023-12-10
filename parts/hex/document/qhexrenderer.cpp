@@ -498,3 +498,5 @@ void QHexRenderer::drawHeader(QPainter *painter, const QPalette &palette)
     painter->drawText(asciirect, Qt::AlignHCenter | Qt::AlignVCenter, QStringLiteral("Ascii"));
     painter->restore();
 }
+
+#include "moc_qhexrenderer.cpp"

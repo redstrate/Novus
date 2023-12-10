@@ -45,3 +45,5 @@ void QHexBuffer::read(const QByteArray &ba)
 
     this->read(buffer);
 }
+
+#include "moc_qhexbuffer.cpp"

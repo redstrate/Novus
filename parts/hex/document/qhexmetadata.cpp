@@ -145,3 +145,5 @@ void QHexMetadata::setMetadata(const QHexMetadataItem &mi)
 
     Q_EMIT metadataChanged(mi.line);
 }
+
+#include "moc_qhexmetadata.cpp"

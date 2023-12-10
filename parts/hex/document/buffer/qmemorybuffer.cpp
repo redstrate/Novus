@@ -46,3 +46,5 @@ qint64 QMemoryBuffer::lastIndexOf(const QByteArray &ba, qint64 from)
 {
     return m_buffer.lastIndexOf(ba, static_cast<int>(from));
 }
+
+#include "moc_qmemorybuffer.cpp"

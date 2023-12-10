@@ -175,3 +175,5 @@ void QHexCursor::switchInsertionMode()
 
     Q_EMIT insertionModeChanged();
 }
+
+#include "moc_qhexcursor.cpp"

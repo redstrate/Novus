@@ -646,3 +646,5 @@ int QHexView::documentSizeFactor() const
 
     return factor;
 }
+
+#include "moc_qhexview.cpp"

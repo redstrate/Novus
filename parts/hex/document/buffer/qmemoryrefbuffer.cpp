@@ -105,3 +105,5 @@ qint64 QMemoryRefBuffer::lastIndexOf(const QByteArray &ba, qint64 from)
     }
     return findPos;
 }
+
+#include "moc_qmemoryrefbuffer.cpp"

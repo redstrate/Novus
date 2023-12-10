@@ -239,3 +239,5 @@ qint64 QHexDocument::searchBackward(const QByteArray &ba)
     }
     return findPos;
 }
+
+#include "moc_qhexdocument.cpp"
