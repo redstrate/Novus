@@ -21,6 +21,23 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
     auto &gltfSkeletonNode = gltfModel.nodes.emplace_back();
     gltfSkeletonNode.name = skeleton.root_bone->name;
 
+    // find needed root bones
+    std::vector<physis_Bone> root_bones;
+    // hardcode to n_hara for now
+    root_bones.push_back(skeleton.bones[1]);
+
+    for (uint32_t i = 0; i < root_bones.size(); i++) {
+        auto &node = gltfModel.nodes.emplace_back();
+        node.name = root_bones[i].name;
+
+        auto &real_bone = root_bones[i];
+        node.translation = {real_bone.position[0], real_bone.position[1], real_bone.position[2]};
+        node.rotation = {real_bone.rotation[0], real_bone.rotation[1], real_bone.rotation[2], real_bone.rotation[3]};
+        node.scale = {real_bone.scale[0], real_bone.scale[1], real_bone.scale[2]};
+    }
+
+    gltfSkeletonNode.children.push_back(1);
+
     for (uint32_t i = 0; i < model.num_affected_bones; i++) {
         auto &node = gltfModel.nodes.emplace_back();
         node.name = model.affected_bone_names[i];
@@ -52,7 +69,7 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             bool found = false;
             for (uint32_t k = 0; k < model.num_affected_bones; k++) {
                 if (strcmp(model.affected_bone_names[k], real_bone.parent_bone->name) == 0) {
-                    gltfModel.nodes[k + 1].children.push_back(i + 1); // +1 for the skeleton node taking up the first index
+                    gltfModel.nodes[k + 2].children.push_back(i + 2); // +1 for the skeleton node taking up the first index
                     found = true;
                 }
             }
@@ -60,10 +77,10 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             // Find the next closest bone that isn't a direct descendant
             // of n_root, but won't have a parent anyway
             if (!found) {
-                gltfSkeletonNode.children.push_back(i + 1);
+                gltfModel.nodes[1].children.push_back(i + 2);
             }
         } else {
-            gltfSkeletonNode.children.push_back(i + 1);
+            gltfModel.nodes[1].children.push_back(i + 2);
         }
     }
 
@@ -81,17 +98,17 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
         auto &inverseAccessor = gltfModel.accessors.emplace_back();
         inverseAccessor.bufferView = gltfModel.bufferViews.size();
         inverseAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-        inverseAccessor.count = model.num_affected_bones;
+        inverseAccessor.count = gltfModel.nodes.size() - 1;
         inverseAccessor.type = TINYGLTF_TYPE_MAT4;
 
         auto &inverseBufferView = gltfModel.bufferViews.emplace_back();
         inverseBufferView.buffer = gltfModel.buffers.size();
 
         auto &inverseBuffer = gltfModel.buffers.emplace_back();
-        for (uint32_t i = 0; i < model.num_affected_bones; i++) {
+        for (uint32_t i = 1; i < gltfModel.nodes.size(); i++) {
             int real_bone_id = 0;
             for (uint32_t k = 0; k < skeleton.num_bones; k++) {
-                if (strcmp(skeleton.bones[k].name, model.affected_bone_names[i]) == 0) {
+                if (strcmp(skeleton.bones[k].name, gltfModel.nodes[i].name.c_str()) == 0) {
                     real_bone_id = k;
                 }
             }
@@ -197,9 +214,22 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             vertexBufferView.buffer = gltfModel.buffers.size();
             vertexBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
+            std::vector<Vertex> newVertices;
+            for (int a = 0; a < lod.parts[i].num_vertices; a++) {
+                Vertex vertex = lod.parts[i].vertices[a];
+
+                // Account for additional root bone
+                vertex.bone_id[0]++;
+                vertex.bone_id[1]++;
+                vertex.bone_id[2]++;
+                vertex.bone_id[3]++;
+
+                newVertices.push_back(vertex);
+            }
+
             auto &vertexBuffer = gltfModel.buffers.emplace_back();
             vertexBuffer.data.resize(lod.parts[i].num_vertices * sizeof(Vertex));
-            memcpy(vertexBuffer.data.data(), lod.parts[i].vertices, vertexBuffer.data.size());
+            memcpy(vertexBuffer.data.data(), newVertices.data(), vertexBuffer.data.size());
 
             vertexBufferView.byteLength = vertexBuffer.data.size();
             vertexBufferView.byteStride = sizeof(Vertex);
