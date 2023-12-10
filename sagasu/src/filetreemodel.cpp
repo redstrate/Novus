@@ -6,10 +6,10 @@
 
 #include <QtConcurrent>
 
-FileTreeModel::FileTreeModel(bool showUnknown, const QString &gamePath, GameData *data)
-    : gameData(data)
+FileTreeModel::FileTreeModel(bool showUnknown, const QString &gamePath, GameData *data, QObject *parent)
+    : QAbstractItemModel(parent)
+    , gameData(data)
     , m_showUnknown(showUnknown)
-    , QAbstractItemModel()
 {
     rootItem = new TreeInformation();
     rootItem->type = TreeType::Root;

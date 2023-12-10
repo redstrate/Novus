@@ -10,8 +10,9 @@
 
 dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
 
-SHPKPart::SHPKPart(GameData *data)
-    : data(data)
+SHPKPart::SHPKPart(GameData *data, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
 {
     auto layout = new QVBoxLayout();
     setLayout(layout);

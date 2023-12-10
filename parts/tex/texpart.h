@@ -13,7 +13,7 @@ class TexPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit TexPart(GameData *data);
+    explicit TexPart(GameData *data, QWidget *parent = nullptr);
 
     void load(physis_Buffer file);
 

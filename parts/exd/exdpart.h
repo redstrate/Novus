@@ -15,7 +15,7 @@ class EXDPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit EXDPart(GameData *data);
+    explicit EXDPart(GameData *data, QWidget *parent = nullptr);
 
     void loadSheet(const QString &name, physis_Buffer buffer);
 

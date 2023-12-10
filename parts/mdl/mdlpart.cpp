@@ -17,8 +17,9 @@
 #include "filecache.h"
 #include "vulkanwindow.h"
 
-MDLPart::MDLPart(GameData *data, FileCache &cache)
-    : data(data)
+MDLPart::MDLPart(GameData *data, FileCache &cache, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
     , cache(cache)
 {
     auto viewportLayout = new QVBoxLayout();

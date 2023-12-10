@@ -14,7 +14,7 @@ class SHPKPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit SHPKPart(GameData *data);
+    explicit SHPKPart(GameData *data, QWidget *parent = nullptr);
 
     void load(physis_Buffer buffer);
 

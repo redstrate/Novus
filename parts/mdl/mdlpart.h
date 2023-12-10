@@ -20,7 +20,7 @@ class MDLPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit MDLPart(GameData *data, FileCache &cache);
+    explicit MDLPart(GameData *data, FileCache &cache, QWidget *parent = nullptr);
 
     void exportModel(const QString &fileName);
     RenderModel &getModel(int index);

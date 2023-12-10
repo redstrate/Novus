@@ -14,8 +14,9 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-EXDPart::EXDPart(GameData *data)
-    : data(data)
+EXDPart::EXDPart(GameData *data, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
 {
     auto layout = new QVBoxLayout();
     setLayout(layout);

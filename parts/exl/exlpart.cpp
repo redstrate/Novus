@@ -11,8 +11,9 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-EXLPart::EXLPart(GameData *data)
-    : data(data)
+EXLPart::EXLPart(GameData *data, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
 {
     auto layout = new QVBoxLayout();
     m_tableWidget = new QTableWidget();

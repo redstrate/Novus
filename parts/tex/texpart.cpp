@@ -6,8 +6,9 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-TexPart::TexPart(GameData *data)
-    : data(data)
+TexPart::TexPart(GameData *data, QWidget *parent)
+    : QWidget(parent)
+    , data(data)
 {
     auto layout = new QVBoxLayout();
     setLayout(layout);

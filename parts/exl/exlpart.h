@@ -12,7 +12,7 @@ class EXLPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit EXLPart(GameData *data);
+    explicit EXLPart(GameData *data, QWidget *parent = nullptr);
 
     void load(physis_Buffer file);
 
