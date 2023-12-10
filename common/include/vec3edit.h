@@ -13,7 +13,7 @@ class Vector3Edit : public QWidget
 
 public:
     explicit Vector3Edit(glm::vec3 &vec, QWidget *parent = nullptr);
-    ~Vector3Edit();
+    ~Vector3Edit() override;
 
     void setVector(glm::vec3 &vec);
 
@@ -22,9 +22,9 @@ Q_SIGNALS:
 
 private:
     struct {
-        QDoubleSpinBox *x, *y, *z;
+        QDoubleSpinBox *x = nullptr, *y = nullptr, *z = nullptr;
     } spinBoxes;
 
     glm::vec3 &vec;
-    QTimer *updateTimer;
+    QTimer *updateTimer = nullptr;
 };

@@ -18,8 +18,6 @@ public:
     MainWindow(const QString &gamePath, GameData *data);
 
 private:
-    QMdiArea *mdiArea = nullptr;
-
     GameData *data = nullptr;
     QTabWidget *partHolder = nullptr;
     FileCache fileCache;

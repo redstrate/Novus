@@ -7,7 +7,6 @@
 #include <vulkan/vulkan.h>
 
 class Renderer;
-struct RenderTarget;
 
 class ImGuiPass
 {

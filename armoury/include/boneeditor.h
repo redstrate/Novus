@@ -15,5 +15,5 @@ public:
     explicit BoneEditor(GearView *gearView, QWidget *parent = nullptr);
 
 private:
-    GearView *gearView;
+    GearView *gearView = nullptr;
 };

@@ -4,12 +4,10 @@
 #include "mainwindow.h"
 
 #include <QHBoxLayout>
-#include <QLineEdit>
 #include <QListWidget>
 #include <QTableWidget>
 #include <QTimer>
 
-#include <KAboutData>
 #include <QAction>
 #include <QApplication>
 #include <QDesktopServices>

@@ -13,9 +13,9 @@ class VulkanWindow : public QWindow
 public:
     VulkanWindow(MDLPart *part, Renderer *renderer, QVulkanInstance *instance);
 
-    void exposeEvent(QExposeEvent *);
+    void exposeEvent(QExposeEvent *) override;
 
-    bool event(QEvent *e);
+    bool event(QEvent *e) override;
 
     void render();
 

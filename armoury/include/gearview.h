@@ -96,9 +96,9 @@ private:
 
     struct LoadedGear {
         GearInfo info;
-        physis_MDL mdl;
+        physis_MDL mdl{};
         QLatin1String path;
-        int bodyId;
+        int bodyId = 0;
     };
 
     std::vector<LoadedGear> loadedGears;

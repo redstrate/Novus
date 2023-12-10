@@ -74,7 +74,7 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                                                 + vertexAccessor.byteOffset);
 
                 // Replace position data
-                Vertex vertex;
+                Vertex vertex{};
                 if (i < existingModel.lods[lodNumber].parts[partNumber].num_vertices) {
                     vertex = existingModel.lods[lodNumber].parts[partNumber].vertices[i];
                 }
