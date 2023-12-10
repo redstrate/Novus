@@ -14,5 +14,12 @@ qt_add_resources(renderer "shaders"
         shaders/mesh.frag.spv
         shaders/mesh.vert.spv)
 target_include_directories(renderer PUBLIC include)
-target_link_libraries(renderer PUBLIC Qt6::Core Vulkan::Vulkan physis z glm::glm imgui)
+target_link_libraries(renderer PUBLIC
+        Qt6::Core
+        Vulkan::Vulkan
+        Physis::Physis
+        glm::glm
+        imgui)
 target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE)
+
+add_library(Novus::Renderer ALIAS renderer)

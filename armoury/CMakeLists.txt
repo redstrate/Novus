@@ -29,17 +29,17 @@ target_include_directories(novus-armoury
         include
         PRIVATE
         ${CMAKE_BINARY_DIR})
-target_link_libraries(novus-armoury PUBLIC
+target_link_libraries(novus-armoury
+        PUBLIC
+        Novus::Common
+        Novus::MdlPart
+        Novus::CmpPart
+        Novus::SklbPart
+        Physis::Physis
+        Physis::Logger
+        imgui
         Qt6::Core
         Qt6::Widgets
-        Qt6::Concurrent
-        physis
-        z
-        physis-logger
-        mdlpart
-        cmppart
-        sklbpart
-        imgui
-        novus-common)
+        Qt6::Concurrent)
 
 install(TARGETS novus-armoury ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})

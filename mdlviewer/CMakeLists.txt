@@ -8,6 +8,14 @@ target_sources(novus-mdlviewer PRIVATE
 target_include_directories(novus-mdlviewer
         PUBLIC
         include)
-target_link_libraries(novus-mdlviewer PRIVATE physis physis-logger z Qt6::Core Qt6::Widgets KF6::XmlGui mdlpart novus-common)
+target_link_libraries(novus-mdlviewer
+        PRIVATE
+        Novus::MdlPart
+        Novus::Common
+        Physis::Physis
+        Physis::Logger
+        KF6::XmlGui
+        Qt6::Core
+        Qt6::Widgets)
 
 install(TARGETS novus-mdlviewer ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})

@@ -3,5 +3,11 @@
 
 add_library(exlpart STATIC)
 target_sources(exlpart PRIVATE exlpart.cpp)
-target_link_libraries(exlpart PUBLIC physis z Qt6::Core Qt6::Widgets)
+target_link_libraries(exlpart
+        PUBLIC
+        Physis::Physis
+        Qt6::Core
+        Qt6::Widgets)
 target_include_directories(exlpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(Novus::ExlPart ALIAS exlpart)

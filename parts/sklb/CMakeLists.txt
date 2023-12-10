@@ -5,5 +5,12 @@ add_library(sklbpart STATIC)
 target_sources(sklbpart PRIVATE
         sklbpart.cpp
         sklbpart.h)
-target_link_libraries(sklbpart PUBLIC novus-common physis z Qt6::Core Qt6::Widgets)
+target_link_libraries(sklbpart
+        PUBLIC
+        Novus::Common
+        Physis::Physis
+        Qt6::Core
+        Qt6::Widgets)
 target_include_directories(sklbpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(Novus::SklbPart ALIAS sklbpart)

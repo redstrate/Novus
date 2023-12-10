@@ -19,4 +19,13 @@ target_include_directories(novus-common PUBLIC
         include
         PRIVATE
         ${CMAKE_BINARY_DIR})
-target_link_libraries(novus-common PUBLIC Qt6::Core Qt6::Widgets KF6::CoreAddons KF6::ConfigCore KF6::XmlGui physis)
+target_link_libraries(novus-common
+        PUBLIC
+        Physis::Physis
+        KF6::CoreAddons
+        KF6::ConfigCore
+        KF6::XmlGui
+        Qt6::Core
+        Qt6::Widgets)
+
+add_library(Novus::Common ALIAS novus-common)

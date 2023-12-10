@@ -5,13 +5,21 @@ add_library(novus-sagasu-static STATIC)
 target_sources(novus-sagasu-static PRIVATE
         include/hashdatabase.h
         src/hashdatabase.cpp)
-target_link_libraries(novus-sagasu-static PUBLIC physis z Qt6::Core Qt6::Sql novus-common)
+target_link_libraries(novus-sagasu-static
+        PUBLIC
+        Novus::Common
+        Physis::Physis
+        Qt6::Core
+        Qt6::Sql)
 target_include_directories(novus-sagasu-static PRIVATE include)
 
 add_executable(novus-sagasu-indexer)
 target_sources(novus-sagasu-indexer PRIVATE
         src/indexer.cpp)
-target_link_libraries(novus-sagasu-indexer PRIVATE Qt6::HttpServer novus-sagasu-static)
+target_link_libraries(novus-sagasu-indexer
+        PRIVATE
+        novus-sagasu-static
+        Qt6::HttpServer)
 target_include_directories(novus-sagasu-indexer PRIVATE include)
 
 add_executable(novus-sagasu)
@@ -22,6 +30,18 @@ target_sources(novus-sagasu PRIVATE
         src/filepropertieswindow.cpp
         src/filetreemodel.cpp)
 target_include_directories(novus-sagasu PRIVATE include)
-target_link_libraries(novus-sagasu PRIVATE Qt6::Concurrent physis-logger sklbpart cmppart shpkpart hexpart exlpart mdlpart exdpart texpart novus-sagasu-static)
+target_link_libraries(novus-sagasu
+        PRIVATE
+        novus-sagasu-static
+        Novus::SklbPart
+        Novus::CmpPart
+        Novus::ShpkPart
+        Novus::HexPart
+        Novus::ExlPart
+        Novus::MdlPart
+        Novus::ExdPart
+        Novus::TexPart
+        Physis::Logger
+        Qt6::Concurrent)
 
 install(TARGETS novus-sagasu ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})

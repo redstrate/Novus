@@ -7,5 +7,11 @@ target_sources(texpart PRIVATE
         imagelabel.h
         texpart.cpp
         texpart.h)
-target_link_libraries(texpart PUBLIC physis z Qt6::Core Qt6::Widgets)
+target_link_libraries(texpart
+        PUBLIC
+        Physis::Physis
+        Qt6::Core
+        Qt6::Widgets)
 target_include_directories(texpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(Novus::TexPart ALIAS texpart)

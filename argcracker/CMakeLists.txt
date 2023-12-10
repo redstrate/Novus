@@ -5,7 +5,11 @@ add_executable(novus-argcracker)
 target_sources(novus-argcracker PRIVATE
     src/main.cpp
     src/tickcount.cpp)
-target_link_libraries(novus-argcracker PRIVATE Qt6::Core Qt6::Core5Compat physis z)
+target_link_libraries(novus-argcracker
+        PRIVATE
+        Physis::Physis
+        Qt6::Core
+        Qt6::Core5Compat)
 target_include_directories(novus-argcracker PUBLIC include)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")

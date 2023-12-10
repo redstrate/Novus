@@ -21,5 +21,11 @@ target_sources(hexpart PRIVATE
         hexpart.h
         qhexview.cpp
         qhexview.h)
-target_link_libraries(hexpart PUBLIC physis Qt6::Core Qt6::Widgets)
+target_link_libraries(hexpart
+        PUBLIC
+        Physis::Physis
+        Qt6::Core
+        Qt6::Widgets)
 target_include_directories(hexpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(Novus::HexPart ALIAS hexpart)

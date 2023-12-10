@@ -12,5 +12,13 @@ target_sources(mdlpart PRIVATE
         vulkanwindow.cpp
         vulkanwindow.h
 )
-target_link_libraries(mdlpart PUBLIC physis z Qt6::Core Qt6::Widgets renderer novus-common tinygltf)
+target_link_libraries(mdlpart PUBLIC
+        Novus::Renderer
+        Novus::Common
+        Physis::Physis
+        Qt6::Core
+        Qt6::Widgets
+        tinygltf)
 target_include_directories(mdlpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(Novus::MdlPart ALIAS mdlpart)
