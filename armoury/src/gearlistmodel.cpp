@@ -35,7 +35,7 @@ GearListModel::GearListModel(GameData *data, QObject *parent)
     connect(exdFuture, &QFutureWatcher<physis_EXD>::finished, this, &GearListModel::finished);
 
     QVector<int> pages;
-    for (int i = 0; i < exh->page_count; i++) {
+    for (uint32_t i = 0; i < exh->page_count; i++) {
         pages.push_back(i);
     }
 
@@ -69,6 +69,7 @@ int GearListModel::rowCount(const QModelIndex &parent) const
 
 int GearListModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return 1;
 }
 
@@ -147,10 +148,10 @@ void GearListModel::exdFinished(int index)
 {
     auto exd = exdFuture->resultAt(index);
 
-    for (int i = 0; i < exd.row_count; i++) {
+    for (unsigned int i = 0; i < exd.row_count; i++) {
         const auto row = exd.row_data[i];
         auto primaryModel = row.column_data[47].u_int64._0;
-        auto secondaryModel = row.column_data[48].u_int64._0;
+        // auto secondaryModel = row.column_data[48].u_int64._0;
 
         int16_t parts[4];
         memcpy(parts, &primaryModel, sizeof(int16_t) * 4);

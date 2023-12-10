@@ -92,7 +92,7 @@ QHexDocument *QHexDocument::fromDevice(QIODevice *iodevice, QObject *parent)
     }
 
     QHexBuffer *hexbuffer = new T();
-    if (hexbuffer->read(iodevice)) {
+    if (hexbuffer->readDevice(iodevice)) {
         if (needsclose)
             iodevice->close();
 
@@ -119,7 +119,7 @@ template<typename T>
 QHexDocument *QHexDocument::fromMemory(char *data, int size, QObject *parent)
 {
     QHexBuffer *hexbuffer = new T();
-    hexbuffer->read(data, size);
+    hexbuffer->readRaw(data, size);
     return new QHexDocument(hexbuffer, parent);
 }
 
@@ -127,6 +127,6 @@ template<typename T>
 QHexDocument *QHexDocument::fromMemory(const QByteArray &ba, QObject *parent)
 {
     QHexBuffer *hexbuffer = new T();
-    hexbuffer->read(ba);
+    hexbuffer->readArray(ba);
     return new QHexDocument(hexbuffer, parent);
 }

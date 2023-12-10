@@ -50,7 +50,7 @@ MainWindow::MainWindow(const QString &gamePath, GameData *data)
             file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);
         }
     });
-    connect(tree, &FileTreeWindow::pathSelected, this, [=](const QString &path) {
+    connect(tree, &FileTreeWindow::pathSelected, this, [this](const QString &path) {
         refreshParts(path);
     });
     tree->setMaximumWidth(200);

@@ -134,16 +134,16 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
             Q_EMIT gotMDLPath();
         }
     });
-    connect(this, &SingleGearView::raceChanged, this, [=] {
+    connect(this, &SingleGearView::raceChanged, this, [this] {
         gearView->setRace(currentRace);
     });
-    connect(this, &SingleGearView::subraceChanged, this, [=] {
+    connect(this, &SingleGearView::subraceChanged, this, [this] {
         gearView->setSubrace(currentSubrace);
     });
-    connect(this, &SingleGearView::genderChanged, this, [=] {
+    connect(this, &SingleGearView::genderChanged, this, [this] {
         gearView->setGender(currentGender);
     });
-    connect(this, &SingleGearView::levelOfDetailChanged, this, [=] {
+    connect(this, &SingleGearView::levelOfDetailChanged, this, [this] {
         gearView->setLevelOfDetail(currentLod);
     });
 
@@ -324,8 +324,8 @@ void SingleGearView::importModel(const QString &filename)
     gearView->part().reloadModel(0);
 
     KConfig config(QStringLiteral("novusrc"));
-    KConfigGroup game = config.group("Armoury");
-    QString outputDirectory = game.readEntry("PenumbraOutputDirectory");
+    KConfigGroup game = config.group(QStringLiteral("Armoury"));
+    QString outputDirectory = game.readEntry(QStringLiteral("PenumbraOutputDirectory"));
 
     auto buffer = physis_mdl_write(&mdl.model);
     QFile file(QStringLiteral("%1/%2").arg(outputDirectory, gearView->getLoadedGearPath()));

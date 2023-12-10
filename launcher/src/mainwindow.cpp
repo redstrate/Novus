@@ -51,7 +51,7 @@ MainWindow::MainWindow()
     auto formLayout = new QFormLayout();
 
     KConfig config(QStringLiteral("novusrc"));
-    KConfigGroup game = config.group("Game");
+    KConfigGroup game = config.group(QStringLiteral("Game"));
 
     auto gameCombo = new QComboBox();
     formLayout->addRow(QStringLiteral("Current Game"), gameCombo);

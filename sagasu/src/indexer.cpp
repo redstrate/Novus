@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
 
         auto sheetNames = physis_gamedata_get_all_sheet_names(data);
 
-        for (int i = 0; i < sheetNames.name_count; i++) {
+        for (uint32_t i = 0; i < sheetNames.name_count; i++) {
             auto sheetName = sheetNames.names[i];
             auto nameLowercase = QString::fromStdString(sheetName).toLower().toStdString();
 
@@ -195,8 +195,8 @@ int main(int argc, char *argv[])
 
             std::string headerNameStd = headerName.toStdString();
             auto exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(data, headerNameStd.c_str()));
-            for (int j = 0; j < exh->page_count; j++) {
-                for (int z = 0; z < exh->language_count; z++) {
+            for (uint32_t j = 0; j < exh->page_count; j++) {
+                for (uint32_t z = 0; z < exh->language_count; z++) {
                     std::string path = physis_gamedata_get_exd_filename(nameLowercase.c_str(), exh, exh->languages[z], j);
 
                     database.addFile(QStringLiteral("exd/") + QString::fromStdString(path));

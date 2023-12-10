@@ -15,8 +15,11 @@ protected:
 
     virtual void setupFileMenu(QMenu *menu)
     {
+        Q_UNUSED(menu)
     }
+
     virtual void setupAdditionalMenus(QMenuBar *menuBar)
     {
+        Q_UNUSED(menuBar)
     }
 };

@@ -36,6 +36,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBits
                                              const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
                                              void *pUserData)
 {
+    Q_UNUSED(messageSeverity)
+    Q_UNUSED(messageType)
+    Q_UNUSED(pUserData)
+
     qInfo() << pCallbackData->pMessage;
 
     return VK_FALSE;
@@ -51,8 +55,6 @@ Renderer::Renderer()
     ImGui::GetIO().IniFilename = "";
 
     ImGui::StyleColorsDark();
-
-    VkApplicationInfo applicationInfo = {};
 
     std::vector<const char *> instanceExtensions = {"VK_EXT_debug_utils"};
 
@@ -188,8 +190,6 @@ Renderer::Renderer()
     deviceCeateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     deviceCeateInfo.ppEnabledExtensionNames = deviceExtensions.data();
     deviceCeateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-
-    VkPhysicalDeviceFeatures enabledFeatures = {};
 
     vkCreateDevice(physicalDevice, &deviceCeateInfo, nullptr, &device);
 
@@ -488,7 +488,7 @@ void Renderer::render(std::vector<RenderModel> models)
             continue;
 
         for (const auto &part : model.parts) {
-            if (part.materialIndex >= model.materials.size()) {
+            if (static_cast<size_t>(part.materialIndex) >= model.materials.size()) {
                 continue;
             }
 
@@ -643,14 +643,14 @@ RenderModel Renderer::addModel(const physis_MDL &model, int lod)
     return renderModel;
 }
 
-void Renderer::reloadModel(RenderModel &renderModel, int lod)
+void Renderer::reloadModel(RenderModel &renderModel, uint32_t lod)
 {
-    if (lod < 0 || lod > renderModel.model.num_lod)
+    if (lod > renderModel.model.num_lod)
         return;
 
     renderModel.parts.clear();
 
-    for (int i = 0; i < renderModel.model.lods[lod].num_parts; i++) {
+    for (uint32_t i = 0; i < renderModel.model.lods[lod].num_parts; i++) {
         RenderPart renderPart;
 
         const physis_Part part = renderModel.model.lods[lod].parts[i];
@@ -1173,6 +1173,8 @@ void Renderer::inlineTransitionImageLayout(VkCommandBuffer commandBuffer,
                                            VkPipelineStageFlags src_stage_mask,
                                            VkPipelineStageFlags dst_stage_mask)
 {
+    Q_UNUSED(format)
+
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.oldLayout = oldLayout;

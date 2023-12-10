@@ -75,7 +75,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
     headerFormLayout->addRow(QStringLiteral("Num Pages"), new QLabel(QString::number(exh->page_count)));
     headerFormLayout->addRow(QStringLiteral("Num Languages"), new QLabel(QString::number(exh->language_count)));
 
-    for (int i = 0; i < exh->page_count; i++) {
+    for (uint32_t i = 0; i < exh->page_count; i++) {
         auto tableWidget = new QTableWidget();
 
         tableWidget->setColumnCount(exh->column_count);
@@ -85,7 +85,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 
         tableWidget->setRowCount(exd.row_count);
 
-        for (int z = 0; z < exd.column_count; z++) {
+        for (unsigned int z = 0; z < exd.column_count; z++) {
             auto columnData = exd.row_data[0].column_data[z];
 
             QString columnType;
@@ -125,7 +125,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
                 break;
             }
 
-            if (definitionList.contains(z)) {
+            if (definitionList.contains(static_cast<int>(z))) {
                 columnType = definitionList[z].toObject()[QLatin1String("name")].toString();
             }
 
@@ -135,8 +135,8 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
             tableWidget->setHorizontalHeaderItem(z, headerItem);
         }
 
-        for (int j = 0; j < exd.row_count; j++) {
-            for (int z = 0; z < exd.column_count; z++) {
+        for (unsigned int j = 0; j < exd.row_count; j++) {
+            for (unsigned int z = 0; z < exd.column_count; z++) {
                 auto columnData = exd.row_data[j].column_data[z];
 
                 QString columnString;
@@ -185,7 +185,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
                     break;
                 }
 
-                if (definitionList.contains(z)) {
+                if (definitionList.contains(static_cast<int>(z))) {
                     auto definition = definitionList[z].toObject();
                     if (definition.contains(QLatin1String("converter"))
                         && definition[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QLatin1String("link")) {
@@ -193,7 +193,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 
                         if (cachedExcelSheets.contains(linkName)) {
                             auto cachedExcel = cachedExcelSheets[linkName];
-                            if (columnRow < cachedExcel.exd.row_count) {
+                            if (static_cast<unsigned int>(columnRow) < cachedExcel.exd.row_count) {
                                 columnString = QString::fromStdString(cachedExcel.exd.row_data[columnRow].column_data->string._0);
                             }
                         }
@@ -214,7 +214,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 
 Language EXDPart::getSuitableLanguage(physis_EXH *pExh)
 {
-    for (int i = 0; i < pExh->language_count; i++) {
+    for (uint32_t i = 0; i < pExh->language_count; i++) {
         if (pExh->languages[i] == Language::English) {
             return Language::English;
         }

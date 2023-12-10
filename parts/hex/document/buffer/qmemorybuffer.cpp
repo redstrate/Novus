@@ -28,12 +28,12 @@ QByteArray QMemoryBuffer::read(qint64 offset, int length)
     return m_buffer.mid(static_cast<int>(offset), length);
 }
 
-bool QMemoryBuffer::read(QIODevice *device)
+bool QMemoryBuffer::readDevice(QIODevice *device)
 {
     m_buffer = device->readAll();
     return true;
 }
-void QMemoryBuffer::write(QIODevice *device)
+void QMemoryBuffer::writeDevice(QIODevice *device)
 {
     device->write(m_buffer);
 }

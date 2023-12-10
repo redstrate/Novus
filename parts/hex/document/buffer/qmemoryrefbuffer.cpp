@@ -33,7 +33,7 @@ QByteArray QMemoryRefBuffer::read(qint64 offset, int length)
     return m_buffer->read(length);
 }
 
-bool QMemoryRefBuffer::read(QIODevice *device)
+bool QMemoryRefBuffer::readDevice(QIODevice *device)
 {
     m_buffer = qobject_cast<QBuffer *>(device);
     if (m_buffer) {
@@ -43,7 +43,7 @@ bool QMemoryRefBuffer::read(QIODevice *device)
     return false;
 }
 
-void QMemoryRefBuffer::write(QIODevice *device)
+void QMemoryRefBuffer::writeDevice(QIODevice *device)
 {
     m_buffer->seek(0);
     if (m_buffer->size() < INT_MAX) {

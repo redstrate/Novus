@@ -53,7 +53,7 @@ FileTreeWindow::FileTreeWindow(const QString &gamePath, GameData *data, QWidget 
             auto menu = new QMenu();
 
             auto extractAction = menu->addAction(QStringLiteral("Extract.."));
-            connect(extractAction, &QAction::triggered, this, [=] {
+            connect(extractAction, &QAction::triggered, this, [this, path] {
                 Q_EMIT extractFile(path);
             });
 

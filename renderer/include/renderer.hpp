@@ -69,7 +69,7 @@ public:
     void resize(VkSurfaceKHR surface, int width, int height);
 
     RenderModel addModel(const physis_MDL &model, int lod);
-    void reloadModel(RenderModel &model, int lod);
+    void reloadModel(RenderModel &model, uint32_t lod);
     RenderTexture addTexture(uint32_t width, uint32_t height, const uint8_t *data, uint32_t data_size);
 
     void render(std::vector<RenderModel> models);

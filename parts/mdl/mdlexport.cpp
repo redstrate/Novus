@@ -21,12 +21,12 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
     auto &gltfSkeletonNode = gltfModel.nodes.emplace_back();
     gltfSkeletonNode.name = skeleton.root_bone->name;
 
-    for (int i = 0; i < model.num_affected_bones; i++) {
+    for (uint32_t i = 0; i < model.num_affected_bones; i++) {
         auto &node = gltfModel.nodes.emplace_back();
         node.name = model.affected_bone_names[i];
 
         int real_bone_id = 0;
-        for (int k = 0; k < skeleton.num_bones; k++) {
+        for (uint32_t k = 0; k < skeleton.num_bones; k++) {
             if (strcmp(skeleton.bones[k].name, model.affected_bone_names[i]) == 0) {
                 real_bone_id = k;
             }
@@ -39,9 +39,9 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
     }
 
     // setup parenting
-    for (int i = 0; i < model.num_affected_bones; i++) {
+    for (uint32_t i = 0; i < model.num_affected_bones; i++) {
         int real_bone_id = 0;
-        for (int k = 0; k < skeleton.num_bones; k++) {
+        for (uint32_t k = 0; k < skeleton.num_bones; k++) {
             if (strcmp(skeleton.bones[k].name, model.affected_bone_names[i]) == 0) {
                 real_bone_id = k;
             }
@@ -50,7 +50,7 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
         auto &real_bone = skeleton.bones[real_bone_id];
         if (real_bone.parent_bone != nullptr) {
             bool found = false;
-            for (int k = 0; k < model.num_affected_bones; k++) {
+            for (uint32_t k = 0; k < model.num_affected_bones; k++) {
                 if (strcmp(model.affected_bone_names[k], real_bone.parent_bone->name) == 0) {
                     gltfModel.nodes[k + 1].children.push_back(i + 1); // +1 for the skeleton node taking up the first index
                     found = true;
@@ -70,7 +70,7 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
     auto &gltfSkin = gltfModel.skins.emplace_back();
     gltfSkin.name = gltfSkeletonNode.name;
     gltfSkin.skeleton = 0;
-    for (int i = 1; i < gltfModel.nodes.size(); i++) {
+    for (size_t i = 1; i < gltfModel.nodes.size(); i++) {
         gltfSkin.joints.push_back(i);
     }
 
@@ -88,9 +88,9 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
         inverseBufferView.buffer = gltfModel.buffers.size();
 
         auto &inverseBuffer = gltfModel.buffers.emplace_back();
-        for (int i = 0; i < model.num_affected_bones; i++) {
+        for (uint32_t i = 0; i < model.num_affected_bones; i++) {
             int real_bone_id = 0;
-            for (int k = 0; k < skeleton.num_bones; k++) {
+            for (uint32_t k = 0; k < skeleton.num_bones; k++) {
                 if (strcmp(skeleton.bones[k].name, model.affected_bone_names[i]) == 0) {
                     real_bone_id = k;
                 }
@@ -106,7 +106,7 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
         inverseBufferView.byteLength = inverseBuffer.data.size();
     }
 
-    for (int i = 0; i < lod.num_parts; i++) {
+    for (uint32_t i = 0; i < lod.num_parts; i++) {
         gltfSkeletonNode.children.push_back(gltfModel.nodes.size());
 
         auto &gltfNode = gltfModel.nodes.emplace_back();

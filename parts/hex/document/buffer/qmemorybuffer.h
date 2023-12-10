@@ -16,8 +16,8 @@ public:
     void insert(qint64 offset, const QByteArray &data) override;
     void remove(qint64 offset, int length) override;
     QByteArray read(qint64 offset, int length) override;
-    bool read(QIODevice *device) override;
-    void write(QIODevice *device) override;
+    bool readDevice(QIODevice *device) override;
+    void writeDevice(QIODevice *device) override;
 
     qint64 indexOf(const QByteArray &ba, qint64 from) override;
     qint64 lastIndexOf(const QByteArray &ba, qint64 from) override;

@@ -42,7 +42,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
 {
     auto openMDLFile = menu->addAction(QStringLiteral("Open MDL..."));
     openMDLFile->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
-    connect(openMDLFile, &QAction::triggered, [=] {
+    connect(openMDLFile, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open MDL File"), QStringLiteral("~"), QStringLiteral("FFXIV Model File (*.mdl)"));
 
         auto buffer = physis_read_file(fileName.toStdString().c_str());

@@ -76,7 +76,7 @@ bool VulkanWindow::event(QEvent *e)
                                          part->cameraDistance * part->pitch,
                                          part->cameraDistance * std::cos(part->yaw));
 
-                const glm::quat rot = glm::quatLookAt((part->position + position) - part->position, {0, 1, 0});
+                // const glm::quat rot = glm::quatLookAt((part->position + position) - part->position, {0, 1, 0});
 
                 part->position += glm::vec3{0, 1, 0} * (float)deltaY * 0.01f;
                 part->position.y = std::clamp(part->position.y, 0.0f, 10.0f);
@@ -92,6 +92,8 @@ bool VulkanWindow::event(QEvent *e)
         part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
         part->cameraDistance = std::clamp(part->cameraDistance, 1.0f, 4.0f);
     } break;
+    default:
+        break;
     }
 
     return QWindow::event(e);

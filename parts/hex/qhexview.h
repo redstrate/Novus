@@ -19,16 +19,16 @@ public:
     void setReadOnly(bool b);
 
 protected:
-    virtual bool event(QEvent *e);
-    virtual void keyPressEvent(QKeyEvent *e);
-    virtual void mousePressEvent(QMouseEvent *e);
-    virtual void mouseMoveEvent(QMouseEvent *e);
-    virtual void mouseReleaseEvent(QMouseEvent *e);
-    virtual void focusInEvent(QFocusEvent *e);
-    virtual void focusOutEvent(QFocusEvent *e);
-    virtual void wheelEvent(QWheelEvent *e);
-    virtual void resizeEvent(QResizeEvent *e);
-    virtual void paintEvent(QPaintEvent *e);
+    bool event(QEvent *e) override;
+    void keyPressEvent(QKeyEvent *e) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
+    void focusInEvent(QFocusEvent *e) override;
+    void focusOutEvent(QFocusEvent *e) override;
+    void wheelEvent(QWheelEvent *e) override;
+    void resizeEvent(QResizeEvent *e) override;
+    void paintEvent(QPaintEvent *e) override;
 
 private Q_SLOTS:
     void renderCurrentLine();

@@ -30,7 +30,7 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
 
     auto datOpenAction = fileMenu->addAction(QStringLiteral("Load character DAT..."));
     datOpenAction->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
-    connect(datOpenAction, &QAction::triggered, [=] {
+    connect(datOpenAction, &QAction::triggered, [this] {
         auto fileName =
             QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open DAT File"), QStringLiteral("~"), QStringLiteral("FFXIV Character DAT File (*.dat)"));
 
@@ -210,7 +210,7 @@ void FullModelViewer::reloadGear()
 void FullModelViewer::updateHeightScaling(float scale)
 {
     auto &boneData = *gearView->part().skeleton;
-    for (int i = 0; i < boneData.num_bones; i++) {
+    for (uint32_t i = 0; i < boneData.num_bones; i++) {
         const std::string_view name{boneData.bones[i].name};
         if (name == "n_root") {
             auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentSubrace);
@@ -234,7 +234,7 @@ void FullModelViewer::updateHeightScaling(float scale)
 void FullModelViewer::updateBustScaling(float scale)
 {
     auto &boneData = *gearView->part().skeleton;
-    for (int i = 0; i < boneData.num_bones; i++) {
+    for (uint32_t i = 0; i < boneData.num_bones; i++) {
         const std::string_view name{boneData.bones[i].name};
         if (name == "j_mune_l" || name == "j_mune_r") {
             auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentSubrace);
@@ -275,19 +275,19 @@ QGroupBox *FullModelViewer::addFaceGroup()
     faceGroup->setLayout(faceGroupLayout);
 
     auto faceRadio1 = new QRadioButton(QStringLiteral("Face 1"));
-    connect(faceRadio1, &QRadioButton::clicked, this, [=] {
+    connect(faceRadio1, &QRadioButton::clicked, this, [this] {
         gearView->setFace(1);
     });
     faceGroupLayout->addWidget(faceRadio1);
 
     auto faceRadio2 = new QRadioButton(QStringLiteral("Face 2"));
-    connect(faceRadio2, &QRadioButton::clicked, this, [=] {
+    connect(faceRadio2, &QRadioButton::clicked, this, [this] {
         gearView->setFace(2);
     });
     faceGroupLayout->addWidget(faceRadio2);
 
     auto faceRadio3 = new QRadioButton(QStringLiteral("Face 3"));
-    connect(faceRadio3, &QRadioButton::clicked, this, [=] {
+    connect(faceRadio3, &QRadioButton::clicked, this, [this] {
         gearView->setFace(3);
     });
     faceGroupLayout->addWidget(faceRadio3);
@@ -302,19 +302,19 @@ QGroupBox *FullModelViewer::addHairGroup()
     hairGroup->setLayout(hairGroupLayout);
 
     auto hairRadio1 = new QRadioButton(QStringLiteral("Hair 1"));
-    connect(hairRadio1, &QRadioButton::clicked, this, [=] {
+    connect(hairRadio1, &QRadioButton::clicked, this, [this] {
         gearView->setHair(1);
     });
     hairGroupLayout->addWidget(hairRadio1);
 
     auto hairRadio2 = new QRadioButton(QStringLiteral("Hair 2"));
-    connect(hairRadio2, &QRadioButton::clicked, this, [=] {
+    connect(hairRadio2, &QRadioButton::clicked, this, [this] {
         gearView->setHair(2);
     });
     hairGroupLayout->addWidget(hairRadio2);
 
     auto hairRadio3 = new QRadioButton(QStringLiteral("Hair 3"));
-    connect(hairRadio3, &QRadioButton::clicked, this, [=] {
+    connect(hairRadio3, &QRadioButton::clicked, this, [this] {
         gearView->setHair(3);
     });
     hairGroupLayout->addWidget(hairRadio3);
@@ -329,19 +329,19 @@ QGroupBox *FullModelViewer::addEarGroup()
     earGroup->setLayout(earGroupLayout);
 
     auto earRadio1 = new QRadioButton(QStringLiteral("Ears 1"));
-    connect(earRadio1, &QRadioButton::clicked, this, [=] {
+    connect(earRadio1, &QRadioButton::clicked, this, [this] {
         gearView->setEar(1);
     });
     earGroupLayout->addWidget(earRadio1);
 
     auto earRadio2 = new QRadioButton(QStringLiteral("Ears 2"));
-    connect(earRadio2, &QRadioButton::clicked, this, [=] {
+    connect(earRadio2, &QRadioButton::clicked, this, [this] {
         gearView->setEar(2);
     });
     earGroupLayout->addWidget(earRadio2);
 
     auto earRadio3 = new QRadioButton(QStringLiteral("Ears 3"));
-    connect(earRadio3, &QRadioButton::clicked, this, [=] {
+    connect(earRadio3, &QRadioButton::clicked, this, [this] {
         gearView->setEar(3);
     });
     earGroupLayout->addWidget(earRadio3);
@@ -356,19 +356,19 @@ QGroupBox *FullModelViewer::addTailGroup()
     tailGroup->setLayout(tailGroupLayout);
 
     auto tailRadio1 = new QRadioButton(QStringLiteral("Tail 1"));
-    connect(tailRadio1, &QRadioButton::clicked, this, [=] {
+    connect(tailRadio1, &QRadioButton::clicked, this, [this] {
         gearView->setTail(1);
     });
     tailGroupLayout->addWidget(tailRadio1);
 
     auto tailRadio2 = new QRadioButton(QStringLiteral("Tail 2"));
-    connect(tailRadio2, &QRadioButton::clicked, this, [=] {
+    connect(tailRadio2, &QRadioButton::clicked, this, [this] {
         gearView->setTail(2);
     });
     tailGroupLayout->addWidget(tailRadio2);
 
     auto tailRadio3 = new QRadioButton(QStringLiteral("Tail 3"));
-    connect(tailRadio3, &QRadioButton::clicked, this, [=] {
+    connect(tailRadio3, &QRadioButton::clicked, this, [this] {
         gearView->setTail(3);
     });
     tailGroupLayout->addWidget(tailRadio3);

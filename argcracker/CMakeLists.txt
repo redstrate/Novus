@@ -10,7 +10,6 @@ target_link_libraries(novus-argcracker
         Physis::Physis
         Qt6::Core
         Qt6::Core5Compat)
-target_include_directories(novus-argcracker PUBLIC include)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     target_compile_definitions(novus-argcracker PUBLIC MACOS)

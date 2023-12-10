@@ -36,13 +36,13 @@ MainWindow::MainWindow(GameData *in_data)
 
     auto gearListWidget = new GearListWidget(&data);
     gearListWidget->setMaximumWidth(350);
-    connect(gearListWidget, &GearListWidget::gearSelected, this, [=](const GearInfo &gear) {
+    connect(gearListWidget, &GearListWidget::gearSelected, this, [this](const GearInfo &gear) {
         gearView->setGear(gear);
     });
     layout->addWidget(gearListWidget);
 
     gearView = new SingleGearView(&data, cache);
-    connect(gearView, &SingleGearView::addToFullModelViewer, this, [=](GearInfo &info) {
+    connect(gearView, &SingleGearView::addToFullModelViewer, this, [this](GearInfo &info) {
         fullModelViewer->addGear(info);
     });
 
@@ -51,7 +51,7 @@ MainWindow::MainWindow(GameData *in_data)
     layout->addWidget(tabWidget);
 
     fullModelViewer = new FullModelViewer(&data, cache);
-    connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [=](const bool loading) {
+    connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {
         gearView->setFMVAvailable(!loading);
     });
     fullModelViewer->show();

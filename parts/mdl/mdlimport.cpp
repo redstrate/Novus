@@ -30,7 +30,6 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             qInfo() << "Importing" << node.name;
 
             const QStringList parts = QString::fromStdString(node.name).split(QLatin1Char(' '));
-            const QString &name = parts[0];
             const QStringList lodPartNumber = parts[2].split(QLatin1Char('.'));
 
             // const int lodNumber = lodPartNumber[0].toInt();
@@ -69,7 +68,7 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             qInfo() << "- Importing mesh of" << vertexAccessor.count << "vertices and" << indexAccessor.count << "indices.";
 
             std::vector<Vertex> newVertices;
-            for (int i = 0; i < vertexAccessor.count; i++) {
+            for (uint32_t i = 0; i < vertexAccessor.count; i++) {
                 auto vertexData = (glm::vec3 *)(vertexBuffer.data.data() + (std::max(vertexView.byteStride, sizeof(float) * 3) * i) + vertexView.byteOffset
                                                 + vertexAccessor.byteOffset);
 

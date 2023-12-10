@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 set(BUILD_SHARED_LIBS OFF)
+add_compile_options(-w)
 
 find_package(Corrosion REQUIRED)
 

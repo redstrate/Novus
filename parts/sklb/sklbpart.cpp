@@ -22,7 +22,7 @@ void addItem(physis_Skeleton &skeleton, physis_Bone &bone, QTreeWidget *widget, 
         parent_item->addChild(item);
     }
 
-    for (int i = 0; i < skeleton.num_bones; i++) {
+    for (uint32_t i = 0; i < skeleton.num_bones; i++) {
         if (skeleton.bones[i].parent_bone != nullptr && strcmp(skeleton.bones[i].parent_bone->name, bone.name) == 0)
             addItem(skeleton, skeleton.bones[i], widget, item);
     }
@@ -74,7 +74,7 @@ SklbPart::SklbPart(QWidget *parent)
 
 void SklbPart::treeItemClicked(QTreeWidgetItem *item, int column)
 {
-    for (int i = 0; i < skeleton.num_bones; i++) {
+    for (uint32_t i = 0; i < skeleton.num_bones; i++) {
         if (strcmp(skeleton.bones[i].name, item->text(column).toStdString().c_str()) == 0) {
             currentPosition = glm::make_vec3(skeleton.bones[i].position);
             currentRotation = glm::make_quat(skeleton.bones[i].rotation);

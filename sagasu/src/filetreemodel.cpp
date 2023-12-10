@@ -25,7 +25,7 @@ FileTreeModel::FileTreeModel(bool showUnknown, const QString &gamePath, GameData
         if (info.exists() && (info.completeSuffix() == QStringLiteral("win32.index"))) {
             std::string pathStd = info.filePath().toStdString();
             auto indexEntries = physis_index_parse(pathStd.c_str());
-            for (int i = 0; i < indexEntries.num_entries; i++) {
+            for (uint32_t i = 0; i < indexEntries.num_entries; i++) {
                 if (knownDirHashes.contains(indexEntries.dir_entries[i])) {
                     QString name;
                     if (m_database.knowsFile(indexEntries.filename_entries[i])) {
@@ -56,6 +56,7 @@ int FileTreeModel::rowCount(const QModelIndex &parent) const
 
 int FileTreeModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return 1;
 }
 

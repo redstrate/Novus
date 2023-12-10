@@ -33,7 +33,7 @@ MainWindow::MainWindow(GameData *data)
     auto listWidget = new QListWidget();
 
     auto names = physis_gamedata_get_all_sheet_names(data);
-    for (int i = 0; i < names.name_count; i++) {
+    for (uint32_t i = 0; i < names.name_count; i++) {
         listWidget->addItem(QString::fromStdString(names.names[i]));
     }
 

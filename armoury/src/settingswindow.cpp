@@ -30,7 +30,7 @@ SettingsWindow::SettingsWindow(QWidget *parent)
     outputBoxLayout->setContentsMargins(0, 0, 0, 0);
 
     KConfig config(QStringLiteral("novusrc"));
-    KConfigGroup game = config.group("Armoury");
+    KConfigGroup game = config.group(QStringLiteral("Armoury"));
 
     m_outputLineEdit = new QLineEdit();
     m_outputLineEdit->setText(game.readEntry("PenumbraOutputDirectory"));
@@ -67,6 +67,6 @@ SettingsWindow::SettingsWindow(QWidget *parent)
 void SettingsWindow::applySettings()
 {
     KConfig config(QStringLiteral("novusrc"));
-    KConfigGroup game = config.group("Armoury");
+    KConfigGroup game = config.group(QStringLiteral("Armoury"));
     game.writeEntry("PenumbraOutputDirectory", m_outputLineEdit->text());
 }

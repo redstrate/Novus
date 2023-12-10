@@ -186,16 +186,22 @@ void QHexDocument::replace(qint64 offset, uchar b)
 
 void QHexDocument::insert(qint64 offset, const QByteArray &data)
 {
+    Q_UNUSED(offset)
+    Q_UNUSED(data)
     Q_EMIT documentChanged();
 }
 
 void QHexDocument::replace(qint64 offset, const QByteArray &data)
 {
+    Q_UNUSED(offset)
+    Q_UNUSED(data)
     Q_EMIT documentChanged();
 }
 
 void QHexDocument::remove(qint64 offset, int len)
 {
+    Q_UNUSED(offset)
+    Q_UNUSED(len)
     Q_EMIT documentChanged();
 }
 
@@ -209,7 +215,7 @@ bool QHexDocument::saveTo(QIODevice *device)
     if (!device->isWritable())
         return false;
 
-    m_buffer->write(device);
+    m_buffer->writeDevice(device);
     return true;
 }
 

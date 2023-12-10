@@ -49,10 +49,10 @@ GearView::GearView(GameData *data, FileCache &cache, QWidget *parent)
 
             Q_EMIT loadingChanged(true);
 
-            QtConcurrent::run(QThreadPool::globalInstance(), [this] {
+            Q_UNUSED(QtConcurrent::run(QThreadPool::globalInstance(), [this] {
                 updatePart();
                 Q_EMIT loadingChanged(false);
-            });
+            }));
         }
     };
 }
@@ -61,7 +61,7 @@ std::vector<std::pair<Race, Subrace>> GearView::supportedRaces() const
 {
     std::vector<std::pair<Race, Subrace>> races;
     for (const auto &gear : loadedGears) {
-        for (const auto [race, race_name] : magic_enum::enum_entries<Race>()) {
+        for (const auto &[race, race_name] : magic_enum::enum_entries<Race>()) {
             for (const auto subrace : physis_get_supported_subraces(race).subraces) {
                 auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, race, subrace, currentGender, gear.info.slot);
 
@@ -314,7 +314,7 @@ void GearView::updatePart()
                 auto mdl = physis_mdl_parse(mdl_data);
 
                 std::vector<physis_Material> materials;
-                for (int i = 0; i < mdl.num_material_names; i++) {
+                for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                     const char *material_name = mdl.material_names[i];
 
                     const std::string mtrl_path = gearAddition.info.getMtrlPath(material_name);
@@ -375,7 +375,7 @@ void GearView::updatePart()
             auto mdl = physis_mdl_parse(mdl_data);
 
             std::vector<physis_Material> materials;
-            for (int i = 0; i < mdl.num_material_names; i++) {
+            for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                 const char *material_name = mdl.material_names[i];
                 const std::string skinmtrl_path =
                     physis_build_face_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *face, material_name);
@@ -398,7 +398,7 @@ void GearView::updatePart()
             auto mdl = physis_mdl_parse(mdl_data);
 
             std::vector<physis_Material> materials;
-            for (int i = 0; i < mdl.num_material_names; i++) {
+            for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                 const char *material_name = mdl.material_names[i];
                 const std::string skinmtrl_path =
                     physis_build_hair_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *hair, material_name);
@@ -421,7 +421,7 @@ void GearView::updatePart()
             auto mdl = physis_mdl_parse(mdl_data);
 
             std::vector<physis_Material> materials;
-            for (int i = 0; i < mdl.num_material_names; i++) {
+            for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                 const char *material_name = mdl.material_names[i];
                 const std::string skinmtrl_path =
                     physis_build_ear_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *ear, material_name);

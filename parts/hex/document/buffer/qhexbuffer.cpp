@@ -24,7 +24,7 @@ void QHexBuffer::replace(qint64 offset, const QByteArray &data)
     this->insert(offset, data);
 }
 
-void QHexBuffer::read(char *data, int size)
+void QHexBuffer::readRaw(char *data, int size)
 {
     QBuffer *buffer = new QBuffer(this);
     buffer->setData(data, size);
@@ -32,10 +32,10 @@ void QHexBuffer::read(char *data, int size)
     if (!buffer->isOpen())
         buffer->open(QBuffer::ReadWrite);
 
-    this->read(buffer);
+    this->readDevice(buffer);
 }
 
-void QHexBuffer::read(const QByteArray &ba)
+void QHexBuffer::readArray(const QByteArray &ba)
 {
     QBuffer *buffer = new QBuffer(this);
 
@@ -43,7 +43,7 @@ void QHexBuffer::read(const QByteArray &ba)
     if (!buffer->isOpen())
         buffer->open(QBuffer::ReadWrite);
 
-    this->read(buffer);
+    this->readDevice(buffer);
 }
 
 #include "moc_qhexbuffer.cpp"

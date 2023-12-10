@@ -140,8 +140,8 @@ void MDLPart::reloadBoneData()
         for (auto &model : models) {
             // we want to map the actual affected bones to bone ids
             std::map<int, int> boneMapping;
-            for (int i = 0; i < model.model.num_affected_bones; i++) {
-                for (int k = 0; k < skeleton->num_bones; k++) {
+            for (uint32_t i = 0; i < model.model.num_affected_bones; i++) {
+                for (uint32_t k = 0; k < skeleton->num_bones; k++) {
                     if (std::string_view{skeleton->bones[k].name} == std::string_view{model.model.affected_bone_names[i]}) {
                         boneMapping[i] = k;
                     }
@@ -149,7 +149,7 @@ void MDLPart::reloadBoneData()
             }
 
             std::vector<glm::mat4> deformBones(model.model.num_affected_bones);
-            for (int i = 0; i < model.model.num_affected_bones; i++) {
+            for (uint32_t i = 0; i < model.model.num_affected_bones; i++) {
                 deformBones[i] = glm::mat4(1.0f);
             }
 
@@ -159,7 +159,7 @@ void MDLPart::reloadBoneData()
                 for (int i = 0; i < deform.num_bones; i++) {
                     auto deformBone = deform.bones[i];
 
-                    for (int k = 0; k < model.model.num_affected_bones; k++) {
+                    for (uint32_t k = 0; k < model.model.num_affected_bones; k++) {
                         if (std::string_view{model.model.affected_bone_names[k]} == std::string_view{deformBone.name}) {
                             deformBones[k] = glm::mat4{deformBone.deform[0],
                                                        deformBone.deform[1],
@@ -182,7 +182,7 @@ void MDLPart::reloadBoneData()
                 }
             }
 
-            for (int i = 0; i < model.model.num_affected_bones; i++) {
+            for (uint32_t i = 0; i < model.model.num_affected_bones; i++) {
                 const int originalBoneId = boneMapping[i];
                 model.boneData[i] = boneData[originalBoneId].localTransform * deformBones[i] * boneData[originalBoneId].inversePose;
             }
@@ -194,7 +194,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
 {
     RenderMaterial newMaterial;
 
-    for (int i = 0; i < material.num_textures; i++) {
+    for (uint32_t i = 0; i < material.num_textures; i++) {
         std::string t = material.textures[i];
 
         if (t.find("skin") != std::string::npos) {
@@ -209,7 +209,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
             newMaterial.multiTexture = new RenderTexture(tex);
-        }
+        } break;
         case 'd': {
             auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
             auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
@@ -248,7 +248,7 @@ void MDLPart::calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &b
 
     boneData[bone.index].inversePose = parentMatrix * local;
 
-    for (int i = 0; i < skeleton.num_bones; i++) {
+    for (uint32_t i = 0; i < skeleton.num_bones; i++) {
         if (skeleton.bones[i].parent_bone != nullptr && std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {
             calculateBoneInversePose(skeleton, skeleton.bones[i], &bone);
         }
@@ -267,7 +267,7 @@ void MDLPart::calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const 
     boneData[bone.index].localTransform = parent_matrix * local;
     boneData[bone.index].finalTransform = parent_matrix;
 
-    for (int i = 0; i < skeleton.num_bones; i++) {
+    for (uint32_t i = 0; i < skeleton.num_bones; i++) {
         if (skeleton.bones[i].parent_bone != nullptr && std::string_view{skeleton.bones[i].parent_bone->name} == std::string_view{bone.name}) {
             calculateBone(skeleton, skeleton.bones[i], &bone);
         }

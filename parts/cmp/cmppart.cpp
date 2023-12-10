@@ -58,6 +58,7 @@ void CmpPart::load(physis_Buffer file)
     raceListWidget->expandAll();
 
     connect(raceListWidget, &QTreeWidget::itemClicked, [this](QTreeWidgetItem *item, int column) {
+        Q_UNUSED(column)
         if (auto treeData = qvariant_cast<RaceTreeData *>(item->data(0, Qt::UserRole))) {
             loadRaceData(treeData->race, treeData->subrace);
         }
