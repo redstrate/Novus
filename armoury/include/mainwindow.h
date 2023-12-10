@@ -14,6 +14,7 @@
 
 struct GameData;
 class FileCache;
+class PenumbraApi;
 
 class MainWindow : public NovusMainWindow
 {
@@ -31,4 +32,5 @@ private:
 
     GameData &data;
     FileCache cache;
+    PenumbraApi *m_api = nullptr;
 };

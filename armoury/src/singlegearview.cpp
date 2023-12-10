@@ -102,8 +102,9 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
                                                                   tr("Import Model"),
                                                                   QStringLiteral("%1.glb").arg(sanitizeMdlPath(gearView->getLoadedGearPath())),
                                                                   tr("glTF Binary File (*.glb)"));
-
-            importModel(fileName);
+            if (!fileName.isEmpty()) {
+                importModel(fileName);
+            }
         }
     });
     topControlLayout->addWidget(importButton);
@@ -334,6 +335,7 @@ void SingleGearView::importModel(const QString &filename)
     file.close();
 
     qInfo() << "Successfully imported model!";
+    Q_EMIT importedModel();
 }
 
 #include "moc_singlegearview.cpp"

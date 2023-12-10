@@ -18,12 +18,14 @@
 #include "cmpeditor.h"
 #include "filecache.h"
 #include "gearlistwidget.h"
+#include "penumbraapi.h"
 #include "settingswindow.h"
 
 MainWindow::MainWindow(GameData *in_data)
     : NovusMainWindow()
     , data(*in_data)
     , cache(FileCache{*in_data})
+    , m_api(new PenumbraApi(this))
 {
     setMinimumSize(QSize(800, 600));
     setupMenubar();
@@ -45,6 +47,7 @@ MainWindow::MainWindow(GameData *in_data)
     connect(gearView, &SingleGearView::addToFullModelViewer, this, [this](GearInfo &info) {
         fullModelViewer->addGear(info);
     });
+    connect(gearView, &SingleGearView::importedModel, m_api, &PenumbraApi::redrawAll);
 
     auto tabWidget = new QTabWidget();
     tabWidget->addTab(gearView, QStringLiteral("Models"));

@@ -29,6 +29,7 @@ Q_SIGNALS:
     void levelOfDetailChanged();
 
     void addToFullModelViewer(GearInfo &info);
+    void importedModel();
 
 public Q_SLOTS:
     void clear();

@@ -11,6 +11,7 @@ target_sources(novus-armoury
         include/gearlistwidget.h
         include/gearview.h
         include/mainwindow.h
+        include/penumbraapi.h
         include/settingswindow.h
         include/singlegearview.h
 
@@ -22,6 +23,7 @@ target_sources(novus-armoury
         src/gearview.cpp
         src/main.cpp
         src/mainwindow.cpp
+        src/penumbraapi.cpp
         src/settingswindow.cpp
         src/singlegearview.cpp)
 target_include_directories(novus-armoury
@@ -40,6 +42,7 @@ target_link_libraries(novus-armoury
         imgui
         Qt6::Core
         Qt6::Widgets
-        Qt6::Concurrent)
+        Qt6::Concurrent
+        Qt6::Network)
 
 install(TARGETS novus-armoury ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
