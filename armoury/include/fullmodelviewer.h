@@ -18,9 +18,14 @@ class FullModelViewer : public QMainWindow
 public:
     explicit FullModelViewer(GameData *data, FileCache &cache, QWidget *parent = nullptr);
 
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
+
 Q_SIGNALS:
     void gearChanged();
     void loadingChanged(bool loading);
+    void visibleChanged();
 
 public Q_SLOTS:
     void clear();

@@ -5,6 +5,7 @@
 
 #include "boneeditor.h"
 #include "magic_enum.hpp"
+#include <QCloseEvent>
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -19,6 +20,7 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
     setWindowTitle(QStringLiteral("Full Model Viewer"));
     setMinimumWidth(1280);
     setMinimumHeight(720);
+    setAttribute(Qt::WA_DeleteOnClose, false);
 
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
@@ -134,6 +136,25 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
     });
 
     reloadGear();
+}
+
+void FullModelViewer::showEvent(QShowEvent *event)
+{
+    Q_EMIT visibleChanged();
+    QWidget::showEvent(event);
+}
+
+void FullModelViewer::hideEvent(QHideEvent *event)
+{
+    Q_EMIT visibleChanged();
+    QWidget::hideEvent(event);
+}
+
+void FullModelViewer::closeEvent(QCloseEvent *event)
+{
+    event->setAccepted(true);
+    hide();
+    QWidget::closeEvent(event);
 }
 
 void FullModelViewer::clear()

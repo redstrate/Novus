@@ -24,10 +24,11 @@ void VulkanWindow::exposeEvent(QExposeEvent *)
         m_initialized = true;
 
         auto surface = m_instance->surfaceForWindow(this);
-        if (!m_renderer->initSwapchain(surface, width() * screen()->devicePixelRatio(), height() * screen()->devicePixelRatio()))
+        if (!m_renderer->initSwapchain(surface, width() * screen()->devicePixelRatio(), height() * screen()->devicePixelRatio())) {
             m_initialized = false;
-        else
+        } else {
             render();
+        }
     }
 
     if (!isExposed() && m_initialized) {
@@ -113,6 +114,10 @@ bool VulkanWindow::event(QEvent *e)
 
 void VulkanWindow::render()
 {
+    if (!m_initialized) {
+        return;
+    }
+
     ImGui::SetCurrentContext(m_renderer->ctx);
 
     auto &io = ImGui::GetIO();

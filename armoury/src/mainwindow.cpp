@@ -54,12 +54,24 @@ MainWindow::MainWindow(GameData *in_data)
     connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {
         gearView->setFMVAvailable(!loading);
     });
-    fullModelViewer->show();
 }
 
 void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
 {
     auto toolsMenu = menuBar->addMenu(QStringLiteral("Tools"));
+
+    auto fmvMenu = toolsMenu->addAction(QStringLiteral("Full Model viewer"));
+    fmvMenu->setCheckable(true);
+    connect(fmvMenu, &QAction::toggled, [this](bool toggled) {
+        if (toggled) {
+            fullModelViewer->show();
+        } else {
+            fullModelViewer->hide();
+        }
+    });
+    connect(fullModelViewer, &FullModelViewer::visibleChanged, this, [this, fmvMenu] {
+        fmvMenu->setChecked(fullModelViewer->isVisible());
+    });
 
     auto cmpEditorMenu = toolsMenu->addAction(QStringLiteral("CMP Editor"));
     cmpEditorMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
