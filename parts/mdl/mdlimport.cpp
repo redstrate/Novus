@@ -24,6 +24,22 @@ void importModel(physis_MDL &existingModel, const QString &filename)
         qInfo() << "Warnings when loading glTF model:" << warning;
     }
 
+    struct ProcessedSubMesh {
+        uint32_t subMeshIndex = 0;
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+    };
+
+    bool duplicateBuffers = false; // I hate this.
+
+    // We may be reading the parts of order (0.1, then 1.0, maybe 0.2 and so on) so we have to keep track of our buffers
+    struct ProcessedPart {
+        uint32_t partIndex = 0;
+        int lastPositionViewUsed = -1; // detect duplicate accessor and check their offsets
+        std::vector<ProcessedSubMesh> subMeshes;
+    };
+    std::vector<ProcessedPart> processingParts;
+
     for (const auto &node : model.nodes) {
         // Detect if it's a mesh node
         if (node.mesh >= 0) {
@@ -32,17 +48,38 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             const QStringList parts = QString::fromStdString(node.name).split(QLatin1Char(' '));
             const QStringList lodPartNumber = parts[2].split(QLatin1Char('.'));
 
-            // const int lodNumber = lodPartNumber[0].toInt();
             const int lodNumber = 0;
             const int partNumber = lodPartNumber[0].toInt();
+            const int submeshNumber = lodPartNumber[1].toInt();
 
-            qInfo() << "- LOD:" << lodNumber;
             qInfo() << "- Part:" << partNumber;
+            qInfo() << "- Submesh:" << submeshNumber;
 
             if (partNumber >= existingModel.lods[lodNumber].num_parts) {
                 qInfo() << "- Skipping because of missing part...";
                 continue;
             }
+
+            if (submeshNumber >= existingModel.lods[lodNumber].parts[partNumber].num_submeshes) {
+                qInfo() << "- Skipping because of missing submesh...";
+                continue;
+            }
+
+            ProcessedPart *processedPart = nullptr;
+            for (auto &part : processingParts) {
+                if (part.partIndex == partNumber) {
+                    processedPart = &part;
+                    break;
+                }
+            }
+
+            if (processedPart == nullptr) {
+                processedPart = &processingParts.emplace_back();
+                processedPart->partIndex = partNumber;
+            }
+
+            ProcessedSubMesh &processedSubMesh = processedPart->subMeshes.emplace_back();
+            processedSubMesh.subMeshIndex = submeshNumber;
 
             auto &mesh = model.meshes[node.mesh];
             auto &primitive = mesh.primitives[0];
@@ -66,24 +103,16 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             const auto &indexView = model.bufferViews[indexAccessor.bufferView];
             const auto &indexBuffer = model.buffers[indexView.buffer];
 
-            const int newVertexCount = positionAccessor.count;
-            const int oldVertexCount = existingModel.lods[lodNumber].parts[partNumber].num_vertices;
-
-            if (newVertexCount != oldVertexCount) {
-                qInfo() << "- Difference in vertex count!" << newVertexCount << "old:" << oldVertexCount;
-            }
-
-            const int newIndexCount = indexAccessor.count;
-            const int oldIndexCount = existingModel.lods[lodNumber].parts[partNumber].num_indices;
-
-            if (newIndexCount != oldIndexCount) {
-                qInfo() << "- Difference in index count!" << newIndexCount << "old:" << oldIndexCount;
-            }
-
             qInfo() << "- Importing mesh of" << positionAccessor.count << "vertices and" << indexAccessor.count << "indices.";
 
+            auto indexData = reinterpret_cast<const uint16_t *>(indexBuffer.data.data() + indexView.byteOffset + indexAccessor.byteOffset);
+            for (size_t k = 0; k < indexAccessor.count; k++) {
+                processedSubMesh.indices.push_back(indexData[k]);
+            }
+
             std::vector<Vertex> newVertices;
-            for (uint32_t i = 0; i < positionAccessor.count; i++) {
+            for (size_t i = 0; i < positionAccessor.count; i++) {
+                // vertex data
                 glm::vec3 const *positionData = reinterpret_cast<glm::vec3 const *>(getAccessor("POSITION", i));
                 glm::vec3 const *normalData = reinterpret_cast<glm::vec3 const *>(getAccessor("NORMAL", i));
                 glm::vec2 const *uv0Data = reinterpret_cast<glm::vec2 const *>(getAccessor("TEXCOORD_0", i));
@@ -137,10 +166,58 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 newVertices.push_back(vertex);
             }
 
-            auto indexData = (const uint16_t *)(indexBuffer.data.data() + indexView.byteOffset + indexAccessor.byteOffset);
-
-            physis_mdl_replace_vertices(&existingModel, lodNumber, partNumber, newVertices.size(), newVertices.data(), indexAccessor.count, indexData);
+            // don't add duplicate vertex data!!
+            if (processedPart->lastPositionViewUsed != positionAccessor.bufferView) {
+                processedPart->lastPositionViewUsed = positionAccessor.bufferView;
+                processedSubMesh.vertices = newVertices;
+            } else {
+                duplicateBuffers = true;
+            }
         }
+    }
+
+    size_t index_offset = 0;
+
+    for (auto &part : processingParts) {
+        std::vector<Vertex> combinedVertices;
+        std::vector<uint16_t> combinedIndices;
+        std::vector<SubMesh> newSubmeshes;
+
+        size_t vertex_offset = 0;
+
+        // Turn 0.3, 0.2, 0.1 into 0.1, 0.2, 0.3 so they're all in the combined vertex list correctly
+        std::sort(part.subMeshes.begin(), part.subMeshes.end(), [](const ProcessedSubMesh &a, const ProcessedSubMesh &b) {
+            return a.subMeshIndex < b.subMeshIndex;
+        });
+
+        for (auto &submesh : part.subMeshes) {
+            std::copy(submesh.vertices.cbegin(), submesh.vertices.cend(), std::back_inserter(combinedVertices));
+
+            for (unsigned int indice : submesh.indices) {
+                // if the buffers are duplicate and shared (like when exporting from Novus)
+                // then we don't need to add vertex offset, they are already done
+                if (duplicateBuffers) {
+                    combinedIndices.push_back(indice);
+                } else {
+                    combinedIndices.push_back(indice + vertex_offset);
+                }
+            }
+
+            newSubmeshes.push_back({.index_count = static_cast<uint32_t>(submesh.indices.size()), .index_offset = static_cast<uint32_t>(index_offset)});
+
+            index_offset += submesh.indices.size();
+            vertex_offset += submesh.vertices.size();
+        }
+
+        physis_mdl_replace_vertices(&existingModel,
+                                    0,
+                                    part.partIndex,
+                                    combinedVertices.size(),
+                                    combinedVertices.data(),
+                                    combinedIndices.size(),
+                                    combinedIndices.data(),
+                                    newSubmeshes.size(),
+                                    newSubmeshes.data());
     }
 
     qInfo() << "Successfully imported model!";
