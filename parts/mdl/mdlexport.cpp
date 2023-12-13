@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "mdlexport.h"
+#include <QDebug>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "tiny_gltf.h"
@@ -16,7 +17,13 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
     gltfModel.asset.generator = "Novus";
 
     // TODO: just write the code better! dummy!!
-    gltfModel.nodes.reserve(1 + model.num_affected_bones + lod.num_parts);
+    size_t required_nodes = 1;
+    required_nodes += model.num_affected_bones;
+    for (int i = 0; i < lod.num_parts; i++) {
+        required_nodes += lod.parts[i].num_submeshes;
+    }
+
+    gltfModel.nodes.reserve(required_nodes);
 
     auto &gltfSkeletonNode = gltfModel.nodes.emplace_back();
     gltfSkeletonNode.name = skeleton.root_bone->name;
@@ -123,28 +130,57 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
         inverseBufferView.byteLength = inverseBuffer.data.size();
     }
 
+    int mesh_offset = 0;
     for (uint32_t i = 0; i < lod.num_parts; i++) {
-        gltfSkeletonNode.children.push_back(gltfModel.nodes.size());
+        auto &part = lod.parts[i];
 
-        auto &gltfNode = gltfModel.nodes.emplace_back();
+        // Parts above 0 also have an index offset because it's supposed to be all in one buffer.
+        // We should do that too eventually!
+        int initial_index_offset = 0;
 
-        gltfNode.name = name.toStdString() + " Part " + std::to_string(i) + ".0";
-        gltfNode.skin = 0;
+        for (uint32_t j = 0; j < part.num_submeshes; j++) {
+            gltfSkeletonNode.children.push_back(gltfModel.nodes.size());
 
-        gltfNode.mesh = gltfModel.meshes.size();
-        auto &gltfMesh = gltfModel.meshes.emplace_back();
+            auto &gltfNode = gltfModel.nodes.emplace_back();
 
-        gltfMesh.name = gltfNode.name + " Mesh Attribute";
+            gltfNode.name = name.toStdString() + " Part " + std::to_string(i) + "." + std::to_string(j);
+            gltfNode.skin = 0;
 
-        auto &gltfPrimitive = gltfMesh.primitives.emplace_back();
-        gltfPrimitive.attributes["POSITION"] = gltfModel.accessors.size();
-        gltfPrimitive.attributes["TEXCOORD_0"] = gltfModel.accessors.size() + 1;
-        gltfPrimitive.attributes["TEXCOORD_1"] = gltfModel.accessors.size() + 2;
-        gltfPrimitive.attributes["NORMAL"] = gltfModel.accessors.size() + 3;
-        gltfPrimitive.attributes["COLOR_0"] = gltfModel.accessors.size() + 6;
-        gltfPrimitive.attributes["WEIGHTS_0"] = gltfModel.accessors.size() + 7;
-        gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 8;
-        gltfPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
+            gltfNode.mesh = gltfModel.meshes.size();
+            auto &gltfMesh = gltfModel.meshes.emplace_back();
+
+            gltfMesh.name = gltfNode.name + " Mesh Attribute";
+
+            auto &gltfPrimitive = gltfMesh.primitives.emplace_back();
+
+            if (j == 0) {
+                initial_index_offset = lod.parts[i].submeshes[j].index_offset;
+            }
+
+            gltfPrimitive.indices = gltfModel.accessors.size();
+            auto &indexAccessor = gltfModel.accessors.emplace_back();
+            indexAccessor.name = gltfNode.name + " Index Accessor";
+            indexAccessor.bufferView = gltfModel.bufferViews.size() + 1;
+            indexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
+            indexAccessor.count = lod.parts[i].submeshes[j].index_count;
+            indexAccessor.byteOffset = (lod.parts[i].submeshes[j].index_offset - initial_index_offset) * sizeof(uint16_t);
+            indexAccessor.type = TINYGLTF_TYPE_SCALAR;
+
+            gltfPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
+        }
+
+        for (uint32_t j = 0; j < part.num_submeshes; j++) {
+            auto &gltfPrimitive = gltfModel.meshes[mesh_offset + j].primitives[0];
+            gltfPrimitive.attributes["POSITION"] = gltfModel.accessors.size();
+            gltfPrimitive.attributes["TEXCOORD_0"] = gltfModel.accessors.size() + 1;
+            gltfPrimitive.attributes["TEXCOORD_1"] = gltfModel.accessors.size() + 2;
+            gltfPrimitive.attributes["NORMAL"] = gltfModel.accessors.size() + 3;
+            gltfPrimitive.attributes["COLOR_0"] = gltfModel.accessors.size() + 6;
+            gltfPrimitive.attributes["WEIGHTS_0"] = gltfModel.accessors.size() + 7;
+            gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 8;
+        }
+
+        mesh_offset += part.num_submeshes;
 
         // Vertices
         {
@@ -211,6 +247,7 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             boneIdAccessor.byteOffset = offsetof(Vertex, bone_id);
 
             auto &vertexBufferView = gltfModel.bufferViews.emplace_back();
+            vertexBufferView.name = "Part " + std::to_string(i) + " Vertex Buffer View";
             vertexBufferView.buffer = gltfModel.buffers.size();
             vertexBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
@@ -228,6 +265,7 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             }
 
             auto &vertexBuffer = gltfModel.buffers.emplace_back();
+            vertexBuffer.name = "Part " + std::to_string(i) + " Vertex Buffer";
             vertexBuffer.data.resize(lod.parts[i].num_vertices * sizeof(Vertex));
             memcpy(vertexBuffer.data.data(), newVertices.data(), vertexBuffer.data.size());
 
@@ -237,23 +275,17 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
 
         // Indices
         {
-            gltfPrimitive.indices = gltfModel.accessors.size();
-            auto &indexAccessor = gltfModel.accessors.emplace_back();
-            indexAccessor.bufferView = gltfModel.bufferViews.size();
-            indexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
-            indexAccessor.count = lod.parts[i].num_indices;
-            indexAccessor.type = TINYGLTF_TYPE_SCALAR;
-
             auto &indexBufferView = gltfModel.bufferViews.emplace_back();
+            indexBufferView.name = "Part " + std::to_string(i) + " Index Buffer View";
             indexBufferView.buffer = gltfModel.buffers.size();
             indexBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
 
             auto &indexBuffer = gltfModel.buffers.emplace_back();
+            indexBuffer.name = "Part " + std::to_string(i) + " Index Buffer";
             indexBuffer.data.resize(lod.parts[i].num_indices * sizeof(uint16_t));
             memcpy(indexBuffer.data.data(), lod.parts[i].indices, indexBuffer.data.size());
 
             indexBufferView.byteLength = indexBuffer.data.size();
-            indexBufferView.byteStride = sizeof(uint16_t);
         }
     }
 
