@@ -31,6 +31,12 @@ MainWindow::MainWindow(GameData *data)
 
     part = new MDLPart(data, cache);
 
+    const int raceCode = physis_get_race_code(Race::Hyur, Subrace::Midlander, Gender::Male);
+
+    QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
+    std::string skelNameStd = skelName.toStdString();
+    part->setSkeleton(physis_parse_skeleton(physis_gamedata_extract_file(data, skelNameStd.c_str())));
+
     layout->addWidget(part);
 }
 
