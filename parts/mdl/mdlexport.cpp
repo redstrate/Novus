@@ -175,9 +175,10 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             gltfPrimitive.attributes["TEXCOORD_0"] = gltfModel.accessors.size() + 1;
             gltfPrimitive.attributes["TEXCOORD_1"] = gltfModel.accessors.size() + 2;
             gltfPrimitive.attributes["NORMAL"] = gltfModel.accessors.size() + 3;
-            gltfPrimitive.attributes["COLOR_0"] = gltfModel.accessors.size() + 6;
-            gltfPrimitive.attributes["WEIGHTS_0"] = gltfModel.accessors.size() + 7;
-            gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 8;
+            gltfPrimitive.attributes["TANGENT"] = gltfModel.accessors.size() + 4;
+            gltfPrimitive.attributes["COLOR_0"] = gltfModel.accessors.size() + 5;
+            gltfPrimitive.attributes["WEIGHTS_0"] = gltfModel.accessors.size() + 6;
+            gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 7;
         }
 
         mesh_offset += part.num_submeshes;
@@ -211,19 +212,13 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             normalAccessor.type = TINYGLTF_TYPE_VEC3;
             normalAccessor.byteOffset = offsetof(Vertex, normal);
 
-            auto &tangent1Accessor = gltfModel.accessors.emplace_back();
-            tangent1Accessor.bufferView = gltfModel.bufferViews.size();
-            tangent1Accessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
-            tangent1Accessor.count = lod.parts[i].num_vertices;
-            tangent1Accessor.type = TINYGLTF_TYPE_VEC4;
-            tangent1Accessor.byteOffset = offsetof(Vertex, tangent1);
-
-            auto &tangent2Accessor = gltfModel.accessors.emplace_back();
-            tangent2Accessor.bufferView = gltfModel.bufferViews.size();
-            tangent2Accessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
-            tangent2Accessor.count = lod.parts[i].num_vertices;
-            tangent2Accessor.type = TINYGLTF_TYPE_VEC4;
-            tangent2Accessor.byteOffset = offsetof(Vertex, tangent2);
+            // We're reusing this spot for tangents (see later post-processing step)
+            auto &tangentAccessor = gltfModel.accessors.emplace_back();
+            tangentAccessor.bufferView = gltfModel.bufferViews.size();
+            tangentAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+            tangentAccessor.count = lod.parts[i].num_vertices;
+            tangentAccessor.type = TINYGLTF_TYPE_VEC4;
+            tangentAccessor.byteOffset = offsetof(Vertex, bitangent);
 
             auto &colorAccessor = gltfModel.accessors.emplace_back();
             colorAccessor.bufferView = gltfModel.bufferViews.size();
@@ -260,6 +255,18 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
                 vertex.bone_id[1]++;
                 vertex.bone_id[2]++;
                 vertex.bone_id[3]++;
+
+                // Do the reverse of what we do in importing, because we need to get the tangent from the binormal.
+                const glm::vec3 normal = glm::vec3(vertex.normal[0], vertex.normal[1], vertex.normal[2]);
+                const glm::vec4 tangent = glm::vec4(vertex.bitangent[0], vertex.bitangent[1], vertex.bitangent[2], vertex.bitangent[3]);
+                const glm::vec3 bitangent = glm::cross(glm::vec3(tangent), normal) * tangent.w;
+
+                const float handedness = glm::dot(glm::cross(bitangent, glm::vec3(tangent)), normal) > 0 ? 1 : -1;
+
+                vertex.bitangent[0] = bitangent.x;
+                vertex.bitangent[1] = bitangent.y;
+                vertex.bitangent[2] = bitangent.z;
+                vertex.bitangent[3] = handedness;
 
                 newVertices.push_back(vertex);
             }

@@ -84,20 +84,18 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             auto &mesh = model.meshes[node.mesh];
             auto &primitive = mesh.primitives[0];
 
-            const auto getAccessor = [&model, &primitive](const std::string &name, const int index) -> unsigned char const * {
+            const auto getAccessor = [&model, &primitive](const std::string &name, const size_t index) -> unsigned char const * {
                 const auto &positionAccessor = model.accessors[primitive.attributes[name]];
                 const auto &positionView = model.bufferViews[positionAccessor.bufferView];
                 const auto &positionBuffer = model.buffers[positionView.buffer];
 
-                int elementCount = tinygltf::GetNumComponentsInType(positionAccessor.type);
-                int elementSize = tinygltf::GetComponentSizeInBytes(positionAccessor.componentType);
-
-                return (positionBuffer.data.data() + (std::max(positionView.byteStride, (size_t)elementCount * elementSize) * index) + positionView.byteOffset
+                return (positionBuffer.data.data() + (positionAccessor.ByteStride(positionView) * index) + positionView.byteOffset
                         + positionAccessor.byteOffset);
             };
 
-            // All of the accessors are mapped to the same buffer vertex view
+            // All the accessors are mapped to the same buffer vertex view
             const auto &positionAccessor = model.accessors[primitive.attributes["POSITION"]];
+            const auto &colorAccessor = model.accessors[primitive.attributes["COLOR_0"]];
 
             const auto &indexAccessor = model.accessors[primitive.indices];
             const auto &indexView = model.bufferViews[indexAccessor.bufferView];
@@ -119,12 +117,10 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 glm::vec2 const *uv1Data = reinterpret_cast<glm::vec2 const *>(getAccessor("TEXCOORD_1", i));
                 glm::vec4 const *weightsData = reinterpret_cast<glm::vec4 const *>(getAccessor("WEIGHTS_0", i));
                 uint8_t const *jointsData = reinterpret_cast<uint8_t const *>(getAccessor("JOINTS_0", i));
+                glm::vec4 const *tangent1Data = reinterpret_cast<glm::vec4 const *>(getAccessor("TANGENT", i));
 
                 // Replace position data
                 Vertex vertex{};
-                if (i < existingModel.lods[lodNumber].parts[partNumber].num_vertices) {
-                    vertex = existingModel.lods[lodNumber].parts[partNumber].vertices[i];
-                }
 
                 vertex.position[0] = positionData->x;
                 vertex.position[1] = positionData->y;
@@ -144,6 +140,34 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 vertex.bone_weight[1] = weightsData->y;
                 vertex.bone_weight[2] = weightsData->z;
                 vertex.bone_weight[3] = weightsData->w;
+
+                // calculate binormal, because glTF won't give us those!!
+                const glm::vec3 normal = glm::vec3(vertex.normal[0], vertex.normal[1], vertex.normal[2]);
+                const glm::vec4 tangent = *tangent1Data;
+                const glm::vec3 bitangent = glm::cross(normal, glm::vec3(tangent)) * tangent.w;
+
+                const float handedness = glm::dot(glm::cross(glm::vec3(tangent), bitangent), normal) > 0 ? 1 : -1;
+
+                // In a cruel twist of fate, Tangent1 is actually the **BINORMAL** and not the tangent data. Square Enix is AMAZING.
+                vertex.bitangent[0] = bitangent.x;
+                vertex.bitangent[1] = bitangent.y;
+                vertex.bitangent[2] = bitangent.z;
+                vertex.bitangent[3] = handedness;
+
+                if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                    unsigned short const *colorData = reinterpret_cast<unsigned short const *>(getAccessor("COLOR_0", i));
+
+                    vertex.color[0] = static_cast<float>(*colorData) / std::numeric_limits<unsigned short>::max();
+                    vertex.color[1] = static_cast<float>(*(colorData + 1)) / std::numeric_limits<unsigned short>::max();
+                    vertex.color[2] = static_cast<float>(*(colorData + 2)) / std::numeric_limits<unsigned short>::max();
+                    vertex.color[3] = static_cast<float>(*(colorData + 3)) / std::numeric_limits<unsigned short>::max();
+                } else {
+                    glm::vec4 const *colorData = reinterpret_cast<glm::vec4 const *>(getAccessor("COLOR_0", i));
+                    vertex.color[0] = colorData->x;
+                    vertex.color[1] = colorData->y;
+                    vertex.color[2] = colorData->z;
+                    vertex.color[3] = colorData->w;
+                }
 
                 // We need to ensure the bones are mapped correctly
                 // When exporting from modeling software, it's possible it sorted the nodes (Blender does this)

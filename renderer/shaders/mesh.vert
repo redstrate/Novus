@@ -7,11 +7,10 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inUV0;
 layout(location = 2) in vec2 inUV1;
 layout(location = 3) in vec3 inNormal;
-layout(location = 4) in uvec4 inTangent1;
-layout(location = 5) in uvec4 inTangent2;
-layout(location = 6) in vec4 inColor;
-layout(location = 7) in vec4 inBoneWeights;
-layout(location = 8) in uvec4 inBoneIds;
+layout(location = 4) in vec4 inBiTangent;
+layout(location = 5) in vec4 inColor;
+layout(location = 6) in vec4 inBoneWeights;
+layout(location = 7) in uvec4 inBoneIds;
 
 layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec3 outFragPos;

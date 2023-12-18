@@ -759,40 +759,28 @@ void Renderer::initPipeline()
     normalAttribute.location = 3;
     normalAttribute.offset = offsetof(Vertex, normal);
 
-    VkVertexInputAttributeDescription tangent1Attribute = {};
-    tangent1Attribute.format = VK_FORMAT_R8G8B8A8_UINT;
-    tangent1Attribute.location = 4;
-    tangent1Attribute.offset = offsetof(Vertex, tangent1);
-
-    VkVertexInputAttributeDescription tangent2Attribute = {};
-    tangent2Attribute.format = VK_FORMAT_R8G8B8A8_UINT;
-    tangent2Attribute.location = 5;
-    tangent2Attribute.offset = offsetof(Vertex, tangent2);
+    VkVertexInputAttributeDescription bitangentAttribute = {};
+    bitangentAttribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    bitangentAttribute.location = 4;
+    bitangentAttribute.offset = offsetof(Vertex, bitangent);
 
     VkVertexInputAttributeDescription colorAttribute = {};
     colorAttribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    colorAttribute.location = 6;
+    colorAttribute.location = 5;
     colorAttribute.offset = offsetof(Vertex, color);
 
     VkVertexInputAttributeDescription boneWeightAttribute = {};
     boneWeightAttribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    boneWeightAttribute.location = 7;
+    boneWeightAttribute.location = 6;
     boneWeightAttribute.offset = offsetof(Vertex, bone_weight);
 
     VkVertexInputAttributeDescription boneIdAttribute = {};
     boneIdAttribute.format = VK_FORMAT_R8G8B8A8_UINT;
-    boneIdAttribute.location = 8;
+    boneIdAttribute.location = 7;
     boneIdAttribute.offset = offsetof(Vertex, bone_id);
 
-    const std::array attributes = {positionAttribute,
-                                   uv0Attribute,
-                                   uv1Attribute,
-                                   normalAttribute,
-                                   tangent1Attribute,
-                                   tangent2Attribute,
-                                   colorAttribute,
-                                   boneWeightAttribute,
-                                   boneIdAttribute};
+    const std::array attributes =
+        {positionAttribute, uv0Attribute, uv1Attribute, normalAttribute, bitangentAttribute, colorAttribute, boneWeightAttribute, boneIdAttribute};
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
