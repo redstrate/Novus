@@ -351,8 +351,14 @@ void SingleGearView::importModel(const QString &filename)
     KConfigGroup game = config.group(QStringLiteral("Armoury"));
     QString outputDirectory = game.readEntry(QStringLiteral("PenumbraOutputDirectory"));
 
+    QFileInfo info(QStringLiteral("%1/%2").arg(outputDirectory, gearView->getLoadedGearPath()));
+
     auto buffer = physis_mdl_write(&mdl.model);
     QFile file(QStringLiteral("%1/%2").arg(outputDirectory, gearView->getLoadedGearPath()));
+
+    if (!QDir().exists(info.absolutePath()))
+        QDir().mkpath(info.absolutePath());
+
     file.open(QIODevice::WriteOnly);
     file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
     file.close();
