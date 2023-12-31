@@ -1,4 +1,4 @@
-# Novus
+# <img src="./launcher/zone.xiv.novus.svg" width="24"/> Novus
 
 [![builds.sr.ht status](https://builds.sr.ht/~redstrate/novus.svg)](https://builds.sr.ht/~redstrate/novus?)
 
