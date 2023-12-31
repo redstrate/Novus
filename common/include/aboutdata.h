@@ -6,4 +6,4 @@
 #include <KAboutData>
 #include <QString>
 
-void customizeAboutData(const QString &componentName, const QString &applicationTitle, const QString &applicationDescription);
+void customizeAboutData(const QString &componentName, const QString &desktopFilename, const QString &applicationTitle, const QString &applicationDescription);

@@ -14,7 +14,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    customizeAboutData(QStringLiteral("sagasu"), QStringLiteral("Sagasu"), QStringLiteral("Program to explore FFXIV data archives."));
+    customizeAboutData(QStringLiteral("sagasu"),
+                       QStringLiteral("zone.xiv.sagasu"),
+                       QStringLiteral("Data Explorer"),
+                       QStringLiteral("Program to explore FFXIV data archives."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

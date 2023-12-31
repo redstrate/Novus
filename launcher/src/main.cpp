@@ -16,7 +16,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     customizeAboutData(QStringLiteral("launcher"),
-                       QStringLiteral("SDK Launcher"),
+                       QStringLiteral("zone.xiv.novus"),
+                       QStringLiteral("Novus SDK"),
                        QStringLiteral("Handles setting up and launching various Novus SDK components."));
 
     // Default to a sensible message pattern

@@ -7,15 +7,21 @@
 #include <KConfigGroup>
 #include <QComboBox>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QFormLayout>
 #include <QListWidget>
 #include <QProcess>
+#include <QUrl>
 #include <QVBoxLayout>
 
-static QMap<QString, QString> applications = {{QStringLiteral("Armoury - View and export gear"), QStringLiteral("novus-armoury")},
-                                              {QStringLiteral("Karuku - Read Excel sheets"), QStringLiteral("novus-karuku")},
-                                              {QStringLiteral("Sagasu - Explore data archives"), QStringLiteral("novus-sagasu")},
-                                              {QStringLiteral("Model Viewer - Preview MDL files"), QStringLiteral("novus-mdlviewer")}};
+static QMap<QString, QPair<QString, QString>> applications = {
+    {QStringLiteral("Gear Editor"), {QStringLiteral("zone.xiv.armoury"), QStringLiteral("novus-armoury")}},
+    {QStringLiteral("Excel Editor"), {QStringLiteral("zone.xiv.karaku"), QStringLiteral("novus-karuku")}},
+    {QStringLiteral("Data Explorer"), {QStringLiteral("zone.xiv.sagasu"), QStringLiteral("novus-sagasu")}},
+    {QStringLiteral("Model Viewer"), {QStringLiteral("zone.xiv.mdlviewer"), QStringLiteral("novus-mdlviewer")}}};
+
+static QMap<QString, QString> links = {{QStringLiteral("XIV Dev Wiki"), QStringLiteral("https://xiv.dev")},
+                                       {QStringLiteral("XIV Docs"), QStringLiteral("https://docs.xiv.zone")}};
 
 MainWindow::MainWindow()
     : NovusMainWindow()
@@ -30,16 +36,38 @@ MainWindow::MainWindow()
 
     appList->addItem(applicationHeader);
 
-    for (const auto &name : applications.keys()) {
-        appList->addItem(name);
+    for (const auto &key : applications.keys()) {
+        auto application = new QListWidgetItem();
+        application->setText(key);
+        application->setIcon(QIcon::fromTheme(applications[key].first));
+
+        appList->addItem(application);
+    }
+
+    auto linksHeader = new QListWidgetItem();
+    linksHeader->setText(QStringLiteral("Links"));
+    linksHeader->setFlags(Qt::NoItemFlags);
+
+    appList->addItem(linksHeader);
+
+    for (const auto &key : links.keys()) {
+        auto application = new QListWidgetItem();
+        application->setText(key);
+        application->setIcon(QIcon::fromTheme(QStringLiteral("internet-web-browser")));
+
+        appList->addItem(application);
     }
 
     connect(appList, &QListWidget::itemClicked, [this](QListWidgetItem *item) {
-        const QString exec = QStringLiteral("./") + applications[item->text()];
+        if (applications.contains(item->text())) {
+            const QString exec = QStringLiteral("./") + applications[item->text()].second;
 
-        qDebug() << "Launching" << exec;
+            qDebug() << "Launching" << exec;
 
-        QProcess::startDetached(exec, QStringList());
+            QProcess::startDetached(exec, QStringList());
+        } else if (links.contains(item->text())) {
+            QDesktopServices::openUrl(QUrl::fromUserInput(links[item->text()]));
+        }
     });
 
     auto appListLayout = new QVBoxLayout();
@@ -54,8 +82,9 @@ MainWindow::MainWindow()
     KConfigGroup game = config.group(QStringLiteral("Game"));
 
     auto gameCombo = new QComboBox();
+    gameCombo->setMaximumWidth(175);
     formLayout->addRow(QStringLiteral("Current Game"), gameCombo);
-    formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
     gameCombo->addItem(game.readEntry("GameDir"));
 
     auto mainLayout = new QVBoxLayout();

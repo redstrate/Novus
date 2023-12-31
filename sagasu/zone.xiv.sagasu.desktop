@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+[Desktop Entry]
+Name=Novus SDK
+Comment=FFXIV Data Explorer
+Exec=novus-sagasu %u
+Terminal=false
+Icon=zone.xiv.sagasu
+Type=Application
+NoDisplay=true

@@ -45,4 +45,6 @@ target_link_libraries(novus-sagasu
         Physis::Logger
         Qt6::Concurrent)
 
+install(FILES zone.xiv.sagasu.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES zone.xiv.sagasu.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 install(TARGETS novus-sagasu ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})

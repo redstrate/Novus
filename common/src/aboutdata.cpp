@@ -7,7 +7,7 @@
 
 #include "novus-version.h"
 
-void customizeAboutData(const QString &componentName, const QString &applicationTitle, const QString &applicationDescription)
+void customizeAboutData(const QString &componentName, const QString &desktopFilename, const QString &applicationTitle, const QString &applicationDescription)
 {
     KAboutData about(componentName,
                      applicationTitle,
@@ -33,6 +33,9 @@ void customizeAboutData(const QString &componentName, const QString &application
                        KAboutLicense::GPL_V3);
     about.setBugAddress(QByteArrayLiteral("https://lists.sr.ht/~redstrate/public-inbox"));
     about.setComponentName(componentName);
+    about.setProgramLogo(desktopFilename);
+    about.setDesktopFileName(desktopFilename);
+    about.setOrganizationDomain(QByteArrayLiteral("xiv.zone"));
 
     KAboutData::setApplicationData(about);
 }

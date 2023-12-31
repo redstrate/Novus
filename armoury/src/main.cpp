@@ -13,7 +13,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    customizeAboutData(QStringLiteral("armoury"), QStringLiteral("Armoury"), QStringLiteral("Program to view FFXIV gear."));
+    customizeAboutData(QStringLiteral("armoury"),
+                       QStringLiteral("zone.xiv.armoury"),
+                       QStringLiteral("Gear Editor"),
+                       QStringLiteral("Program to view FFXIV gear."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

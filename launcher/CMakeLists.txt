@@ -15,3 +15,7 @@ target_link_libraries(novus-launcher
         KF6::ConfigCore
         Qt6::Widgets)
 target_include_directories(novus-launcher PUBLIC include)
+
+install(FILES zone.xiv.novus.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES zone.xiv.novus.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
+install(TARGETS novus-launcher ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})

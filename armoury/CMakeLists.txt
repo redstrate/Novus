@@ -45,4 +45,6 @@ target_link_libraries(novus-armoury
         Qt6::Concurrent
         Qt6::Network)
 
+install(FILES zone.xiv.armoury.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES zone.xiv.armoury.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 install(TARGETS novus-armoury ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})

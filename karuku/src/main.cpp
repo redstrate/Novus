@@ -13,7 +13,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    customizeAboutData(QStringLiteral("karuku"), QStringLiteral("Karuku"), QStringLiteral("Program to view FFXIV Excel files."));
+    customizeAboutData(QStringLiteral("karuku"),
+                       QStringLiteral("zone.xiv.karaku"),
+                       QStringLiteral("Excel Editor"),
+                       QStringLiteral("Program to view FFXIV Excel files."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

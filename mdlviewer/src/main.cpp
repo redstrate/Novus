@@ -13,7 +13,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    customizeAboutData(QStringLiteral("mdlviewer"), QStringLiteral("MDLViewer"), QStringLiteral("Program to view FFXIV MDL files."));
+    customizeAboutData(QStringLiteral("mdlviewer"),
+                       QStringLiteral("zone.xiv.mdlviewer"),
+                       QStringLiteral("MDLViewer"),
+                       QStringLiteral("Program to view FFXIV MDL files."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+[Desktop Entry]
+Name=Novus SDK
+Comment=FFXIV Data Editor
+Exec=novus-karaku %u
+Terminal=false
+Icon=zone.xiv.karaku
+Type=Application
+NoDisplay=true

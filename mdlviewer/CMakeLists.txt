@@ -21,4 +21,6 @@ target_link_libraries(novus-mdlviewer
         Qt6::Core
         Qt6::Widgets)
 
+install(FILES zone.xiv.mdlviewer.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES zone.xiv.mdlviewer.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 install(TARGETS novus-mdlviewer ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
