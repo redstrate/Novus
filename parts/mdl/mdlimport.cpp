@@ -144,9 +144,9 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 // calculate binormal, because glTF won't give us those!!
                 const glm::vec3 normal = glm::vec3(vertex.normal[0], vertex.normal[1], vertex.normal[2]);
                 const glm::vec4 tangent = *tangent1Data;
-                const glm::vec3 bitangent = glm::normalize(glm::cross(normal, glm::vec3(tangent)) * tangent.w);
+                const glm::vec3 bitangent = glm::normalize(glm::cross(normal, glm::vec3(tangent)));
 
-                const float handedness = glm::dot(glm::cross(glm::vec3(tangent), bitangent), normal) > 0 ? 1 : -1;
+                const float handedness = tangent.w;
 
                 // In a cruel twist of fate, Tangent1 is actually the **BINORMAL** and not the tangent data. Square Enix is AMAZING.
                 vertex.bitangent[0] = bitangent.x * handedness;
