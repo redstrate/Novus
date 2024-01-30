@@ -91,8 +91,8 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
         }
     });
 
-    editButton = new QPushButton(QStringLiteral("Edit..."));
-    editButton->setIcon(QIcon::fromTheme(QStringLiteral("document-import")));
+    editButton = new QPushButton(QStringLiteral("Edit"));
+    editButton->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
     connect(editButton, &QPushButton::clicked, this, [this](bool) {
         // Export in default location
         // TODO: deduplicate
