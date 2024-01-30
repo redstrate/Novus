@@ -74,6 +74,32 @@ SettingsWindow::SettingsWindow(QWidget *parent)
 
     penumbraLayout->addRow(QStringLiteral("Output Directory"), outputBoxLayoutContainer);
 
+    auto blenderBox = new QGroupBox(QStringLiteral("Blender"));
+    layout->addWidget(blenderBox);
+
+    auto blenderLayout = new QFormLayout();
+    blenderBox->setLayout(blenderLayout);
+
+    auto blenderBoxLayoutContainer = new QWidget(this);
+    auto blenderBoxLayout = new QHBoxLayout(blenderBoxLayoutContainer);
+    blenderBoxLayout->setContentsMargins(0, 0, 0, 0);
+
+    m_blenderPath = new QLineEdit();
+    m_blenderPath->setText(game.readEntry("BlenderPath"));
+    m_blenderPath->setClearButtonEnabled(true);
+    blenderBoxLayout->addWidget(m_blenderPath);
+
+    auto selectBlenderButton = new QPushButton(QIcon::fromTheme(QStringLiteral("folder-open")), QString());
+    connect(selectBlenderButton, &QPushButton::clicked, this, [this] {
+        QUrl url = QFileDialog::getOpenFileUrl(this, QString());
+        if (!url.isEmpty()) {
+            m_blenderPath->setText(url.toDisplayString(QUrl::PreferLocalFile));
+        }
+    });
+    blenderBoxLayout->addWidget(selectBlenderButton);
+
+    blenderLayout->addRow(QStringLiteral("Blender Path"), blenderBoxLayoutContainer);
+
     auto bottomButtonLayout = new QHBoxLayout();
     layout->addLayout(bottomButtonLayout);
 
@@ -96,4 +122,5 @@ void SettingsWindow::applySettings()
     KConfigGroup game = config.group(QStringLiteral("Armoury"));
     game.writeEntry("PenumbraOutputDirectory", m_outputLineEdit->text());
     game.writeEntry("SourcesOutputDirectory", m_sourcesLineEdit->text());
+    game.writeEntry("BlenderPath", m_blenderPath->text());
 }

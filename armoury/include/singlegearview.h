@@ -57,7 +57,7 @@ private:
 
     GearView *gearView = nullptr;
     QComboBox *raceCombo, *subraceCombo, *genderCombo, *lodCombo;
-    QPushButton *addToFMVButton, *importButton, *exportButton;
+    QPushButton *addToFMVButton, *editButton, *importButton, *exportButton;
 
     bool loadingComboData = false;
     bool fmvAvailable = false;

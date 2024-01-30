@@ -16,4 +16,5 @@ private:
 
     QLineEdit *m_sourcesLineEdit = nullptr;
     QLineEdit *m_outputLineEdit = nullptr;
+    QLineEdit *m_blenderPath = nullptr;
 };

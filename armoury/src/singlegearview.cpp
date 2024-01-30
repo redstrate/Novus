@@ -9,6 +9,7 @@
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QMenu>
+#include <QProcess>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -89,6 +90,49 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
             Q_EMIT addToFullModelViewer(*currentGear);
         }
     });
+
+    editButton = new QPushButton(QStringLiteral("Edit..."));
+    editButton->setIcon(QIcon::fromTheme(QStringLiteral("document-import")));
+    connect(editButton, &QPushButton::clicked, this, [this](bool) {
+        // Export in default location
+        // TODO: deduplicate
+        const auto sanitizeMdlPath = [](const QString &mdlPath) -> QString {
+            return QString(mdlPath).section(QLatin1Char('/'), -1).remove(QStringLiteral(".mdl"));
+        };
+
+        KConfig config(QStringLiteral("novusrc"));
+        KConfigGroup game = config.group(QStringLiteral("Armoury"));
+        QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));
+        QString newFilename = QStringLiteral("%1.glb").arg(sanitizeMdlPath(gearView->getLoadedGearPath()));
+
+        QString path = QStringLiteral("%1/%2/%3/%4")
+                           .arg(sourceDirectory)
+                           .arg(QString::fromStdString(magic_enum::enum_name(currentGear->slot).data()))
+                           .arg(QString::fromStdString(currentGear->name))
+                           .arg(QStringLiteral("3D"));
+
+        if (!QDir().exists(path))
+            QDir().mkpath(path);
+
+        const QString fileName = QStringLiteral("%1/%2").arg(path, newFilename);
+
+        gearView->exportModel(fileName);
+
+        QFileInfo info(fileName);
+
+        QProcess *blenderProcess = new QProcess(this);
+        blenderProcess->setProgram(game.readEntry(QStringLiteral("BlenderPath")));
+        blenderProcess->setArguments(
+            {QStringLiteral("--python-expr"),
+             QStringLiteral("import bpy\nbpy.ops.import_scene.gltf(filepath=\"%1\", files=[{\"name\":\"%2\", \"name\":\"%3\"}], bone_heuristic='TEMPERANCE')")
+                 .arg(info.filePath(), info.fileName(), info.fileName())});
+        blenderProcess->start();
+
+        blenderProcess->waitForFinished();
+
+        importButton->click();
+    });
+    topControlLayout->addWidget(editButton);
 
     importButton = new QPushButton(QStringLiteral("Import..."));
     importButton->setIcon(QIcon::fromTheme(QStringLiteral("document-import")));
