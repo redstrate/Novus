@@ -180,6 +180,9 @@ void GearView::setLevelOfDetail(int lod)
 
     currentLod = lod;
 
+    // TODO: maybe should be gearDirty?
+    raceDirty = true;
+
     Q_EMIT levelOfDetailChanged();
 }
 
