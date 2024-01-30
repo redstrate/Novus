@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QLineEdit>
+#include <QMenu>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -120,9 +121,9 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     });
     topControlLayout->addWidget(importButton);
 
-    exportButton = new QPushButton(QStringLiteral("Export..."));
-    exportButton->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
-    connect(exportButton, &QPushButton::clicked, this, [this](bool) {
+    auto testMenu = new QMenu();
+    auto gltfAction = testMenu->addAction(QStringLiteral("glTF"));
+    connect(gltfAction, &QAction::triggered, this, [this](bool) {
         if (currentGear.has_value()) {
             // TODO: deduplicate
             const auto sanitizeMdlPath = [](const QString &mdlPath) -> QString {
@@ -149,6 +150,30 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
             gearView->exportModel(fileName);
         }
     });
+    auto mdlAction = testMenu->addAction(QStringLiteral("MDL"));
+    connect(mdlAction, &QAction::triggered, this, [this, data](bool) {
+        if (currentGear.has_value()) {
+            // TODO: deduplicate
+            const auto sanitizeMdlPath = [](const QString &mdlPath) -> QString {
+                return QString(mdlPath).section(QLatin1Char('/'), -1);
+            };
+
+            const QString fileName =
+                QFileDialog::getSaveFileName(this, tr("Export Model"), sanitizeMdlPath(gearView->getLoadedGearPath()), tr("MDL File (*.mdl)"));
+
+            auto buffer = physis_gamedata_extract_file(data, gearView->getLoadedGearPath().toStdString().c_str());
+
+            QFile file(fileName);
+            file.open(QIODevice::WriteOnly);
+            file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
+            file.close();
+        }
+    });
+
+    exportButton = new QPushButton(QStringLiteral("Export"));
+    exportButton->setMenu(testMenu);
+    exportButton->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
+
     topControlLayout->addWidget(exportButton);
     topControlLayout->addWidget(addToFMVButton);
 
