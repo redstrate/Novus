@@ -20,10 +20,12 @@ public:
     void render();
 
     std::vector<RenderModel> models;
+    bool freeMode = false;
 
 private:
     bool m_initialized = false;
     Renderer *m_renderer;
     QVulkanInstance *m_instance;
     MDLPart *part;
+    bool pressed_keys[4] = {};
 };

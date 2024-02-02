@@ -60,6 +60,8 @@ bool VulkanWindow::event(QEvent *e)
     case QEvent::MouseButtonPress: {
         auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
 
+        part->setFocus(Qt::FocusReason::MouseFocusReason);
+
         if (mouseEvent->button() == Qt::MouseButton::LeftButton || mouseEvent->button() == Qt::MouseButton::RightButton) {
             part->lastX = mouseEvent->position().x();
             part->lastY = mouseEvent->position().y();
@@ -105,6 +107,42 @@ bool VulkanWindow::event(QEvent *e)
         part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
         part->cameraDistance = std::clamp(part->cameraDistance, 1.0f, 4.0f);
     } break;
+    case QEvent::KeyPress: {
+        auto keyEvent = dynamic_cast<QKeyEvent *>(e);
+
+        switch (keyEvent->key()) {
+        case Qt::Key_W:
+            pressed_keys[0] = true;
+            break;
+        case Qt::Key_A:
+            pressed_keys[1] = true;
+            break;
+        case Qt::Key_S:
+            pressed_keys[2] = true;
+            break;
+        case Qt::Key_D:
+            pressed_keys[3] = true;
+            break;
+        }
+    } break;
+    case QEvent::KeyRelease: {
+        auto keyEvent = dynamic_cast<QKeyEvent *>(e);
+
+        switch (keyEvent->key()) {
+        case Qt::Key_W:
+            pressed_keys[0] = false;
+            break;
+        case Qt::Key_A:
+            pressed_keys[1] = false;
+            break;
+        case Qt::Key_S:
+            pressed_keys[2] = false;
+            break;
+        case Qt::Key_D:
+            pressed_keys[3] = false;
+            break;
+        }
+    } break;
     default:
         break;
     }
@@ -130,9 +168,42 @@ void VulkanWindow::render()
 
     ImGui::Render();
 
-    glm::vec3 position(part->cameraDistance * sin(part->yaw), part->cameraDistance * part->pitch, part->cameraDistance * cos(part->yaw));
+    if (freeMode) {
+        float movX = 0.0f;
+        float movY = 0.0f;
 
-    m_renderer->view = glm::lookAt(part->position + position, part->position, glm::vec3(0, -1, 0));
+        if (pressed_keys[0]) {
+            movY = -0.05f;
+        }
+
+        if (pressed_keys[1]) {
+            movX = -0.05f;
+        }
+
+        if (pressed_keys[2]) {
+            movY = 0.05f;
+        }
+
+        if (pressed_keys[3]) {
+            movX = 0.05f;
+        }
+
+        glm::vec3 forward, right;
+        forward = normalize(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(part->pitch, glm::vec3(1, 0, 0)) * glm::vec3(0, 0, 1));
+        right = normalize(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::vec3(1, 0, 0));
+
+        part->position += right * movX * 2.0f;
+        part->position += forward * movY * 2.0f;
+
+        m_renderer->view = glm::mat4(1.0f);
+        m_renderer->view = glm::translate(m_renderer->view, part->position);
+        m_renderer->view *= glm::mat4_cast(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(part->pitch, glm::vec3(1, 0, 0)));
+        m_renderer->view = glm::inverse(m_renderer->view);
+    } else {
+        glm::vec3 position(part->cameraDistance * sin(part->yaw), part->cameraDistance * part->pitch, part->cameraDistance * cos(part->yaw));
+
+        m_renderer->view = glm::lookAt(part->position + position, part->position, glm::vec3(0, -1, 0));
+    }
 
     m_renderer->render(models);
     m_instance->presentQueued(this);

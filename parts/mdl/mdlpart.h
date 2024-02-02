@@ -52,7 +52,13 @@ public Q_SLOTS:
     void clear();
 
     /// Adds a new MDL with a list of materials used.
-    void addModel(physis_MDL mdl, const QString &name, std::vector<physis_Material> materials, int lod, uint16_t fromBodyId = 101, uint16_t toBodyId = 101);
+    void addModel(physis_MDL mdl,
+                  glm::vec3 position,
+                  const QString &name,
+                  std::vector<physis_Material> materials,
+                  int lod,
+                  uint16_t fromBodyId = 101,
+                  uint16_t toBodyId = 101);
 
     void removeModel(const physis_MDL &mdl);
 
@@ -64,6 +70,11 @@ public Q_SLOTS:
 
     void reloadBoneData();
     void reloadRenderer();
+
+    void enableFreemode();
+
+protected:
+    bool event(QEvent *event) override;
 
 private:
     RenderMaterial createMaterial(const physis_Material &mat);

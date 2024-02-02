@@ -71,7 +71,13 @@ void MDLPart::clear()
     Q_EMIT modelChanged();
 }
 
-void MDLPart::addModel(physis_MDL mdl, const QString &name, std::vector<physis_Material> materials, int lod, uint16_t fromBodyId, uint16_t toBodyId)
+void MDLPart::addModel(physis_MDL mdl,
+                       glm::vec3 position,
+                       const QString &name,
+                       std::vector<physis_Material> materials,
+                       int lod,
+                       uint16_t fromBodyId,
+                       uint16_t toBodyId)
 {
     qDebug() << "Adding model to MDLPart";
 
@@ -79,6 +85,7 @@ void MDLPart::addModel(physis_MDL mdl, const QString &name, std::vector<physis_M
     model.name = name;
     model.from_body_id = fromBodyId;
     model.to_body_id = toBodyId;
+    model.position = position;
 
     std::transform(materials.begin(), materials.end(), std::back_inserter(model.materials), [this](const physis_Material &mat) {
         return createMaterial(mat);
@@ -116,6 +123,22 @@ void MDLPart::reloadRenderer()
     reloadBoneData();
 
     vkWindow->models = models;
+}
+
+void MDLPart::enableFreemode()
+{
+    vkWindow->freeMode = true;
+}
+
+bool MDLPart::event(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+        vkWindow->event(event);
+        break;
+    }
+    return QWidget::event(event);
 }
 
 void MDLPart::reloadBoneData()
