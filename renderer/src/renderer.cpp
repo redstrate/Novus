@@ -460,9 +460,9 @@ void Renderer::render(const std::vector<RenderModel> &models)
     renderPassInfo.framebuffer = swapchainFramebuffers[imageIndex];
 
     std::array<VkClearValue, 2> clearValues = {};
-    clearValues[0].color.float32[0] = 0.8;
-    clearValues[0].color.float32[1] = 0.8;
-    clearValues[0].color.float32[2] = 0.8;
+    clearValues[0].color.float32[0] = 0.24;
+    clearValues[0].color.float32[1] = 0.24;
+    clearValues[0].color.float32[2] = 0.24;
     clearValues[0].color.float32[3] = 1.0;
     clearValues[1].depthStencil = {1.0f, 0};
 
