@@ -492,19 +492,20 @@ void Renderer::render(const std::vector<RenderModel> &models)
             vkUnmapMemory(device, model.boneInfoMemory);
         }
 
-        if (model.materials.empty())
-            continue;
-
         for (const auto &part : model.parts) {
+            RenderMaterial defaultMaterial = {};
+
+            RenderMaterial *material = nullptr;
+
             if (static_cast<size_t>(part.materialIndex) >= model.materials.size()) {
-                continue;
+                material = &defaultMaterial;
+            } else {
+                material = &model.materials[part.materialIndex];
             }
 
-            RenderMaterial &material = model.materials[part.materialIndex];
-
-            const auto h = hash(model, material);
+            const auto h = hash(model, *material);
             if (!cachedDescriptors.count(h)) {
-                if (auto descriptor = createDescriptorFor(model, material); descriptor != VK_NULL_HANDLE) {
+                if (auto descriptor = createDescriptorFor(model, *material); descriptor != VK_NULL_HANDLE) {
                     cachedDescriptors[h] = descriptor;
                 } else {
                     continue;
@@ -517,13 +518,14 @@ void Renderer::render(const std::vector<RenderModel> &models)
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
             vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-            glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 100.0f);
+            glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
             glm::mat4 v = view;
             glm::mat4 vp = p * v;
 
             vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
 
-            glm::mat4 m = glm::mat4(1.0f);
+            auto m = glm::mat4(1.0f);
+            m = glm::translate(m, model.position);
 
             vkCmdPushConstants(commandBuffer,
                                pipelineLayout,
@@ -540,7 +542,7 @@ void Renderer::render(const std::vector<RenderModel> &models)
                                sizeof(int),
                                &test);
 
-            int type = (int)material.type;
+            int type = (int)material->type;
             vkCmdPushConstants(commandBuffer,
                                pipelineLayout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
