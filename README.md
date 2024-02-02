@@ -11,10 +11,11 @@ A suite of FFXIV modding tools for Linux.
 This repository contains many parts of Novus, such as:
 
 * [Argcracker](argcracker), a program that can help decrypt game arguments.
-* [Armoury](armoury), a graphical gear and character viewer. It also supports GLTF export.
-* [Karuku](karuku), a graphical program to view Excel data sheets.
-* [MDLViewer](mdlviewer), a graphical model viewer for MDL files.
-* [Sagasu](sagasu), a graphical interface to explore FFXIV data archive files.
+* [Gear Editor](armoury), a graphical gear and character viewer. It also supports GLTF import & export.
+* [Map Editor](mapeditor), a graphical map viewer.
+* [Excel Editor](karuku), a graphical program to view Excel data sheets.
+* [Model Viewer](mdlviewer), a graphical model viewer for MDL files.
+* [Data Explorer](sagasu), a graphical interface to explore FFXIV data archive files.
 
 ## Building
 
