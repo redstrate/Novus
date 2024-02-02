@@ -47,6 +47,7 @@ add_subdirectory(argcracker)
 add_subdirectory(sagasu)
 add_subdirectory(parts)
 add_subdirectory(common)
+add_subdirectory(mapeditor)
 add_subdirectory(mdlviewer)
 add_subdirectory(launcher)
 
