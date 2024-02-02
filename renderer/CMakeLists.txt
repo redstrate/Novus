@@ -16,7 +16,8 @@ qt_add_resources(renderer
         shaders/imgui.frag.spv
         shaders/imgui.vert.spv
         shaders/mesh.frag.spv
-        shaders/mesh.vert.spv)
+        shaders/mesh.vert.spv
+        shaders/skinned.vert.spv)
 target_include_directories(renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(renderer
         PUBLIC

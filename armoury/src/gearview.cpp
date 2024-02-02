@@ -339,6 +339,7 @@ void GearView::updatePart()
 
                 gearAddition.bodyId = physis_get_race_code(fallbackRace, fallbackSubrace, currentGender);
                 mdlPart->addModel(mdl,
+                                  true,
                                   glm::vec3(),
                                   sanitizeMdlPath(mdlPath),
                                   materials,
@@ -390,7 +391,7 @@ void GearView::updatePart()
                 }
             }
 
-            mdlPart->addModel(mdl, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+            mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
         }
     }
 
@@ -413,7 +414,7 @@ void GearView::updatePart()
                 }
             }
 
-            mdlPart->addModel(mdl, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+            mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
         }
     }
 
@@ -436,7 +437,7 @@ void GearView::updatePart()
                 }
             }
 
-            mdlPart->addModel(mdl, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+            mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
         }
     }
 
@@ -453,7 +454,7 @@ void GearView::updatePart()
 
             if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                 auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                mdlPart->addModel(mdl, glm::vec3(), sanitizeMdlPath(mdlPath), {mat}, currentLod);
+                mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), {mat}, currentLod);
             }
         }
     }

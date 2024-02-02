@@ -47,6 +47,7 @@ struct RenderModel {
     std::array<glm::mat4, 128> boneData;
     std::vector<RenderMaterial> materials;
     glm::vec3 position;
+    bool skinned = false;
 
     uint16_t from_body_id = 101;
     uint16_t to_body_id = 101;
@@ -109,6 +110,7 @@ public:
     std::map<uint64_t, VkDescriptorSet> cachedDescriptors;
 
     VkPipeline pipeline;
+    VkPipeline skinnedPipeline;
     VkPipelineLayout pipelineLayout;
 
     std::tuple<VkBuffer, VkDeviceMemory> createBuffer(size_t size, VkBufferUsageFlags usageFlags);

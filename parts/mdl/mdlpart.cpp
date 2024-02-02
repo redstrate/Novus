@@ -72,6 +72,7 @@ void MDLPart::clear()
 }
 
 void MDLPart::addModel(physis_MDL mdl,
+                       bool skinned,
                        glm::vec3 position,
                        const QString &name,
                        std::vector<physis_Material> materials,
@@ -86,6 +87,7 @@ void MDLPart::addModel(physis_MDL mdl,
     model.from_body_id = fromBodyId;
     model.to_body_id = toBodyId;
     model.position = position;
+    model.skinned = skinned;
 
     std::transform(materials.begin(), materials.end(), std::back_inserter(model.materials), [this](const physis_Material &mat) {
         return createMaterial(mat);

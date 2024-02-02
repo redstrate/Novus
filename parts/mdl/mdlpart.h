@@ -53,6 +53,7 @@ public Q_SLOTS:
 
     /// Adds a new MDL with a list of materials used.
     void addModel(physis_MDL mdl,
+                  bool skinned,
                   glm::vec3 position,
                   const QString &name,
                   std::vector<physis_Material> materials,

@@ -89,7 +89,7 @@ void MainWindow::refreshParts(const QString &path)
         partHolder->addTab(exdWidget, QStringLiteral("Note"));
     } else if (info.completeSuffix() == QStringLiteral("mdl")) {
         auto mdlWidget = new MDLPart(data, fileCache);
-        mdlWidget->addModel(physis_mdl_parse(file), glm::vec3(), QStringLiteral("mdl"), {}, 0);
+        mdlWidget->addModel(physis_mdl_parse(file), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
         partHolder->addTab(mdlWidget, QStringLiteral("Model"));
     } else if (info.completeSuffix() == QStringLiteral("tex") || info.completeSuffix() == QStringLiteral("atex")) {
         auto texWidget = new TexPart(data);

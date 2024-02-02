@@ -32,8 +32,15 @@ layout(std430, binding = 2) buffer readonly BoneInformation {
 };
 
 void main() {
-    vec4 bPos = model * vec4(inPosition, 1.0);
-    vec4 bNor = vec4(inNormal, 0.0);
+    mat4 BoneTransform = bones[boneOffset + inBoneIds[0]] * inBoneWeights[0];
+    BoneTransform += bones[boneOffset + inBoneIds[1]] * inBoneWeights[1];
+    BoneTransform += bones[boneOffset + inBoneIds[2]] * inBoneWeights[2];
+    BoneTransform += bones[boneOffset + inBoneIds[3]] * inBoneWeights[3];
+
+    BoneTransform = model * BoneTransform;
+
+    vec4 bPos = BoneTransform * vec4(inPosition, 1.0);
+    vec4 bNor = BoneTransform * vec4(inNormal, 0.0);
 
     gl_Position = vp * bPos;
     outNormal = bNor.xyz;

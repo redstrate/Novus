@@ -23,7 +23,12 @@ layout(std430, push_constant) uniform PushConstant {
 void main() {
     const vec3 lightPos = vec3(3);
 
-    vec3 diffuse = texture(diffuseTexture, inUV).rgb;
+    vec3 diffuse;
+    if (textureSize(diffuseTexture, 0).x == 1) {
+        diffuse = vec3(1);
+    } else {
+        diffuse = texture(diffuseTexture, inUV).rgb;
+    }
     if(type == 1) {
         const float skinInfluence = texture(specularTexture, inUV).r;
         vec3 skinColor = vec3(250 / 255.0, 199 / 255.0, 166 / 255.0);

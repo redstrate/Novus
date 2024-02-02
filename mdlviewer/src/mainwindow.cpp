@@ -58,7 +58,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
 
         auto buffer = physis_read_file(fileName.toStdString().c_str());
 
-        part->addModel(physis_mdl_parse(buffer), glm::vec3(), QStringLiteral("mdl"), {}, 0);
+        part->addModel(physis_mdl_parse(buffer), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
     });
 }
 

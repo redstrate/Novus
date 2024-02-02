@@ -472,9 +472,13 @@ void Renderer::render(const std::vector<RenderModel> &models)
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
     for (auto model : models) {
+        if (model.skinned) {
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinnedPipeline);
+        } else {
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        }
+
         // copy bone data
         {
             const size_t bufferSize = sizeof(glm::mat4) * 128;
@@ -731,6 +735,12 @@ void Renderer::initPipeline()
     vertexShaderStageInfo.module = loadShaderFromDisk(":/shaders/mesh.vert.spv");
     vertexShaderStageInfo.pName = "main";
 
+    VkPipelineShaderStageCreateInfo skinnedVertexShaderStageInfo = {};
+    skinnedVertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    skinnedVertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    skinnedVertexShaderStageInfo.module = loadShaderFromDisk(":/shaders/skinned.vert.spv");
+    skinnedVertexShaderStageInfo.pName = "main";
+
     VkPipelineShaderStageCreateInfo fragmentShaderStageInfo = {};
     fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -867,6 +877,10 @@ void Renderer::initPipeline()
     createInfo.renderPass = renderPass;
 
     vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline);
+
+    shaderStages[0] = skinnedVertexShaderStageInfo;
+
+    vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &skinnedPipeline);
 }
 
 VkShaderModule Renderer::createShaderModule(const uint32_t *code, const int length)
