@@ -5,9 +5,11 @@ add_executable(novus-karuku)
 target_sources(novus-karuku
         PRIVATE
         include/mainwindow.h
+        include/sheetlistwidget.h
 
         src/main.cpp
-        src/mainwindow.cpp)
+        src/mainwindow.cpp
+        src/sheetlistwidget.cpp)
 target_include_directories(novus-karuku
         PUBLIC
         include)
