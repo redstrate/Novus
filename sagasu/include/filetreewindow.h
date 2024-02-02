@@ -14,7 +14,7 @@ class FileTreeWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit FileTreeWindow(const QString &gamePath, GameData *data, QWidget *parent = nullptr);
+    explicit FileTreeWindow(HashDatabase &database, const QString &gamePath, GameData *data, QWidget *parent = nullptr);
 
 Q_SIGNALS:
     void extractFile(const QString &path);
@@ -28,4 +28,5 @@ private:
     QSortFilterProxyModel *m_searchModel = nullptr;
     QCheckBox *m_unknownCheckbox = nullptr;
     QString m_gamePath;
+    HashDatabase &m_database;
 };

@@ -16,6 +16,7 @@ public:
 
     void addFolder(const QString &folder);
     void addFile(const QString &file);
+    void importFileList(const QString &path);
 
     QVector<QString> getKnownFolders();
 

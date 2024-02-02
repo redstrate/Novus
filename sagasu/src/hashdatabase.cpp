@@ -3,6 +3,7 @@
 
 #include "hashdatabase.h"
 
+#include <QFile>
 #include <QSqlError>
 #include <physis.hpp>
 
@@ -91,6 +92,17 @@ QString HashDatabase::getFilename(const uint32_t i)
     query.next();
 
     return query.value(0).toString();
+}
+
+void HashDatabase::importFileList(const QString &path)
+{
+    QFile file(path);
+    file.open(QIODevice::ReadOnly);
+
+    QTextStream stream(&file);
+    while (!stream.atEnd()) {
+        addFile(stream.readLine());
+    }
 }
 
 #include "moc_hashdatabase.cpp"

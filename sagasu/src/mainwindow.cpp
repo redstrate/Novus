@@ -34,7 +34,7 @@ MainWindow::MainWindow(const QString &gamePath, GameData *data)
     auto layout = new QHBoxLayout();
     dummyWidget->setLayout(layout);
 
-    auto tree = new FileTreeWindow(gamePath, data);
+    auto tree = new FileTreeWindow(m_database, gamePath, data);
     connect(tree, &FileTreeWindow::extractFile, this, [this, data](const QString &path) {
         const QFileInfo info(path);
 
@@ -89,7 +89,7 @@ void MainWindow::refreshParts(const QString &path)
         partHolder->addTab(exdWidget, QStringLiteral("Note"));
     } else if (info.completeSuffix() == QStringLiteral("mdl")) {
         auto mdlWidget = new MDLPart(data, fileCache);
-        mdlWidget->addModel(physis_mdl_parse(file), QStringLiteral("mdl"), {}, 0);
+        mdlWidget->addModel(physis_mdl_parse(file), glm::vec3(), QStringLiteral("mdl"), {}, 0);
         partHolder->addTab(mdlWidget, QStringLiteral("Model"));
     } else if (info.completeSuffix() == QStringLiteral("tex") || info.completeSuffix() == QStringLiteral("atex")) {
         auto texWidget = new TexPart(data);
@@ -115,4 +115,15 @@ void MainWindow::refreshParts(const QString &path)
 
     auto propertiesWidget = new FilePropertiesWindow(path, file);
     partHolder->addTab(propertiesWidget, QStringLiteral("Properties"));
+}
+
+void MainWindow::setupFileMenu(QMenu *menu)
+{
+    auto openList = menu->addAction(QStringLiteral("Import path list..."));
+    openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
+    connect(openList, &QAction::triggered, [this] {
+        auto fileName = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open Path List"), QStringLiteral("~"));
+
+        m_database.importFileList(fileName);
+    });
 }

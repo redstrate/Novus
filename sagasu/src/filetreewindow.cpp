@@ -8,10 +8,11 @@
 #include <QMenu>
 #include <QTreeWidget>
 
-FileTreeWindow::FileTreeWindow(const QString &gamePath, GameData *data, QWidget *parent)
+FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, GameData *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
     , m_gamePath(gamePath)
+    , m_database(database)
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -74,7 +75,7 @@ FileTreeWindow::FileTreeWindow(const QString &gamePath, GameData *data, QWidget 
 void FileTreeWindow::refreshModel()
 {
     // TODO: this should really be handled by the proxy
-    m_fileModel = new FileTreeModel(m_unknownCheckbox->isChecked(), m_gamePath, data);
+    m_fileModel = new FileTreeModel(m_database, m_unknownCheckbox->isChecked(), m_gamePath, data);
     m_searchModel->setSourceModel(m_fileModel);
 }
 
