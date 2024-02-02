@@ -25,7 +25,7 @@ MainWindow::MainWindow(GameData *data)
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
 
-    auto layout = new QHBoxLayout();
+    auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     dummyWidget->setLayout(layout);
 
@@ -38,6 +38,15 @@ MainWindow::MainWindow(GameData *data)
     part->setSkeleton(physis_parse_skeleton(physis_gamedata_extract_file(data, skelNameStd.c_str())));
 
     layout->addWidget(part);
+
+    auto tabWidget = new QTabWidget();
+    tabWidget->setMaximumHeight(150);
+
+    auto renderWidget = new QWidget();
+
+    tabWidget->addTab(renderWidget, QStringLiteral("Render"));
+
+    layout->addWidget(tabWidget);
 }
 
 void MainWindow::setupFileMenu(QMenu *menu)
