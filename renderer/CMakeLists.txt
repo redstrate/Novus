@@ -25,6 +25,6 @@ target_link_libraries(renderer
         Physis::Physis
         glm::glm
         imgui)
-target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE)
+target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_ENABLE_EXPERIMENTAL)
 
 add_library(Novus::Renderer ALIAS renderer)
