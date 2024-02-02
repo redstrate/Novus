@@ -46,6 +46,7 @@ struct RenderModel {
     std::vector<RenderPart> parts;
     std::array<glm::mat4, 128> boneData;
     std::vector<RenderMaterial> materials;
+    glm::vec3 position;
 
     uint16_t from_body_id = 101;
     uint16_t to_body_id = 101;
