@@ -63,8 +63,18 @@ void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
 {
     auto toolsMenu = menuBar->addMenu(QStringLiteral("Tools"));
 
-    auto fmvMenu = toolsMenu->addAction(QStringLiteral("Full Model viewer"));
+    auto cmpEditorMenu = toolsMenu->addAction(QStringLiteral("CMP Editor"));
+    cmpEditorMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
+    connect(cmpEditorMenu, &QAction::triggered, [this] {
+        auto cmpEditor = new CmpEditor(&data);
+        cmpEditor->show();
+    });
+
+    auto windowMenu = menuBar->addMenu(QStringLiteral("Window"));
+
+    auto fmvMenu = windowMenu->addAction(QStringLiteral("Full Model viewer"));
     fmvMenu->setCheckable(true);
+    fmvMenu->setIcon(QIcon::fromTheme(QStringLiteral("user-symbolic")));
     connect(fmvMenu, &QAction::toggled, [this](bool toggled) {
         if (toggled) {
             fullModelViewer->show();
@@ -76,15 +86,11 @@ void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
         fmvMenu->setChecked(fullModelViewer->isVisible());
     });
 
-    auto cmpEditorMenu = toolsMenu->addAction(QStringLiteral("CMP Editor"));
-    cmpEditorMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
-    connect(cmpEditorMenu, &QAction::triggered, [this] {
-        auto cmpEditor = new CmpEditor(&data);
-        cmpEditor->show();
-    });
+    auto settingsMenu = menuBar->addMenu(QStringLiteral("Settings"));
 
-    auto settingsMenu = toolsMenu->addAction(QStringLiteral("Settings..."));
-    connect(settingsMenu, &QAction::triggered, [this] {
+    auto settingsAction = settingsMenu->addAction(QStringLiteral("Configure Armoury..."));
+    settingsAction->setIcon(QIcon::fromTheme(QStringLiteral("configure-symbolic")));
+    connect(settingsAction, &QAction::triggered, [this] {
         auto settingsWindow = new SettingsWindow();
         settingsWindow->show();
     });
