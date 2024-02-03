@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <QNetworkAccessManager>
+
 #include "novusmainwindow.h"
 
 struct GameData;
@@ -14,6 +16,10 @@ class MainWindow : public NovusMainWindow
 public:
     explicit MainWindow(GameData *data);
 
+protected:
+    void setupFileMenu(QMenu *menu) override;
+
 private:
     GameData *data = nullptr;
+    QNetworkAccessManager *mgr = nullptr;
 };

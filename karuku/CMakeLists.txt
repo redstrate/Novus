@@ -15,12 +15,14 @@ target_include_directories(novus-karuku
         include)
 target_link_libraries(novus-karuku
         PRIVATE
+        KF6::Archive
         Novus::Common
         Novus::ExdPart
         Physis::Physis
         Physis::Logger
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        Qt6::Network)
 
 install(FILES zone.xiv.karaku.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 install(FILES zone.xiv.karaku.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
