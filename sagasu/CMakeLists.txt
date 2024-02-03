@@ -33,6 +33,7 @@ target_sources(novus-sagasu
 target_include_directories(novus-sagasu PRIVATE include)
 target_link_libraries(novus-sagasu
         PRIVATE
+        KF6::Archive
         novus-sagasu-static
         Novus::SklbPart
         Novus::CmpPart
@@ -43,7 +44,8 @@ target_link_libraries(novus-sagasu
         Novus::ExdPart
         Novus::TexPart
         Physis::Logger
-        Qt6::Concurrent)
+        Qt6::Concurrent
+        Qt6::Network)
 
 install(FILES zone.xiv.sagasu.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 install(FILES zone.xiv.sagasu.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)

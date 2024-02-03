@@ -95,11 +95,8 @@ QString HashDatabase::getFilename(const uint32_t i)
     return query.value(0).toString();
 }
 
-void HashDatabase::importFileList(const QString &path)
+void HashDatabase::importFileList(const QByteArray &file)
 {
-    QFile file(path);
-    file.open(QIODevice::ReadOnly);
-
     QVariantList folderNames, folderHashes;
     QVariantList fileNames, fileHashes;
 
@@ -115,7 +112,7 @@ void HashDatabase::importFileList(const QString &path)
         QStringLiteral("REPLACE INTO file_hashes (hash, name) "
                        "VALUES (?, ?)"));
 
-    QTextStream stream(&file);
+    QTextStream stream(file);
     stream.readLine(); // skip header
     while (!stream.atEnd()) {
         const QStringList parts = stream.readLine().split(QLatin1Char(','));

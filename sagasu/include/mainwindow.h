@@ -5,9 +5,11 @@
 
 #include <QMap>
 #include <QMdiArea>
+#include <QNetworkAccessManager>
 #include <QTreeWidget>
 
 #include "filecache.h"
+#include "filetreewindow.h"
 #include "hashdatabase.h"
 #include "novusmainwindow.h"
 
@@ -26,6 +28,8 @@ private:
     QTabWidget *partHolder = nullptr;
     FileCache fileCache;
     HashDatabase m_database;
+    QNetworkAccessManager *m_mgr = nullptr;
+    FileTreeWindow *m_tree = nullptr;
 
     void refreshParts(const QString &path);
 };

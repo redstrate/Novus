@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include <KZip>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -10,12 +11,13 @@
 #include <QLabel>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QNetworkReply>
+#include <QTemporaryDir>
 
 #include "cmppart.h"
 #include "exdpart.h"
 #include "exlpart.h"
 #include "filepropertieswindow.h"
-#include "filetreewindow.h"
 #include "hexpart.h"
 #include "mdlpart.h"
 #include "shpkpart.h"
@@ -29,14 +31,16 @@ MainWindow::MainWindow(const QString &gamePath, GameData *data)
 {
     setupMenubar();
 
+    m_mgr = new QNetworkAccessManager(this);
+
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
 
     auto layout = new QHBoxLayout();
     dummyWidget->setLayout(layout);
 
-    auto tree = new FileTreeWindow(m_database, gamePath, data);
-    connect(tree, &FileTreeWindow::extractFile, this, [this, data](const QString &path) {
+    m_tree = new FileTreeWindow(m_database, gamePath, data);
+    connect(m_tree, &FileTreeWindow::extractFile, this, [this, data](const QString &path) {
         const QFileInfo info(path);
 
         const QString savePath = QFileDialog::getSaveFileName(this, tr("Save File"), info.fileName(), QStringLiteral("*.%1").arg(info.completeSuffix()));
@@ -51,11 +55,11 @@ MainWindow::MainWindow(const QString &gamePath, GameData *data)
             file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);
         }
     });
-    connect(tree, &FileTreeWindow::pathSelected, this, [this](const QString &path) {
+    connect(m_tree, &FileTreeWindow::pathSelected, this, [this](const QString &path) {
         refreshParts(path);
     });
-    tree->setMaximumWidth(200);
-    layout->addWidget(tree);
+    m_tree->setMaximumWidth(200);
+    layout->addWidget(m_tree);
 
     partHolder = new QTabWidget();
     partHolder->setMinimumWidth(800);
@@ -132,7 +136,11 @@ void MainWindow::setupFileMenu(QMenu *menu)
                              QMessageBox::Ok,
                              QMessageBox::Ok);
 
-        m_database.importFileList(fileName);
+        QFile file(fileName);
+        file.open(QIODevice::ReadOnly);
+
+        m_database.importFileList(file.readAll());
+        m_tree->refreshModel();
 
         QMessageBox::information(this, QStringLiteral("Import Complete"), QStringLiteral("Successfully imported path list!"), QMessageBox::Ok, QMessageBox::Ok);
     });
@@ -140,8 +148,54 @@ void MainWindow::setupFileMenu(QMenu *menu)
     auto downloadList = menu->addAction(QStringLiteral("Download Path List..."));
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(downloadList, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open Path List"), QStringLiteral("~"));
+        const int ret =
+            QMessageBox::information(this,
+                                     QStringLiteral("Download Confirmation"),
+                                     QStringLiteral("This will download the path list from <a "
+                                                    "href=\"https://rl2.perchbird.dev/\">ResLogger</a>.this process usually takes a few minutes. The program "
+                                                    "may freeze. Please keep it open until the operation is finished.<br><br>Continue?"),
+                                     QMessageBox::Ok | QMessageBox::Cancel,
+                                     QMessageBox::Ok);
 
-        m_database.importFileList(fileName);
+        if (ret != QMessageBox::Ok) {
+            return;
+        }
+
+        QUrl url;
+        url.setScheme(QStringLiteral("https"));
+        url.setHost(QStringLiteral("rl2.perchbird.dev"));
+        url.setPath(QStringLiteral("/download/export/CurrentPathListWithHashes.zip"));
+
+        // TODO: Use Qcoro?
+        auto reply = m_mgr->get(QNetworkRequest(url));
+        connect(reply, &QNetworkReply::finished, this, [this, reply] {
+            qInfo() << "Finished downloading path list!";
+
+            QTemporaryDir tempDir;
+
+            QFile file(tempDir.filePath(QStringLiteral("CurrentPathListWithHashes.zip")));
+            file.open(QIODevice::WriteOnly);
+            file.write(reply->readAll());
+            file.close();
+
+            KZip archive(file.fileName());
+            if (!archive.open(QIODevice::ReadOnly)) {
+                // TODO: these should show as message boxes
+                qFatal() << "Failed to open path list zip!" << archive.errorString();
+                return;
+            }
+
+            const KArchiveFile *root = dynamic_cast<const KArchiveFile *>(archive.directory()->entry(QStringLiteral("CurrentPathListWithHashes.csv")));
+            m_database.importFileList(root->data());
+            m_tree->refreshModel();
+
+            archive.close();
+
+            QMessageBox::information(this,
+                                     QStringLiteral("Import Complete"),
+                                     QStringLiteral("Successfully downloaded and imported path list!"),
+                                     QMessageBox::Ok,
+                                     QMessageBox::Ok);
+        });
     });
 }

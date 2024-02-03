@@ -16,13 +16,13 @@ class FileTreeWindow : public QWidget
 public:
     explicit FileTreeWindow(HashDatabase &database, const QString &gamePath, GameData *data, QWidget *parent = nullptr);
 
+    void refreshModel();
+
 Q_SIGNALS:
     void extractFile(const QString &path);
     void pathSelected(const QString &path);
 
 private:
-    void refreshModel();
-
     GameData *data = nullptr;
     FileTreeModel *m_fileModel = nullptr;
     QSortFilterProxyModel *m_searchModel = nullptr;
