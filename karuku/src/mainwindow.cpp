@@ -43,12 +43,17 @@ MainWindow::MainWindow(GameData *data)
     layout->addWidget(exdPart);
 
     connect(listWidget, &SheetListWidget::sheetSelected, this, [data, exdPart](const QString &name) {
+        QString definitionPath;
+
+        const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("definitions"));
+
         auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
         auto pathStd = path.toStdString();
 
         auto file = physis_gamedata_extract_file(data, pathStd.c_str());
 
-        exdPart->loadSheet(name, file);
+        exdPart->loadSheet(name, file, definitionsDir.absoluteFilePath(QStringLiteral("%1.json").arg(name)));
     });
 }
 

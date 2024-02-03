@@ -34,12 +34,14 @@ EXDPart::EXDPart(GameData *data, QWidget *parent)
     contentsBoxLayout->addWidget(pageTabWidget);
 }
 
-void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
+void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString &definitionPath)
 {
     pageTabWidget->clear();
 
-    QFile definitionFile(QStringLiteral("Achievement.json"));
+    QFile definitionFile(definitionPath);
     definitionFile.open(QIODevice::ReadOnly);
+
+    qInfo() << definitionPath;
 
     QJsonArray definitionList;
     if (definitionFile.isOpen()) {
@@ -51,7 +53,12 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
                 && definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QStringLiteral("link")) {
                 auto linkName = definition.toObject()[QLatin1String("converter")].toObject()[QLatin1String("target")].toString();
 
-                auto linkExh = physis_parse_excel_sheet_header(buffer);
+                auto path = QStringLiteral("exd/%1.exh").arg(linkName.toLower());
+                auto pathStd = path.toStdString();
+
+                auto file = physis_gamedata_extract_file(data, pathStd.c_str());
+
+                auto linkExh = physis_parse_excel_sheet_header(file);
                 auto linkExd = physis_gamedata_read_excel_sheet(data, linkName.toStdString().c_str(), linkExh, getSuitableLanguage(linkExh), 0);
 
                 if (linkExd.p_ptr != nullptr) {
@@ -124,7 +131,8 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
                 break;
             }
 
-            if (definitionList.contains(static_cast<int>(z))) {
+            // TODO: index could be different
+            if (z >= 0 && z < definitionList.size()) {
                 columnType = definitionList[z].toObject()[QLatin1String("name")].toString();
             }
 
@@ -138,53 +146,9 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
             for (unsigned int z = 0; z < exd.column_count; z++) {
                 auto columnData = exd.row_data[j].column_data[z];
 
-                QString columnString;
-                int columnRow;
-                switch (columnData.tag) {
-                case physis_ColumnData::Tag::String:
-                    columnString = QString::fromStdString(columnData.string._0);
-                    break;
-                case physis_ColumnData::Tag::Bool:
-                    columnString = columnData.bool_._0 ? QStringLiteral("True") : QStringLiteral("False");
-                    break;
-                case physis_ColumnData::Tag::Int8:
-                    columnString = QString::number(columnData.int8._0);
-                    columnRow = columnData.int8._0;
-                    break;
-                case physis_ColumnData::Tag::UInt8:
-                    columnString = QString::number(columnData.u_int8._0);
-                    columnRow = columnData.u_int8._0;
-                    break;
-                case physis_ColumnData::Tag::Int16:
-                    columnString = QString::number(columnData.int16._0);
-                    columnRow = columnData.int16._0;
-                    break;
-                case physis_ColumnData::Tag::UInt16:
-                    columnString = QString::number(columnData.u_int16._0);
-                    columnRow = columnData.u_int16._0;
-                    break;
-                case physis_ColumnData::Tag::Int32:
-                    columnString = QString::number(columnData.int32._0);
-                    columnRow = columnData.int32._0;
-                    break;
-                case physis_ColumnData::Tag::UInt32:
-                    columnString = QString::number(columnData.u_int32._0);
-                    columnRow = columnData.u_int32._0;
-                    break;
-                case physis_ColumnData::Tag::Float32:
-                    columnString = QString::number(columnData.float32._0);
-                    break;
-                case physis_ColumnData::Tag::Int64:
-                    columnString = QString::number(columnData.int64._0);
-                    columnRow = columnData.int64._0;
-                    break;
-                case physis_ColumnData::Tag::UInt64:
-                    columnString = QString::number(columnData.u_int64._0);
-                    columnRow = columnData.u_int64._0;
-                    break;
-                }
+                auto [columnString, columnRow] = getColumnData(columnData);
 
-                if (definitionList.contains(static_cast<int>(z))) {
+                if (z >= 0 && z < definitionList.size()) {
                     auto definition = definitionList[z].toObject();
                     if (definition.contains(QLatin1String("converter"))
                         && definition[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QLatin1String("link")) {
@@ -193,7 +157,8 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
                         if (cachedExcelSheets.contains(linkName)) {
                             auto cachedExcel = cachedExcelSheets[linkName];
                             if (static_cast<unsigned int>(columnRow) < cachedExcel.exd.row_count) {
-                                columnString = QString::fromStdString(cachedExcel.exd.row_data[columnRow].column_data->string._0);
+                                auto [colString, _] = getColumnData(*cachedExcel.exd.row_data[columnRow].column_data);
+                                columnString = colString;
                             }
                         }
                     }
@@ -220,6 +185,57 @@ Language EXDPart::getSuitableLanguage(physis_EXH *pExh)
     }
 
     return Language::None;
+}
+
+std::pair<QString, int> EXDPart::getColumnData(physis_ColumnData &columnData)
+{
+    QString columnString;
+    int columnRow;
+    switch (columnData.tag) {
+    case physis_ColumnData::Tag::String:
+        columnString = QString::fromStdString(columnData.string._0);
+        break;
+    case physis_ColumnData::Tag::Bool:
+        columnString = columnData.bool_._0 ? QStringLiteral("True") : QStringLiteral("False");
+        break;
+    case physis_ColumnData::Tag::Int8:
+        columnString = QString::number(columnData.int8._0);
+        columnRow = columnData.int8._0;
+        break;
+    case physis_ColumnData::Tag::UInt8:
+        columnString = QString::number(columnData.u_int8._0);
+        columnRow = columnData.u_int8._0;
+        break;
+    case physis_ColumnData::Tag::Int16:
+        columnString = QString::number(columnData.int16._0);
+        columnRow = columnData.int16._0;
+        break;
+    case physis_ColumnData::Tag::UInt16:
+        columnString = QString::number(columnData.u_int16._0);
+        columnRow = columnData.u_int16._0;
+        break;
+    case physis_ColumnData::Tag::Int32:
+        columnString = QString::number(columnData.int32._0);
+        columnRow = columnData.int32._0;
+        break;
+    case physis_ColumnData::Tag::UInt32:
+        columnString = QString::number(columnData.u_int32._0);
+        columnRow = columnData.u_int32._0;
+        break;
+    case physis_ColumnData::Tag::Float32:
+        columnString = QString::number(columnData.float32._0);
+        break;
+    case physis_ColumnData::Tag::Int64:
+        columnString = QString::number(columnData.int64._0);
+        columnRow = columnData.int64._0;
+        break;
+    case physis_ColumnData::Tag::UInt64:
+        columnString = QString::number(columnData.u_int64._0);
+        columnRow = columnData.u_int64._0;
+        break;
+    }
+
+    return {columnString, columnRow};
 }
 
 #include "moc_exdpart.cpp"

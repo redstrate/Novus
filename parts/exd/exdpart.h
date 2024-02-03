@@ -17,9 +17,11 @@ class EXDPart : public QWidget
 public:
     explicit EXDPart(GameData *data, QWidget *parent = nullptr);
 
-    void loadSheet(const QString &name, physis_Buffer buffer);
+    void loadSheet(const QString &name, physis_Buffer buffer, const QString &definitionPath = {});
 
 private:
+    std::pair<QString, int> getColumnData(physis_ColumnData &columnData);
+
     GameData *data = nullptr;
 
     QTabWidget *pageTabWidget = nullptr;
