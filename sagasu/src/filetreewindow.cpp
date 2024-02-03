@@ -53,7 +53,8 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 
             auto menu = new QMenu();
 
-            auto extractAction = menu->addAction(QStringLiteral("Extract.."));
+            auto extractAction = menu->addAction(QStringLiteral("Extract..."));
+            extractAction->setIcon(QIcon::fromTheme(QStringLiteral("archive-extract-symbolic")));
             connect(extractAction, &QAction::triggered, this, [this, path] {
                 Q_EMIT extractFile(path);
             });
