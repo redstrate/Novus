@@ -4,6 +4,7 @@
 #include "hashdatabase.h"
 
 #include <QFile>
+#include <QSqlDriver>
 #include <QSqlError>
 #include <physis.hpp>
 
@@ -99,10 +100,53 @@ void HashDatabase::importFileList(const QString &path)
     QFile file(path);
     file.open(QIODevice::ReadOnly);
 
+    QVariantList folderNames, folderHashes;
+    QVariantList fileNames, fileHashes;
+
+    m_db.transaction();
+
+    QSqlQuery folderQuery;
+    folderQuery.prepare(
+        QStringLiteral("REPLACE INTO folder_hashes (hash, name) "
+                       "VALUES (?, ?)"));
+
+    QSqlQuery fileQuery;
+    fileQuery.prepare(
+        QStringLiteral("REPLACE INTO file_hashes (hash, name) "
+                       "VALUES (?, ?)"));
+
     QTextStream stream(&file);
+    stream.readLine(); // skip header
     while (!stream.atEnd()) {
-        addFile(stream.readLine());
+        const QStringList parts = stream.readLine().split(QLatin1Char(','));
+
+        const QString &folderHash = parts[1];
+        const QString &fileHash = parts[2];
+        const QString &path = parts[4];
+
+        QString filename;
+        QString foldername;
+        if (path.contains(QStringLiteral("/"))) {
+            int lastSlash = path.lastIndexOf(QStringLiteral("/"));
+            filename = path.sliced(lastSlash + 1, path.length() - lastSlash - 1);
+            foldername = path.left(lastSlash);
+        } else {
+            filename = path;
+        }
+
+        // execBatch is too slow as the QSQLITE doesn't support batch operations
+        if (!foldername.isEmpty()) {
+            folderQuery.bindValue(0, folderHash.toUInt());
+            folderQuery.bindValue(1, foldername);
+            folderQuery.exec();
+        }
+
+        fileQuery.bindValue(0, fileHash.toUInt());
+        fileQuery.bindValue(1, filename);
+        fileQuery.exec();
     }
+
+    m_db.commit();
 }
 
 #include "moc_hashdatabase.cpp"

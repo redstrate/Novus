@@ -9,6 +9,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenuBar>
+#include <QMessageBox>
 
 #include "cmppart.h"
 #include "exdpart.h"
@@ -119,9 +120,26 @@ void MainWindow::refreshParts(const QString &path)
 
 void MainWindow::setupFileMenu(QMenu *menu)
 {
-    auto openList = menu->addAction(QStringLiteral("Import path list..."));
+    auto openList = menu->addAction(QStringLiteral("Import Path List..."));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
+        auto fileName = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open Path List"), QStringLiteral("~"));
+
+        QMessageBox::warning(this,
+                             QStringLiteral("Import Warning"),
+                             QStringLiteral("Depending on the size of the import, this process usually takes a few minutes. The program may freeze. Please "
+                                            "keep it open until the operation is finished."),
+                             QMessageBox::Ok,
+                             QMessageBox::Ok);
+
+        m_database.importFileList(fileName);
+
+        QMessageBox::information(this, QStringLiteral("Import Complete"), QStringLiteral("Successfully imported path list!"), QMessageBox::Ok, QMessageBox::Ok);
+    });
+
+    auto downloadList = menu->addAction(QStringLiteral("Download Path List..."));
+    downloadList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
+    connect(downloadList, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open Path List"), QStringLiteral("~"));
 
         m_database.importFileList(fileName);
