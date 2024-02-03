@@ -57,12 +57,48 @@ MainWindow::MainWindow(GameData *data)
     });
 }
 
+static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath)
+{
+    QFileInfo srcFileInfo(srcFilePath);
+    if (srcFileInfo.isDir()) {
+        const QDir targetDir(tgtFilePath);
+        const QDir sourceDir(srcFilePath);
+
+        const QStringList fileNames = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        for (const QString &fileName : fileNames) {
+            const QString newSrcFilePath = srcFilePath + QLatin1Char('/') + fileName;
+            const QString newTgtFilePath = tgtFilePath + QLatin1Char('/') + fileName;
+
+            if (!QFile::copy(newSrcFilePath, newTgtFilePath)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    return false;
+}
+
 void MainWindow::setupFileMenu(QMenu *menu)
 {
     auto openList = menu->addAction(QStringLiteral("Import Definitions..."));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open Path List"), QStringLiteral("~"));
+        auto fileName = QFileDialog::getExistingDirectory(nullptr, QStringLiteral("Open Defintions Directory"), QStringLiteral("~"));
+
+        const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("definitions"));
+
+        // delete old directory
+        if (definitionsDir.exists()) {
+            QDir().rmdir(definitionsDir.absolutePath());
+        }
+
+        QDir().mkpath(definitionsDir.absolutePath());
+
+        copyDirectory(fileName, definitionsDir.absolutePath());
+
+        QMessageBox::information(this, QStringLiteral("Definitions"), QStringLiteral("Successfully imported definitions!"));
     });
 
     auto downloadList = menu->addAction(QStringLiteral("Download Definitions..."));
@@ -120,7 +156,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
 
             archive.close();
 
-            QMessageBox::information(this, QStringLiteral("Definitions"), QStringLiteral("Successfully updated definitions!"));
+            QMessageBox::information(this, QStringLiteral("Definitions"), QStringLiteral("Successfully downloaded and imported definitions!"));
         });
     });
 }
