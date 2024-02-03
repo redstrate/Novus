@@ -146,7 +146,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
     });
 
     auto downloadList = menu->addAction(QStringLiteral("Download Path List..."));
-    downloadList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
+    downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
         const int ret =
             QMessageBox::information(this,
