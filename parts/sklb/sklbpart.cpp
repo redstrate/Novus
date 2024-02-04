@@ -3,6 +3,7 @@
 
 #include "sklbpart.h"
 
+#include <KLocalizedString>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -35,7 +36,7 @@ SklbPart::SklbPart(QWidget *parent)
     setLayout(layout);
 
     boneListWidget = new QTreeWidget();
-    boneListWidget->setHeaderLabel(QStringLiteral("Name"));
+    boneListWidget->setHeaderLabel(i18nc("@title:column", "Name"));
     boneListWidget->setMaximumWidth(200);
 
     layout->addWidget(boneListWidget);
@@ -43,7 +44,7 @@ SklbPart::SklbPart(QWidget *parent)
     auto transformLayout = new QVBoxLayout();
     layout->addLayout(transformLayout);
 
-    auto transformGroup = new QGroupBox(QStringLiteral("Bone Transform"));
+    auto transformGroup = new QGroupBox(i18nc("@title:group", "Bone Transform"));
     transformLayout->addWidget(transformGroup);
     auto transformGroupLayout = new QFormLayout();
     transformGroup->setLayout(transformGroupLayout);
@@ -53,21 +54,21 @@ SklbPart::SklbPart(QWidget *parent)
         memcpy(currentEditedBone->position, glm::value_ptr(currentPosition), sizeof(float) * 3);
         Q_EMIT valueChanged();
     });
-    transformGroupLayout->addRow(QStringLiteral("Position"), posEdit);
+    transformGroupLayout->addRow(i18nc("@label:spinbox", "Position"), posEdit);
 
     rotationEdit = new QuaternionEdit(currentRotation);
     connect(rotationEdit, &QuaternionEdit::onValueChanged, [this] {
         memcpy(currentEditedBone->rotation, glm::value_ptr(currentRotation), sizeof(float) * 4);
         Q_EMIT valueChanged();
     });
-    transformGroupLayout->addRow(QStringLiteral("Rotation"), rotationEdit);
+    transformGroupLayout->addRow(i18nc("@label:spinbox", "Rotation"), rotationEdit);
 
     scaleEdit = new Vector3Edit(currentScale);
     connect(scaleEdit, &Vector3Edit::onValueChanged, [this] {
         memcpy(currentEditedBone->scale, glm::value_ptr(currentScale), sizeof(float) * 3);
         Q_EMIT valueChanged();
     });
-    transformGroupLayout->addRow(QStringLiteral("Scale"), scaleEdit);
+    transformGroupLayout->addRow(i18nc("@label:spinbox", "Scale"), scaleEdit);
 
     connect(boneListWidget, &QTreeWidget::itemClicked, this, &SklbPart::treeItemClicked);
 }

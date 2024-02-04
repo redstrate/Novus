@@ -8,6 +8,7 @@ target_sources(sklbpart
         sklbpart.h)
 target_link_libraries(sklbpart
         PUBLIC
+        KF6::I18n
         Novus::Common
         Physis::Physis
         Qt6::Core
