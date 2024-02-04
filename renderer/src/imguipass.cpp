@@ -302,8 +302,6 @@ void ImGuiPass::createFontImage()
     int width = 0, height = 0;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    qInfo() << "Uploading imgui font size" << width << "x" << height;
-
     auto texture = renderer_.addTexture(width, height, pixels, width * height * 4);
     fontImageView_ = texture.view;
     fontSampler_ = texture.sampler;
