@@ -31,6 +31,7 @@ MainWindow::MainWindow(GameData *data)
     mgr = new QNetworkAccessManager(this);
 
     auto dummyWidget = new QSplitter();
+    dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
     auto listWidget = new SheetListWidget(data);

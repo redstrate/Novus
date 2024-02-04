@@ -24,6 +24,7 @@ MainWindow::MainWindow(GameData *data)
     setupMenubar();
 
     auto dummyWidget = new QSplitter();
+    dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
     auto listWidget = new MapListWidget(data);

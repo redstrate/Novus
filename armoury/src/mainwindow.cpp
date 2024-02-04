@@ -32,6 +32,7 @@ MainWindow::MainWindow(GameData *in_data)
     setupMenubar();
 
     auto dummyWidget = new QSplitter();
+    dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
     auto gearListWidget = new GearListWidget(&data);
