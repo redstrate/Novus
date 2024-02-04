@@ -8,6 +8,7 @@
 #include <QTableWidget>
 #include <QTimer>
 
+#include <KLocalizedString>
 #include <QAction>
 #include <QApplication>
 #include <QDesktopServices>
@@ -53,9 +54,9 @@ MainWindow::MainWindow(GameData *in_data)
     metadataView = new MetadataView(&data);
 
     auto tabWidget = new QTabWidget();
-    tabWidget->addTab(gearView, QStringLiteral("Models"));
-    tabWidget->addTab(materialView, QStringLiteral("Materials"));
-    tabWidget->addTab(metadataView, QStringLiteral("Metadata"));
+    tabWidget->addTab(gearView, i18nc("@title:tab", "Models"));
+    tabWidget->addTab(materialView, i18nc("@title:tab", "Materials"));
+    tabWidget->addTab(metadataView, i18nc("@title:tab", "Metadata"));
     tabWidget->setDocumentMode(true); // Don't draw the borders
     tabWidget->tabBar()->setExpanding(true);
     dummyWidget->addWidget(tabWidget);
@@ -68,18 +69,18 @@ MainWindow::MainWindow(GameData *in_data)
 
 void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
 {
-    auto toolsMenu = menuBar->addMenu(QStringLiteral("Tools"));
+    auto toolsMenu = menuBar->addMenu(i18nc("@title:menu", "Tools"));
 
-    auto cmpEditorMenu = toolsMenu->addAction(QStringLiteral("CMP Editor"));
+    auto cmpEditorMenu = toolsMenu->addAction(i18nc("@action:inmenu CMP is an abbreviation", "CMP Editor"));
     cmpEditorMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
     connect(cmpEditorMenu, &QAction::triggered, [this] {
         auto cmpEditor = new CmpEditor(&data);
         cmpEditor->show();
     });
 
-    auto windowMenu = menuBar->addMenu(QStringLiteral("Window"));
+    auto windowMenu = menuBar->addMenu(i18nc("@title:menu", "Window"));
 
-    auto fmvMenu = windowMenu->addAction(QStringLiteral("Full Model viewer"));
+    auto fmvMenu = windowMenu->addAction(i18nc("@action:inmenu", "Full Model Viewer"));
     fmvMenu->setCheckable(true);
     fmvMenu->setIcon(QIcon::fromTheme(QStringLiteral("user-symbolic")));
     connect(fmvMenu, &QAction::toggled, [this](bool toggled) {
@@ -93,9 +94,9 @@ void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
         fmvMenu->setChecked(fullModelViewer->isVisible());
     });
 
-    auto settingsMenu = menuBar->addMenu(QStringLiteral("Settings"));
+    auto settingsMenu = menuBar->addMenu(i18nc("@title:menu", "Settings"));
 
-    auto settingsAction = settingsMenu->addAction(QStringLiteral("Configure Armoury..."));
+    auto settingsAction = settingsMenu->addAction(i18nc("@action:inmenu", "Configure Armoury…"));
     settingsAction->setIcon(QIcon::fromTheme(QStringLiteral("configure-symbolic")));
     connect(settingsAction, &QAction::triggered, [this] {
         auto settingsWindow = new SettingsWindow();

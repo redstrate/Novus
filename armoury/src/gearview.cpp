@@ -34,6 +34,7 @@ GearView::GearView(GameData *data, FileCache &cache, QWidget *parent)
                 ImGui::SetWindowPos(ImVec2(0, 0));
                 ImGui::SetWindowSize(io.DisplaySize);
 
+                // TODO: localize
                 const char *loadingLabel{"Loading gear..."};
                 ImGui::SetCursorPosX((io.DisplaySize.x - ImGui::CalcTextSize(loadingLabel).x) * 0.5f);
                 ImGui::SetCursorPosY((io.DisplaySize.y - ImGui::CalcTextSize(loadingLabel).y) * 0.5f);

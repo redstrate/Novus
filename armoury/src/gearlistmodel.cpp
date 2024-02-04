@@ -3,6 +3,7 @@
 
 #include "gearlistmodel.h"
 
+#include <KLocalizedString>
 #include <QtConcurrent>
 #include <magic_enum.hpp>
 
@@ -128,7 +129,7 @@ QVariant GearListModel::headerData(int section, Qt::Orientation orientation, int
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
-            return QStringLiteral("Name");
+            return i18nc("@title:column Item name", "Name");
         }
     }
 

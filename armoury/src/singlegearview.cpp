@@ -5,6 +5,7 @@
 
 #include <KConfig>
 #include <KConfigGroup>
+#include <KLocalizedString>
 #include <QDebug>
 #include <QFileDialog>
 #include <QLineEdit>
@@ -83,7 +84,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     });
     controlLayout->addWidget(lodCombo);
 
-    addToFMVButton = new QPushButton(QStringLiteral("Add to FMV"));
+    addToFMVButton = new QPushButton(i18nc("@action:button FMV is an abbreviation for Full Model Viewer", "Add to FMV"));
     addToFMVButton->setIcon(QIcon::fromTheme(QStringLiteral("list-add-user")));
     connect(addToFMVButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
@@ -91,7 +92,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
         }
     });
 
-    editButton = new QPushButton(QStringLiteral("Edit"));
+    editButton = new QPushButton(i18nc("@action:button", "Edit"));
     editButton->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
     connect(editButton, &QPushButton::clicked, this, [this](bool) {
         // Export in default location
@@ -134,7 +135,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     });
     topControlLayout->addWidget(editButton);
 
-    importButton = new QPushButton(QStringLiteral("Import..."));
+    importButton = new QPushButton(i18nc("@action:button", "Import…"));
     importButton->setIcon(QIcon::fromTheme(QStringLiteral("document-import")));
     connect(importButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
@@ -157,7 +158,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
             if (!QDir().exists(path))
                 QDir().mkpath(path);
 
-            const QString fileName = QFileDialog::getOpenFileName(this, tr("Import Model"), path, tr("glTF Binary File (*.glb)"));
+            const QString fileName = QFileDialog::getOpenFileName(this, i18nc("@title:window", "Import Model"), path, i18n("glTF Binary File (*.glb)"));
             if (!fileName.isEmpty()) {
                 importModel(fileName);
             }
@@ -166,7 +167,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     topControlLayout->addWidget(importButton);
 
     auto testMenu = new QMenu();
-    auto gltfAction = testMenu->addAction(QStringLiteral("glTF"));
+    auto gltfAction = testMenu->addAction(i18nc("@action:inmenu", "glTF"));
     connect(gltfAction, &QAction::triggered, this, [this](bool) {
         if (currentGear.has_value()) {
             // TODO: deduplicate
@@ -194,7 +195,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
             gearView->exportModel(fileName);
         }
     });
-    auto mdlAction = testMenu->addAction(QStringLiteral("MDL"));
+    auto mdlAction = testMenu->addAction(i18nc("@action:inmenu", "MDL"));
     connect(mdlAction, &QAction::triggered, this, [this, data](bool) {
         if (currentGear.has_value()) {
             // TODO: deduplicate
@@ -202,8 +203,10 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
                 return QString(mdlPath).section(QLatin1Char('/'), -1);
             };
 
-            const QString fileName =
-                QFileDialog::getSaveFileName(this, tr("Export Model"), sanitizeMdlPath(gearView->getLoadedGearPath()), tr("MDL File (*.mdl)"));
+            const QString fileName = QFileDialog::getSaveFileName(this,
+                                                                  i18nc("@title:window", "Export Model"),
+                                                                  sanitizeMdlPath(gearView->getLoadedGearPath()),
+                                                                  i18n("MDL File (*.mdl)"));
 
             auto buffer = physis_gamedata_extract_file(data, gearView->getLoadedGearPath().toStdString().c_str());
 
@@ -214,7 +217,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
         }
     });
 
-    exportButton = new QPushButton(QStringLiteral("Export"));
+    exportButton = new QPushButton(i18nc("@action:button", "Export"));
     exportButton->setMenu(testMenu);
     exportButton->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
 
@@ -386,7 +389,7 @@ void SingleGearView::reloadGear()
 
         lodCombo->clear();
         for (int i = 0; i < gearView->lodCount(); i++) {
-            lodCombo->addItem(QStringLiteral("LOD %1").arg(i), i);
+            lodCombo->addItem(i18nc("@action:inmenu LOD stands for Level of Detail", "LOD %1").arg(i), i);
         }
         if (oldLod < gearView->lodCount()) {
             lodCombo->setCurrentIndex(oldLod);

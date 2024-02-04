@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <KLocalizedString>
 #include <QApplication>
 #include <physis.hpp>
 
@@ -13,10 +14,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    customizeAboutData(QStringLiteral("armoury"),
-                       QStringLiteral("zone.xiv.armoury"),
-                       QStringLiteral("Gear Editor"),
-                       QStringLiteral("Program to view FFXIV gear."));
+    customizeAboutData(QStringLiteral("armoury"), QStringLiteral("zone.xiv.armoury"), QStringLiteral("Gear Editor"), i18n("Program to view FFXIV gear."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {
