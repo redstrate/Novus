@@ -3,6 +3,7 @@
 
 #include "exlpart.h"
 
+#include <KLocalizedString>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -31,7 +32,7 @@ void EXLPart::load(physis_Buffer file)
         m_tableWidget->setColumnCount(2);
         m_tableWidget->setRowCount(exl.entry_count);
 
-        m_tableWidget->setHorizontalHeaderLabels({QStringLiteral("Key"), QStringLiteral("Value")});
+        m_tableWidget->setHorizontalHeaderLabels({i18nc("@title:column", "Key"), i18nc("@title:column", "Value")});
 
         for (int i = 0; i < exl.entry_count; i++) {
             auto keyItem = new QTableWidgetItem(QLatin1String(exl.entry_keys[i]));

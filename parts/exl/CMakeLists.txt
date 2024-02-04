@@ -5,6 +5,7 @@ add_library(exlpart STATIC)
 target_sources(exlpart PRIVATE exlpart.cpp)
 target_link_libraries(exlpart
         PUBLIC
+        KF6::I18n
         Physis::Physis
         Qt6::Core
         Qt6::Widgets)
