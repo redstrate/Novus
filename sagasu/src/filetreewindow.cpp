@@ -16,29 +16,32 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     setLayout(layout);
 
     m_searchModel = new QSortFilterProxyModel();
     m_searchModel->setRecursiveFilteringEnabled(true);
     m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
-    auto searchLayout = new QHBoxLayout();
-    layout->addLayout(searchLayout);
+    /*auto searchLayout = new QHBoxLayout();
+    layout->addLayout(searchLayout);*/
 
     auto searchEdit = new QLineEdit();
     searchEdit->setPlaceholderText(QStringLiteral("Search..."));
     searchEdit->setClearButtonEnabled(true);
+    searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
     connect(searchEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
         m_searchModel->setFilterRegularExpression(text);
     });
-    searchLayout->addWidget(searchEdit);
+    layout->addWidget(searchEdit);
 
-    m_unknownCheckbox = new QCheckBox();
+    // TODO Restore as an action, later. it's currently pretty useless as-is as it's a "please slow down and crash" checkbox
+    /*m_unknownCheckbox = new QCheckBox();
     m_unknownCheckbox->setToolTip(QStringLiteral("Show unknown files and folders."));
     connect(m_unknownCheckbox, &QCheckBox::clicked, this, [this] {
         refreshModel();
     });
-    searchLayout->addWidget(m_unknownCheckbox);
+    searchLayout->addWidget(m_unknownCheckbox);*/
 
     auto treeWidget = new QTreeView();
     treeWidget->setModel(m_searchModel);
@@ -76,7 +79,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 void FileTreeWindow::refreshModel()
 {
     // TODO: this should really be handled by the proxy
-    m_fileModel = new FileTreeModel(m_database, m_unknownCheckbox->isChecked(), m_gamePath, data);
+    m_fileModel = new FileTreeModel(m_database, false, m_gamePath, data);
     m_searchModel->setSourceModel(m_fileModel);
 }
 

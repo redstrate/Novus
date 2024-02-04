@@ -12,6 +12,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QNetworkReply>
+#include <QSplitter>
 #include <QTemporaryDir>
 
 #include "cmppart.h"
@@ -30,14 +31,13 @@ MainWindow::MainWindow(const QString &gamePath, GameData *data)
     , fileCache(*data)
 {
     setupMenubar();
+    setMinimumSize(1280, 720);
 
     m_mgr = new QNetworkAccessManager(this);
 
-    auto dummyWidget = new QWidget();
+    auto dummyWidget = new QSplitter();
+    dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
-
-    auto layout = new QHBoxLayout();
-    dummyWidget->setLayout(layout);
 
     m_tree = new FileTreeWindow(m_database, gamePath, data);
     connect(m_tree, &FileTreeWindow::extractFile, this, [this, data](const QString &path) {
@@ -58,13 +58,13 @@ MainWindow::MainWindow(const QString &gamePath, GameData *data)
     connect(m_tree, &FileTreeWindow::pathSelected, this, [this](const QString &path) {
         refreshParts(path);
     });
-    m_tree->setMaximumWidth(200);
-    layout->addWidget(m_tree);
+    m_tree->setMaximumWidth(300);
+    dummyWidget->addWidget(m_tree);
 
     partHolder = new QTabWidget();
-    partHolder->setMinimumWidth(800);
+    partHolder->setDocumentMode(true); // hide borders
     partHolder->setMinimumHeight(720);
-    layout->addWidget(partHolder);
+    dummyWidget->addWidget(partHolder);
 
     refreshParts({});
 }
@@ -120,6 +120,8 @@ void MainWindow::refreshParts(const QString &path)
 
     auto propertiesWidget = new FilePropertiesWindow(path, file);
     partHolder->addTab(propertiesWidget, QStringLiteral("Properties"));
+
+    partHolder->tabBar()->setExpanding(true);
 }
 
 void MainWindow::setupFileMenu(QMenu *menu)
