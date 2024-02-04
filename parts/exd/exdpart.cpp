@@ -3,6 +3,7 @@
 
 #include "exdpart.h"
 
+#include <KLocalizedString>
 #include <QFile>
 #include <QGroupBox>
 #include <QJsonArray>
@@ -39,8 +40,6 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
 
     QFile definitionFile(definitionPath);
     definitionFile.open(QIODevice::ReadOnly);
-
-    qInfo() << definitionPath;
 
     QJsonArray definitionList;
     if (definitionFile.isOpen()) {
@@ -97,37 +96,37 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
             QString columnType;
             switch (columnData.tag) {
             case physis_ColumnData::Tag::String:
-                columnType = QStringLiteral("String");
+                columnType = i18n("String");
                 break;
             case physis_ColumnData::Tag::Bool:
-                columnType = QStringLiteral("Bool");
+                columnType = i18n("Bool");
                 break;
             case physis_ColumnData::Tag::Int8:
-                columnType = QStringLiteral("Int8");
+                columnType = i18n("Int8");
                 break;
             case physis_ColumnData::Tag::UInt8:
-                columnType = QStringLiteral("UInt8");
+                columnType = i18n("UInt8");
                 break;
             case physis_ColumnData::Tag::Int16:
-                columnType = QStringLiteral("Int16");
+                columnType = i18n("Int16");
                 break;
             case physis_ColumnData::Tag::UInt16:
-                columnType = QStringLiteral("UInt16");
+                columnType = i18n("UInt16");
                 break;
             case physis_ColumnData::Tag::Int32:
-                columnType = QStringLiteral("Int32");
+                columnType = i18n("Int32");
                 break;
             case physis_ColumnData::Tag::UInt32:
-                columnType = QStringLiteral("UInt32");
+                columnType = i18n("UInt32");
                 break;
             case physis_ColumnData::Tag::Float32:
-                columnType = QStringLiteral("Float32");
+                columnType = i18n("Float32");
                 break;
             case physis_ColumnData::Tag::Int64:
-                columnType = QStringLiteral("Int64");
+                columnType = i18n("Int64");
                 break;
             case physis_ColumnData::Tag::UInt64:
-                columnType = QStringLiteral("UInt64");
+                columnType = i18n("UInt64");
                 break;
             }
 
@@ -172,7 +171,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
 
         tableWidget->resizeColumnsToContents();
 
-        pageTabWidget->addTab(tableWidget, QStringLiteral("Page %1").arg(i));
+        pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1").arg(i));
     }
 
     // Expand the tabs and hide the tab bar if there's only one page
@@ -201,7 +200,7 @@ std::pair<QString, int> EXDPart::getColumnData(physis_ColumnData &columnData)
         columnString = QString::fromStdString(columnData.string._0);
         break;
     case physis_ColumnData::Tag::Bool:
-        columnString = columnData.bool_._0 ? QStringLiteral("True") : QStringLiteral("False");
+        columnString = columnData.bool_._0 ? i18nc("Value is true", "True") : i18nc("Value is false", "False");
         break;
     case physis_ColumnData::Tag::Int8:
         columnString = QString::number(columnData.int8._0);
