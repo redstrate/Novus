@@ -3,6 +3,7 @@
 
 #include <KConfig>
 #include <KConfigGroup>
+#include <KLocalizedString>
 #include <QApplication>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -18,7 +19,7 @@ int main(int argc, char *argv[])
     customizeAboutData(QStringLiteral("launcher"),
                        QStringLiteral("zone.xiv.novus"),
                        QStringLiteral("Novus SDK"),
-                       QStringLiteral("Handles setting up and launching various Novus SDK components."));
+                       i18n("Handles setting up and launching various Novus SDK components."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {
@@ -31,11 +32,11 @@ int main(int argc, char *argv[])
     if (!game.hasKey("GameDir")) {
         while (true) {
             QMessageBox msgBox;
-            msgBox.setText(QStringLiteral("The game directory has not been set, please select it now. Select the 'game' folder."));
+            msgBox.setText(i18n("The game directory has not been set, please select it now. Select the 'game' folder."));
             msgBox.exec();
 
             const QString dir = QFileDialog::getExistingDirectory(nullptr,
-                                                                  QStringLiteral("Open Game Directory"),
+                                                                  i18nc("@title:window", "Open Game Directory"),
                                                                   QStandardPaths::standardLocations(QStandardPaths::StandardLocation::HomeLocation).last(),
                                                                   QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 

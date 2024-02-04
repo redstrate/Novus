@@ -5,6 +5,7 @@
 
 #include <KConfig>
 #include <KConfigGroup>
+#include <KLocalizedString>
 #include <QComboBox>
 #include <QDebug>
 #include <QDesktopServices>
@@ -32,7 +33,7 @@ MainWindow::MainWindow()
     auto appList = new QListWidget();
 
     auto applicationHeader = new QListWidgetItem();
-    applicationHeader->setText(QStringLiteral("Applications"));
+    applicationHeader->setText(i18nc("@title:group", "Applications"));
     applicationHeader->setFlags(Qt::NoItemFlags);
 
     appList->addItem(applicationHeader);
@@ -46,7 +47,7 @@ MainWindow::MainWindow()
     }
 
     auto linksHeader = new QListWidgetItem();
-    linksHeader->setText(QStringLiteral("Links"));
+    linksHeader->setText(i18nc("@title:group", "Links"));
     linksHeader->setFlags(Qt::NoItemFlags);
 
     appList->addItem(linksHeader);
@@ -87,7 +88,7 @@ MainWindow::MainWindow()
 
     auto gameCombo = new QComboBox();
     gameCombo->setMaximumWidth(175);
-    formLayout->addRow(QStringLiteral("Current Game"), gameCombo);
+    formLayout->addRow(i18n("Current Game"), gameCombo);
     formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
     gameCombo->addItem(game.readEntry("GameDir"));
 
