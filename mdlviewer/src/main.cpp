@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <KLocalizedString>
 #include <QApplication>
 #include <physis.hpp>
 #include <physis_logger.h>
@@ -16,7 +17,7 @@ int main(int argc, char *argv[])
     customizeAboutData(QStringLiteral("mdlviewer"),
                        QStringLiteral("zone.xiv.mdlviewer"),
                        QStringLiteral("MDLViewer"),
-                       QStringLiteral("Program to view FFXIV MDL files."));
+                       i18n("Program to view FFXIV MDL files."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

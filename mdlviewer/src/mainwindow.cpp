@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include <KLocalizedString>
 #include <QAction>
 #include <QApplication>
 #include <QDesktopServices>
@@ -45,7 +46,7 @@ MainWindow::MainWindow(GameData *data)
 
     auto renderWidget = new QWidget();
 
-    tabWidget->addTab(renderWidget, QStringLiteral("Render"));
+    tabWidget->addTab(renderWidget, i18nc("@title:tab", "Render"));
     tabWidget->setDocumentMode(true); // hide borders
     tabWidget->tabBar()->setExpanding(true);
 
@@ -54,10 +55,10 @@ MainWindow::MainWindow(GameData *data)
 
 void MainWindow::setupFileMenu(QMenu *menu)
 {
-    auto openMDLFile = menu->addAction(QStringLiteral("Open MDL..."));
+    auto openMDLFile = menu->addAction(i18nc("@action:inmenu MDL is an abbreviation for a file type", "Open MDL..."));
     openMDLFile->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openMDLFile, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open MDL File"), QStringLiteral("~"), QStringLiteral("FFXIV Model File (*.mdl)"));
+        auto fileName = QFileDialog::getOpenFileName(nullptr, i18nc("@title:window", "Open MDL File"), QStringLiteral("~"), i18n("FFXIV Model File (*.mdl)"));
 
         auto buffer = physis_read_file(fileName.toStdString().c_str());
 
