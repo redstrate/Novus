@@ -483,4 +483,14 @@ QString GearView::getLoadedGearPath() const
     return loadedGears[0].path;
 }
 
+void GearView::changeEvent(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::EnabledChange: {
+        mdlPart->setEnabled(isEnabled());
+    } break;
+    }
+    QFrame::changeEvent(event);
+}
+
 #include "moc_gearview.cpp"

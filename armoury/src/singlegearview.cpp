@@ -311,6 +311,7 @@ void SingleGearView::setLevelOfDetail(int lod)
 
 void SingleGearView::reloadGear()
 {
+    gearView->setEnabled(currentGear.has_value());
     raceCombo->setEnabled(currentGear.has_value());
     subraceCombo->setEnabled(currentGear.has_value());
     genderCombo->setEnabled(currentGear.has_value());

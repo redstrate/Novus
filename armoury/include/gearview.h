@@ -89,6 +89,9 @@ public Q_SLOTS:
 
     void reloadRaceDeforms();
 
+protected:
+    void changeEvent(QEvent *) override;
+
 private:
     int currentLod = 0;
 
