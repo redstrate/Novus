@@ -8,6 +8,7 @@
 #include <QHBoxLayout>
 #include <QListWidget>
 #include <QMenuBar>
+#include <QSplitter>
 #include <QUrl>
 #include <physis.hpp>
 
@@ -22,18 +23,15 @@ MainWindow::MainWindow(GameData *data)
     setMinimumSize(1280, 720);
     setupMenubar();
 
-    auto dummyWidget = new QWidget();
+    auto dummyWidget = new QSplitter();
     setCentralWidget(dummyWidget);
-
-    auto layout = new QHBoxLayout();
-    dummyWidget->setLayout(layout);
 
     auto listWidget = new MapListWidget(data);
     listWidget->setMaximumWidth(400);
-    layout->addWidget(listWidget);
+    dummyWidget->addWidget(listWidget);
 
     auto mapView = new MapView(data, cache);
-    layout->addWidget(mapView);
+    dummyWidget->addWidget(mapView);
 
     connect(listWidget, &MapListWidget::mapSelected, this, [data, mapView](const QString &basePath) {
         QString base2Path = basePath.left(basePath.lastIndexOf(QStringLiteral("/level/")));
