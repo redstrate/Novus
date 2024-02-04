@@ -55,7 +55,7 @@ MainWindow::MainWindow(GameData *data)
 
 void MainWindow::setupFileMenu(QMenu *menu)
 {
-    auto openMDLFile = menu->addAction(i18nc("@action:inmenu MDL is an abbreviation for a file type", "Open MDL..."));
+    auto openMDLFile = menu->addAction(i18nc("@action:inmenu MDL is an abbreviation for a file type", "Open MDL…"));
     openMDLFile->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openMDLFile, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getOpenFileName(nullptr, i18nc("@title:window", "Open MDL File"), QStringLiteral("~"), i18n("FFXIV Model File (*.mdl)"));

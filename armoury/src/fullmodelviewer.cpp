@@ -31,7 +31,7 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
 
     auto fileMenu = menuBar()->addMenu(i18nc("@title:menu", "File"));
 
-    auto datOpenAction = fileMenu->addAction(i18nc("@action:inmenu DAT is an abbreviation", "Load Character DAT..."));
+    auto datOpenAction = fileMenu->addAction(i18nc("@action:inmenu DAT is an abbreviation", "Load Character DAT…"));
     datOpenAction->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(datOpenAction, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getOpenFileName(nullptr,

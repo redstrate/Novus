@@ -81,7 +81,7 @@ static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath
 
 void MainWindow::setupFileMenu(QMenu *menu)
 {
-    auto openList = menu->addAction(i18nc("@action:inmenu", "Import Definitions..."));
+    auto openList = menu->addAction(i18nc("@action:inmenu", "Import Definitions…"));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getExistingDirectory(nullptr, i18nc("@title:window", "Open Defintions Directory"), QStringLiteral("~"));
@@ -101,7 +101,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
         QMessageBox::information(this, i18nc("@title:window", "Definitions"), i18n("Successfully imported definitions!"));
     });
 
-    auto downloadList = menu->addAction(i18nc("@action:inmenu", "Download Definitions..."));
+    auto downloadList = menu->addAction(i18nc("@action:inmenu", "Download Definitions…"));
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
         const int ret =
