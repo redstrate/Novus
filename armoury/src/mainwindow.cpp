@@ -47,8 +47,14 @@ MainWindow::MainWindow(GameData *in_data)
     });
     connect(gearView, &SingleGearView::importedModel, m_api, &PenumbraApi::redrawAll);
 
+    materialView = new MaterialView(&data);
+
+    metadataView = new MetadataView(&data);
+
     auto tabWidget = new QTabWidget();
     tabWidget->addTab(gearView, QStringLiteral("Models"));
+    tabWidget->addTab(materialView, QStringLiteral("Materials"));
+    tabWidget->addTab(metadataView, QStringLiteral("Metadata"));
     tabWidget->setDocumentMode(true); // Don't draw the borders
     tabWidget->tabBar()->setExpanding(true);
     dummyWidget->addWidget(tabWidget);
