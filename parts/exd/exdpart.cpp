@@ -171,7 +171,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
 
         tableWidget->resizeColumnsToContents();
 
-        pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1").arg(i));
+        pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1", i));
     }
 
     // Expand the tabs and hide the tab bar if there's only one page

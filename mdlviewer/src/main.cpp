@@ -14,6 +14,8 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
+
     customizeAboutData(QStringLiteral("mdlviewer"),
                        QStringLiteral("zone.xiv.mdlviewer"),
                        QStringLiteral("MDLViewer"),

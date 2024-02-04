@@ -11,5 +11,6 @@ target_link_libraries(cmppart
         Qt6::Core
         Qt6::Widgets)
 target_include_directories(cmppart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(cmppart PRIVATE TRANSLATION_DOMAIN="novus")
 
 add_library(Novus::CmpPart ALIAS cmppart)

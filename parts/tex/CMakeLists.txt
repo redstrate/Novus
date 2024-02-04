@@ -14,5 +14,6 @@ target_link_libraries(texpart
         Qt6::Core
         Qt6::Widgets)
 target_include_directories(texpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(texpart PRIVATE TRANSLATION_DOMAIN="novus")
 
 add_library(Novus::TexPart ALIAS texpart)

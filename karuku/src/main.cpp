@@ -14,6 +14,8 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
+
     customizeAboutData(QStringLiteral("karuku"), QStringLiteral("zone.xiv.karaku"), QStringLiteral("Excel Editor"), i18n("Program to view FFXIV Excel files."));
 
     // Default to a sensible message pattern

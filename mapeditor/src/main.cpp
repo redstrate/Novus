@@ -14,6 +14,8 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
+
     customizeAboutData(QStringLiteral("mapeditor"), QStringLiteral("zone.xiv.mapeditor"), QStringLiteral("Map Editor"), i18n("Program to view FFXIV maps."));
 
     // Default to a sensible message pattern

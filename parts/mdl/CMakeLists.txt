@@ -21,5 +21,6 @@ target_link_libraries(mdlpart
         Qt6::Widgets
         tinygltf)
 target_include_directories(mdlpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(mdlpart PRIVATE TRANSLATION_DOMAIN="novus")
 
 add_library(Novus::MdlPart ALIAS mdlpart)

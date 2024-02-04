@@ -27,5 +27,6 @@ target_link_libraries(hexpart
         Qt6::Core
         Qt6::Widgets)
 target_include_directories(hexpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(hexpart PRIVATE TRANSLATION_DOMAIN="novus")
 
 add_library(Novus::HexPart ALIAS hexpart)

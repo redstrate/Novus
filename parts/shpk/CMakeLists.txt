@@ -18,5 +18,6 @@ target_link_libraries(shpkpart
         Qt6::Widgets)
 target_include_directories(shpkpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(shpkpart PRIVATE -fexceptions)
+target_compile_definitions(shpkpart PRIVATE TRANSLATION_DOMAIN="novus")
 
 add_library(Novus::ShpkPart ALIAS shpkpart)

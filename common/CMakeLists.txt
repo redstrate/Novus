@@ -31,5 +31,6 @@ target_link_libraries(novus-common
         KF6::I18n
         Qt6::Core
         Qt6::Widgets)
+target_compile_definitions(novus-common PRIVATE TRANSLATION_DOMAIN="novus")
 
 add_library(Novus::Common ALIAS novus-common)
