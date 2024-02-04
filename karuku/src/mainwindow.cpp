@@ -12,6 +12,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QNetworkReply>
+#include <QSplitter>
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QUrl>
@@ -29,18 +30,15 @@ MainWindow::MainWindow(GameData *data)
 
     mgr = new QNetworkAccessManager(this);
 
-    auto dummyWidget = new QWidget();
+    auto dummyWidget = new QSplitter();
     setCentralWidget(dummyWidget);
-
-    auto layout = new QHBoxLayout();
-    dummyWidget->setLayout(layout);
 
     auto listWidget = new SheetListWidget(data);
     listWidget->setMaximumWidth(200);
-    layout->addWidget(listWidget);
+    dummyWidget->addWidget(listWidget);
 
     auto exdPart = new EXDPart(data);
-    layout->addWidget(exdPart);
+    dummyWidget->addWidget(exdPart);
 
     connect(listWidget, &SheetListWidget::sheetSelected, this, [data, exdPart](const QString &name) {
         QString definitionPath;

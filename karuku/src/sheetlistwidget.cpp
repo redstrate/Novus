@@ -14,6 +14,7 @@ SheetListWidget::SheetListWidget(GameData *data, QWidget *parent)
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     setLayout(layout);
 
     auto searchModel = new QSortFilterProxyModel();
@@ -23,6 +24,7 @@ SheetListWidget::SheetListWidget(GameData *data, QWidget *parent)
     auto searchEdit = new QLineEdit();
     searchEdit->setPlaceholderText(QStringLiteral("Search..."));
     searchEdit->setClearButtonEnabled(true);
+    searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
     connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
         searchModel->setFilterRegularExpression(text);
     });
