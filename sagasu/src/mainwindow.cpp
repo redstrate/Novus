@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include <KLocalizedString>
 #include <KZip>
 #include <QApplication>
 #include <QDesktopServices>
@@ -43,7 +44,8 @@ MainWindow::MainWindow(const QString &gamePath, GameData *data)
     connect(m_tree, &FileTreeWindow::extractFile, this, [this, data](const QString &path) {
         const QFileInfo info(path);
 
-        const QString savePath = QFileDialog::getSaveFileName(this, tr("Save File"), info.fileName(), QStringLiteral("*.%1").arg(info.completeSuffix()));
+        const QString savePath =
+            QFileDialog::getSaveFileName(this, i18nc("@title:window", "Save File"), info.fileName(), QStringLiteral("*.%1").arg(info.completeSuffix()));
         if (!savePath.isEmpty()) {
             qInfo() << "Saving to" << savePath;
 
@@ -84,57 +86,57 @@ void MainWindow::refreshParts(const QString &path)
     if (info.completeSuffix() == QStringLiteral("exl")) {
         auto exlWidget = new EXLPart(data);
         exlWidget->load(file);
-        partHolder->addTab(exlWidget, QStringLiteral("Excel List"));
+        partHolder->addTab(exlWidget, i18nc("@title:tab", "Excel List"));
     } else if (info.completeSuffix() == QStringLiteral("exh")) {
         auto exdWidget = new EXDPart(data);
         exdWidget->loadSheet(info.baseName(), file);
-        partHolder->addTab(exdWidget, QStringLiteral("Excel Sheet"));
+        partHolder->addTab(exdWidget, i18nc("@title:tab", "Excel Sheet"));
     } else if (info.completeSuffix() == QStringLiteral("exd")) {
-        auto exdWidget = new QLabel(QStringLiteral("Note: Excel data files cannot be previewed standalone, select the EXH file instead."));
-        partHolder->addTab(exdWidget, QStringLiteral("Note"));
+        auto exdWidget = new QLabel(i18n("Note: Excel data files cannot be previewed standalone, select the EXH file instead."));
+        partHolder->addTab(exdWidget, i18nc("@title:tab", "Note"));
     } else if (info.completeSuffix() == QStringLiteral("mdl")) {
         auto mdlWidget = new MDLPart(data, fileCache);
         mdlWidget->addModel(physis_mdl_parse(file), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
-        partHolder->addTab(mdlWidget, QStringLiteral("Model"));
+        partHolder->addTab(mdlWidget, i18nc("@title:tab", "Model"));
     } else if (info.completeSuffix() == QStringLiteral("tex") || info.completeSuffix() == QStringLiteral("atex")) {
         auto texWidget = new TexPart(data);
         texWidget->load(file);
-        partHolder->addTab(texWidget, QStringLiteral("Texture"));
+        partHolder->addTab(texWidget, i18nc("@title:tab", "Texture"));
     } else if (info.completeSuffix() == QStringLiteral("shpk")) {
         auto shpkWidget = new SHPKPart(data);
         shpkWidget->load(file);
-        partHolder->addTab(shpkWidget, QStringLiteral("Shader Package"));
+        partHolder->addTab(shpkWidget, i18nc("@title:tab", "Shader Package"));
     } else if (info.completeSuffix() == QStringLiteral("cmp")) {
         auto cmpWidget = new CmpPart(data);
         cmpWidget->load(file);
-        partHolder->addTab(cmpWidget, QStringLiteral("Chara Make Params"));
+        partHolder->addTab(cmpWidget, i18nc("@title:tab", "Chara Make Params"));
     } else if (info.completeSuffix() == QStringLiteral("sklb")) {
         auto sklbWidget = new SklbPart();
         sklbWidget->load(physis_parse_skeleton(file));
-        partHolder->addTab(sklbWidget, QStringLiteral("Skeleton"));
+        partHolder->addTab(sklbWidget, i18nc("@title:tab", "Skeleton"));
     }
 
     auto hexWidget = new HexPart();
     hexWidget->loadFile(file);
-    partHolder->addTab(hexWidget, QStringLiteral("Raw Hex"));
+    partHolder->addTab(hexWidget, i18nc("@title:tab", "Raw Hex"));
 
     auto propertiesWidget = new FilePropertiesWindow(path, file);
-    partHolder->addTab(propertiesWidget, QStringLiteral("Properties"));
+    partHolder->addTab(propertiesWidget, i18nc("@title:tab", "Properties"));
 
     partHolder->tabBar()->setExpanding(true);
 }
 
 void MainWindow::setupFileMenu(QMenu *menu)
 {
-    auto openList = menu->addAction(QStringLiteral("Import Path List..."));
+    auto openList = menu->addAction(i18nc("@action:inmenu", "Import Path List…"));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open Path List"), QStringLiteral("~"));
+        auto fileName = QFileDialog::getOpenFileName(nullptr, i18nc("@title:window", "Open Path List"), QStringLiteral("~"));
 
         QMessageBox::warning(this,
-                             QStringLiteral("Import Warning"),
-                             QStringLiteral("Depending on the size of the import, this process usually takes a few minutes. The program may freeze. Please "
-                                            "keep it open until the operation is finished."),
+                             i18nc("@title:window", "Import Warning"),
+                             i18n("Depending on the size of the import, this process usually takes a few minutes. The program may freeze. Please "
+                                  "keep it open until the operation is finished."),
                              QMessageBox::Ok,
                              QMessageBox::Ok);
 
@@ -144,20 +146,19 @@ void MainWindow::setupFileMenu(QMenu *menu)
         m_database.importFileList(file.readAll());
         m_tree->refreshModel();
 
-        QMessageBox::information(this, QStringLiteral("Import Complete"), QStringLiteral("Successfully imported path list!"), QMessageBox::Ok, QMessageBox::Ok);
+        QMessageBox::information(this, i18nc("@title:window", "Import Complete"), i18n("Successfully imported path list!"), QMessageBox::Ok, QMessageBox::Ok);
     });
 
-    auto downloadList = menu->addAction(QStringLiteral("Download Path List..."));
+    auto downloadList = menu->addAction(i18nc("@action:inmenu", "Download Path List…"));
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
-        const int ret =
-            QMessageBox::information(this,
-                                     QStringLiteral("Download Confirmation"),
-                                     QStringLiteral("This will download the path list from <a "
-                                                    "href=\"https://rl2.perchbird.dev/\">ResLogger</a>.this process usually takes a few minutes. The program "
-                                                    "may freeze. Please keep it open until the operation is finished.<br><br>Continue?"),
-                                     QMessageBox::Ok | QMessageBox::Cancel,
-                                     QMessageBox::Ok);
+        const int ret = QMessageBox::information(this,
+                                                 i18nc("@title:window", "Download Confirmation"),
+                                                 i18n("This will download the path list from <a "
+                                                      "href=\"https://rl2.perchbird.dev/\">ResLogger</a>.this process usually takes a few minutes. The program "
+                                                      "may freeze. Please keep it open until the operation is finished.<br><br>Continue?"),
+                                                 QMessageBox::Ok | QMessageBox::Cancel,
+                                                 QMessageBox::Ok);
 
         if (ret != QMessageBox::Ok) {
             return;
@@ -194,8 +195,8 @@ void MainWindow::setupFileMenu(QMenu *menu)
             archive.close();
 
             QMessageBox::information(this,
-                                     QStringLiteral("Import Complete"),
-                                     QStringLiteral("Successfully downloaded and imported path list!"),
+                                     i18nc("@title:window", "Import Complete"),
+                                     i18n("Successfully downloaded and imported path list!"),
                                      QMessageBox::Ok,
                                      QMessageBox::Ok);
         });

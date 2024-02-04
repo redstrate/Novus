@@ -3,6 +3,7 @@
 
 #include "filetreewindow.h"
 
+#include <KLocalizedString>
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QMenu>
@@ -27,7 +28,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     layout->addLayout(searchLayout);*/
 
     auto searchEdit = new QLineEdit();
-    searchEdit->setPlaceholderText(QStringLiteral("Search..."));
+    searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
     connect(searchEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
@@ -56,7 +57,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 
             auto menu = new QMenu();
 
-            auto extractAction = menu->addAction(QStringLiteral("Extract..."));
+            auto extractAction = menu->addAction(i18nc("@action:inmenu", "Extract…"));
             extractAction->setIcon(QIcon::fromTheme(QStringLiteral("archive-extract-symbolic")));
             connect(extractAction, &QAction::triggered, this, [this, path] {
                 Q_EMIT extractFile(path);

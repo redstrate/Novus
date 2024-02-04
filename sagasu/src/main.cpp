@@ -3,6 +3,7 @@
 
 #include <QApplication>
 
+#include <KLocalizedString>
 #include <physis.hpp>
 #include <physis_logger.h>
 
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
     customizeAboutData(QStringLiteral("sagasu"),
                        QStringLiteral("zone.xiv.sagasu"),
                        QStringLiteral("Data Explorer"),
-                       QStringLiteral("Program to explore FFXIV data archives."));
+                       i18n("Program to explore FFXIV data archives."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

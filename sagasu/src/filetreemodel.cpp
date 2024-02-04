@@ -4,6 +4,7 @@
 #include "filetreemodel.h"
 #include "physis.hpp"
 
+#include <KLocalizedString>
 #include <QtConcurrent>
 
 FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, GameData *data, QObject *parent)
@@ -121,13 +122,13 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
     } else if (role == Qt::DisplayRole) {
         if (item->type == TreeType::Folder) {
             if (item->name.isEmpty()) {
-                return QStringLiteral("Unknown Folder (%1)").arg(item->hash);
+                return i18n("Unknown Folder (%1)").arg(item->hash);
             } else {
                 return item->name;
             }
         } else if (item->type == TreeType::File) {
             if (item->name.isEmpty()) {
-                return QStringLiteral("Unknown File (%1)").arg(item->hash);
+                return i18n("Unknown File (%1)").arg(item->hash);
             } else {
                 return item->name;
             }
@@ -141,7 +142,7 @@ QVariant FileTreeModel::headerData(int section, Qt::Orientation orientation, int
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
-            return QStringLiteral("Name");
+            return i18nc("@title:column", "Name");
         }
     }
 
