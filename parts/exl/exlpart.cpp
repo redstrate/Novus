@@ -15,6 +15,7 @@ EXLPart::EXLPart(GameData *data, QWidget *parent)
     , data(data)
 {
     auto layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
     m_tableWidget = new QTableWidget();
     layout->addWidget(m_tableWidget);
     setLayout(layout);
