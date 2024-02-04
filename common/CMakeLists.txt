@@ -28,6 +28,7 @@ target_link_libraries(novus-common
         KF6::CoreAddons
         KF6::ConfigCore
         KF6::XmlGui
+        KF6::I18n
         Qt6::Core
         Qt6::Widgets)
 

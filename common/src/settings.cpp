@@ -5,6 +5,7 @@
 
 #include <KConfig>
 #include <KConfigGroup>
+#include <KLocalizedString>
 #include <QCoreApplication>
 #include <QMessageBox>
 
@@ -17,7 +18,7 @@ QString getGameDirectory()
         return game.readEntry(QStringLiteral("GameDir"));
     } else {
         QMessageBox msgBox;
-        msgBox.setText(QStringLiteral("The game directory has not been set. Please open the Novus SDK launcher and set it."));
+        msgBox.setText(i18n("The game directory has not been set. Please open the Novus SDK launcher and set it."));
         msgBox.exec();
         QCoreApplication::quit();
         return {};
