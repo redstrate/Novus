@@ -72,12 +72,15 @@ MainWindow::MainWindow()
     });
 
     auto appListLayout = new QVBoxLayout();
+    appListLayout->setContentsMargins(0, 0, 0, 0);
     appListLayout->addWidget(appList);
 
     auto centralFrame = new QFrame();
+    centralFrame->setContentsMargins(0, 0, 0, 0);
     centralFrame->setLayout(appListLayout);
 
     auto formLayout = new QFormLayout();
+    formLayout->setContentsMargins(5, 5, 5, 5); // TODO: use style values
 
     KConfig config(QStringLiteral("novusrc"));
     KConfigGroup game = config.group(QStringLiteral("Game"));
@@ -89,6 +92,8 @@ MainWindow::MainWindow()
     gameCombo->addItem(game.readEntry("GameDir"));
 
     auto mainLayout = new QVBoxLayout();
+    mainLayout->setSpacing(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(centralFrame);
     mainLayout->addLayout(formLayout);
     auto centralWidget = new QWidget();
