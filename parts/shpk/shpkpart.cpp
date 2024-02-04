@@ -4,6 +4,7 @@
 #include "shpkpart.h"
 #include "dxbc_module.h"
 #include "dxbc_reader.h"
+#include <KLocalizedString>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <spirv_glsl.hpp>
@@ -53,11 +54,11 @@ void SHPKPart::load(physis_Buffer buffer)
     };
 
     for (int i = 0; i < shader.num_vertex_shaders; i++) {
-        addShader(shader.vertex_shaders[i], QStringLiteral("Vertex Shader %1").arg(i));
+        addShader(shader.vertex_shaders[i], i18nc("@title:tab", "Vertex Shader %1").arg(i));
     }
 
     for (int i = 0; i < shader.num_pixel_shaders; i++) {
-        addShader(shader.pixel_shaders[i], QStringLiteral("Pixel Shader %1").arg(i));
+        addShader(shader.pixel_shaders[i], i18nc("@title:tab", "Pixel Shader %1").arg(i));
     }
 }
 
