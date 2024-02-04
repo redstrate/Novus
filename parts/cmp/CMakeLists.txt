@@ -5,6 +5,7 @@ add_library(cmppart STATIC)
 target_sources(cmppart PRIVATE cmppart.cpp cmppart.h)
 target_link_libraries(cmppart
         PUBLIC
+        KF6::I18n
         Physis::Physis
         magic_enum
         Qt6::Core

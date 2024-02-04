@@ -3,6 +3,7 @@
 
 #include "cmppart.h"
 
+#include <KLocalizedString>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QTreeWidget>
@@ -39,7 +40,7 @@ void CmpPart::load(physis_Buffer file)
 
     auto raceListWidget = new QTreeWidget();
     raceListWidget->setMaximumWidth(200);
-    raceListWidget->setHeaderLabel(QStringLiteral("Race"));
+    raceListWidget->setHeaderLabel(i18nc("@title:column", "Race"));
     layout->addWidget(raceListWidget);
 
     for (const auto &race : raceTree) {
@@ -70,46 +71,46 @@ void CmpPart::load(physis_Buffer file)
     detailBox->setLayout(detailBoxLayout);
 
     maleMinSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Male Min Size"), maleMinSize);
+    detailBoxLayout->addRow(i18n("Male Min Size"), maleMinSize);
 
     maleMaxSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Male Max Size"), maleMaxSize);
+    detailBoxLayout->addRow(i18n("Male Max Size"), maleMaxSize);
 
     maleMinTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Male Min Tail"), maleMinTail);
+    detailBoxLayout->addRow(i18n("Male Min Tail"), maleMinTail);
 
     maleMaxTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Male Max Tail"), maleMaxTail);
+    detailBoxLayout->addRow(i18n("Male Max Tail"), maleMaxTail);
 
     femaleMinSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Female Min Size"), femaleMinSize);
+    detailBoxLayout->addRow(i18n("Female Min Size"), femaleMinSize);
 
     femaleMaxSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Female Max Size"), femaleMaxSize);
+    detailBoxLayout->addRow(i18n("Female Max Size"), femaleMaxSize);
 
     femaleMinTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Female Min Tail"), femaleMinTail);
+    detailBoxLayout->addRow(i18n("Female Min Tail"), femaleMinTail);
 
     femaleMaxTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Female Max Tail"), femaleMaxTail);
+    detailBoxLayout->addRow(i18n("Female Max Tail"), femaleMaxTail);
 
     bustMinX = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Bust Min X"), bustMinX);
+    detailBoxLayout->addRow(i18n("Bust Min X"), bustMinX);
 
     bustMinY = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Bust Min Y"), bustMinY);
+    detailBoxLayout->addRow(i18n("Bust Min Y"), bustMinY);
 
     bustMinZ = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Bust Min Z"), bustMinZ);
+    detailBoxLayout->addRow(i18n("Bust Min Z"), bustMinZ);
 
     bustMaxX = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Bust Max X"), bustMaxX);
+    detailBoxLayout->addRow(i18n("Bust Max X"), bustMaxX);
 
     bustMaxY = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Bust Max Y"), bustMaxY);
+    detailBoxLayout->addRow(i18n("Bust Max Y"), bustMaxY);
 
     bustMaxZ = new QDoubleSpinBox();
-    detailBoxLayout->addRow(QStringLiteral("Bust Max Z"), bustMaxZ);
+    detailBoxLayout->addRow(i18n("Bust Max Z"), bustMaxZ);
 
     loadRaceData(Race::Hyur, Subrace::Midlander);
 }
