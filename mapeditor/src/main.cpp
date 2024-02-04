@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2024 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <KLocalizedString>
 #include <QApplication>
 #include <physis.hpp>
 #include <physis_logger.h>
@@ -13,10 +14,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    customizeAboutData(QStringLiteral("mapeditor"),
-                       QStringLiteral("zone.xiv.mapeditor"),
-                       QStringLiteral("Map Editor"),
-                       QStringLiteral("Program to view FFXIV maps."));
+    customizeAboutData(QStringLiteral("mapeditor"), QStringLiteral("zone.xiv.mapeditor"), QStringLiteral("Map Editor"), i18n("Program to view FFXIV maps."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {
