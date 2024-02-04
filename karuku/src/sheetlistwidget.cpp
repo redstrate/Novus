@@ -3,6 +3,7 @@
 
 #include "sheetlistwidget.h"
 
+#include <KLocalizedString>
 #include <QLineEdit>
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
@@ -22,7 +23,7 @@ SheetListWidget::SheetListWidget(GameData *data, QWidget *parent)
     searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     auto searchEdit = new QLineEdit();
-    searchEdit->setPlaceholderText(QStringLiteral("Search..."));
+    searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
     connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {

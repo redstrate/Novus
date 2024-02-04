@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <KLocalizedString>
 #include <QApplication>
 #include <physis.hpp>
 #include <physis_logger.h>
@@ -13,10 +14,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    customizeAboutData(QStringLiteral("karuku"),
-                       QStringLiteral("zone.xiv.karaku"),
-                       QStringLiteral("Excel Editor"),
-                       QStringLiteral("Program to view FFXIV Excel files."));
+    customizeAboutData(QStringLiteral("karuku"), QStringLiteral("zone.xiv.karaku"), QStringLiteral("Excel Editor"), i18n("Program to view FFXIV Excel files."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

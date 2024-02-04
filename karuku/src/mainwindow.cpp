@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include <KLocalizedString>
 #include <KZip>
 #include <QApplication>
 #include <QDesktopServices>
@@ -80,10 +81,10 @@ static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath
 
 void MainWindow::setupFileMenu(QMenu *menu)
 {
-    auto openList = menu->addAction(QStringLiteral("Import Definitions..."));
+    auto openList = menu->addAction(i18nc("@action:inmenu", "Import Definitions..."));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getExistingDirectory(nullptr, QStringLiteral("Open Defintions Directory"), QStringLiteral("~"));
+        auto fileName = QFileDialog::getExistingDirectory(nullptr, i18nc("@title:window", "Open Defintions Directory"), QStringLiteral("~"));
 
         const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("definitions"));
@@ -97,17 +98,17 @@ void MainWindow::setupFileMenu(QMenu *menu)
 
         copyDirectory(fileName, definitionsDir.absolutePath());
 
-        QMessageBox::information(this, QStringLiteral("Definitions"), QStringLiteral("Successfully imported definitions!"));
+        QMessageBox::information(this, i18nc("@title:window", "Definitions"), i18n("Successfully imported definitions!"));
     });
 
-    auto downloadList = menu->addAction(QStringLiteral("Download Definitions..."));
+    auto downloadList = menu->addAction(i18nc("@action:inmenu", "Download Definitions..."));
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
         const int ret =
             QMessageBox::information(this,
-                                     QStringLiteral("Download Confirmation"),
-                                     QStringLiteral("This will download the definitions from the  <a "
-                                                    "href=\"https://github.com/xivapi/SaintCoinach\">SaintCoinach repository on GitHub</a>.<br><br>Continue?"),
+                                     i18nc("@title:window", "Download Confirmation"),
+                                     i18n("This will download the definitions from the  <a "
+                                          "href=\"https://github.com/xivapi/SaintCoinach\">SaintCoinach repository on GitHub</a>.<br><br>Continue?"),
                                      QMessageBox::Ok | QMessageBox::Cancel,
                                      QMessageBox::Ok);
 
@@ -155,7 +156,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
 
             archive.close();
 
-            QMessageBox::information(this, QStringLiteral("Definitions"), QStringLiteral("Successfully downloaded and imported definitions!"));
+            QMessageBox::information(this, i18nc("@title:window", "Definitions"), i18n("Successfully downloaded and imported definitions!"));
         });
     });
 }
