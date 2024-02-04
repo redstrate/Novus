@@ -18,20 +18,19 @@ EXDPart::EXDPart(GameData *data, QWidget *parent)
     , data(data)
 {
     auto layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    auto headerBox = new QGroupBox(QStringLiteral("Header"));
+    // TODO: This information should really be somewhere else
+    /*auto headerBox = new QGroupBox(QStringLiteral("Header"));
     layout->addWidget(headerBox);
     headerFormLayout = new QFormLayout();
-    headerBox->setLayout(headerFormLayout);
-
-    auto contentsBox = new QGroupBox(QStringLiteral("Contents"));
-    layout->addWidget(contentsBox);
-    auto contentsBoxLayout = new QVBoxLayout();
-    contentsBox->setLayout(contentsBoxLayout);
+    headerBox->setLayout(headerFormLayout);*/
 
     pageTabWidget = new QTabWidget();
-    contentsBoxLayout->addWidget(pageTabWidget);
+    pageTabWidget->setTabPosition(QTabWidget::TabPosition::South);
+    pageTabWidget->setDocumentMode(true); // hide borders
+    layout->addWidget(pageTabWidget);
 }
 
 void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString &definitionPath)
@@ -70,7 +69,8 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
 
     auto exh = physis_parse_excel_sheet_header(buffer);
 
-    QLayoutItem *child;
+    // ditto
+    /*QLayoutItem *child;
     while ((child = headerFormLayout->takeAt(0)) != nullptr) {
         delete child->widget();
         delete child;
@@ -79,7 +79,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
     headerFormLayout->addRow(QStringLiteral("Num Rows"), new QLabel(QString::number(exh->row_count)));
     headerFormLayout->addRow(QStringLiteral("Num Columns"), new QLabel(QString::number(exh->column_count)));
     headerFormLayout->addRow(QStringLiteral("Num Pages"), new QLabel(QString::number(exh->page_count)));
-    headerFormLayout->addRow(QStringLiteral("Num Languages"), new QLabel(QString::number(exh->language_count)));
+    headerFormLayout->addRow(QStringLiteral("Num Languages"), new QLabel(QString::number(exh->language_count)));*/
 
     for (uint32_t i = 0; i < exh->page_count; i++) {
         auto tableWidget = new QTableWidget();
@@ -174,6 +174,11 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
 
         pageTabWidget->addTab(tableWidget, QStringLiteral("Page %1").arg(i));
     }
+
+    // Expand the tabs and hide the tab bar if there's only one page
+    // (it effectively makes the tab bar useless, so why show it?)
+    pageTabWidget->tabBar()->setExpanding(true);
+    pageTabWidget->tabBar()->setVisible(exh->page_count > 1);
 }
 
 Language EXDPart::getSuitableLanguage(physis_EXH *pExh)
