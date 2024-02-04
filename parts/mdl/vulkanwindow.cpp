@@ -62,7 +62,7 @@ bool VulkanWindow::event(QEvent *e)
 
         part->setFocus(Qt::FocusReason::MouseFocusReason);
 
-        if (mouseEvent->button() == Qt::MouseButton::LeftButton || mouseEvent->button() == Qt::MouseButton::RightButton) {
+        if (part->isEnabled() && (mouseEvent->button() == Qt::MouseButton::LeftButton || mouseEvent->button() == Qt::MouseButton::RightButton)) {
             part->lastX = mouseEvent->position().x();
             part->lastY = mouseEvent->position().y();
             part->cameraMode = mouseEvent->button() == Qt::MouseButton::LeftButton ? MDLPart::CameraMode::Orbit : MDLPart::CameraMode::Move;
@@ -72,14 +72,16 @@ bool VulkanWindow::event(QEvent *e)
         }
     } break;
     case QEvent::MouseButtonRelease: {
-        part->cameraMode = MDLPart::CameraMode::None;
+        if (part->isEnabled()) {
+            part->cameraMode = MDLPart::CameraMode::None;
 
-        setKeyboardGrabEnabled(false);
-        setCursor({});
+            setKeyboardGrabEnabled(false);
+            setCursor({});
+        }
     } break;
     case QEvent::MouseMove: {
         auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
-        if (part->cameraMode != MDLPart::CameraMode::None) {
+        if (part->isEnabled() && part->cameraMode != MDLPart::CameraMode::None) {
             const int deltaX = mouseEvent->position().x() - part->lastX;
             const int deltaY = mouseEvent->position().y() - part->lastY;
 
@@ -104,43 +106,49 @@ bool VulkanWindow::event(QEvent *e)
     case QEvent::Wheel: {
         auto scrollEvent = dynamic_cast<QWheelEvent *>(e);
 
-        part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
-        part->cameraDistance = std::clamp(part->cameraDistance, 1.0f, 4.0f);
+        if (part->isEnabled()) {
+            part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
+            part->cameraDistance = std::clamp(part->cameraDistance, 1.0f, 4.0f);
+        }
     } break;
     case QEvent::KeyPress: {
         auto keyEvent = dynamic_cast<QKeyEvent *>(e);
 
-        switch (keyEvent->key()) {
-        case Qt::Key_W:
-            pressed_keys[0] = true;
-            break;
-        case Qt::Key_A:
-            pressed_keys[1] = true;
-            break;
-        case Qt::Key_S:
-            pressed_keys[2] = true;
-            break;
-        case Qt::Key_D:
-            pressed_keys[3] = true;
-            break;
+        if (part->isEnabled()) {
+            switch (keyEvent->key()) {
+            case Qt::Key_W:
+                pressed_keys[0] = true;
+                break;
+            case Qt::Key_A:
+                pressed_keys[1] = true;
+                break;
+            case Qt::Key_S:
+                pressed_keys[2] = true;
+                break;
+            case Qt::Key_D:
+                pressed_keys[3] = true;
+                break;
+            }
         }
     } break;
     case QEvent::KeyRelease: {
         auto keyEvent = dynamic_cast<QKeyEvent *>(e);
 
-        switch (keyEvent->key()) {
-        case Qt::Key_W:
-            pressed_keys[0] = false;
-            break;
-        case Qt::Key_A:
-            pressed_keys[1] = false;
-            break;
-        case Qt::Key_S:
-            pressed_keys[2] = false;
-            break;
-        case Qt::Key_D:
-            pressed_keys[3] = false;
-            break;
+        if (part->isEnabled()) {
+            switch (keyEvent->key()) {
+            case Qt::Key_W:
+                pressed_keys[0] = false;
+                break;
+            case Qt::Key_A:
+                pressed_keys[1] = false;
+                break;
+            case Qt::Key_S:
+                pressed_keys[2] = false;
+                break;
+            case Qt::Key_D:
+                pressed_keys[3] = false;
+                break;
+            }
         }
     } break;
     default:
