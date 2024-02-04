@@ -27,6 +27,7 @@ MainWindow::MainWindow(GameData *data)
 
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     dummyWidget->setLayout(layout);
 
     part = new MDLPart(data, cache);
@@ -45,6 +46,8 @@ MainWindow::MainWindow(GameData *data)
     auto renderWidget = new QWidget();
 
     tabWidget->addTab(renderWidget, QStringLiteral("Render"));
+    tabWidget->setDocumentMode(true); // hide borders
+    tabWidget->tabBar()->setExpanding(true);
 
     layout->addWidget(tabWidget);
 }
