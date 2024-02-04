@@ -13,6 +13,7 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMenuBar>
+#include <QSplitter>
 #include <magic_enum.hpp>
 
 #include "cmpeditor.h"
@@ -30,18 +31,15 @@ MainWindow::MainWindow(GameData *in_data)
     setMinimumSize(QSize(800, 600));
     setupMenubar();
 
-    auto dummyWidget = new QWidget();
+    auto dummyWidget = new QSplitter();
     setCentralWidget(dummyWidget);
-
-    auto layout = new QHBoxLayout();
-    dummyWidget->setLayout(layout);
 
     auto gearListWidget = new GearListWidget(&data);
     gearListWidget->setMaximumWidth(350);
     connect(gearListWidget, &GearListWidget::gearSelected, this, [this](const GearInfo &gear) {
         gearView->setGear(gear);
     });
-    layout->addWidget(gearListWidget);
+    dummyWidget->addWidget(gearListWidget);
 
     gearView = new SingleGearView(&data, cache);
     connect(gearView, &SingleGearView::addToFullModelViewer, this, [this](GearInfo &info) {
@@ -51,7 +49,9 @@ MainWindow::MainWindow(GameData *in_data)
 
     auto tabWidget = new QTabWidget();
     tabWidget->addTab(gearView, QStringLiteral("Models"));
-    layout->addWidget(tabWidget);
+    tabWidget->setDocumentMode(true); // Don't draw the borders
+    tabWidget->tabBar()->setExpanding(true);
+    dummyWidget->addWidget(tabWidget);
 
     fullModelViewer = new FullModelViewer(&data, cache);
     connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {

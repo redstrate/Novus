@@ -12,12 +12,14 @@
 #include "magic_enum.hpp"
 
 GearView::GearView(GameData *data, FileCache &cache, QWidget *parent)
-    : QWidget(parent)
+    : QFrame(parent)
     , data(data)
     , cache(cache)
 {
-    mdlPart = new MDLPart(data, cache);
+    setFrameShape(QFrame::Shape::Panel);
+    setFrameShadow(QFrame::Shadow::Sunken);
 
+    mdlPart = new MDLPart(data, cache);
     reloadRaceDeforms();
 
     auto layout = new QVBoxLayout();

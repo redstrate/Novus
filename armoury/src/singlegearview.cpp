@@ -29,7 +29,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     gearView->setFace(-1);
 
     auto layout = new QVBoxLayout();
-    layout->setContentsMargins(0, 0, 0, 0);
+    // layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
     auto mdlPathEdit = new QLineEdit();

@@ -6,7 +6,7 @@
 #include "filecache.h"
 #include "mdlpart.h"
 #include <QComboBox>
-#include <QWidget>
+#include <QFrame>
 #include <physis.hpp>
 
 struct ModelInfo {
@@ -32,7 +32,7 @@ inline bool operator==(const GearInfo &a, const GearInfo &b)
 
 struct GameData;
 
-class GearView : public QWidget
+class GearView : public QFrame
 {
     Q_OBJECT
 
