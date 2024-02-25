@@ -389,7 +389,7 @@ void SingleGearView::reloadGear()
 
         lodCombo->clear();
         for (int i = 0; i < gearView->lodCount(); i++) {
-            lodCombo->addItem(i18nc("@action:inmenu LOD stands for Level of Detail", "LOD %1").arg(i), i);
+            lodCombo->addItem(i18nc("@action:inmenu LOD stands for Level of Detail", "LOD %1", i), i);
         }
         if (oldLod < gearView->lodCount()) {
             lodCombo->setCurrentIndex(oldLod);
