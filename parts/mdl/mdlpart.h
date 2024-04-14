@@ -44,6 +44,9 @@ public:
 
     std::function<void()> requestUpdate;
 
+    void setWireframe(bool wireframe);
+    bool wireframe() const;
+
 Q_SIGNALS:
     void modelChanged();
     void skeletonChanged();

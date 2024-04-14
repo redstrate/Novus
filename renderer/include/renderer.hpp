@@ -111,7 +111,10 @@ public:
 
     VkPipeline pipeline;
     VkPipeline skinnedPipeline;
+    VkPipeline pipelineWireframe;
+    VkPipeline skinnedPipelineWireframe;
     VkPipelineLayout pipelineLayout;
+    bool wireframe = false;
 
     std::tuple<VkBuffer, VkDeviceMemory> createBuffer(size_t size, VkBufferUsageFlags usageFlags);
 

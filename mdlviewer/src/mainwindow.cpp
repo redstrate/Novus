@@ -6,6 +6,7 @@
 #include <KLocalizedString>
 #include <QAction>
 #include <QApplication>
+#include <QCheckBox>
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -46,6 +47,14 @@ MainWindow::MainWindow(GameData *data)
     tabWidget->setMaximumHeight(150);
 
     auto renderWidget = new QWidget();
+    auto renderLayout = new QVBoxLayout();
+    renderWidget->setLayout(renderLayout);
+
+    auto wireframeCheckbox = new QCheckBox(i18n("Wireframe"));
+    connect(wireframeCheckbox, &QCheckBox::clicked, this, [this](bool checked) {
+        part->setWireframe(checked);
+    });
+    renderLayout->addWidget(wireframeCheckbox);
 
     tabWidget->addTab(renderWidget, i18nc("@title:tab", "Render"));
     tabWidget->setDocumentMode(true); // hide borders

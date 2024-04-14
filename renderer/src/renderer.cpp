@@ -474,9 +474,17 @@ void Renderer::render(const std::vector<RenderModel> &models)
 
     for (auto model : models) {
         if (model.skinned) {
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinnedPipeline);
+            if (wireframe) {
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinnedPipelineWireframe);
+            } else {
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinnedPipeline);
+            }
         } else {
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+            if (wireframe) {
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineWireframe);
+            } else {
+                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+            }
         }
 
         // copy bone data
@@ -881,6 +889,14 @@ void Renderer::initPipeline()
     shaderStages[0] = skinnedVertexShaderStageInfo;
 
     vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &skinnedPipeline);
+
+    rasterizer.polygonMode = VK_POLYGON_MODE_LINE;
+
+    vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &skinnedPipelineWireframe);
+
+    shaderStages[0] = vertexShaderStageInfo;
+
+    vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipelineWireframe);
 }
 
 VkShaderModule Renderer::createShaderModule(const uint32_t *code, const int length)

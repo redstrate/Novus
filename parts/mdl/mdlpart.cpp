@@ -310,4 +310,14 @@ void MDLPart::removeModel(const physis_MDL &mdl)
     Q_EMIT modelChanged();
 }
 
+void MDLPart::setWireframe(bool wireframe)
+{
+    renderer->wireframe = wireframe;
+}
+
+bool MDLPart::wireframe() const
+{
+    return renderer->wireframe;
+}
+
 #include "moc_mdlpart.cpp"
