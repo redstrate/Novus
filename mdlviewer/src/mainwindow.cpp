@@ -32,6 +32,7 @@ MainWindow::MainWindow(GameData *data)
     dummyWidget->setLayout(layout);
 
     part = new MDLPart(data, cache);
+    part->minimumCameraDistance = 0.05f;
 
     const int raceCode = physis_get_race_code(Race::Hyur, Subrace::Midlander, Gender::Male);
 
@@ -59,6 +60,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
     openMDLFile->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openMDLFile, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getOpenFileName(nullptr, i18nc("@title:window", "Open MDL File"), QStringLiteral("~"), i18n("FFXIV Model File (*.mdl)"));
+        setWindowTitle(fileName);
 
         auto buffer = physis_read_file(fileName.toStdString().c_str());
 

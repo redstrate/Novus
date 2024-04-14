@@ -35,6 +35,7 @@ public:
     float pitch = 0.0f;
     float yaw = 0.0f;
     float cameraDistance = 2.0f;
+    float minimumCameraDistance = 1.0f;
     glm::vec3 position{0, 0, 0};
 
     std::unique_ptr<physis_Skeleton> skeleton;

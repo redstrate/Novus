@@ -108,7 +108,7 @@ bool VulkanWindow::event(QEvent *e)
 
         if (part->isEnabled()) {
             part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
-            part->cameraDistance = std::clamp(part->cameraDistance, 1.0f, 4.0f);
+            part->cameraDistance = std::clamp(part->cameraDistance, part->minimumCameraDistance, 4.0f);
         }
     } break;
     case QEvent::KeyPress: {
