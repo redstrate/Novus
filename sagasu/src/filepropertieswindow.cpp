@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <KLocalizedString>
+#include <QFileInfo>
 #include <QFormLayout>
 #include <QLabel>
 #include <QTreeWidget>
 
 #include "filepropertieswindow.h"
+#include "filetypes.h"
 
 FilePropertiesWindow::FilePropertiesWindow(const QString &path, physis_Buffer buffer, QWidget *parent)
     : QWidget(parent)
@@ -17,13 +19,17 @@ FilePropertiesWindow::FilePropertiesWindow(const QString &path, physis_Buffer bu
     setLayout(layout);
 
     auto pathLabel = new QLabel(path);
-    layout->addRow(i18nc("@label", "Path"), pathLabel);
+    layout->addRow(i18nc("@label", "Path:"), pathLabel);
 
-    auto typeLabel = new QLabel(i18n("Unknown type"));
-    layout->addRow(i18nc("@label", "Type"), typeLabel);
+    QFileInfo info(path);
+
+    const FileType type = FileTypes::getFileType(info.completeSuffix());
+
+    auto typeLabel = new QLabel(FileTypes::getFiletypeName(type));
+    layout->addRow(i18nc("@label", "Type:"), typeLabel);
 
     auto sizeLabel = new QLabel(QString::number(buffer.size));
-    layout->addRow(i18nc("@label", "Size (in bytes)"), sizeLabel);
+    layout->addRow(i18nc("@label", "Size (in bytes):"), sizeLabel);
 }
 
 #include "moc_filepropertieswindow.cpp"

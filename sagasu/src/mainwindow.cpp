@@ -20,6 +20,7 @@
 #include "exdpart.h"
 #include "exlpart.h"
 #include "filepropertieswindow.h"
+#include "filetypes.h"
 #include "hexpart.h"
 #include "mdlpart.h"
 #include "shpkpart.h"
@@ -83,37 +84,50 @@ void MainWindow::refreshParts(const QString &path)
     auto file = physis_gamedata_extract_file(data, path.toStdString().c_str());
 
     QFileInfo info(path);
-    if (info.completeSuffix() == QStringLiteral("exl")) {
+
+    const FileType type = FileTypes::getFileType(info.completeSuffix());
+    switch (type) {
+    case FileType::ExcelList: {
         auto exlWidget = new EXLPart(data);
         exlWidget->load(file);
         partHolder->addTab(exlWidget, i18nc("@title:tab", "Excel List"));
-    } else if (info.completeSuffix() == QStringLiteral("exh")) {
+    } break;
+    case FileType::ExcelHeader: {
         auto exdWidget = new EXDPart(data);
         exdWidget->loadSheet(info.baseName(), file);
         partHolder->addTab(exdWidget, i18nc("@title:tab", "Excel Sheet"));
-    } else if (info.completeSuffix() == QStringLiteral("exd")) {
+    } break;
+    case FileType::ExcelData: {
         auto exdWidget = new QLabel(i18n("Note: Excel data files cannot be previewed standalone, select the EXH file instead."));
         partHolder->addTab(exdWidget, i18nc("@title:tab", "Note"));
-    } else if (info.completeSuffix() == QStringLiteral("mdl")) {
+    } break;
+    case FileType::Model: {
         auto mdlWidget = new MDLPart(data, fileCache);
         mdlWidget->addModel(physis_mdl_parse(file), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
         partHolder->addTab(mdlWidget, i18nc("@title:tab", "Model"));
-    } else if (info.completeSuffix() == QStringLiteral("tex") || info.completeSuffix() == QStringLiteral("atex")) {
+    } break;
+    case FileType::Texture: {
         auto texWidget = new TexPart(data);
         texWidget->load(file);
         partHolder->addTab(texWidget, i18nc("@title:tab", "Texture"));
-    } else if (info.completeSuffix() == QStringLiteral("shpk")) {
+    } break;
+    case FileType::ShaderPackage: {
         auto shpkWidget = new SHPKPart(data);
         shpkWidget->load(file);
         partHolder->addTab(shpkWidget, i18nc("@title:tab", "Shader Package"));
-    } else if (info.completeSuffix() == QStringLiteral("cmp")) {
+    } break;
+    case FileType::CharaMakeParams: {
         auto cmpWidget = new CmpPart(data);
         cmpWidget->load(file);
         partHolder->addTab(cmpWidget, i18nc("@title:tab", "Chara Make Params"));
-    } else if (info.completeSuffix() == QStringLiteral("sklb")) {
+    } break;
+    case FileType::Skeleton: {
         auto sklbWidget = new SklbPart();
         sklbWidget->load(physis_parse_skeleton(file));
         partHolder->addTab(sklbWidget, i18nc("@title:tab", "Skeleton"));
+    } break;
+    default:
+        break;
     }
 
     auto hexWidget = new HexPart();
