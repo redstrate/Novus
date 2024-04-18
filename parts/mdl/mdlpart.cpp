@@ -227,35 +227,35 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
         }
 
         char type = t[t.length() - 5];
+        auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
+        if (texture.rgba != nullptr) {
+            switch (type) {
+            case 'm': {
+                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
-        switch (type) {
-        case 'm': {
-            auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
-            auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
+                newMaterial.multiTexture = new RenderTexture(tex);
+            } break;
+            case 'd': {
+                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
-            newMaterial.multiTexture = new RenderTexture(tex);
-        } break;
-        case 'd': {
-            auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
-            auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
+                newMaterial.diffuseTexture = new RenderTexture(tex);
+            } break;
+            case 'n': {
+                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
-            newMaterial.diffuseTexture = new RenderTexture(tex);
-        } break;
-        case 'n': {
-            auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
-            auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
+                newMaterial.normalTexture = new RenderTexture(tex);
+            } break;
+            case 's': {
+                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
 
-            newMaterial.normalTexture = new RenderTexture(tex);
-        } break;
-        case 's': {
-            auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
-            auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
-
-            newMaterial.specularTexture = new RenderTexture(tex);
-        } break;
-        default:
-            qDebug() << "unhandled type" << type;
-            break;
+                newMaterial.specularTexture = new RenderTexture(tex);
+            } break;
+            default:
+                qDebug() << "unhandled type" << type;
+                break;
+            }
+        } else {
+            qInfo() << "Failed to load" << t;
         }
     }
 
