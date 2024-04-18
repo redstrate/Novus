@@ -4,6 +4,8 @@
 #include "filetreewindow.h"
 
 #include <KLocalizedString>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QMenu>
@@ -61,6 +63,13 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
             extractAction->setIcon(QIcon::fromTheme(QStringLiteral("archive-extract-symbolic")));
             connect(extractAction, &QAction::triggered, this, [this, path] {
                 Q_EMIT extractFile(path);
+            });
+
+            auto copyFilePathAction = menu->addAction(i18nc("@action:inmenu", "Copy file path"));
+            copyFilePathAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-copy-symbolic")));
+            connect(copyFilePathAction, &QAction::triggered, this, [this, path] {
+                QClipboard *clipboard = QGuiApplication::clipboard();
+                clipboard->setText(path);
             });
 
             menu->exec(treeWidget->mapToGlobal(pos));
