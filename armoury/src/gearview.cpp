@@ -318,40 +318,41 @@ void GearView::updatePart()
 
             if (mdl_data.size > 0) {
                 auto mdl = physis_mdl_parse(mdl_data);
+                if (mdl.p_ptr != nullptr) {
+                    std::vector<physis_Material> materials;
+                    for (uint32_t i = 0; i < mdl.num_material_names; i++) {
+                        const char *material_name = mdl.material_names[i];
 
-                std::vector<physis_Material> materials;
-                for (uint32_t i = 0; i < mdl.num_material_names; i++) {
-                    const char *material_name = mdl.material_names[i];
+                        const std::string mtrl_path = gearAddition.info.getMtrlPath(material_name);
+                        const std::string skinmtrl_path =
+                            physis_build_skin_material_path(physis_get_race_code(fallbackRace, fallbackSubrace, currentGender), 1, material_name);
 
-                    const std::string mtrl_path = gearAddition.info.getMtrlPath(material_name);
-                    const std::string skinmtrl_path =
-                        physis_build_skin_material_path(physis_get_race_code(fallbackRace, fallbackSubrace, currentGender), 1, material_name);
+                        if (cache.fileExists(QLatin1String(mtrl_path.c_str()))) {
+                            auto mat = physis_material_parse(cache.lookupFile(QLatin1String(mtrl_path.c_str())));
+                            materials.push_back(mat);
+                        }
 
-                    if (cache.fileExists(QLatin1String(mtrl_path.c_str()))) {
-                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(mtrl_path.c_str())));
-                        materials.push_back(mat);
+                        if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
+                            auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
+                            materials.push_back(mat);
+                        }
                     }
 
-                    if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                        materials.push_back(mat);
-                    }
+                    maxLod = std::max(mdl.num_lod, maxLod);
+
+                    gearAddition.bodyId = physis_get_race_code(fallbackRace, fallbackSubrace, currentGender);
+                    mdlPart->addModel(mdl,
+                                      true,
+                                      glm::vec3(),
+                                      sanitizeMdlPath(mdlPath),
+                                      materials,
+                                      currentLod,
+                                      physis_get_race_code(currentRace, currentSubrace, currentGender),
+                                      gearAddition.bodyId);
+                    gearAddition.mdl = mdl;
+                    gearAddition.path = mdlPath;
+                    loadedGears.push_back(gearAddition);
                 }
-
-                maxLod = std::max(mdl.num_lod, maxLod);
-
-                gearAddition.bodyId = physis_get_race_code(fallbackRace, fallbackSubrace, currentGender);
-                mdlPart->addModel(mdl,
-                                  true,
-                                  glm::vec3(),
-                                  sanitizeMdlPath(mdlPath),
-                                  materials,
-                                  currentLod,
-                                  physis_get_race_code(currentRace, currentSubrace, currentGender),
-                                  gearAddition.bodyId);
-                gearAddition.mdl = mdl;
-                gearAddition.path = mdlPath;
-                loadedGears.push_back(gearAddition);
             }
         }
 
@@ -381,20 +382,21 @@ void GearView::updatePart()
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data);
+            if (mdl.p_ptr != nullptr) {
+                std::vector<physis_Material> materials;
+                for (uint32_t i = 0; i < mdl.num_material_names; i++) {
+                    const char *material_name = mdl.material_names[i];
+                    const std::string skinmtrl_path =
+                        physis_build_face_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *face, material_name);
 
-            std::vector<physis_Material> materials;
-            for (uint32_t i = 0; i < mdl.num_material_names; i++) {
-                const char *material_name = mdl.material_names[i];
-                const std::string skinmtrl_path =
-                    physis_build_face_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *face, material_name);
-
-                if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                    auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                    materials.push_back(mat);
+                    if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
+                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
+                        materials.push_back(mat);
+                    }
                 }
-            }
 
-            mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+                mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+            }
         }
     }
 
@@ -404,20 +406,21 @@ void GearView::updatePart()
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data);
+            if (mdl.p_ptr != nullptr) {
+                std::vector<physis_Material> materials;
+                for (uint32_t i = 0; i < mdl.num_material_names; i++) {
+                    const char *material_name = mdl.material_names[i];
+                    const std::string skinmtrl_path =
+                        physis_build_hair_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *hair, material_name);
 
-            std::vector<physis_Material> materials;
-            for (uint32_t i = 0; i < mdl.num_material_names; i++) {
-                const char *material_name = mdl.material_names[i];
-                const std::string skinmtrl_path =
-                    physis_build_hair_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *hair, material_name);
-
-                if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                    auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                    materials.push_back(mat);
+                    if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
+                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
+                        materials.push_back(mat);
+                    }
                 }
-            }
 
-            mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+                mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+            }
         }
     }
 
@@ -427,20 +430,21 @@ void GearView::updatePart()
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data);
+            if (mdl.p_ptr != nullptr) {
+                std::vector<physis_Material> materials;
+                for (uint32_t i = 0; i < mdl.num_material_names; i++) {
+                    const char *material_name = mdl.material_names[i];
+                    const std::string skinmtrl_path =
+                        physis_build_ear_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *ear, material_name);
 
-            std::vector<physis_Material> materials;
-            for (uint32_t i = 0; i < mdl.num_material_names; i++) {
-                const char *material_name = mdl.material_names[i];
-                const std::string skinmtrl_path =
-                    physis_build_ear_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *ear, material_name);
-
-                if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                    auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                    materials.push_back(mat);
+                    if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
+                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
+                        materials.push_back(mat);
+                    }
                 }
-            }
 
-            mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+                mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+            }
         }
     }
 
@@ -450,14 +454,15 @@ void GearView::updatePart()
 
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(mdl_data);
+            if (mdl.p_ptr != nullptr) {
+                const char *material_name = mdl.material_names[0];
+                const std::string skinmtrl_path =
+                    physis_build_tail_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *tail, material_name);
 
-            const char *material_name = mdl.material_names[0];
-            const std::string skinmtrl_path =
-                physis_build_tail_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *tail, material_name);
-
-            if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), {mat}, currentLod);
+                if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
+                    auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
+                    mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), {mat}, currentLod);
+                }
             }
         }
     }
