@@ -13,4 +13,5 @@ public:
     static FileType getFileType(const QString &extension);
 
     static QString getFiletypeName(FileType fileType);
+    static QString getFiletypeIcon(FileType fileType);
 };

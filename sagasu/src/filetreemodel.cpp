@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "filetreemodel.h"
+#include "filetypes.h"
 #include "physis.hpp"
 
 #include <KLocalizedString>
+#include <QIcon>
 #include <QtConcurrent>
 
 FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, GameData *data, QObject *parent)
@@ -132,6 +134,15 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
             } else {
                 return item->name;
             }
+        }
+    } else if (role == Qt::DecorationRole) {
+        if (item->type == TreeType::Folder) {
+            return QIcon::fromTheme(QStringLiteral("folder-black-symbolic"));
+        } else if (item->type == TreeType::File) {
+            QFileInfo info(item->name);
+            const FileType type = FileTypes::getFileType(info.completeSuffix());
+
+            return QIcon::fromTheme(FileTypes::getFiletypeIcon(type));
         }
     }
 

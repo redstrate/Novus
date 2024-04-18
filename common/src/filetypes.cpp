@@ -25,6 +25,16 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::CharaMakeParams, i18n("Chara Make Params")},
                                                 {FileType::Skeleton, i18n("Skeleton")}};
 
+const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, i18n("unknown")},
+                                                {FileType::ExcelList, i18n("x-office-spreadsheet")},
+                                                {FileType::ExcelHeader, i18n("x-office-spreadsheet")},
+                                                {FileType::ExcelData, i18n("x-office-spreadsheet")},
+                                                {FileType::Model, i18n("shape-cuboid-symbolic")},
+                                                {FileType::Texture, i18n("viewimage-symbolic")},
+                                                {FileType::ShaderPackage, i18n("paint-pattern-symbolic")},
+                                                {FileType::CharaMakeParams, i18n("step_object_SoftBody-symbolic")},
+                                                {FileType::Skeleton, i18n("user-symbolic")}};
+
 FileType FileTypes::getFileType(const QString &extension)
 {
     return extensionToType.value(extension, FileType::Unknown);
@@ -33,4 +43,9 @@ FileType FileTypes::getFileType(const QString &extension)
 QString FileTypes::getFiletypeName(FileType fileType)
 {
     return typeToName.value(fileType);
+}
+
+QString FileTypes::getFiletypeIcon(FileType fileType)
+{
+    return typeToIcon.value(fileType);
 }
