@@ -37,13 +37,14 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
 
         auto plateMdlFile = physis_gamedata_extract_file(data, mdlPathStd.c_str());
         auto plateMdl = physis_mdl_parse(plateMdlFile);
-
-        mdlPart->addModel(plateMdl,
-                          false,
-                          glm::vec3(terrain.plates[i].position[0], 0.0f, terrain.plates[i].position[1]),
-                          QStringLiteral("terapart%1").arg(i),
-                          {},
-                          0);
+        if (plateMdl.p_ptr != nullptr) {
+            mdlPart->addModel(plateMdl,
+                              false,
+                              glm::vec3(terrain.plates[i].position[0], 0.0f, terrain.plates[i].position[1]),
+                              QStringLiteral("terapart%1").arg(i),
+                              {},
+                              0);
+        }
     }
 }
 
