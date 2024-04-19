@@ -17,6 +17,7 @@
 #include <QTemporaryDir>
 
 #include "cmppart.h"
+#include "dicpart.h"
 #include "exdpart.h"
 #include "exlpart.h"
 #include "filepropertieswindow.h"
@@ -125,6 +126,11 @@ void MainWindow::refreshParts(const QString &path)
         auto sklbWidget = new SklbPart();
         sklbWidget->load(physis_parse_skeleton(file));
         partHolder->addTab(sklbWidget, i18nc("@title:tab", "Skeleton"));
+    } break;
+    case FileType::Dictionary: {
+        auto dicWidget = new DicPart();
+        dicWidget->load(file);
+        partHolder->addTab(dicWidget, i18nc("@title:tab", "Dictionary"));
     } break;
     default:
         break;

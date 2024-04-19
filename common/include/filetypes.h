@@ -5,7 +5,7 @@
 
 #include <QString>
 
-enum class FileType { Unknown, ExcelList, ExcelHeader, ExcelData, Model, Texture, ShaderPackage, CharaMakeParams, Skeleton };
+enum class FileType { Unknown, ExcelList, ExcelHeader, ExcelData, Model, Texture, ShaderPackage, CharaMakeParams, Skeleton, Dictionary };
 
 class FileTypes
 {

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_subdirectory(cmp)
+add_subdirectory(dic)
 add_subdirectory(exd)
 add_subdirectory(exl)
 add_subdirectory(hex)

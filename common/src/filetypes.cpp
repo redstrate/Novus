@@ -13,7 +13,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("tex"), FileType::Texture},
                                                      {QStringLiteral("shpk"), FileType::ShaderPackage},
                                                      {QStringLiteral("cmp"), FileType::CharaMakeParams},
-                                                     {QStringLiteral("sklb"), FileType::Skeleton}};
+                                                     {QStringLiteral("sklb"), FileType::Skeleton},
+                                                     {QStringLiteral("dic"), FileType::Dictionary}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -23,17 +24,19 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::Texture, i18n("Texture")},
                                                 {FileType::ShaderPackage, i18n("Shader Package")},
                                                 {FileType::CharaMakeParams, i18n("Chara Make Params")},
-                                                {FileType::Skeleton, i18n("Skeleton")}};
+                                                {FileType::Skeleton, i18n("Skeleton")},
+                                                {FileType::Dictionary, i18n("Dictionary")}};
 
-const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, i18n("unknown")},
-                                                {FileType::ExcelList, i18n("x-office-spreadsheet")},
-                                                {FileType::ExcelHeader, i18n("x-office-spreadsheet")},
-                                                {FileType::ExcelData, i18n("x-office-spreadsheet")},
-                                                {FileType::Model, i18n("shape-cuboid-symbolic")},
-                                                {FileType::Texture, i18n("viewimage-symbolic")},
-                                                {FileType::ShaderPackage, i18n("paint-pattern-symbolic")},
-                                                {FileType::CharaMakeParams, i18n("step_object_SoftBody-symbolic")},
-                                                {FileType::Skeleton, i18n("user-symbolic")}};
+const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
+                                                {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
+                                                {FileType::ExcelHeader, QStringLiteral("x-office-spreadsheet")},
+                                                {FileType::ExcelData, QStringLiteral("x-office-spreadsheet")},
+                                                {FileType::Model, QStringLiteral("shape-cuboid-symbolic")},
+                                                {FileType::Texture, QStringLiteral("viewimage-symbolic")},
+                                                {FileType::ShaderPackage, QStringLiteral("paint-pattern-symbolic")},
+                                                {FileType::CharaMakeParams, QStringLiteral("step_object_SoftBody-symbolic")},
+                                                {FileType::Skeleton, QStringLiteral("user-symbolic")},
+                                                {FileType::Dictionary, QStringLiteral("accessories-dictionary-symbolic")}};
 
 FileType FileTypes::getFileType(const QString &extension)
 {

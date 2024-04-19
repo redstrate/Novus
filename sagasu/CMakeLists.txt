@@ -43,6 +43,7 @@ target_link_libraries(novus-sagasu
         Novus::MdlPart
         Novus::ExdPart
         Novus::TexPart
+        Novus::DicPart
         Physis::Logger
         Qt6::Concurrent
         Qt6::Network)
