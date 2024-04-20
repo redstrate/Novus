@@ -41,5 +41,5 @@ void main() {
 
     float diff = max(dot(norm, lightDir), 0.0);
 
-    outColor = vec4(diffuse * diff, 1.0);
+    outColor = vec4(diffuse * (diff + 0.1), 1.0);
 }
