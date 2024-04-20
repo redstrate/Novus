@@ -32,33 +32,37 @@ void SHPKPart::load(physis_Buffer buffer)
         auto shaderTextEdit = new QTextEdit();
         shaderTextEdit->setReadOnly(true);
 
-        dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
+        try {
+            dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
 
-        dxvk::DxbcModule module(reader);
+            dxvk::DxbcModule module(reader);
 
-        dxvk::DxbcModuleInfo info;
-        auto result = module.compile(info, "test");
+            dxvk::DxbcModuleInfo info;
+            auto result = module.compile(info, "test");
 
-        spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
+            spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
 
-        glsl.build_combined_image_samplers();
+            glsl.build_combined_image_samplers();
 
-        spirv_cross::CompilerGLSL::Options options;
-        options.version = 310;
-        options.vulkan_semantics = true;
-        glsl.set_common_options(options);
+            spirv_cross::CompilerGLSL::Options options;
+            options.version = 310;
+            options.vulkan_semantics = true;
+            glsl.set_common_options(options);
 
-        shaderTextEdit->setText(QLatin1String(glsl.compile().c_str()));
+            shaderTextEdit->setText(QLatin1String(glsl.compile().c_str()));
 
-        pageTabWidget->addTab(shaderTextEdit, name);
+            pageTabWidget->addTab(shaderTextEdit, name);
+        } catch (std::exception exception) {
+            // TODO: display the error
+        }
     };
 
     for (int i = 0; i < shader.num_vertex_shaders; i++) {
-        addShader(shader.vertex_shaders[i], i18nc("@title:tab", "Vertex Shader %1").arg(i));
+        addShader(shader.vertex_shaders[i], i18nc("@title:tab", "Vertex Shader %1", i));
     }
 
     for (int i = 0; i < shader.num_pixel_shaders; i++) {
-        addShader(shader.pixel_shaders[i], i18nc("@title:tab", "Pixel Shader %1").arg(i));
+        addShader(shader.pixel_shaders[i], i18nc("@title:tab", "Pixel Shader %1", i));
     }
 }
 
