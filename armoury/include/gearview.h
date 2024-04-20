@@ -18,6 +18,7 @@ struct GearInfo {
     std::string name;
     Slot slot;
     ModelInfo modelInfo;
+    uint16_t icon;
 
     std::string getMtrlPath(const std::string_view material_name) const
     {

@@ -111,15 +111,40 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return {};
 
-    if (role != Qt::DisplayRole)
-        return {};
-
     auto item = static_cast<TreeInformation *>(index.internalPointer());
 
     if (item->type == TreeType::Category) {
-        return QLatin1String(magic_enum::enum_name(*item->slotType).data());
+        if (role == Qt::DisplayRole) {
+            return QLatin1String(magic_enum::enum_name(*item->slotType).data());
+        }
     } else if (item->type == TreeType::Item) {
-        return QLatin1String(item->gear->name.data());
+        if (role == Qt::DisplayRole) {
+            return QLatin1String(item->gear->name.data());
+        } else if (role == Qt::DecorationRole) {
+            // TODO: cache these images in memory
+            const QString iconName = QString::number(item->gear->icon);
+            const QString iconBaseNum = QString::number(item->gear->icon).left(2).leftJustified(iconName.length(), QLatin1Char('0'));
+
+            const QString iconFolder = QStringLiteral("ui/icon/%1").arg(iconBaseNum, 6, QLatin1Char('0'));
+            const QString iconFile = QStringLiteral("%1.tex").arg(iconName, 6, QLatin1Char('0'));
+
+            const std::string iconFilename = iconFolder.toStdString() + "/" + iconFile.toStdString();
+
+            auto texFile = physis_gamedata_extract_file(gameData, iconFilename.c_str());
+            if (texFile.data != nullptr) {
+                auto tex = physis_texture_parse(texFile);
+                if (tex.rgba != nullptr) {
+                    QImage image(tex.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
+
+                    QPixmap pixmap;
+                    pixmap.convertFromImage(image);
+
+                    return pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                }
+            }
+
+            return QIcon::fromTheme(QStringLiteral("unknown"));
+        }
     }
 
     return {};
@@ -159,6 +184,7 @@ void GearListModel::exdFinished(int index)
 
         GearInfo info = {};
         info.name = row.column_data[9].string._0;
+        info.icon = row.column_data[10].u_int16._0;
         info.slot = physis_slot_from_id(row.column_data[17].u_int8._0);
         info.modelInfo.primaryID = parts[0];
 
