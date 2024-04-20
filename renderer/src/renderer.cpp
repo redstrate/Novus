@@ -45,8 +45,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBits
     return VK_FALSE;
 }
 
-Renderer::Renderer()
+Renderer::Renderer(GameData *data)
+    : m_data(data)
 {
+    m_enableNewRenderSystem = qgetenv("NOVUS_USE_NEW_RENDERER") == QByteArrayLiteral("1");
+
     Q_INIT_RESOURCE(shaders);
 
     ctx = ImGui::CreateContext();
@@ -80,11 +83,15 @@ Renderer::Renderer()
     debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
     debugCreateInfo.pfnUserCallback = DebugCallback;
 
+    VkApplicationInfo applicationInfo = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
+    applicationInfo.apiVersion = VK_API_VERSION_1_3;
+
     VkInstanceCreateInfo createInfo = {};
     createInfo.pNext = &debugCreateInfo;
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.ppEnabledExtensionNames = instanceExtensions.data();
     createInfo.enabledExtensionCount = instanceExtensions.size();
+    createInfo.pApplicationInfo = &applicationInfo;
 
     vkCreateInstance(&createInfo, nullptr, &instance);
 
@@ -184,12 +191,30 @@ Renderer::Renderer()
         }
     }
 
+    VkPhysicalDeviceFeatures enabledFeatures{};
+    enabledFeatures.shaderClipDistance = VK_TRUE;
+    enabledFeatures.shaderCullDistance = VK_TRUE;
+
+    VkPhysicalDeviceVulkan11Features enabled11Features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES};
+    enabled11Features.shaderDrawParameters = VK_TRUE;
+
+    VkPhysicalDeviceVulkan12Features enabled12Features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    enabled12Features.vulkanMemoryModel = VK_TRUE;
+    enabled12Features.pNext = &enabled11Features;
+
+    VkPhysicalDeviceVulkan13Features enabled13Features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    enabled13Features.shaderDemoteToHelperInvocation = VK_TRUE;
+    enabled13Features.dynamicRendering = VK_TRUE;
+    enabled13Features.pNext = &enabled12Features;
+
     VkDeviceCreateInfo deviceCeateInfo = {};
     deviceCeateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCeateInfo.pQueueCreateInfos = queueCreateInfos.data();
     deviceCeateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     deviceCeateInfo.ppEnabledExtensionNames = deviceExtensions.data();
     deviceCeateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    deviceCeateInfo.pEnabledFeatures = &enabledFeatures;
+    deviceCeateInfo.pNext = &enabled13Features;
 
     vkCreateDevice(physicalDevice, &deviceCeateInfo, nullptr, &device);
 
@@ -206,6 +231,11 @@ Renderer::Renderer()
     vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool);
 
     createDummyTexture();
+    createDummyBuffer();
+
+    if (m_enableNewRenderSystem) {
+        m_renderSystem = std::make_unique<RenderSystem>(*this, m_data);
+    }
 
     qInfo() << "Initialized renderer!";
 }
@@ -418,6 +448,10 @@ bool Renderer::initSwapchain(VkSurfaceKHR surface, int width, int height)
     ImGui::SetCurrentContext(ctx);
     imGuiPass = new ImGuiPass(*this);
 
+    if (m_enableNewRenderSystem) {
+        m_renderSystem->setSize(width, height);
+    }
+
     return true;
 }
 
@@ -454,124 +488,129 @@ void Renderer::render(const std::vector<RenderModel> &models)
 
     vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-    VkRenderPassBeginInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = renderPass;
-    renderPassInfo.framebuffer = swapchainFramebuffers[imageIndex];
+    if (m_enableNewRenderSystem) {
+        m_renderSystem->render(imageIndex, commandBuffer);
+    } else {
+        VkRenderPassBeginInfo renderPassInfo = {};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderPass;
+        renderPassInfo.framebuffer = swapchainFramebuffers[imageIndex];
 
-    std::array<VkClearValue, 2> clearValues = {};
-    clearValues[0].color.float32[0] = 0.24;
-    clearValues[0].color.float32[1] = 0.24;
-    clearValues[0].color.float32[2] = 0.24;
-    clearValues[0].color.float32[3] = 1.0;
-    clearValues[1].depthStencil = {1.0f, 0};
+        std::array<VkClearValue, 2> clearValues = {};
+        clearValues[0].color.float32[0] = 0.24;
+        clearValues[0].color.float32[1] = 0.24;
+        clearValues[0].color.float32[2] = 0.24;
+        clearValues[0].color.float32[3] = 1.0;
+        clearValues[1].depthStencil = {1.0f, 0};
 
-    renderPassInfo.clearValueCount = clearValues.size();
-    renderPassInfo.pClearValues = clearValues.data();
-    renderPassInfo.renderArea.extent = swapchainExtent;
+        renderPassInfo.clearValueCount = clearValues.size();
+        renderPassInfo.pClearValues = clearValues.data();
+        renderPassInfo.renderArea.extent = swapchainExtent;
 
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    for (auto model : models) {
-        if (model.skinned) {
-            if (wireframe) {
-                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinnedPipelineWireframe);
-            } else {
-                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinnedPipeline);
-            }
-        } else {
-            if (wireframe) {
-                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineWireframe);
-            } else {
-                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-            }
-        }
-
-        // copy bone data
-        {
-            const size_t bufferSize = sizeof(glm::mat4) * 128;
-            void *mapped_data = nullptr;
-            vkMapMemory(device, model.boneInfoMemory, 0, bufferSize, 0, &mapped_data);
-
-            memcpy(mapped_data, model.boneData.data(), bufferSize);
-
-            VkMappedMemoryRange range = {};
-            range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-            range.memory = model.boneInfoMemory;
-            range.size = bufferSize;
-            vkFlushMappedMemoryRanges(device, 1, &range);
-
-            vkUnmapMemory(device, model.boneInfoMemory);
-        }
-
-        for (const auto &part : model.parts) {
-            RenderMaterial defaultMaterial = {};
-
-            RenderMaterial *material = nullptr;
-
-            if (static_cast<size_t>(part.materialIndex) >= model.materials.size()) {
-                material = &defaultMaterial;
-            } else {
-                material = &model.materials[part.materialIndex];
-            }
-
-            const auto h = hash(model, *material);
-            if (!cachedDescriptors.count(h)) {
-                if (auto descriptor = createDescriptorFor(model, *material); descriptor != VK_NULL_HANDLE) {
-                    cachedDescriptors[h] = descriptor;
+        for (auto model : models) {
+            if (model.skinned) {
+                if (wireframe) {
+                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinnedPipelineWireframe);
                 } else {
-                    continue;
+                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinnedPipeline);
+                }
+            } else {
+                if (wireframe) {
+                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineWireframe);
+                } else {
+                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
                 }
             }
 
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &cachedDescriptors[h], 0, nullptr);
+            // copy bone data
+            {
+                const size_t bufferSize = sizeof(glm::mat4) * 128;
+                void *mapped_data = nullptr;
+                vkMapMemory(device, model.boneInfoMemory, 0, bufferSize, 0, &mapped_data);
 
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
-            vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+                memcpy(mapped_data, model.boneData.data(), bufferSize);
 
-            glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
-            glm::mat4 v = view;
-            glm::mat4 vp = p * v;
+                VkMappedMemoryRange range = {};
+                range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+                range.memory = model.boneInfoMemory;
+                range.size = bufferSize;
+                vkFlushMappedMemoryRanges(device, 1, &range);
 
-            vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
+                vkUnmapMemory(device, model.boneInfoMemory);
+            }
 
-            auto m = glm::mat4(1.0f);
-            m = glm::translate(m, model.position);
+            for (const auto &part : model.parts) {
+                RenderMaterial defaultMaterial = {};
 
-            vkCmdPushConstants(commandBuffer,
-                               pipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                               sizeof(glm::mat4),
-                               sizeof(glm::mat4),
-                               &m);
+                RenderMaterial *material = nullptr;
 
-            int test = 0;
-            vkCmdPushConstants(commandBuffer,
-                               pipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                               sizeof(glm::mat4) * 2,
-                               sizeof(int),
-                               &test);
+                if (static_cast<size_t>(part.materialIndex) >= model.materials.size()) {
+                    material = &defaultMaterial;
+                } else {
+                    material = &model.materials[part.materialIndex];
+                }
 
-            int type = (int)material->type;
-            vkCmdPushConstants(commandBuffer,
-                               pipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                               sizeof(glm::mat4) * 2 + sizeof(int),
-                               sizeof(int),
-                               &type);
+                const auto h = hash(model, *material);
+                if (!cachedDescriptors.count(h)) {
+                    if (auto descriptor = createDescriptorFor(model, *material); descriptor != VK_NULL_HANDLE) {
+                        cachedDescriptors[h] = descriptor;
+                    } else {
+                        continue;
+                    }
+                }
 
-            vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &cachedDescriptors[h], 0, nullptr);
+
+                VkDeviceSize offsets[] = {0};
+                vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
+                vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+                glm::mat4 p = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 1000.0f);
+                glm::mat4 v = view;
+                glm::mat4 vp = p * v;
+
+                vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
+
+                auto m = glm::mat4(1.0f);
+                m = glm::translate(m, model.position);
+
+                vkCmdPushConstants(commandBuffer,
+                                   pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                   sizeof(glm::mat4),
+                                   sizeof(glm::mat4),
+                                   &m);
+
+                int test = 0;
+                vkCmdPushConstants(commandBuffer,
+                                   pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                   sizeof(glm::mat4) * 2,
+                                   sizeof(int),
+                                   &test);
+
+                int type = (int)material->type;
+                vkCmdPushConstants(commandBuffer,
+                                   pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                   sizeof(glm::mat4) * 2 + sizeof(int),
+                                   sizeof(int),
+                                   &type);
+
+                vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
+            }
         }
+
+        if (imGuiPass != nullptr) {
+            ImGui::SetCurrentContext(ctx);
+            imGuiPass->render(commandBuffer);
+        }
+
+        vkCmdEndRenderPass(commandBuffer);
     }
 
-    if (imGuiPass != nullptr) {
-        ImGui::SetCurrentContext(ctx);
-        imGuiPass->render(commandBuffer);
-    }
-
-    vkCmdEndRenderPass(commandBuffer);
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo = {};
@@ -661,6 +700,10 @@ RenderModel Renderer::addModel(const physis_MDL &model, int lod)
     renderModel.model = model;
 
     reloadModel(renderModel, lod);
+
+    if (m_enableNewRenderSystem) {
+        m_renderSystem->testInit(&renderModel);
+    }
 
     return renderModel;
 }
@@ -1500,4 +1543,39 @@ void Renderer::createDummyTexture()
     samplerInfo.maxLod = 1.0f;
 
     vkCreateSampler(device, &samplerInfo, nullptr, &dummySampler);
+}
+
+void Renderer::createDummyBuffer()
+{
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = 655360;
+    bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    vkCreateBuffer(device, &bufferInfo, nullptr, &dummyBuffer);
+
+    // allocate staging memory
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(device, dummyBuffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    vkAllocateMemory(device, &allocInfo, nullptr, &dummyBufferMemory);
+
+    vkBindBufferMemory(device, dummyBuffer, dummyBufferMemory, 0);
+
+    std::vector<glm::vec4> fakeData(192);
+    for (int i = 0; i < fakeData.size(); i++) {
+        fakeData[i] = glm::vec4{1.0f};
+    }
+
+    // copy to staging buffer
+    void *mapped_data;
+    vkMapMemory(device, dummyBufferMemory, 0, sizeof(glm::vec4) * 192, 0, &mapped_data);
+    memcpy(mapped_data, fakeData.data(), sizeof(glm::vec4) * 192);
+    vkUnmapMemory(device, dummyBufferMemory);
 }

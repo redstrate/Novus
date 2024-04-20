@@ -9,8 +9,6 @@
 #include <QVBoxLayout>
 #include <spirv_glsl.hpp>
 
-dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
-
 SHPKPart::SHPKPart(GameData *data, QWidget *parent)
     : QWidget(parent)
     , data(data)

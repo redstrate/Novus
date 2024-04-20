@@ -10,7 +10,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include <physis.hpp>
+#include "rendersystem.h"
 
 struct RenderPart {
     size_t numIndices;
@@ -62,7 +62,7 @@ struct ImGuiContext;
 class Renderer
 {
 public:
-    Renderer();
+    Renderer(GameData *data);
 
     void initPipeline();
     void initDescriptors();
@@ -97,6 +97,9 @@ public:
     VkImage depthImage;
     VkDeviceMemory depthMemory;
     VkImageView depthView;
+
+    VkBuffer dummyBuffer;
+    VkDeviceMemory dummyBufferMemory;
 
     VkImage dummyImage;
     VkDeviceMemory dummyMemory;
@@ -148,6 +151,12 @@ public:
 
 private:
     void createDummyTexture();
+    void createDummyBuffer();
 
     ImGuiPass *imGuiPass = nullptr;
+
+    std::unique_ptr<RenderSystem> m_renderSystem;
+
+    GameData *m_data = nullptr;
+    bool m_enableNewRenderSystem = false;
 };

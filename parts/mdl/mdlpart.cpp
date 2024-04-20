@@ -28,7 +28,7 @@ MDLPart::MDLPart(GameData *data, FileCache &cache, QWidget *parent)
 
     pbd = physis_parse_pbd(physis_gamedata_extract_file(data, "chara/xls/bonedeformer/human.pbd"));
 
-    renderer = new Renderer();
+    renderer = new Renderer(data);
 
     auto inst = new QVulkanInstance();
     inst->setVkInstance(renderer->instance);

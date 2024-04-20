@@ -1,6 +1,10 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
+find_package(spirv_cross_core REQUIRED)
+find_package(spirv_cross_glsl REQUIRED)
+find_package(SPIRV-Headers REQUIRED)
+
 add_library(renderer STATIC)
 target_sources(renderer
         PRIVATE
@@ -8,7 +12,9 @@ target_sources(renderer
 
         src/renderer.cpp
         src/imguipass.cpp
-        src/imguipass.h)
+        src/imguipass.h
+        src/rendersystem.cpp
+        include/rendersystem.h)
 qt_add_resources(renderer
         "shaders"
         PREFIX "/"
@@ -25,7 +31,10 @@ target_link_libraries(renderer
         Vulkan::Vulkan
         Physis::Physis
         glm::glm
-        imgui)
+        imgui
+        dxbc
+        spirv-cross-core
+        spirv-cross-glsl)
 target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_ENABLE_EXPERIMENTAL)
 
 add_library(Novus::Renderer ALIAS renderer)
