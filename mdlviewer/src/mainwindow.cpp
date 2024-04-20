@@ -10,6 +10,7 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QListWidget>
 #include <QMenuBar>
 #include <physis.hpp>
@@ -56,7 +57,13 @@ MainWindow::MainWindow(GameData *data)
     });
     renderLayout->addWidget(wireframeCheckbox);
 
+    auto modelWidget = new QWidget();
+    m_detailsLayout = new QFormLayout();
+    modelWidget->setLayout(m_detailsLayout);
+
     tabWidget->addTab(renderWidget, i18nc("@title:tab", "Render"));
+    tabWidget->addTab(modelWidget, i18nc("@title:tab", "Model"));
+
     tabWidget->setDocumentMode(true); // hide borders
     tabWidget->tabBar()->setExpanding(true);
 
@@ -70,13 +77,37 @@ void MainWindow::setupFileMenu(QMenu *menu)
     connect(openMDLFile, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getOpenFileName(nullptr, i18nc("@title:window", "Open MDL File"), QStringLiteral("~"), i18n("FFXIV Model File (*.mdl)"));
         if (!fileName.isEmpty()) {
+            auto buffer = physis_read_file(fileName.toStdString().c_str());
+            if (buffer.data == nullptr) {
+                return;
+            }
+
+            auto mdl = physis_mdl_parse(buffer);
+            if (mdl.p_ptr == nullptr) {
+                return;
+            }
+
             part->clear();
 
             setWindowTitle(fileName);
 
-            auto buffer = physis_read_file(fileName.toStdString().c_str());
+            part->addModel(mdl, false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
 
-            part->addModel(physis_mdl_parse(buffer), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
+            // Clear layout
+            QLayoutItem *child = nullptr;
+            while ((child = m_detailsLayout->takeAt(0)) != nullptr) {
+                child->widget()->setParent(nullptr);
+                child->widget()->deleteLater();
+            }
+
+            m_detailsLayout->addRow(i18n("LOD #:"), new QLabel(QString::number(mdl.num_lod)));
+
+            uint32_t triangleCount = 0;
+            for (int i = 0; i < mdl.lods[0].num_parts; i++) {
+                triangleCount += mdl.lods[0].parts[i].num_indices / 3;
+            }
+
+            m_detailsLayout->addRow(i18n("Triangle #:"), new QLabel(QString::number(triangleCount)));
         }
     });
 }

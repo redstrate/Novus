@@ -6,6 +6,8 @@
 #include "filecache.h"
 #include "novusmainwindow.h"
 
+#include <QFormLayout>
+
 struct GameData;
 class MDLPart;
 
@@ -22,4 +24,5 @@ protected:
     GameData *data = nullptr;
     MDLPart *part = nullptr;
     FileCache cache;
+    QFormLayout *m_detailsLayout = nullptr;
 };
