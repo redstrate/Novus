@@ -321,6 +321,8 @@ void SingleGearView::reloadGear()
     lodCombo->setEnabled(currentGear.has_value());
     addToFMVButton->setEnabled(currentGear.has_value() && fmvAvailable);
     exportButton->setEnabled(currentGear.has_value());
+    importButton->setEnabled(currentGear.has_value());
+    editButton->setEnabled(currentGear.has_value());
 
     if (currentGear.has_value()) {
         loadingComboData = true;
