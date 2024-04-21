@@ -94,7 +94,8 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         g_MaterialParameter = m_device.createBuffer(sizeof(MaterialParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         MaterialParameters materialParameter{};
-        materialParameter.parameters[0] = glm::vec4(1.0f);
+        materialParameter.parameters[0] = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+        materialParameter.parameters[5].z = 1.0f;
         m_device.copyToBuffer(g_MaterialParameter, &materialParameter, sizeof(MaterialParameters));
     }
 
@@ -224,12 +225,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     std::vector<uint32_t> materialKeys;
                     for (int j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
                         auto value = renderMaterial.shaderPackage.material_keys[j].default_value;
-                        // Replace MODE_DEFAULT with MODE_SIMPLE for now
-                        if (value != 0x5CC605B5) {
-                            materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
-                        } else {
-                            materialKeys.push_back(0x22A4AABF);
-                        }
+                        materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
                     }
                     std::vector<uint32_t> subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
 
