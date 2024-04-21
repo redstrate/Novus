@@ -67,8 +67,8 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
 void RenderSystem::testInit(::RenderModel *m)
 {
     qInfo() << "initialzing render system with dummy data...";
-    RenderModel model{.internal_model = new ::RenderModel(*m),
-                      .shpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/character.shpk"))};
+    RenderModel model{.shpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/character.shpk")),
+                      .internal_model = new ::RenderModel(*m)};
     m_renderModels.push_back(model);
 }
 
