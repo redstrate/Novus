@@ -36,7 +36,7 @@ target_link_libraries(renderer
         dxbc
         spirv-cross-core
         spirv-cross-glsl)
-target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_ENABLE_EXPERIMENTAL GLM_FORCE_LEFT_HANDED)
+target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_ENABLE_EXPERIMENTAL)
 target_compile_options(renderer PUBLIC -fexceptions) # needed for spirv-cross and dxbc
 
 add_library(Novus::Renderer ALIAS renderer)
