@@ -34,6 +34,8 @@ private:
     VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
     spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
 
+    physis_SHPK directionalLightningShpk;
+
     struct RenderModel {
         physis_SHPK shpk;
 

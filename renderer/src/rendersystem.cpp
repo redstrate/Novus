@@ -64,6 +64,8 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
     : m_renderer(renderer)
     , m_data(data)
 {
+    directionalLightningShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/directionallighting.shpk"));
+
     // camera data
     {
         g_CameraParameter = createUniformBuffer(sizeof(CameraParameter));
@@ -187,7 +189,6 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                     bindPipeline(commandBuffer, vertexShader, pixelShader);
 
                     for (const auto &part : model.internal_model->parts) {
-                        // if (part.materialIndex == 1) {
                         const uint32_t hash = vertexShader.len + pixelShader.len;
                         auto &cachedPipeline = m_cachedPipelines[hash];
 
@@ -219,9 +220,49 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
                         vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
-                        //}
                     }
                 }
+            }
+        } else if (std::string_view{"PASS_LIGHTING_OPAQUE"} == pass) {
+            std::vector<uint32_t> systemKeys = {
+                physis_shpk_crc("DecodeDepthBuffer_RAWZ"),
+            };
+            std::vector<uint32_t> sceneKeys = {
+                physis_shpk_crc("GetDirectionalLight_Enable"),
+                physis_shpk_crc("GetFakeSpecular_Disable"),
+                physis_shpk_crc("GetUnderWaterLighting_Disable"),
+            };
+            std::vector<uint32_t> subviewKeys = {
+                physis_shpk_crc("Default"),
+                physis_shpk_crc("SUB_VIEW_MAIN"),
+            };
+
+            const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
+                                                                                systemKeys.size(),
+                                                                                sceneKeys.data(),
+                                                                                sceneKeys.size(),
+                                                                                nullptr,
+                                                                                0,
+                                                                                subviewKeys.data(),
+                                                                                subviewKeys.size());
+            const physis_SHPKNode node = physis_shpk_get_node(&directionalLightningShpk, selector);
+
+            // check if invalid
+            if (node.pass_count == 0) {
+                continue;
+            }
+
+            const int passIndice = node.pass_indices[i];
+            if (passIndice != 255) {
+                const Pass currentPass = node.passes[passIndice];
+
+                const uint32_t vertexShaderIndice = currentPass.vertex_shader;
+                const uint32_t pixelShaderIndice = currentPass.vertex_shader;
+
+                physis_Shader vertexShader = directionalLightningShpk.vertex_shaders[vertexShaderIndice];
+                physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
+
+                // TODO: draw plane for directional lighting
             }
         }
 
