@@ -91,12 +91,11 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
 
     // material data
     {
-        g_MaterialParameter = m_device.createBuffer(sizeof(MaterialParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        g_MaterialParameter = m_device.createBuffer(sizeof(MaterialParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
-        MaterialParameter materialParameter{};
-        materialParameter.g_AlphaThreshold = 0.0f;
-        materialParameter.g_DiffuseColor = glm::vec3(1.0f);
-        m_device.copyToBuffer(g_MaterialParameter, &materialParameter, sizeof(MaterialParameter));
+        MaterialParameters materialParameter{};
+        materialParameter.parameters[0] = glm::vec4(1.0f);
+        m_device.copyToBuffer(g_MaterialParameter, &materialParameter, sizeof(MaterialParameters));
     }
 
     // light data
@@ -118,6 +117,24 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // common data
     {
         g_CommonParameter = m_device.createBuffer(sizeof(CommonParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    }
+
+    // scene data
+    {
+        g_SceneParameter = m_device.createBuffer(sizeof(SceneParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+        SceneParameter sceneParameter{};
+
+        m_device.copyToBuffer(g_SceneParameter, &sceneParameter, sizeof(SceneParameter));
+    }
+
+    // customize data
+    {
+        g_CustomizeParameter = m_device.createBuffer(sizeof(CustomizeParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+        CustomizeParameter customizeParameter{};
+
+        m_device.copyToBuffer(g_CustomizeParameter, &customizeParameter, sizeof(CustomizeParameter));
     }
 
     VkSamplerCreateInfo samplerInfo = {};
@@ -194,6 +211,9 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     }
 
                     std::vector<uint32_t> systemKeys;
+                    if (renderMaterial.type == MaterialType::Skin) {
+                        systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
+                    }
                     std::vector<uint32_t> sceneKeys = {
                         physis_shpk_crc("TransformViewSkin"),
                         physis_shpk_crc("GetAmbientLight_SH"),
@@ -240,7 +260,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                         physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
 
                         auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
-                        bindDescriptorSets(commandBuffer, pipeline, &model);
+                        bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial);
 
                         VkDeviceSize offsets[] = {0};
                         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer.buffer, offsets);
@@ -290,7 +310,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_Shader pixelShader = createViewPositionShpk.pixel_shaders[pixelShaderIndice];
 
                     auto &pipeline = bindPipeline(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION", vertexShader, pixelShader);
-                    bindDescriptorSets(commandBuffer, pipeline, nullptr);
+                    bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr);
 
                     VkDeviceSize offsets[] = {0};
                     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer.buffer, offsets);
@@ -342,7 +362,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
 
                     auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
-                    bindDescriptorSets(commandBuffer, pipeline, nullptr);
+                    bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr);
 
                     VkDeviceSize offsets[] = {0};
                     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer.buffer, offsets);
@@ -889,7 +909,7 @@ spirv_cross::CompilerGLSL GameRenderer::getShaderModuleResources(const physis_Sh
     return spirv_cross::CompilerGLSL(result.code.data(), result.code.dwords());
 }
 
-VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline &pipeline, int i)
+VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline &pipeline, int i, const RenderMaterial *material)
 {
     VkDescriptorSet set;
 
@@ -948,8 +968,12 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, cons
                         info->imageView = m_viewPositionBuffer.imageView;
                     } else if (strcmp(name, "g_SamplerDepth") == 0) {
                         info->imageView = m_depthBuffer.imageView;
+                    } else if (strcmp(name, "g_SamplerNormal") == 0) {
+                        Q_ASSERT(material);
+                        info->imageView = material->normalTexture->view;
                     } else {
                         info->imageView = m_dummyTex.imageView;
+                        qInfo() << "Unknown image" << name;
                     }
 
                     p++;
@@ -992,6 +1016,10 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, cons
                         useUniformBuffer(g_LightParam);
                     } else if (strcmp(name, "g_CommonParameter") == 0) {
                         useUniformBuffer(g_CommonParameter);
+                    } else if (strcmp(name, "g_CustomizeParameter") == 0) {
+                        useUniformBuffer(g_CustomizeParameter);
+                    } else if (strcmp(name, "g_SceneParameter") == 0) {
+                        useUniformBuffer(g_SceneParameter);
                     } else {
                         qInfo() << "Unknown resource:" << name;
                         info->buffer = m_dummyBuffer.buffer;
@@ -1058,12 +1086,15 @@ Texture &GameRenderer::getCompositeTexture()
     return m_compositeBuffer;
 }
 
-void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer, GameRenderer::CachedPipeline &pipeline, const DrawObject *object)
+void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer,
+                                      GameRenderer::CachedPipeline &pipeline,
+                                      const DrawObject *object,
+                                      const RenderMaterial *material)
 {
     int i = 0;
     for (auto setLayout : pipeline.setLayouts) {
         if (!pipeline.cachedDescriptors.count(i)) {
-            if (auto descriptor = createDescriptorFor(object, pipeline, i); descriptor != VK_NULL_HANDLE) {
+            if (auto descriptor = createDescriptorFor(object, pipeline, i, material); descriptor != VK_NULL_HANDLE) {
                 pipeline.cachedDescriptors[i] = descriptor;
             } else {
                 continue;

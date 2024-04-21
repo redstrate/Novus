@@ -15,6 +15,7 @@
 
 #include "baserenderer.h"
 #include "buffer.h"
+#include "drawobject.h"
 #include "shaderstructs.h"
 #include "texture.h"
 
@@ -72,8 +73,8 @@ private:
     Device &m_device;
     GameData *m_data = nullptr;
 
-    VkDescriptorSet createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, int i);
-    void bindDescriptorSets(VkCommandBuffer commandBuffer, CachedPipeline &pipeline, const DrawObject *object);
+    VkDescriptorSet createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, int i, const RenderMaterial *material);
+    void bindDescriptorSets(VkCommandBuffer commandBuffer, CachedPipeline &pipeline, const DrawObject *object, const RenderMaterial *material);
 
     Buffer g_CameraParameter;
     Buffer g_InstanceParameter;
@@ -81,6 +82,8 @@ private:
     Buffer g_MaterialParameter;
     Buffer g_CommonParameter;
     Buffer g_LightParam;
+    Buffer g_SceneParameter;
+    Buffer g_CustomizeParameter;
 
     Buffer m_planeVertexBuffer;
 

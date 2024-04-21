@@ -44,9 +44,8 @@ struct ModelParameter {
     ModelParameterStruct g_ModelParameter;
 };
 
-struct MaterialParameter {
-    glm::vec3 g_DiffuseColor; // TODO: align to vec4
-    float g_AlphaThreshold;
+struct MaterialParameters {
+    glm::vec4 parameters[6] = {}; // TODO: this is actually different depending on the shpk
 };
 
 struct CommonParameter {
@@ -71,4 +70,21 @@ struct LightParam {
     glm::mat3x4 m_WorldViewInversMatrix;
     glm::mat4 m_LightMapMatrix;
     glm::mat4 m_WorldViewProjectionMatrix;*/
+};
+
+struct SceneParameter {
+    glm::vec4 m_OcclusionIntensity;
+    glm::vec4 m_Wetness;
+};
+
+struct CustomizeParameter {
+    glm::vec4 m_SkinColor;
+    glm::vec4 m_SkinFresnelValue0;
+    glm::vec4 m_LipColor;
+    glm::vec4 m_MainColor;
+    glm::vec4 m_HairFresnelValue0;
+    glm::vec4 m_MeshColor;
+    glm::vec4 m_LeftColor;
+    glm::vec4 m_RightColor;
+    glm::vec4 m_OptionColor;
 };
