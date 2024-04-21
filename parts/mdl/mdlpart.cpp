@@ -28,10 +28,10 @@ MDLPart::MDLPart(GameData *data, FileCache &cache, QWidget *parent)
 
     pbd = physis_parse_pbd(physis_gamedata_extract_file(data, "chara/xls/bonedeformer/human.pbd"));
 
-    renderer = new Renderer(data);
+    renderer = new RenderManager(data);
 
     auto inst = new QVulkanInstance();
-    inst->setVkInstance(renderer->instance);
+    inst->setVkInstance(renderer->device().instance);
     inst->setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
     inst->create();
 
@@ -52,14 +52,14 @@ void MDLPart::exportModel(const QString &fileName)
     ::exportModel(model.name, model.model, *skeleton, boneData, fileName);
 }
 
-RenderModel &MDLPart::getModel(const int index)
+DrawObject &MDLPart::getModel(const int index)
 {
     return models[index];
 }
 
 void MDLPart::reloadModel(const int index)
 {
-    renderer->reloadModel(models[index], 0);
+    renderer->reloadDrawObject(models[index], 0);
 
     Q_EMIT modelChanged();
 }
@@ -82,7 +82,7 @@ void MDLPart::addModel(physis_MDL mdl,
 {
     qDebug() << "Adding model to MDLPart";
 
-    auto model = renderer->addModel(mdl, lod);
+    auto model = renderer->addDrawObject(mdl, lod);
     model.name = name;
     model.from_body_id = fromBodyId;
     model.to_body_id = toBodyId;
@@ -303,7 +303,7 @@ void MDLPart::removeModel(const physis_MDL &mdl)
 {
     models.erase(std::remove_if(models.begin(),
                                 models.end(),
-                                [mdl](const RenderModel &other) {
+                                [mdl](const DrawObject &other) {
                                     return mdl.p_ptr == other.model.p_ptr;
                                 }),
                  models.end());
@@ -312,12 +312,13 @@ void MDLPart::removeModel(const physis_MDL &mdl)
 
 void MDLPart::setWireframe(bool wireframe)
 {
-    renderer->wireframe = wireframe;
+    // renderer->wireframe = wireframe;
 }
 
 bool MDLPart::wireframe() const
 {
-    return renderer->wireframe;
+    // return renderer->wireframe;
+    return false;
 }
 
 #include "moc_mdlpart.cpp"

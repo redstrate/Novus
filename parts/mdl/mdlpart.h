@@ -8,7 +8,7 @@
 #include <physis.hpp>
 
 #include "mdlexport.h"
-#include "renderer.hpp"
+#include "rendermanager.h"
 
 struct GameData;
 
@@ -23,7 +23,7 @@ public:
     explicit MDLPart(GameData *data, FileCache &cache, QWidget *parent = nullptr);
 
     void exportModel(const QString &fileName);
-    RenderModel &getModel(int index);
+    DrawObject &getModel(int index);
     void reloadModel(int index);
 
     int lastX = -1;
@@ -91,9 +91,9 @@ private:
     FileCache &cache;
     physis_PBD pbd{};
 
-    std::vector<RenderModel> models;
+    std::vector<DrawObject> models;
 
-    Renderer *renderer = nullptr;
+    RenderManager *renderer = nullptr;
     VulkanWindow *vkWindow = nullptr;
     bool firstTimeSkeletonDataCalculated = false;
 };

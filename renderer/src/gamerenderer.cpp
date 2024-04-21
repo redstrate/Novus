@@ -1,20 +1,21 @@
 // SPDX-FileCopyrightText: 2024 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "rendersystem.h"
+#include "gamerenderer.h"
 
 #include <array>
 
 #include <QDebug>
 
+#include <glm/ext/matrix_clip_space.hpp>
 #include <physis.hpp>
-
-#include "dxbc_module.h"
-#include "dxbc_reader.h"
-#include "renderer.hpp"
 #include <spirv_glsl.hpp>
 
-#include <glm/ext/matrix_clip_space.hpp>
+#include "camera.h"
+#include "dxbc_module.h"
+#include "dxbc_reader.h"
+#include "rendermanager.h"
+#include "swapchain.h"
 
 // TODO: maybe need UV?
 // note: SQEX passes the vertice positions as UV coordinates (yes, -1 to 1.) the shaders then transform them back with the g_CommonParameter.m_RenderTarget vec4
@@ -53,79 +54,64 @@ const std::array<std::string, 14> passes = {
 
 const int INVALID_PASS = 255;
 
-RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
-    : m_renderer(renderer)
+GameRenderer::GameRenderer(Device &device, GameData *data)
+    : m_device(device)
     , m_data(data)
 {
+    m_dummyTex = m_device.createDummyTexture();
+    m_dummyBuffer = m_device.createDummyBuffer();
+
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
-    auto [vertexBuffer, vertexMemory] = m_renderer.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-
-    m_planeVertexBuffer = vertexBuffer;
-    m_planeVertexMemory = vertexMemory;
-
-    // copy vertex data
-    {
-        void *mapped_data = nullptr;
-        vkMapMemory(m_renderer.device, vertexMemory, 0, vertexSize, 0, &mapped_data);
-
-        memcpy(mapped_data, planeVertices.data(), vertexSize);
-
-        VkMappedMemoryRange range = {};
-        range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-        range.memory = vertexMemory;
-        range.size = vertexSize;
-        vkFlushMappedMemoryRanges(m_renderer.device, 1, &range);
-
-        vkUnmapMemory(m_renderer.device, vertexMemory);
-    }
+    m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    m_device.copyToBuffer(m_planeVertexBuffer, (void *)planeVertices.data(), vertexSize);
 
     directionalLightningShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/directionallighting.shpk"));
     createViewPositionShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/createviewposition.shpk"));
 
     // camera data
     {
-        g_CameraParameter = createUniformBuffer(sizeof(CameraParameter));
+        g_CameraParameter = m_device.createBuffer(sizeof(CameraParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     }
 
     // joint matrix data
     {
-        g_JointMatrixArray = createUniformBuffer(sizeof(JointMatrixArray));
+        g_JointMatrixArray = m_device.createBuffer(sizeof(JointMatrixArray), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         JointMatrixArray jointMatrixArray{};
         for (int i = 0; i < 64; i++) {
             jointMatrixArray.g_JointMatrixArray[i] = glm::mat3x4(1.0f);
         }
-        copyDataToUniform(g_JointMatrixArray, &jointMatrixArray, sizeof(JointMatrixArray));
+        m_device.copyToBuffer(g_JointMatrixArray, &jointMatrixArray, sizeof(JointMatrixArray));
     }
 
     // instance data
     {
-        g_InstanceParameter = createUniformBuffer(sizeof(InstanceParameter));
+        g_InstanceParameter = m_device.createBuffer(sizeof(InstanceParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         InstanceParameter instanceParameter{};
-        copyDataToUniform(g_InstanceParameter, &instanceParameter, sizeof(InstanceParameter));
+        m_device.copyToBuffer(g_InstanceParameter, &instanceParameter, sizeof(InstanceParameter));
     }
 
     // model data
     {
-        g_ModelParameter = createUniformBuffer(sizeof(ModelParameter));
+        g_ModelParameter = m_device.createBuffer(sizeof(ModelParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         ModelParameter modelParameter{};
-        copyDataToUniform(g_ModelParameter, &modelParameter, sizeof(ModelParameter));
+        m_device.copyToBuffer(g_ModelParameter, &modelParameter, sizeof(ModelParameter));
     }
 
     // material data
     {
-        g_MaterialParameter = createUniformBuffer(sizeof(MaterialParameter));
+        g_MaterialParameter = m_device.createBuffer(sizeof(MaterialParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         MaterialParameter materialParameter{};
         materialParameter.g_AlphaThreshold = 0.0f;
         materialParameter.g_DiffuseColor = glm::vec3(1.0f);
-        copyDataToUniform(g_MaterialParameter, &materialParameter, sizeof(MaterialParameter));
+        m_device.copyToBuffer(g_MaterialParameter, &materialParameter, sizeof(MaterialParameter));
     }
 
     // light data
     {
-        g_LightParam = createUniformBuffer(sizeof(LightParam));
+        g_LightParam = m_device.createBuffer(sizeof(LightParam), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         LightParam lightParam{};
         lightParam.m_Position = glm::vec4(-5);
@@ -136,35 +122,45 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
         /*lightParam.m_ClipMin = glm::vec4(0.0f);
         lightParam.m_ClipMax = glm::vec4(5.0f);*/
 
-        copyDataToUniform(g_LightParam, &lightParam, sizeof(LightParam));
+        m_device.copyToBuffer(g_LightParam, &lightParam, sizeof(LightParam));
     }
 
     // common data
     {
-        g_CommonParameter = createUniformBuffer(sizeof(CommonParameter));
+        g_CommonParameter = m_device.createBuffer(sizeof(CommonParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     }
+
+    VkSamplerCreateInfo samplerInfo = {};
+    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerInfo.magFilter = VK_FILTER_LINEAR;
+    samplerInfo.minFilter = VK_FILTER_LINEAR;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.maxLod = 1.0f;
+
+    vkCreateSampler(m_device.device, &samplerInfo, nullptr, &m_sampler);
 
     createImageResources();
 }
 
-void RenderSystem::testInit(::RenderModel *m)
+void GameRenderer::addDrawObject(const DrawObject &drawObject)
 {
     RenderModel model{.shpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/character.shpk")),
-                      .internal_model = new ::RenderModel(*m)};
+                      .internal_model = new DrawObject(drawObject)};
     m_renderModels.push_back(model);
 }
 
-void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
+void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Camera &camera, const std::vector<DrawObject> &)
 {
     // TODO: this shouldn't be here
     CameraParameter cameraParameter{};
 
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), (float)m_extent.width / (float)m_extent.height, 0.1f, 1000.0f);
-    glm::mat4 viewMatrix = m_renderer.view;
-    glm::mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
+    const glm::mat4 viewProjectionMatrix = camera.perspective * camera.view;
 
-    cameraParameter.m_ViewMatrix = glm::transpose(viewMatrix);
-    cameraParameter.m_InverseViewMatrix = glm::transpose(glm::inverse(viewMatrix));
+    cameraParameter.m_ViewMatrix = glm::transpose(camera.view);
+    cameraParameter.m_InverseViewMatrix = glm::transpose(glm::inverse(camera.view));
     cameraParameter.m_ViewProjectionMatrix = glm::transpose(viewProjectionMatrix);
     cameraParameter.m_InverseViewProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
 
@@ -172,11 +168,11 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
     cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
     cameraParameter.m_ProjectionMatrix = glm::transpose(viewProjectionMatrix);
 
-    cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(glm::inverse(projectionMatrix));
+    cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(glm::inverse(camera.perspective));
     cameraParameter.m_EyePosition = glm::vec3(5.0f); // placeholder
     cameraParameter.m_LookAtVector = glm::vec3(0.0f); // placeholder
 
-    copyDataToUniform(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
+    m_device.copyToBuffer(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
 
     int i = 0;
     for (const auto pass : passes) {
@@ -235,8 +231,8 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
 
                     for (const auto &part : model.internal_model->parts) {
                         VkDeviceSize offsets[] = {0};
-                        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
-                        vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+                        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer.buffer, offsets);
+                        vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
                         vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
                     }
@@ -284,7 +280,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                     bindPipeline(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION", vertexShader, pixelShader);
 
                     VkDeviceSize offsets[] = {0};
-                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer, offsets);
+                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer.buffer, offsets);
 
                     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
                 }
@@ -335,7 +331,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                     bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
 
                     VkDeviceSize offsets[] = {0};
-                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer, offsets);
+                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer.buffer, offsets);
 
                     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
                 }
@@ -347,9 +343,8 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
     }
 }
 
-void RenderSystem::setSize(uint32_t width, uint32_t height)
+void GameRenderer::resize()
 {
-    m_extent = {width, height};
     // TODO: this is because of our terrible resource handling. an image referenced in these may be gone due to resizing, for example
     for (auto &[hash, cachedPipeline] : m_cachedPipelines) {
         cachedPipeline.cachedDescriptors.clear();
@@ -358,10 +353,10 @@ void RenderSystem::setSize(uint32_t width, uint32_t height)
     createImageResources();
 }
 
-void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, const std::string_view passName)
+void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, const std::string_view passName)
 {
     VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO};
-    renderingInfo.renderArea.extent = m_extent;
+    renderingInfo.renderArea.extent = m_device.swapChain->extent;
 
     std::vector<VkRenderingAttachmentInfo> colorAttachments;
     VkRenderingAttachmentInfo depthStencilAttachment{};
@@ -370,7 +365,7 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
         // normals, it seems like
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = normalGBuffer.imageView;
+            attachmentInfo.imageView = m_normalGBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -408,7 +403,7 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
         // depth
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = m_renderer.depthView;
+            attachmentInfo.imageView = m_depthBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -420,7 +415,7 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
         // normals, it seems like
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = m_renderer.swapchainViews[imageIndex];
+            attachmentInfo.imageView = m_compositeBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -447,7 +442,7 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
         // TODO: Hack we should not be using a special pass for this, we should just design our API better
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = viewPositionBuffer.imageView;
+            attachmentInfo.imageView = m_viewPositionBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -463,7 +458,7 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
         // normals, it seems like
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = m_renderer.swapchainViews[imageIndex];
+            attachmentInfo.imageView = m_compositeBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -499,12 +494,12 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
     vkCmdBeginRendering(commandBuffer, &renderingInfo);
 }
 
-void RenderSystem::endPass(VkCommandBuffer commandBuffer, std::string_view passName)
+void GameRenderer::endPass(VkCommandBuffer commandBuffer, std::string_view passName)
 {
     vkCmdEndRendering(commandBuffer);
 }
 
-void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader)
+void GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader)
 {
     const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data());
     if (!m_cachedPipelines.contains(hash)) {
@@ -607,7 +602,7 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
                 layoutInfo.bindingCount = bindings.size();
                 layoutInfo.pBindings = bindings.data();
 
-                vkCreateDescriptorSetLayout(m_renderer.device, &layoutInfo, nullptr, &set.layout);
+                vkCreateDescriptorSetLayout(m_device.device, &layoutInfo, nullptr, &set.layout);
             }
         }
 
@@ -748,7 +743,7 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
         pipelineLayoutInfo.pSetLayouts = setLayouts.data();
 
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-        vkCreatePipelineLayout(m_renderer.device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
+        vkCreatePipelineLayout(m_device.device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
 
         VkPipelineDepthStencilStateCreateInfo depthStencil = {};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -782,7 +777,7 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
         // createInfo.renderPass = m_renderer.renderPass;
 
         VkPipeline pipeline = VK_NULL_HANDLE;
-        vkCreateGraphicsPipelines(m_renderer.device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline);
+        vkCreateGraphicsPipelines(m_device.device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline);
 
         qInfo() << "Created" << pipeline << "for hash" << hash;
         m_cachedPipelines[hash] = CachedPipeline{.pipeline = pipeline,
@@ -813,18 +808,18 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
     }
 
     VkViewport viewport = {};
-    viewport.width = m_extent.width;
-    viewport.height = m_extent.height;
+    viewport.width = m_device.swapChain->extent.width;
+    viewport.height = m_device.swapChain->extent.height;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor = {};
-    scissor.extent = m_extent;
+    scissor.extent = m_device.swapChain->extent;
 
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-VkShaderModule RenderSystem::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
+VkShaderModule GameRenderer::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
 {
     dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
 
@@ -839,7 +834,7 @@ VkShaderModule RenderSystem::convertShaderModule(const physis_Shader &shader, sp
     createInfo.pCode = reinterpret_cast<const uint32_t *>(result.code.data());
 
     VkShaderModule shaderModule;
-    vkCreateShaderModule(m_renderer.device, &createInfo, nullptr, &shaderModule);
+    vkCreateShaderModule(m_device.device, &createInfo, nullptr, &shaderModule);
 
     // TODO: for debug only
     spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
@@ -879,7 +874,7 @@ VkShaderModule RenderSystem::convertShaderModule(const physis_Shader &shader, sp
     return shaderModule;
 }
 
-spirv_cross::CompilerGLSL RenderSystem::getShaderModuleResources(const physis_Shader &shader)
+spirv_cross::CompilerGLSL GameRenderer::getShaderModuleResources(const physis_Shader &shader)
 {
     dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
 
@@ -893,17 +888,17 @@ spirv_cross::CompilerGLSL RenderSystem::getShaderModuleResources(const physis_Sh
     return spirv_cross::CompilerGLSL(result.code.data(), result.code.dwords());
 }
 
-VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline, int i)
+VkDescriptorSet GameRenderer::createDescriptorFor(const CachedPipeline &pipeline, int i)
 {
     VkDescriptorSet set;
 
     VkDescriptorSetAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocateInfo.descriptorPool = m_renderer.descriptorPool;
+    allocateInfo.descriptorPool = m_device.descriptorPool;
     allocateInfo.descriptorSetCount = 1;
     allocateInfo.pSetLayouts = &pipeline.setLayouts[i];
 
-    vkAllocateDescriptorSets(m_renderer.device, &allocateInfo, &set);
+    vkAllocateDescriptorSets(m_device.device, &allocateInfo, &set);
     if (set == VK_NULL_HANDLE) {
         // qFatal("Failed to create descriptor set!");
         return VK_NULL_HANDLE;
@@ -947,18 +942,18 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
                     auto name = pipeline.pixelShader.resource_parameters[p].name;
                     qInfo() << "Requesting image" << name << "at" << j;
                     if (strcmp(name, "g_SamplerGBuffer") == 0) {
-                        info->imageView = normalGBuffer.imageView;
+                        info->imageView = m_normalGBuffer.imageView;
                     } else if (strcmp(name, "g_SamplerViewPosition") == 0) {
-                        info->imageView = viewPositionBuffer.imageView;
+                        info->imageView = m_viewPositionBuffer.imageView;
                     } else if (strcmp(name, "g_SamplerDepth") == 0) {
-                        info->imageView = m_renderer.depthView;
+                        info->imageView = m_depthBuffer.imageView;
                     } else {
-                        info->imageView = m_renderer.dummyView;
+                        info->imageView = m_dummyTex.imageView;
                     }
 
                     p++;
                 } else {
-                    info->imageView = m_renderer.dummyView;
+                    info->imageView = m_dummyTex.imageView;
                 }
 
                 info->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -967,13 +962,13 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
                 auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
-                info->sampler = m_renderer.dummySampler;
+                info->sampler = m_sampler;
             } break;
             case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
                 auto info = &bufferInfo.emplace_back();
                 descriptorWrite.pBufferInfo = info;
 
-                auto useUniformBuffer = [&info](UniformBuffer &buffer) {
+                auto useUniformBuffer = [&info](Buffer &buffer) {
                     info->buffer = buffer.buffer;
                     info->range = buffer.size;
                 };
@@ -997,7 +992,7 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
                         useUniformBuffer(g_CommonParameter);
                     } else {
                         qInfo() << "Unknown resource:" << name;
-                        info->buffer = m_renderer.dummyBuffer;
+                        info->buffer = m_dummyBuffer.buffer;
                         info->range = 655360;
                     }
                 };
@@ -1014,7 +1009,7 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
                     z++;
                 } else {
                     // placeholder buffer so it at least doesn't crash
-                    info->buffer = m_renderer.dummyBuffer;
+                    info->buffer = m_dummyBuffer.buffer;
                     info->range = 655360;
                 }
             } break;
@@ -1023,111 +1018,40 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
         j++;
     }
 
-    vkUpdateDescriptorSets(m_renderer.device, writes.size(), writes.data(), 0, nullptr);
+    vkUpdateDescriptorSets(m_device.device, writes.size(), writes.data(), 0, nullptr);
 
     return set;
 }
 
-RenderSystem::UniformBuffer RenderSystem::createUniformBuffer(size_t size)
+void GameRenderer::createImageResources()
 {
-    UniformBuffer uniformBuffer{};
-    uniformBuffer.size = size;
-
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    vkCreateBuffer(m_renderer.device, &bufferInfo, nullptr, &uniformBuffer.buffer);
-
-    // allocate staging memory
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(m_renderer.device, uniformBuffer.buffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex =
-        m_renderer.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    vkAllocateMemory(m_renderer.device, &allocInfo, nullptr, &uniformBuffer.memory);
-
-    vkBindBufferMemory(m_renderer.device, uniformBuffer.buffer, uniformBuffer.memory, 0);
-
-    return uniformBuffer;
-}
-
-void RenderSystem::copyDataToUniform(RenderSystem::UniformBuffer &uniformBuffer, void *data, size_t size)
-{
-    // copy to staging buffer
-    void *mapped_data;
-    vkMapMemory(m_renderer.device, uniformBuffer.memory, 0, size, 0, &mapped_data);
-    memcpy(mapped_data, data, size);
-    vkUnmapMemory(m_renderer.device, uniformBuffer.memory);
-}
-
-RenderSystem::VulkanImage RenderSystem::createImage(int width, int height, VkFormat format, VkImageUsageFlags usage)
-{
-    VkImage image;
-    VkImageView imageView;
-    VkDeviceMemory imageMemory;
-
-    VkImageCreateInfo imageCreateInfo = {};
-    imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageCreateInfo.extent.width = width;
-    imageCreateInfo.extent.height = height;
-    imageCreateInfo.extent.depth = 1;
-    imageCreateInfo.mipLevels = 1;
-    imageCreateInfo.arrayLayers = 1;
-    imageCreateInfo.format = format;
-    imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageCreateInfo.usage = usage;
-    imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    vkCreateImage(m_renderer.device, &imageCreateInfo, nullptr, &image);
-
-    VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(m_renderer.device, image, &memRequirements);
-
-    VkMemoryAllocateInfo allocateInfo = {};
-    allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocateInfo.allocationSize = memRequirements.size;
-    allocateInfo.memoryTypeIndex = m_renderer.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    vkAllocateMemory(m_renderer.device, &allocateInfo, nullptr, &imageMemory);
-
-    vkBindImageMemory(m_renderer.device, image, imageMemory, 0);
-
-    VkImageViewCreateInfo viewCreateInfo = {};
-    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewCreateInfo.image = image;
-    viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewCreateInfo.format = format;
-    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; // TODO: hardcoded
-    viewCreateInfo.subresourceRange.levelCount = 1;
-    viewCreateInfo.subresourceRange.layerCount = 1;
-
-    vkCreateImageView(m_renderer.device, &viewCreateInfo, nullptr, &imageView);
-
-    return {image, imageView, imageMemory};
-}
-
-void RenderSystem::createImageResources()
-{
-    normalGBuffer = createImage(m_extent.width, m_extent.height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-    viewPositionBuffer = createImage(m_extent.width, m_extent.height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    m_normalGBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                             m_device.swapChain->extent.height,
+                                             VK_FORMAT_R8G8B8A8_UNORM,
+                                             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    m_viewPositionBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                                  m_device.swapChain->extent.height,
+                                                  VK_FORMAT_R8G8B8A8_UNORM,
+                                                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    m_compositeBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                               m_device.swapChain->extent.height,
+                                               VK_FORMAT_R8G8B8A8_UNORM,
+                                               VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    m_depthBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                           m_device.swapChain->extent.height,
+                                           VK_FORMAT_D32_SFLOAT,
+                                           VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
     CommonParameter commonParam{};
-    /*commonParam.m_RenderTarget = {1640.0f / 2.0f,
-                                  480.0f / 2.0f,
-                                  640.0f / 2.0,
-                                  480.0f / 2.0}; // used to convert screen-space coordinates back into 0.0-1.0
-    */
-    commonParam.m_RenderTarget = {1.0f / m_extent.width, 1.0f / m_extent.height, 0.0f, 0.0f}; // used to convert screen-space coordinates back into 0.0-1.0
+    commonParam.m_RenderTarget = {1.0f / m_device.swapChain->extent.width,
+                                  1.0f / m_device.swapChain->extent.height,
+                                  0.0f,
+                                  0.0f}; // used to convert screen-space coordinates back into 0.0-1.0
 
-    copyDataToUniform(g_CommonParameter, &commonParam, sizeof(CommonParameter));
+    m_device.copyToBuffer(g_CommonParameter, &commonParam, sizeof(CommonParameter));
+}
+
+Texture &GameRenderer::getCompositeTexture()
+{
+    return m_compositeBuffer;
 }

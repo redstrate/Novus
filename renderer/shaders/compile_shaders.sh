@@ -7,4 +7,6 @@ glslc skinned.vert -o skinned.vert.spv &&
 glslc mesh.frag -o mesh.frag.spv &&
 glslc imgui.vert -o imgui.vert.spv &&
 glslc imgui.frag -o imgui.frag.spv &&
-glslc dummy.frag -o dummy.frag.spv
+glslc dummy.frag -o dummy.frag.spv &&
+glslc blit.vert -o blit.vert.spv &&
+glslc blit.frag -o blit.frag.spv

@@ -9,7 +9,7 @@
 
 #include <glm/gtc/quaternion.hpp>
 
-VulkanWindow::VulkanWindow(MDLPart *part, Renderer *renderer, QVulkanInstance *instance)
+VulkanWindow::VulkanWindow(MDLPart *part, RenderManager *renderer, QVulkanInstance *instance)
     : m_renderer(renderer)
     , m_instance(instance)
     , part(part)
@@ -203,14 +203,14 @@ void VulkanWindow::render()
         part->position += right * movX * 2.0f;
         part->position += forward * movY * 2.0f;
 
-        m_renderer->view = glm::mat4(1.0f);
-        m_renderer->view = glm::translate(m_renderer->view, part->position);
-        m_renderer->view *= glm::mat4_cast(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(part->pitch, glm::vec3(1, 0, 0)));
-        m_renderer->view = glm::inverse(m_renderer->view);
+        m_renderer->camera.view = glm::mat4(1.0f);
+        m_renderer->camera.view = glm::translate(m_renderer->camera.view, part->position);
+        m_renderer->camera.view *= glm::mat4_cast(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(part->pitch, glm::vec3(1, 0, 0)));
+        m_renderer->camera.view = glm::inverse(m_renderer->camera.view);
     } else {
         glm::vec3 position(part->cameraDistance * sin(part->yaw), part->cameraDistance * part->pitch, part->cameraDistance * cos(part->yaw));
 
-        m_renderer->view = glm::lookAt(part->position + position, part->position, glm::vec3(0, -1, 0));
+        m_renderer->camera.view = glm::lookAt(part->position + position, part->position, glm::vec3(0, -1, 0));
     }
 
     m_renderer->render(models);

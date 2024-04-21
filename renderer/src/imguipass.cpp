@@ -8,9 +8,9 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 
-#include "renderer.hpp"
+#include "rendermanager.h"
 
-ImGuiPass::ImGuiPass(Renderer &renderer)
+ImGuiPass::ImGuiPass(RenderManager &renderer)
     : renderer_(renderer)
 {
     createDescriptorSetLayout();
@@ -20,15 +20,15 @@ ImGuiPass::ImGuiPass(Renderer &renderer)
 
 ImGuiPass::~ImGuiPass()
 {
-    vkDestroySampler(renderer_.device, fontSampler_, nullptr);
-    vkDestroyImageView(renderer_.device, fontImageView_, nullptr);
-    vkFreeMemory(renderer_.device, fontMemory_, nullptr);
-    vkDestroyImage(renderer_.device, fontImage_, nullptr);
+    vkDestroySampler(renderer_.device().device, fontSampler_, nullptr);
+    vkDestroyImageView(renderer_.device().device, fontImageView_, nullptr);
+    vkFreeMemory(renderer_.device().device, fontMemory_, nullptr);
+    vkDestroyImage(renderer_.device().device, fontImage_, nullptr);
 
-    vkDestroyPipeline(renderer_.device, pipeline_, nullptr);
-    vkDestroyPipelineLayout(renderer_.device, pipelineLayout_, nullptr);
+    vkDestroyPipeline(renderer_.device().device, pipeline_, nullptr);
+    vkDestroyPipelineLayout(renderer_.device().device, pipelineLayout_, nullptr);
 
-    vkDestroyDescriptorSetLayout(renderer_.device, setLayout_, nullptr);
+    vkDestroyDescriptorSetLayout(renderer_.device().device, setLayout_, nullptr);
 }
 
 void ImGuiPass::render(VkCommandBuffer commandBuffer)
@@ -55,8 +55,8 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
 
     ImDrawVert *vertexData = nullptr;
     ImDrawIdx *indexData = nullptr;
-    vkMapMemory(renderer_.device, vertexMemory, 0, vertexSize, 0, reinterpret_cast<void **>(&vertexData));
-    vkMapMemory(renderer_.device, indexMemory, 0, indexSize, 0, reinterpret_cast<void **>(&indexData));
+    vkMapMemory(renderer_.device().device, vertexMemory, 0, vertexSize, 0, reinterpret_cast<void **>(&vertexData));
+    vkMapMemory(renderer_.device().device, indexMemory, 0, indexSize, 0, reinterpret_cast<void **>(&indexData));
 
     for (int i = 0; i < drawData->CmdListsCount; i++) {
         const ImDrawList *cmd_list = drawData->CmdLists[i];
@@ -68,8 +68,8 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
         indexData += cmd_list->IdxBuffer.Size;
     }
 
-    vkUnmapMemory(renderer_.device, vertexMemory);
-    vkUnmapMemory(renderer_.device, indexMemory);
+    vkUnmapMemory(renderer_.device().device, vertexMemory);
+    vkUnmapMemory(renderer_.device().device, indexMemory);
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
 
@@ -107,12 +107,12 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
             } else {
                 VkDescriptorSetAllocateInfo allocInfo = {};
                 allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                allocInfo.descriptorPool = renderer_.descriptorPool;
+                allocInfo.descriptorPool = renderer_.device().descriptorPool;
                 allocInfo.descriptorSetCount = 1;
                 allocInfo.pSetLayouts = &setLayout_;
 
                 VkDescriptorSet set = nullptr;
-                vkAllocateDescriptorSets(renderer_.device, &allocInfo, &set);
+                vkAllocateDescriptorSets(renderer_.device().device, &allocInfo, &set);
 
                 VkDescriptorImageInfo imageInfo = {};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -126,7 +126,7 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
                 descriptorWrite.dstSet = set;
                 descriptorWrite.pImageInfo = &imageInfo;
 
-                vkUpdateDescriptorSets(renderer_.device, 1, &descriptorWrite, 0, nullptr);
+                vkUpdateDescriptorSets(renderer_.device().device, 1, &descriptorWrite, 0, nullptr);
 
                 vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout_, 0, 1, &set, 0, nullptr);
 
@@ -166,13 +166,13 @@ void ImGuiPass::createDescriptorSetLayout()
     createInfo.bindingCount = 1;
     createInfo.pBindings = &samplerBinding;
 
-    vkCreateDescriptorSetLayout(renderer_.device, &createInfo, nullptr, &setLayout_);
+    vkCreateDescriptorSetLayout(renderer_.device().device, &createInfo, nullptr, &setLayout_);
 }
 
 void ImGuiPass::createPipeline()
 {
-    VkShaderModule vertShaderModule = renderer_.loadShaderFromDisk(":/shaders/imgui.vert.spv");
-    VkShaderModule fragShaderModule = renderer_.loadShaderFromDisk(":/shaders/imgui.frag.spv");
+    VkShaderModule vertShaderModule = renderer_.device().loadShaderFromDisk(":/shaders/imgui.vert.spv");
+    VkShaderModule fragShaderModule = renderer_.device().loadShaderFromDisk(":/shaders/imgui.frag.spv");
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -268,7 +268,7 @@ void ImGuiPass::createPipeline()
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
-    vkCreatePipelineLayout(renderer_.device, &pipelineLayoutInfo, nullptr, &pipelineLayout_);
+    vkCreatePipelineLayout(renderer_.device().device, &pipelineLayoutInfo, nullptr, &pipelineLayout_);
 
     VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo = {};
     depthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -286,12 +286,12 @@ void ImGuiPass::createPipeline()
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = pipelineLayout_;
     pipelineInfo.pDepthStencilState = &depthStencilStateCreateInfo;
-    pipelineInfo.renderPass = renderer_.renderPass;
+    pipelineInfo.renderPass = renderer_.presentationRenderPass();
 
-    vkCreateGraphicsPipelines(renderer_.device, nullptr, 1, &pipelineInfo, nullptr, &pipeline_);
+    vkCreateGraphicsPipelines(renderer_.device().device, nullptr, 1, &pipelineInfo, nullptr, &pipeline_);
 
-    vkDestroyShaderModule(renderer_.device, fragShaderModule, nullptr);
-    vkDestroyShaderModule(renderer_.device, vertShaderModule, nullptr);
+    vkDestroyShaderModule(renderer_.device().device, fragShaderModule, nullptr);
+    vkDestroyShaderModule(renderer_.device().device, vertShaderModule, nullptr);
 }
 
 void ImGuiPass::createFontImage()
@@ -312,10 +312,10 @@ void ImGuiPass::createFontImage()
 void ImGuiPass::createBuffer(VkBuffer &buffer, VkDeviceMemory &memory, VkDeviceSize size, VkBufferUsageFlagBits bufferUsage)
 {
     if (buffer != nullptr)
-        vkDestroyBuffer(renderer_.device, buffer, nullptr);
+        vkDestroyBuffer(renderer_.device().device, buffer, nullptr);
 
     if (memory != nullptr)
-        vkFreeMemory(renderer_.device, memory, nullptr);
+        vkFreeMemory(renderer_.device().device, memory, nullptr);
 
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -323,17 +323,17 @@ void ImGuiPass::createBuffer(VkBuffer &buffer, VkDeviceMemory &memory, VkDeviceS
     bufferInfo.usage = bufferUsage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    vkCreateBuffer(renderer_.device, &bufferInfo, nullptr, &buffer);
+    vkCreateBuffer(renderer_.device().device, &bufferInfo, nullptr, &buffer);
 
     VkMemoryRequirements memRequirements = {};
-    vkGetBufferMemoryRequirements(renderer_.device, buffer, &memRequirements);
+    vkGetBufferMemoryRequirements(renderer_.device().device, buffer, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex =
-        renderer_.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        renderer_.device().findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    vkAllocateMemory(renderer_.device, &allocInfo, nullptr, &memory);
-    vkBindBufferMemory(renderer_.device, buffer, memory, 0);
+    vkAllocateMemory(renderer_.device().device, &allocInfo, nullptr, &memory);
+    vkBindBufferMemory(renderer_.device().device, buffer, memory, 0);
 }

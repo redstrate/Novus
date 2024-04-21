@@ -6,12 +6,12 @@
 #include <map>
 #include <vulkan/vulkan.h>
 
-class Renderer;
+class RenderManager;
 
 class ImGuiPass
 {
 public:
-    explicit ImGuiPass(Renderer &renderer);
+    explicit ImGuiPass(RenderManager &renderer);
     ~ImGuiPass();
 
     void render(VkCommandBuffer commandBuffer);
@@ -38,5 +38,5 @@ private:
 
     std::map<VkImageView, VkDescriptorSet> descriptorSets_ = {};
 
-    Renderer &renderer_;
+    RenderManager &renderer_;
 };
