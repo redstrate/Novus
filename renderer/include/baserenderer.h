@@ -30,9 +30,6 @@ public:
     /// Render a frame into @p commandBuffer. @p currentFrame is the same value as SwapChain::currentFrame for convenience.
     virtual void render(VkCommandBuffer commandBuffer, uint32_t currentFrame, Camera &camera, const std::vector<DrawObject> &models) = 0;
 
-    /// Do whatever is needed in the backend to prepare it for drawing
-    virtual void addDrawObject(const DrawObject &drawObject) = 0;
-
     /// The final composite texture that is drawn into with render()
     virtual Texture &getCompositeTexture() = 0;
 };

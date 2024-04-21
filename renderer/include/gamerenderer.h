@@ -19,7 +19,6 @@
 #include "texture.h"
 
 class Device;
-struct RenderModel;
 struct DrawObject;
 
 /// Performs rendering by using the game's existing shaders.
@@ -31,8 +30,6 @@ public:
     void resize() override;
 
     void render(VkCommandBuffer commandBuffer, uint32_t currentFrame, Camera &camera, const std::vector<DrawObject> &models) override;
-
-    void addDrawObject(const DrawObject &drawObject) override;
 
     Texture &getCompositeTexture() override;
 
@@ -69,21 +66,14 @@ private:
     physis_SHPK directionalLightningShpk;
     physis_SHPK createViewPositionShpk;
 
-    struct RenderModel {
-        physis_SHPK shpk;
-
-        ::DrawObject *internal_model = nullptr;
-    };
-    std::vector<RenderModel> m_renderModels;
-
     // combined vertex + pixel code length
     std::unordered_map<uint32_t, CachedPipeline> m_cachedPipelines;
 
     Device &m_device;
     GameData *m_data = nullptr;
 
-    VkDescriptorSet createDescriptorFor(const RenderModel *object, const CachedPipeline &cachedPipeline, int i);
-    void bindDescriptorSets(VkCommandBuffer commandBuffer, CachedPipeline &pipeline, const RenderModel *object);
+    VkDescriptorSet createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, int i);
+    void bindDescriptorSets(VkCommandBuffer commandBuffer, CachedPipeline &pipeline, const DrawObject *object);
 
     Buffer g_CameraParameter;
     Buffer g_InstanceParameter;

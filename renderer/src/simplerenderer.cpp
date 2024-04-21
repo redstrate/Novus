@@ -563,10 +563,6 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     return set;
 }
 
-void SimpleRenderer::addDrawObject(const DrawObject &drawObject)
-{
-}
-
 Texture &SimpleRenderer::getCompositeTexture()
 {
     return m_compositeTexture;

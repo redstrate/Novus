@@ -32,8 +32,6 @@ public:
 
     void render(VkCommandBuffer commandBuffer, uint32_t currentFrame, Camera &camera, const std::vector<DrawObject> &models) override;
 
-    void addDrawObject(const DrawObject &drawObject) override;
-
     Texture &getCompositeTexture() override;
 
 private:

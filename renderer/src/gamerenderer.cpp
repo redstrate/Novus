@@ -135,13 +135,6 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     createImageResources();
 }
 
-void GameRenderer::addDrawObject(const DrawObject &drawObject)
-{
-    RenderModel model{.shpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/character.shpk")),
-                      .internal_model = new DrawObject(drawObject)};
-    m_renderModels.push_back(model);
-}
-
 void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Camera &camera, const std::vector<DrawObject> &models)
 {
     // TODO: this shouldn't be here
@@ -171,19 +164,6 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
             beginPass(imageIndex, commandBuffer, pass);
 
             for (auto &model : models) {
-                std::optional<GameRenderer::RenderModel> renderModel;
-                // FIXME: this is terrible
-                auto it = std::find_if(m_renderModels.begin(), m_renderModels.end(), [&model](const RenderModel &a_model) {
-                    return model.model.p_ptr == a_model.internal_model->model.p_ptr;
-                });
-                if (it != m_renderModels.end()) {
-                    renderModel = *it;
-                }
-
-                if (!renderModel.has_value()) {
-                    continue;
-                }
-
                 // copy bone data
                 {
                     const size_t bufferSize = sizeof(glm::mat3x4) * 64;
@@ -192,7 +172,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
 
                     std::vector<glm::mat3x4> newBoneData(model.boneData.size());
                     for (int i = 0; i < 64; i++) {
-                        newBoneData[i] = model.boneData[i];
+                        newBoneData[i] = glm::transpose(model.boneData[i]);
                     }
 
                     memcpy(mapped_data, newBoneData.data(), bufferSize);
@@ -206,56 +186,62 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     vkUnmapMemory(m_device.device, model.boneInfoBuffer.memory);
                 }
 
-                std::vector<uint32_t> systemKeys;
-                std::vector<uint32_t> sceneKeys = {
-                    physis_shpk_crc("TransformViewSkin"),
-                    physis_shpk_crc("GetAmbientLight_SH"),
-                    physis_shpk_crc("GetReflectColor_Texture"),
-                    physis_shpk_crc("GetAmbientOcclusion_None"),
-                    physis_shpk_crc("ApplyDitherClipOff"),
-                };
-                std::vector<uint32_t> materialKeys;
-                for (int j = 0; j < renderModel->shpk.num_material_keys; j++) {
-                    auto value = renderModel->shpk.material_keys[j].default_value;
-                    // Replace MODE_DEFAULT with MODE_SIMPLE for now
-                    if (value != 0x5CC605B5) {
-                        materialKeys.push_back(renderModel->shpk.material_keys[j].default_value);
-                    } else {
-                        materialKeys.push_back(0x22A4AABF);
+                for (const auto &part : model.parts) {
+                    auto &renderMaterial = model.materials[part.materialIndex];
+
+                    if (renderMaterial.shaderPackage.p_ptr == nullptr) {
+                        qWarning() << "Invalid shader package!";
                     }
-                }
-                std::vector<uint32_t> subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
 
-                const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
-                                                                                    systemKeys.size(),
-                                                                                    sceneKeys.data(),
-                                                                                    sceneKeys.size(),
-                                                                                    materialKeys.data(),
-                                                                                    materialKeys.size(),
-                                                                                    subviewKeys.data(),
-                                                                                    subviewKeys.size());
-                const physis_SHPKNode node = physis_shpk_get_node(&renderModel->shpk, selector);
+                    std::vector<uint32_t> systemKeys;
+                    std::vector<uint32_t> sceneKeys = {
+                        physis_shpk_crc("TransformViewSkin"),
+                        physis_shpk_crc("GetAmbientLight_SH"),
+                        physis_shpk_crc("GetReflectColor_Texture"),
+                        physis_shpk_crc("GetAmbientOcclusion_None"),
+                        physis_shpk_crc("ApplyDitherClipOff"),
+                    };
+                    std::vector<uint32_t> materialKeys;
+                    for (int j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
+                        auto value = renderMaterial.shaderPackage.material_keys[j].default_value;
+                        // Replace MODE_DEFAULT with MODE_SIMPLE for now
+                        if (value != 0x5CC605B5) {
+                            materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
+                        } else {
+                            materialKeys.push_back(0x22A4AABF);
+                        }
+                    }
+                    std::vector<uint32_t> subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
 
-                // check if invalid
-                if (node.pass_count == 0) {
-                    continue;
-                }
+                    const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
+                                                                                        systemKeys.size(),
+                                                                                        sceneKeys.data(),
+                                                                                        sceneKeys.size(),
+                                                                                        materialKeys.data(),
+                                                                                        materialKeys.size(),
+                                                                                        subviewKeys.data(),
+                                                                                        subviewKeys.size());
+                    const physis_SHPKNode node = physis_shpk_get_node(&renderMaterial.shaderPackage, selector);
 
-                // this is an index into the node's pass array, not to get confused with the global one we always follow.
-                const int passIndice = node.pass_indices[i];
-                if (passIndice != INVALID_PASS) {
-                    const Pass currentPass = node.passes[passIndice];
+                    // check if invalid
+                    if (node.pass_count == 0) {
+                        continue;
+                    }
 
-                    const uint32_t vertexShaderIndice = currentPass.vertex_shader;
-                    const uint32_t pixelShaderIndice = currentPass.pixel_shader;
+                    // this is an index into the node's pass array, not to get confused with the global one we always follow.
+                    const int passIndice = node.pass_indices[i];
+                    if (passIndice != INVALID_PASS) {
+                        const Pass currentPass = node.passes[passIndice];
 
-                    physis_Shader vertexShader = renderModel->shpk.vertex_shaders[vertexShaderIndice];
-                    physis_Shader pixelShader = renderModel->shpk.pixel_shaders[pixelShaderIndice];
+                        const uint32_t vertexShaderIndice = currentPass.vertex_shader;
+                        const uint32_t pixelShaderIndice = currentPass.pixel_shader;
 
-                    auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
-                    bindDescriptorSets(commandBuffer, pipeline, &renderModel.value());
+                        physis_Shader vertexShader = renderMaterial.shaderPackage.vertex_shaders[vertexShaderIndice];
+                        physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
 
-                    for (const auto &part : renderModel->internal_model->parts) {
+                        auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                        bindDescriptorSets(commandBuffer, pipeline, &model);
+
                         VkDeviceSize offsets[] = {0};
                         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer.buffer, offsets);
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
@@ -903,7 +889,7 @@ spirv_cross::CompilerGLSL GameRenderer::getShaderModuleResources(const physis_Sh
     return spirv_cross::CompilerGLSL(result.code.data(), result.code.dwords());
 }
 
-VkDescriptorSet GameRenderer::createDescriptorFor(const RenderModel *object, const CachedPipeline &pipeline, int i)
+VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline &pipeline, int i)
 {
     VkDescriptorSet set;
 
@@ -995,7 +981,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const RenderModel *object, con
                         useUniformBuffer(g_CameraParameter);
                     } else if (strcmp(name, "g_JointMatrixArray") == 0) {
                         Q_ASSERT(object != nullptr);
-                        useUniformBuffer(object->internal_model->boneInfoBuffer);
+                        useUniformBuffer(object->boneInfoBuffer);
                     } else if (strcmp(name, "g_InstanceParameter") == 0) {
                         useUniformBuffer(g_InstanceParameter);
                     } else if (strcmp(name, "g_ModelParameter") == 0) {
@@ -1072,7 +1058,7 @@ Texture &GameRenderer::getCompositeTexture()
     return m_compositeBuffer;
 }
 
-void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer, GameRenderer::CachedPipeline &pipeline, const RenderModel *object)
+void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer, GameRenderer::CachedPipeline &pipeline, const DrawObject *object)
 {
     int i = 0;
     for (auto setLayout : pipeline.setLayouts) {

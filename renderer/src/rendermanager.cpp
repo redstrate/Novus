@@ -468,8 +468,6 @@ DrawObject RenderManager::addDrawObject(const physis_MDL &model, int lod)
 
     reloadDrawObject(DrawObject, lod);
 
-    m_renderer->addDrawObject(DrawObject);
-
     return DrawObject;
 }
 

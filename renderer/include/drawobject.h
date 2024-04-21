@@ -22,6 +22,7 @@ enum class MaterialType { Object, Skin };
 
 struct RenderMaterial {
     MaterialType type = MaterialType::Object;
+    physis_SHPK shaderPackage;
 
     RenderTexture *diffuseTexture = nullptr;
     RenderTexture *normalTexture = nullptr;
