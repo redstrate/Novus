@@ -14,6 +14,8 @@
 #include "renderer.hpp"
 #include <spirv_glsl.hpp>
 
+#include <glm/ext/matrix_clip_space.hpp>
+
 dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
 
 const std::array passes = {
@@ -62,11 +64,50 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
     : m_renderer(renderer)
     , m_data(data)
 {
+    // camera data
+    {
+        g_CameraParameter = createUniformBuffer(sizeof(CameraParameter));
+    }
+
+    // joint matrix data
+    {
+        g_JointMatrixArray = createUniformBuffer(sizeof(JointMatrixArray));
+        JointMatrixArray jointMatrixArray{};
+        for (int i = 0; i < 64; i++) {
+            jointMatrixArray.g_JointMatrixArray[i] = glm::mat3x4(1.0f);
+        }
+        copyDataToUniform(g_JointMatrixArray, &jointMatrixArray, sizeof(JointMatrixArray));
+    }
+
+    // instance data
+    {
+        g_InstanceParameter = createUniformBuffer(sizeof(InstanceParameter));
+
+        InstanceParameter instanceParameter{};
+        copyDataToUniform(g_InstanceParameter, &instanceParameter, sizeof(InstanceParameter));
+    }
+
+    // model data
+    {
+        g_ModelParameter = createUniformBuffer(sizeof(ModelParameter));
+
+        ModelParameter modelParameter{};
+        copyDataToUniform(g_ModelParameter, &modelParameter, sizeof(ModelParameter));
+    }
+
+    // material data
+    {
+        g_MaterialParameter = createUniformBuffer(sizeof(MaterialParameter));
+
+        MaterialParameter materialParameter{};
+        materialParameter.g_AlphaThreshold = 0.0f;
+        materialParameter.g_DiffuseColor = glm::vec3(1.0f);
+        copyDataToUniform(g_MaterialParameter, &materialParameter, sizeof(MaterialParameter));
+    }
 }
 
 void RenderSystem::testInit(::RenderModel *m)
 {
-    qInfo() << "initialzing render system with dummy data...";
     RenderModel model{.shpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/character.shpk")),
                       .internal_model = new ::RenderModel(*m)};
     m_renderModels.push_back(model);
@@ -74,6 +115,25 @@ void RenderSystem::testInit(::RenderModel *m)
 
 void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
 {
+    // TODO: this shouldn't be here
+    CameraParameter cameraParameter{};
+
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 640.0f / 480.0f, 0.1f, 1000.0f);
+    glm::mat4 viewMatrix = m_renderer.view;
+    glm::mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
+
+    cameraParameter.m_ViewMatrix = viewMatrix;
+    cameraParameter.m_InverseViewMatrix = glm::inverse(viewMatrix);
+    cameraParameter.m_ViewProjectionMatrix = glm::transpose(viewProjectionMatrix);
+    cameraParameter.m_InverseViewProjectionMatrix = glm::inverse(viewProjectionMatrix);
+    cameraParameter.m_InverseProjectionMatrix = glm::inverse(projectionMatrix);
+    cameraParameter.m_ProjectionMatrix = projectionMatrix;
+    /*cameraParameter.m_MainViewToProjectionMatrix = glm::mat4(1.0f); // ???
+    cameraParameter.m_EyePosition = glm::vec3(5.0f); // placeholder
+    cameraParameter.m_LookAtVector = glm::vec3(0.0f); // placeholder*/
+
+    copyDataToUniform(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
+
     int i = 0;
     for (const auto pass : passes) {
         beginPass(imageIndex, commandBuffer, pass);
@@ -110,8 +170,6 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
 
                         int i = 0;
                         for (auto setLayout : cachedPipeline.setLayouts) {
-                            qInfo() << "Trying to cache descriptor set at " << i;
-
                             if (!cachedPipeline.cachedDescriptors.count(i)) {
                                 if (auto descriptor = createDescriptorFor(model, cachedPipeline, i); descriptor != VK_NULL_HANDLE) {
                                     cachedPipeline.cachedDescriptors[i] = descriptor;
@@ -129,7 +187,6 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                                                     &cachedPipeline.cachedDescriptors[i],
                                                     0,
                                                     nullptr);
-                            qInfo() << "Binding descriptor set at " << i;
 
                             i++;
                         }
@@ -138,7 +195,6 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-                        qInfo() << "Calling index";
                         vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
                         //}
                     }
@@ -340,14 +396,12 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &ve
             }
         }
 
-        VkVertexInputAttributeDescription positionAttribute = {};
-        positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
-        positionAttribute.offset = offsetof(Vertex, position);
-
         std::vector<VkVertexInputAttributeDescription> attributeDescs;
 
         for (auto texture : vertex_resources.stage_inputs) {
             unsigned binding = vertex_glsl.get_decoration(texture.id, spv::DecorationLocation);
+
+            auto name = vertex_glsl.get_name(texture.id);
 
             VkVertexInputAttributeDescription uv0Attribute = {};
 
@@ -364,7 +418,7 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &ve
                     uv0Attribute.format = VK_FORMAT_R32G32B32_SINT;
                     break;
                 case 4:
-                    uv0Attribute.format = VK_FORMAT_R32G32B32A32_SINT;
+                    uv0Attribute.format = VK_FORMAT_R8G8B8A8_UINT; // supposed to be VK_FORMAT_R32G32B32A32_SINT, but our bone_id is uint8_t currently
                     break;
                 }
             } else {
@@ -385,7 +439,25 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &ve
             }
 
             uv0Attribute.location = binding;
-            uv0Attribute.offset = offsetof(Vertex, position);
+
+            // TODO: temporary
+            if (name == "v0") {
+                uv0Attribute.offset = offsetof(Vertex, position);
+            } else if (name == "v1") {
+                uv0Attribute.offset = offsetof(Vertex, color);
+            } else if (name == "v2") {
+                uv0Attribute.offset = offsetof(Vertex, normal);
+            } else if (name == "v3") {
+                uv0Attribute.offset = offsetof(Vertex, uv0);
+            } else if (name == "v4") {
+                uv0Attribute.offset = offsetof(Vertex, bitangent); // FIXME: should be tangent
+            } else if (name == "v5") {
+                uv0Attribute.offset = offsetof(Vertex, bitangent);
+            } else if (name == "v6") {
+                uv0Attribute.offset = offsetof(Vertex, bone_weight);
+            } else if (name == "v7") {
+                uv0Attribute.offset = offsetof(Vertex, bone_id);
+            }
 
             attributeDescs.push_back(uv0Attribute);
         }
@@ -493,8 +565,12 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &ve
         vkCreateGraphicsPipelines(m_renderer.device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline);
 
         qInfo() << "Created" << pipeline << "for hash" << hash;
-        m_cachedPipelines[hash] =
-            CachedPipeline{.pipeline = pipeline, .pipelineLayout = pipelineLayout, .setLayouts = setLayouts, .requestedSets = requestedSets};
+        m_cachedPipelines[hash] = CachedPipeline{.pipeline = pipeline,
+                                                 .pipelineLayout = pipelineLayout,
+                                                 .setLayouts = setLayouts,
+                                                 .requestedSets = requestedSets,
+                                                 .vertexShader = vertexShader,
+                                                 .pixelShader = pixelShader};
     }
 
     auto &pipeline = m_cachedPipelines[hash];
@@ -518,6 +594,41 @@ VkShaderModule RenderSystem::convertShaderModule(const physis_Shader &shader, sp
     VkShaderModule shaderModule;
     vkCreateShaderModule(m_renderer.device, &createInfo, nullptr, &shaderModule);
 
+    // TODO: for debug only
+    spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
+
+    auto resources = glsl.get_shader_resources();
+
+    int i = 0;
+    for (auto texture : resources.stage_inputs) {
+        // glsl.set_name(texture.id, shader.)
+        // qInfo() << shader.resource_parameters[i].name << texture.id;
+        // qInfo() << "stage input" << i << texture.name << glsl.get_type(texture.type_id).width;
+        i++;
+        // glsl.set_name(remap.combined_id, "SPIRV_Cross_Combined");
+    }
+
+    // Here you can also set up decorations if you want (binding = #N).
+    i = 0;
+    for (auto texture : resources.separate_images) {
+        glsl.set_name(texture.id, shader.resource_parameters[i].name);
+        i++;
+    }
+
+    i = 0;
+    for (auto buffer : resources.uniform_buffers) {
+        glsl.set_name(buffer.id, shader.scalar_parameters[i].name);
+        i++;
+    }
+
+    spirv_cross::CompilerGLSL::Options options;
+    options.vulkan_semantics = true;
+    options.enable_420pack_extension = false;
+    glsl.set_common_options(options);
+    glsl.set_entry_point("main", executionModel);
+
+    qInfo() << "Compiled GLSL:" << glsl.compile().c_str();
+
     return shaderModule;
 }
 
@@ -529,7 +640,6 @@ spirv_cross::CompilerGLSL RenderSystem::getShaderModuleResources(const physis_Sh
 
     dxvk::DxbcModuleInfo info;
     auto result = module.compile(info, "test");
-    ;
 
     // glsl.build_combined_image_samplers();
 
@@ -562,6 +672,7 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const RenderModel &model, cons
     imageInfo.reserve(pipeline.requestedSets[i].bindings.size());
 
     int j = 0;
+    int z = 0;
     for (auto binding : pipeline.requestedSets[i].bindings) {
         if (binding.used) {
             VkWriteDescriptorSet &descriptorWrite = writes.emplace_back();
@@ -589,8 +700,38 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const RenderModel &model, cons
                 auto info = &bufferInfo.emplace_back();
                 descriptorWrite.pBufferInfo = info;
 
-                info->buffer = m_renderer.dummyBuffer;
-                info->range = 655360;
+                auto useUniformBuffer = [&info](UniformBuffer &buffer) {
+                    info->buffer = buffer.buffer;
+                    info->range = buffer.size;
+                };
+
+                if (binding.stageFlags == VK_SHADER_STAGE_VERTEX_BIT && z < 4) {
+                    auto name = pipeline.vertexShader.scalar_parameters[z].name;
+                    qInfo() << "Requesting" << name << "at" << j;
+
+                    if (strcmp(name, "g_CameraParameter") == 0) {
+                        useUniformBuffer(g_CameraParameter);
+                    } else if (strcmp(name, "g_JointMatrixArray") == 0) {
+                        useUniformBuffer(g_JointMatrixArray);
+                    } else if (strcmp(name, "g_InstanceParameter") == 0) {
+                        useUniformBuffer(g_InstanceParameter);
+                    } else if (strcmp(name, "g_ModelParameter") == 0) {
+                        useUniformBuffer(g_ModelParameter);
+                    } else {
+                        qInfo() << "Unknown resource:" << name;
+                        info->buffer = m_renderer.dummyBuffer;
+                        info->range = 655360;
+                    }
+
+                    z++;
+                } else if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && j == 0) {
+                    // TODO: temporary hack
+                    useUniformBuffer(g_MaterialParameter);
+                } else {
+                    // placeholder buffer so it at least doesn't crash
+                    info->buffer = m_renderer.dummyBuffer;
+                    info->range = 655360;
+                }
             } break;
             }
         }
@@ -600,4 +741,43 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const RenderModel &model, cons
     vkUpdateDescriptorSets(m_renderer.device, writes.size(), writes.data(), 0, nullptr);
 
     return set;
+}
+
+RenderSystem::UniformBuffer RenderSystem::createUniformBuffer(size_t size)
+{
+    UniformBuffer uniformBuffer{};
+    uniformBuffer.size = size;
+
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    vkCreateBuffer(m_renderer.device, &bufferInfo, nullptr, &uniformBuffer.buffer);
+
+    // allocate staging memory
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(m_renderer.device, uniformBuffer.buffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex =
+        m_renderer.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    vkAllocateMemory(m_renderer.device, &allocInfo, nullptr, &uniformBuffer.memory);
+
+    vkBindBufferMemory(m_renderer.device, uniformBuffer.buffer, uniformBuffer.memory, 0);
+
+    return uniformBuffer;
+}
+
+void RenderSystem::copyDataToUniform(RenderSystem::UniformBuffer &uniformBuffer, void *data, size_t size)
+{
+    // copy to staging buffer
+    void *mapped_data;
+    vkMapMemory(m_renderer.device, uniformBuffer.memory, 0, size, 0, &mapped_data);
+    memcpy(mapped_data, data, size);
+    vkUnmapMemory(m_renderer.device, uniformBuffer.memory);
 }
