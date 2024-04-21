@@ -73,16 +73,6 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         g_CameraParameter = m_device.createBuffer(sizeof(CameraParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     }
 
-    // joint matrix data
-    {
-        g_JointMatrixArray = m_device.createBuffer(sizeof(JointMatrixArray), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-        JointMatrixArray jointMatrixArray{};
-        for (int i = 0; i < 64; i++) {
-            jointMatrixArray.g_JointMatrixArray[i] = glm::mat3x4(1.0f);
-        }
-        m_device.copyToBuffer(g_JointMatrixArray, &jointMatrixArray, sizeof(JointMatrixArray));
-    }
-
     // instance data
     {
         g_InstanceParameter = m_device.createBuffer(sizeof(InstanceParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
@@ -152,7 +142,7 @@ void GameRenderer::addDrawObject(const DrawObject &drawObject)
     m_renderModels.push_back(model);
 }
 
-void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Camera &camera, const std::vector<DrawObject> &)
+void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Camera &camera, const std::vector<DrawObject> &models)
 {
     // TODO: this shouldn't be here
     CameraParameter cameraParameter{};
@@ -180,7 +170,42 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
         if (pass == "PASS_G_OPAQUE" || pass == "PASS_Z_OPAQUE") {
             beginPass(imageIndex, commandBuffer, pass);
 
-            for (auto &model : m_renderModels) {
+            for (auto &model : models) {
+                std::optional<GameRenderer::RenderModel> renderModel;
+                // FIXME: this is terrible
+                auto it = std::find_if(m_renderModels.begin(), m_renderModels.end(), [&model](const RenderModel &a_model) {
+                    return model.model.p_ptr == a_model.internal_model->model.p_ptr;
+                });
+                if (it != m_renderModels.end()) {
+                    renderModel = *it;
+                }
+
+                if (!renderModel.has_value()) {
+                    continue;
+                }
+
+                // copy bone data
+                {
+                    const size_t bufferSize = sizeof(glm::mat3x4) * 64;
+                    void *mapped_data = nullptr;
+                    vkMapMemory(m_device.device, model.boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
+
+                    std::vector<glm::mat3x4> newBoneData(model.boneData.size());
+                    for (int i = 0; i < 64; i++) {
+                        newBoneData[i] = model.boneData[i];
+                    }
+
+                    memcpy(mapped_data, newBoneData.data(), bufferSize);
+
+                    VkMappedMemoryRange range = {};
+                    range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+                    range.memory = model.boneInfoBuffer.memory;
+                    range.size = bufferSize;
+                    vkFlushMappedMemoryRanges(m_device.device, 1, &range);
+
+                    vkUnmapMemory(m_device.device, model.boneInfoBuffer.memory);
+                }
+
                 std::vector<uint32_t> systemKeys;
                 std::vector<uint32_t> sceneKeys = {
                     physis_shpk_crc("TransformViewSkin"),
@@ -190,11 +215,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_shpk_crc("ApplyDitherClipOff"),
                 };
                 std::vector<uint32_t> materialKeys;
-                for (int j = 0; j < model.shpk.num_material_keys; j++) {
-                    auto value = model.shpk.material_keys[j].default_value;
+                for (int j = 0; j < renderModel->shpk.num_material_keys; j++) {
+                    auto value = renderModel->shpk.material_keys[j].default_value;
                     // Replace MODE_DEFAULT with MODE_SIMPLE for now
                     if (value != 0x5CC605B5) {
-                        materialKeys.push_back(model.shpk.material_keys[j].default_value);
+                        materialKeys.push_back(renderModel->shpk.material_keys[j].default_value);
                     } else {
                         materialKeys.push_back(0x22A4AABF);
                     }
@@ -209,7 +234,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                                                                                     materialKeys.size(),
                                                                                     subviewKeys.data(),
                                                                                     subviewKeys.size());
-                const physis_SHPKNode node = physis_shpk_get_node(&model.shpk, selector);
+                const physis_SHPKNode node = physis_shpk_get_node(&renderModel->shpk, selector);
 
                 // check if invalid
                 if (node.pass_count == 0) {
@@ -224,12 +249,13 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     const uint32_t vertexShaderIndice = currentPass.vertex_shader;
                     const uint32_t pixelShaderIndice = currentPass.pixel_shader;
 
-                    physis_Shader vertexShader = model.shpk.vertex_shaders[vertexShaderIndice];
-                    physis_Shader pixelShader = model.shpk.pixel_shaders[pixelShaderIndice];
+                    physis_Shader vertexShader = renderModel->shpk.vertex_shaders[vertexShaderIndice];
+                    physis_Shader pixelShader = renderModel->shpk.pixel_shaders[pixelShaderIndice];
 
-                    bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                    auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                    bindDescriptorSets(commandBuffer, pipeline, &renderModel.value());
 
-                    for (const auto &part : model.internal_model->parts) {
+                    for (const auto &part : renderModel->internal_model->parts) {
                         VkDeviceSize offsets[] = {0};
                         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer.buffer, offsets);
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
@@ -277,7 +303,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_Shader vertexShader = createViewPositionShpk.vertex_shaders[vertexShaderIndice];
                     physis_Shader pixelShader = createViewPositionShpk.pixel_shaders[pixelShaderIndice];
 
-                    bindPipeline(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION", vertexShader, pixelShader);
+                    auto &pipeline = bindPipeline(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION", vertexShader, pixelShader);
+                    bindDescriptorSets(commandBuffer, pipeline, nullptr);
 
                     VkDeviceSize offsets[] = {0};
                     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer.buffer, offsets);
@@ -328,7 +355,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_Shader vertexShader = directionalLightningShpk.vertex_shaders[vertexShaderIndice];
                     physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
 
-                    bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                    auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                    bindDescriptorSets(commandBuffer, pipeline, nullptr);
 
                     VkDeviceSize offsets[] = {0};
                     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer.buffer, offsets);
@@ -499,7 +527,8 @@ void GameRenderer::endPass(VkCommandBuffer commandBuffer, std::string_view passN
     vkCmdEndRendering(commandBuffer);
 }
 
-void GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader)
+GameRenderer::CachedPipeline &
+GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader)
 {
     const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data());
     if (!m_cachedPipelines.contains(hash)) {
@@ -789,23 +818,7 @@ void GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
     }
 
     auto &pipeline = m_cachedPipelines[hash];
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline); // TODO: return CachedPipeline&
-
-    int i = 0;
-    for (auto setLayout : pipeline.setLayouts) {
-        if (!pipeline.cachedDescriptors.count(i)) {
-            if (auto descriptor = createDescriptorFor(pipeline, i); descriptor != VK_NULL_HANDLE) {
-                pipeline.cachedDescriptors[i] = descriptor;
-            } else {
-                continue;
-            }
-        }
-
-        // TODO: we can pass all descriptors in one function call
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, i, 1, &pipeline.cachedDescriptors[i], 0, nullptr);
-
-        i++;
-    }
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline);
 
     VkViewport viewport = {};
     viewport.width = m_device.swapChain->extent.width;
@@ -817,6 +830,8 @@ void GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
 
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    return pipeline;
 }
 
 VkShaderModule GameRenderer::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
@@ -888,7 +903,7 @@ spirv_cross::CompilerGLSL GameRenderer::getShaderModuleResources(const physis_Sh
     return spirv_cross::CompilerGLSL(result.code.data(), result.code.dwords());
 }
 
-VkDescriptorSet GameRenderer::createDescriptorFor(const CachedPipeline &pipeline, int i)
+VkDescriptorSet GameRenderer::createDescriptorFor(const RenderModel *object, const CachedPipeline &pipeline, int i)
 {
     VkDescriptorSet set;
 
@@ -968,18 +983,19 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const CachedPipeline &pipeline
                 auto info = &bufferInfo.emplace_back();
                 descriptorWrite.pBufferInfo = info;
 
-                auto useUniformBuffer = [&info](Buffer &buffer) {
+                auto useUniformBuffer = [&info](const Buffer &buffer) {
                     info->buffer = buffer.buffer;
                     info->range = buffer.size;
                 };
 
-                auto bindBuffer = [this, &useUniformBuffer, &info, j](const char *name) {
+                auto bindBuffer = [this, &useUniformBuffer, &info, j, &object](const char *name) {
                     qInfo() << "Requesting" << name << "at" << j;
 
                     if (strcmp(name, "g_CameraParameter") == 0) {
                         useUniformBuffer(g_CameraParameter);
                     } else if (strcmp(name, "g_JointMatrixArray") == 0) {
-                        useUniformBuffer(g_JointMatrixArray);
+                        Q_ASSERT(object != nullptr);
+                        useUniformBuffer(object->internal_model->boneInfoBuffer);
                     } else if (strcmp(name, "g_InstanceParameter") == 0) {
                         useUniformBuffer(g_InstanceParameter);
                     } else if (strcmp(name, "g_ModelParameter") == 0) {
@@ -1054,4 +1070,23 @@ void GameRenderer::createImageResources()
 Texture &GameRenderer::getCompositeTexture()
 {
     return m_compositeBuffer;
+}
+
+void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer, GameRenderer::CachedPipeline &pipeline, const RenderModel *object)
+{
+    int i = 0;
+    for (auto setLayout : pipeline.setLayouts) {
+        if (!pipeline.cachedDescriptors.count(i)) {
+            if (auto descriptor = createDescriptorFor(object, pipeline, i); descriptor != VK_NULL_HANDLE) {
+                pipeline.cachedDescriptors[i] = descriptor;
+            } else {
+                continue;
+            }
+        }
+
+        // TODO: we can pass all descriptors in one function call
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, i, 1, &pipeline.cachedDescriptors[i], 0, nullptr);
+
+        i++;
+    }
 }

@@ -37,24 +37,6 @@ public:
     Texture &getCompositeTexture() override;
 
 private:
-    void beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, std::string_view passName);
-    void endPass(VkCommandBuffer commandBuffer, std::string_view passName);
-    void bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader);
-    VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
-    spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
-
-    void createImageResources();
-
-    physis_SHPK directionalLightningShpk;
-    physis_SHPK createViewPositionShpk;
-
-    struct RenderModel {
-        physis_SHPK shpk;
-
-        ::DrawObject *internal_model = nullptr;
-    };
-    std::vector<RenderModel> m_renderModels;
-
     struct RequestedBinding {
         VkDescriptorType type;
         VkShaderStageFlags stageFlags;
@@ -76,16 +58,34 @@ private:
         physis_Shader vertexShader, pixelShader;
     };
 
+    void beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, std::string_view passName);
+    void endPass(VkCommandBuffer commandBuffer, std::string_view passName);
+    CachedPipeline &bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader);
+    VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
+    spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
+
+    void createImageResources();
+
+    physis_SHPK directionalLightningShpk;
+    physis_SHPK createViewPositionShpk;
+
+    struct RenderModel {
+        physis_SHPK shpk;
+
+        ::DrawObject *internal_model = nullptr;
+    };
+    std::vector<RenderModel> m_renderModels;
+
     // combined vertex + pixel code length
     std::unordered_map<uint32_t, CachedPipeline> m_cachedPipelines;
 
     Device &m_device;
     GameData *m_data = nullptr;
 
-    VkDescriptorSet createDescriptorFor(const CachedPipeline &cachedPipeline, int i);
+    VkDescriptorSet createDescriptorFor(const RenderModel *object, const CachedPipeline &cachedPipeline, int i);
+    void bindDescriptorSets(VkCommandBuffer commandBuffer, CachedPipeline &pipeline, const RenderModel *object);
 
     Buffer g_CameraParameter;
-    Buffer g_JointMatrixArray;
     Buffer g_InstanceParameter;
     Buffer g_ModelParameter;
     Buffer g_MaterialParameter;

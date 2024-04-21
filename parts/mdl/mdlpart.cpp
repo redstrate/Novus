@@ -209,6 +209,7 @@ void MDLPart::reloadBoneData()
 
             for (uint32_t i = 0; i < model.model.num_affected_bones; i++) {
                 const int originalBoneId = boneMapping[i];
+                qInfo() << "Remapped" << originalBoneId << "to" << i;
                 model.boneData[i] = boneData[originalBoneId].localTransform * deformBones[i] * boneData[originalBoneId].inversePose;
             }
         }
