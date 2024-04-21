@@ -57,6 +57,7 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
     , m_data(data)
 {
     normalGBuffer = createImage(640, 480, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    viewPositionBuffer = createImage(640, 480, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     auto [vertexBuffer, vertexMemory] = m_renderer.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -81,6 +82,7 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
     }
 
     directionalLightningShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/directionallighting.shpk"));
+    createViewPositionShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/createviewposition.shpk"));
 
     // camera data
     {
@@ -180,10 +182,10 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
 
     int i = 0;
     for (const auto pass : passes) {
-        beginPass(imageIndex, commandBuffer, pass);
-
         // hardcoded to the known pass for now
         if (pass == "PASS_G_OPAQUE" || pass == "PASS_Z_OPAQUE") {
+            beginPass(imageIndex, commandBuffer, pass);
+
             for (auto &model : m_renderModels) {
                 std::vector<uint32_t> systemKeys;
                 std::vector<uint32_t> sceneKeys = {
@@ -242,55 +244,106 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                     }
                 }
             }
+
+            endPass(commandBuffer, pass);
         } else if (pass == "PASS_LIGHTING_OPAQUE") {
-            std::vector<uint32_t> systemKeys = {
-                physis_shpk_crc("DecodeDepthBuffer_RAWZ"),
-            };
-            std::vector<uint32_t> sceneKeys = {
-                physis_shpk_crc("GetDirectionalLight_Enable"),
-                physis_shpk_crc("GetFakeSpecular_Disable"),
-                physis_shpk_crc("GetUnderWaterLighting_Disable"),
-            };
-            std::vector<uint32_t> subviewKeys = {
-                physis_shpk_crc("Default"),
-                physis_shpk_crc("SUB_VIEW_MAIN"),
-            };
+            // first we need to generate the view positions with createviewpositions
+            beginPass(imageIndex, commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION");
+            {
+                std::vector<uint32_t> systemKeys = {
+                    physis_shpk_crc("DecodeDepthBuffer_RAWZ"),
+                };
+                std::vector<uint32_t> subviewKeys = {
+                    physis_shpk_crc("Default"),
+                    physis_shpk_crc("SUB_VIEW_MAIN"),
+                };
 
-            const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
-                                                                                systemKeys.size(),
-                                                                                sceneKeys.data(),
-                                                                                sceneKeys.size(),
-                                                                                nullptr,
-                                                                                0,
-                                                                                subviewKeys.data(),
-                                                                                subviewKeys.size());
-            const physis_SHPKNode node = physis_shpk_get_node(&directionalLightningShpk, selector);
+                const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
+                                                                                    systemKeys.size(),
+                                                                                    nullptr,
+                                                                                    0,
+                                                                                    nullptr,
+                                                                                    0,
+                                                                                    subviewKeys.data(),
+                                                                                    subviewKeys.size());
+                const physis_SHPKNode node = physis_shpk_get_node(&createViewPositionShpk, selector);
 
-            // check if invalid
-            if (node.pass_count == 0) {
-                continue;
+                // check if invalid
+                if (node.pass_count == 0) {
+                    continue;
+                }
+
+                const int passIndice = node.pass_indices[i];
+                if (passIndice != INVALID_PASS) {
+                    const Pass currentPass = node.passes[passIndice];
+
+                    const uint32_t vertexShaderIndice = currentPass.vertex_shader;
+                    const uint32_t pixelShaderIndice = currentPass.pixel_shader;
+
+                    physis_Shader vertexShader = createViewPositionShpk.vertex_shaders[vertexShaderIndice];
+                    physis_Shader pixelShader = createViewPositionShpk.pixel_shaders[pixelShaderIndice];
+
+                    bindPipeline(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION", vertexShader, pixelShader);
+
+                    VkDeviceSize offsets[] = {0};
+                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer, offsets);
+
+                    vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+                }
             }
+            endPass(commandBuffer, pass);
 
-            const int passIndice = node.pass_indices[i];
-            if (passIndice != INVALID_PASS) {
-                const Pass currentPass = node.passes[passIndice];
+            beginPass(imageIndex, commandBuffer, pass);
+            // then run the directionallighting shader
+            {
+                std::vector<uint32_t> systemKeys = {
+                    physis_shpk_crc("DecodeDepthBuffer_RAWZ"),
+                };
+                std::vector<uint32_t> sceneKeys = {
+                    physis_shpk_crc("GetDirectionalLight_Enable"),
+                    physis_shpk_crc("GetFakeSpecular_Disable"),
+                    physis_shpk_crc("GetUnderWaterLighting_Disable"),
+                };
+                std::vector<uint32_t> subviewKeys = {
+                    physis_shpk_crc("Default"),
+                    physis_shpk_crc("SUB_VIEW_MAIN"),
+                };
 
-                const uint32_t vertexShaderIndice = currentPass.vertex_shader;
-                const uint32_t pixelShaderIndice = currentPass.pixel_shader;
+                const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
+                                                                                    systemKeys.size(),
+                                                                                    sceneKeys.data(),
+                                                                                    sceneKeys.size(),
+                                                                                    nullptr,
+                                                                                    0,
+                                                                                    subviewKeys.data(),
+                                                                                    subviewKeys.size());
+                const physis_SHPKNode node = physis_shpk_get_node(&directionalLightningShpk, selector);
 
-                physis_Shader vertexShader = directionalLightningShpk.vertex_shaders[vertexShaderIndice];
-                physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
+                // check if invalid
+                if (node.pass_count == 0) {
+                    continue;
+                }
 
-                bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                const int passIndice = node.pass_indices[i];
+                if (passIndice != INVALID_PASS) {
+                    const Pass currentPass = node.passes[passIndice];
 
-                VkDeviceSize offsets[] = {0};
-                vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer, offsets);
+                    const uint32_t vertexShaderIndice = currentPass.vertex_shader;
+                    const uint32_t pixelShaderIndice = currentPass.pixel_shader;
 
-                vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+                    physis_Shader vertexShader = directionalLightningShpk.vertex_shaders[vertexShaderIndice];
+                    physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
+
+                    bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+
+                    VkDeviceSize offsets[] = {0};
+                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer, offsets);
+
+                    vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+                }
             }
+            endPass(commandBuffer, pass);
         }
-
-        endPass(commandBuffer, pass);
 
         i++;
     }
@@ -299,14 +352,14 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
 void RenderSystem::setSize(uint32_t width, uint32_t height)
 {
     m_extent = {width, height};
+    // TODO: this is because of our terrible resource handling. an image referenced in these may be gone due to resizing, for example
+    for (auto &[hash, cachedPipeline] : m_cachedPipelines) {
+        cachedPipeline.cachedDescriptors.clear();
+    }
 }
 
 void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, const std::string_view passName)
 {
-    if (passName != "PASS_G_OPAQUE" && passName != "PASS_LIGHTING_OPAQUE" && passName != "PASS_Z_OPAQUE") {
-        return;
-    }
-
     VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO};
     renderingInfo.renderArea.extent = m_extent;
 
@@ -390,6 +443,22 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
             colorAttachments.push_back(attachmentInfo);
         }
+    } else if (passName == "PASS_LIGHTING_OPAQUE_VIEWPOSITION") {
+        // TODO: Hack we should not be using a special pass for this, we should just design our API better
+        {
+            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            attachmentInfo.imageView = viewPositionBuffer.imageView;
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            attachmentInfo.clearValue.color.float32[0] = 0.24;
+            attachmentInfo.clearValue.color.float32[1] = 0.24;
+            attachmentInfo.clearValue.color.float32[2] = 0.24;
+            attachmentInfo.clearValue.color.float32[3] = 1.0;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
     } else if (passName == "PASS_Z_OPAQUE") {
         // normals, it seems like
         {
@@ -432,9 +501,6 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
 void RenderSystem::endPass(VkCommandBuffer commandBuffer, std::string_view passName)
 {
-    if (passName != "PASS_G_OPAQUE" && passName != "PASS_LIGHTING_OPAQUE" && passName != "PASS_Z_OPAQUE") {
-        return;
-    }
     vkCmdEndRendering(commandBuffer);
 }
 
@@ -464,7 +530,7 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
         // TODO: temporary
         if (passName == "PASS_G_OPAQUE" || passName == "PASS_Z_OPAQUE") {
             binding.stride = sizeof(Vertex);
-        } else if (passName == "PASS_LIGHTING_OPAQUE") {
+        } else if (passName == "PASS_LIGHTING_OPAQUE" || passName == "PASS_LIGHTING_OPAQUE_VIEWPOSITION") {
             binding.stride = sizeof(glm::vec4);
         }
 
@@ -879,8 +945,9 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
                     if (strcmp(name, "g_SamplerGBuffer") == 0) {
                         info->imageView = normalGBuffer.imageView;
                     } else if (strcmp(name, "g_SamplerViewPosition") == 0) {
-                        // FIXME: hack because i don't know what samplerviewposition is yet
-                        info->imageView = normalGBuffer.imageView;
+                        info->imageView = viewPositionBuffer.imageView;
+                    } else if (strcmp(name, "g_SamplerDepth") == 0) {
+                        info->imageView = m_renderer.depthView;
                     } else {
                         info->imageView = m_renderer.dummyView;
                     }

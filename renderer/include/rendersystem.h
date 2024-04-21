@@ -35,6 +35,7 @@ private:
     spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
 
     physis_SHPK directionalLightningShpk;
+    physis_SHPK createViewPositionShpk;
 
     struct RenderModel {
         physis_SHPK shpk;
@@ -84,9 +85,9 @@ private:
 
     // Structure definitions from https://github.com/Shaderlayan/Ouroboros
     struct CameraParameter {
-        glm::mat3x4 m_ViewMatrix; // TODO: does it need alignment?
-        glm::mat3x4 m_InverseViewMatrix;
-        glm::mat4 m_InverseViewProjectionMatrix;
+        /* m[0] - m[2] */ glm::mat3x4 m_ViewMatrix; // TODO: does it need alignment?
+        /* m[3] - m[5] */ glm::mat3x4 m_InverseViewMatrix;
+        /* m[6] - m[9] */ glm::mat4 m_InverseViewProjectionMatrix;
         glm::mat4 m_InverseProjectionMatrix;
         glm::mat4 m_ProjectionMatrix;
         glm::mat4 m_ViewProjectionMatrix;
@@ -178,4 +179,5 @@ private:
     VulkanImage createImage(int width, int height, VkFormat format, VkImageUsageFlags usage);
 
     VulkanImage normalGBuffer;
+    VulkanImage viewPositionBuffer;
 };
