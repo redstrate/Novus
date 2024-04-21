@@ -16,6 +16,17 @@
 
 #include <glm/ext/matrix_clip_space.hpp>
 
+// TODO: maybe need UV?
+const std::vector<glm::vec4> planeVertices = {
+    {-0.5f, -0.5f, 0.0f, 0.0f},
+    {0.5f, -0.5f, 0.0f, 0.0f},
+    {0.5f, 0.5f, 0.0f, 0.0f},
+
+    {-0.5f, 0.5f, 0.0f, 0.0f},
+    {-0.5f, -0.5f, 0.0f, 0.0f},
+    {0.5f, 0.5f, 0.0f, 0.0f},
+};
+
 dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
 
 const std::array<std::string, 14> passes = {
@@ -44,6 +55,28 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
     : m_renderer(renderer)
     , m_data(data)
 {
+    size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
+    auto [vertexBuffer, vertexMemory] = m_renderer.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    m_planeVertexBuffer = vertexBuffer;
+    m_planeVertexMemory = vertexMemory;
+
+    // copy vertex data
+    {
+        void *mapped_data = nullptr;
+        vkMapMemory(m_renderer.device, vertexMemory, 0, vertexSize, 0, &mapped_data);
+
+        memcpy(mapped_data, planeVertices.data(), vertexSize);
+
+        VkMappedMemoryRange range = {};
+        range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+        range.memory = vertexMemory;
+        range.size = vertexSize;
+        vkFlushMappedMemoryRanges(m_renderer.device, 1, &range);
+
+        vkUnmapMemory(m_renderer.device, vertexMemory);
+    }
+
     directionalLightningShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/directionallighting.shpk"));
 
     // camera data
@@ -133,12 +166,15 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                 };
                 std::vector<uint32_t> materialKeys;
                 for (int j = 0; j < model.shpk.num_material_keys; j++) {
-                    materialKeys.push_back(model.shpk.material_keys[j].default_value);
+                    auto value = model.shpk.material_keys[j].default_value;
+                    // Replace MODE_DEFAULT with MODE_SIMPLE for now
+                    if (value != 0x5CC605B5) {
+                        materialKeys.push_back(model.shpk.material_keys[j].default_value);
+                    } else {
+                        materialKeys.push_back(0x22A4AABF);
+                    }
                 }
-                std::vector<uint32_t> subviewKeys = {
-                    physis_shpk_crc("Default"),
-                    physis_shpk_crc("SUB_VIEW_MAIN"),
-                };
+                std::vector<uint32_t> subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
 
                 const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
                                                                                     systemKeys.size(),
@@ -161,40 +197,14 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                     const Pass currentPass = node.passes[passIndice];
 
                     const uint32_t vertexShaderIndice = currentPass.vertex_shader;
-                    const uint32_t pixelShaderIndice = currentPass.vertex_shader;
+                    const uint32_t pixelShaderIndice = currentPass.pixel_shader;
 
                     physis_Shader vertexShader = model.shpk.vertex_shaders[vertexShaderIndice];
                     physis_Shader pixelShader = model.shpk.pixel_shaders[pixelShaderIndice];
 
-                    bindPipeline(commandBuffer, vertexShader, pixelShader);
+                    bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
 
                     for (const auto &part : model.internal_model->parts) {
-                        const uint32_t hash = vertexShader.len + pixelShader.len;
-                        auto &cachedPipeline = m_cachedPipelines[hash];
-
-                        int i = 0;
-                        for (auto setLayout : cachedPipeline.setLayouts) {
-                            if (!cachedPipeline.cachedDescriptors.count(i)) {
-                                if (auto descriptor = createDescriptorFor(model, cachedPipeline, i); descriptor != VK_NULL_HANDLE) {
-                                    cachedPipeline.cachedDescriptors[i] = descriptor;
-                                } else {
-                                    continue;
-                                }
-                            }
-
-                            // TODO: we can pass all descriptors in one function call
-                            vkCmdBindDescriptorSets(commandBuffer,
-                                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                    cachedPipeline.pipelineLayout,
-                                                    i,
-                                                    1,
-                                                    &cachedPipeline.cachedDescriptors[i],
-                                                    0,
-                                                    nullptr);
-
-                            i++;
-                        }
-
                         VkDeviceSize offsets[] = {0};
                         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer, offsets);
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
@@ -203,7 +213,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                     }
                 }
             }
-        } else if (pass == "PASS_LIGHTING_OPAQUE") {
+        } else if (false && pass == "PASS_LIGHTING_OPAQUE") {
             std::vector<uint32_t> systemKeys = {
                 physis_shpk_crc("DecodeDepthBuffer_RAWZ"),
             };
@@ -237,16 +247,21 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                 const Pass currentPass = node.passes[passIndice];
 
                 const uint32_t vertexShaderIndice = currentPass.vertex_shader;
-                const uint32_t pixelShaderIndice = currentPass.vertex_shader;
+                const uint32_t pixelShaderIndice = currentPass.pixel_shader;
 
                 physis_Shader vertexShader = directionalLightningShpk.vertex_shaders[vertexShaderIndice];
                 physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
 
-                // TODO: draw plane for directional lighting
+                bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+
+                VkDeviceSize offsets[] = {0};
+                vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer, offsets);
+
+                vkCmdDraw(commandBuffer, 6, 1, 0, 0);
             }
         }
 
-        endPass(commandBuffer);
+        endPass(commandBuffer, pass);
 
         i++;
     }
@@ -259,8 +274,11 @@ void RenderSystem::setSize(uint32_t width, uint32_t height)
 
 void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, const std::string_view passName)
 {
-    VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO};
+    if (passName != "PASS_G_OPAQUE") {
+        return;
+    }
 
+    VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO};
     renderingInfo.renderArea.extent = m_extent;
 
     std::vector<VkRenderingAttachmentInfo> colorAttachments;
@@ -271,7 +289,7 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
             attachmentInfo.imageView = m_renderer.swapchainViews[imageIndex];
-            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
@@ -316,6 +334,33 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
             depthStencilAttachment = attachmentInfo;
         }
+    } else if (passName == "PASS_LIGHTING_OPAQUE") {
+        // normals, it seems like
+        {
+            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            attachmentInfo.imageView = m_renderer.swapchainViews[imageIndex];
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            attachmentInfo.clearValue.color.float32[0] = 0.24;
+            attachmentInfo.clearValue.color.float32[1] = 0.24;
+            attachmentInfo.clearValue.color.float32[2] = 0.24;
+            attachmentInfo.clearValue.color.float32[3] = 1.0;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
+
+        // unknown
+        {
+            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            attachmentInfo.imageView = VK_NULL_HANDLE;
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
     } else {
         // qWarning() << "Unimplemented pass" << passName;
     }
@@ -331,14 +376,17 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
     vkCmdBeginRendering(commandBuffer, &renderingInfo);
 }
 
-void RenderSystem::endPass(VkCommandBuffer commandBuffer)
+void RenderSystem::endPass(VkCommandBuffer commandBuffer, std::string_view passName)
 {
+    if (passName != "PASS_G_OPAQUE") {
+        return;
+    }
     vkCmdEndRendering(commandBuffer);
 }
 
-void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &vertexShader, physis_Shader &pixelShader)
+void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader)
 {
-    const uint32_t hash = vertexShader.len + pixelShader.len;
+    const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data());
     if (!m_cachedPipelines.contains(hash)) {
         auto vertexShaderModule = convertShaderModule(vertexShader, spv::ExecutionModelVertex);
         auto fragmentShaderModule = convertShaderModule(pixelShader, spv::ExecutionModelFragment);
@@ -352,13 +400,19 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &ve
         VkPipelineShaderStageCreateInfo fragmentShaderStageInfo = {};
         fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragmentShaderStageInfo.module = fragmentShaderModule;
+        fragmentShaderStageInfo.module = fragmentShaderModule; // m_renderer.loadShaderFromDisk(":/shaders/dummy.frag.spv");
         fragmentShaderStageInfo.pName = "main";
 
         std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
         VkVertexInputBindingDescription binding = {};
-        binding.stride = sizeof(Vertex);
+
+        // TODO: temporary
+        if (passName == "PASS_G_OPAQUE") {
+            binding.stride = sizeof(Vertex);
+        } else if (passName == "PASS_LIGHTING_OPAQUE") {
+            binding.stride = sizeof(glm::vec4);
+        }
 
         auto vertex_glsl = getShaderModuleResources(vertexShader);
         auto vertex_resources = vertex_glsl.get_shader_resources();
@@ -543,7 +597,19 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &ve
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
-        std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments = {colorBlendAttachment, colorBlendAttachment, colorBlendAttachment};
+        std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
+
+        int colorAttachmentCount = 1;
+        // TODO: hardcoded, should be a reusable function to get the color attachments
+        if (passName == "PASS_G_OPAQUE") {
+            colorAttachmentCount = 3;
+        } else if (passName == "PASS_LIGHTING_OPAQUE") {
+            colorAttachmentCount = 2;
+        }
+
+        for (int i = 0; i < colorAttachmentCount; i++) {
+            colorBlendAttachments.push_back(colorBlendAttachment);
+        }
 
         VkPipelineColorBlendStateCreateInfo colorBlending = {};
         colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -616,6 +682,22 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &ve
 
     auto &pipeline = m_cachedPipelines[hash];
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline); // TODO: return CachedPipeline&
+
+    int i = 0;
+    for (auto setLayout : pipeline.setLayouts) {
+        if (!pipeline.cachedDescriptors.count(i)) {
+            if (auto descriptor = createDescriptorFor(pipeline, i); descriptor != VK_NULL_HANDLE) {
+                pipeline.cachedDescriptors[i] = descriptor;
+            } else {
+                continue;
+            }
+        }
+
+        // TODO: we can pass all descriptors in one function call
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, i, 1, &pipeline.cachedDescriptors[i], 0, nullptr);
+
+        i++;
+    }
 }
 
 VkShaderModule RenderSystem::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
@@ -687,7 +769,7 @@ spirv_cross::CompilerGLSL RenderSystem::getShaderModuleResources(const physis_Sh
     return spirv_cross::CompilerGLSL(result.code.data(), result.code.dwords());
 }
 
-VkDescriptorSet RenderSystem::createDescriptorFor(const RenderModel &model, const CachedPipeline &pipeline, int i)
+VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline, int i)
 {
     VkDescriptorSet set;
 

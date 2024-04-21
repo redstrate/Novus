@@ -29,8 +29,8 @@ public:
 
 private:
     void beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, std::string_view passName);
-    void endPass(VkCommandBuffer commandBuffer);
-    void bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &vertexShader, physis_Shader &pixelShader);
+    void endPass(VkCommandBuffer commandBuffer, std::string_view passName);
+    void bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader);
     VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
     spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
 
@@ -71,7 +71,7 @@ private:
     GameData *m_data = nullptr;
     VkExtent2D m_extent = {640, 480};
 
-    VkDescriptorSet createDescriptorFor(const RenderModel &model, const CachedPipeline &cachedPipeline, int i);
+    VkDescriptorSet createDescriptorFor(const CachedPipeline &cachedPipeline, int i);
 
     struct UniformBuffer {
         VkBuffer buffer;
@@ -137,4 +137,7 @@ private:
     };
 
     UniformBuffer g_MaterialParameter;
+
+    VkBuffer m_planeVertexBuffer;
+    VkDeviceMemory m_planeVertexMemory;
 };
