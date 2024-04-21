@@ -141,8 +141,31 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
         // hardcoded to the known pass for now
         if (std::string_view{"PASS_G_OPAQUE"} == pass) {
             for (auto &model : m_renderModels) {
-                // hardcoded selector for now
-                const u_int32_t selector = 276147857;
+                std::vector<uint32_t> systemKeys;
+                std::vector<uint32_t> sceneKeys = {
+                    physis_shpk_crc("TransformViewSkin"),
+                    physis_shpk_crc("GetAmbientLight_SH"),
+                    physis_shpk_crc("GetReflectColor_Texture"),
+                    physis_shpk_crc("GetAmbientOcclusion_None"),
+                    physis_shpk_crc("ApplyDitherClipOff"),
+                };
+                std::vector<uint32_t> materialKeys;
+                for (int j = 0; j < model.shpk.num_material_keys; j++) {
+                    materialKeys.push_back(model.shpk.material_keys[j].default_value);
+                }
+                std::vector<uint32_t> subviewKeys = {
+                    physis_shpk_crc("Default"),
+                    physis_shpk_crc("SUB_VIEW_MAIN"),
+                };
+
+                const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
+                                                                                    systemKeys.size(),
+                                                                                    sceneKeys.data(),
+                                                                                    sceneKeys.size(),
+                                                                                    materialKeys.data(),
+                                                                                    materialKeys.size(),
+                                                                                    subviewKeys.data(),
+                                                                                    subviewKeys.size());
                 const physis_SHPKNode node = physis_shpk_get_node(&model.shpk, selector);
 
                 // check if invalid
