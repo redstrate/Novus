@@ -18,13 +18,13 @@
 
 // TODO: maybe need UV?
 const std::vector<glm::vec4> planeVertices = {
-    {-0.5f, -0.5f, 0.0f, 0.0f},
-    {0.5f, -0.5f, 0.0f, 0.0f},
-    {0.5f, 0.5f, 0.0f, 0.0f},
+    {-1.0f, -1.0f, 0.0f, 1.0f},
+    {1.0f, -1.0f, 0.0f, 1.0f},
+    {1.0f, 1.0f, 0.0f, 1.0f},
 
-    {-0.5f, 0.5f, 0.0f, 0.0f},
-    {-0.5f, -0.5f, 0.0f, 0.0f},
-    {0.5f, 0.5f, 0.0f, 0.0f},
+    {-1.0f, 1.0f, 0.0f, 1.0f},
+    {-1.0f, -1.0f, 0.0f, 1.0f},
+    {1.0f, 1.0f, 0.0f, 1.0f},
 };
 
 dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
@@ -32,8 +32,9 @@ dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
 const std::array<std::string, 14> passes = {
     // Shadows?
     "PASS_0",
+    // Z "prepass"
     "PASS_Z_OPAQUE",
-    // Z "Prepass", normals + depth (or is this maybe G_OPAQUE?
+    // computes and stores normals (TODO: denote how these normals are special)
     "PASS_G_OPAQUE",
     // g run for each light
     // takes view pos, then unknown texture and normal
@@ -121,6 +122,32 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
         materialParameter.g_DiffuseColor = glm::vec3(1.0f);
         copyDataToUniform(g_MaterialParameter, &materialParameter, sizeof(MaterialParameter));
     }
+
+    // light data
+    {
+        g_LightParam = createUniformBuffer(sizeof(LightParam));
+
+        LightParam lightParam{};
+        lightParam.m_Position = glm::vec4(5);
+        lightParam.m_Direction = glm::normalize(glm::vec4(0) - lightParam.m_Position);
+        lightParam.m_DiffuseColor = glm::vec4(1);
+        lightParam.m_SpecularColor = glm::vec4(1);
+        lightParam.m_Attenuation = glm::vec4(5.0f);
+        /*lightParam.m_ClipMin = glm::vec4(0.0f);
+        lightParam.m_ClipMax = glm::vec4(5.0f);*/
+
+        copyDataToUniform(g_LightParam, &lightParam, sizeof(LightParam));
+    }
+
+    // common data
+    {
+        g_CommonParameter = createUniformBuffer(sizeof(CommonParameter));
+
+        CommonParameter commonParam{};
+        commonParam.m_RenderTarget = {640.0f, 480.0f, 0.0f, 0.0f}; // used to convert screen-space coordinates back into 0.0-1.0
+
+        copyDataToUniform(g_CommonParameter, &commonParam, sizeof(CommonParameter));
+    }
 }
 
 void RenderSystem::testInit(::RenderModel *m)
@@ -156,7 +183,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
         beginPass(imageIndex, commandBuffer, pass);
 
         // hardcoded to the known pass for now
-        if (pass == "PASS_G_OPAQUE") {
+        if (pass == "PASS_G_OPAQUE" || pass == "PASS_Z_OPAQUE") {
             for (auto &model : m_renderModels) {
                 std::vector<uint32_t> systemKeys;
                 std::vector<uint32_t> sceneKeys = {
@@ -276,7 +303,7 @@ void RenderSystem::setSize(uint32_t width, uint32_t height)
 
 void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, const std::string_view passName)
 {
-    if (passName != "PASS_G_OPAQUE" && passName != "PASS_LIGHTING_OPAQUE") {
+    if (passName != "PASS_G_OPAQUE" && passName != "PASS_LIGHTING_OPAQUE" && passName != "PASS_Z_OPAQUE") {
         return;
     }
 
@@ -363,8 +390,33 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
             colorAttachments.push_back(attachmentInfo);
         }
-    } else {
-        // qWarning() << "Unimplemented pass" << passName;
+    } else if (passName == "PASS_Z_OPAQUE") {
+        // normals, it seems like
+        {
+            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            attachmentInfo.imageView = m_renderer.swapchainViews[imageIndex];
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            attachmentInfo.clearValue.color.float32[0] = 0.24;
+            attachmentInfo.clearValue.color.float32[1] = 0.24;
+            attachmentInfo.clearValue.color.float32[2] = 0.24;
+            attachmentInfo.clearValue.color.float32[3] = 1.0;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
+
+        // unknown
+        {
+            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            attachmentInfo.imageView = VK_NULL_HANDLE;
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
     }
 
     renderingInfo.layerCount = 1;
@@ -380,7 +432,7 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
 void RenderSystem::endPass(VkCommandBuffer commandBuffer, std::string_view passName)
 {
-    if (passName != "PASS_G_OPAQUE" && passName != "PASS_LIGHTING_OPAQUE") {
+    if (passName != "PASS_G_OPAQUE" && passName != "PASS_LIGHTING_OPAQUE" && passName != "PASS_Z_OPAQUE") {
         return;
     }
     vkCmdEndRendering(commandBuffer);
@@ -410,7 +462,7 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
         VkVertexInputBindingDescription binding = {};
 
         // TODO: temporary
-        if (passName == "PASS_G_OPAQUE") {
+        if (passName == "PASS_G_OPAQUE" || passName == "PASS_Z_OPAQUE") {
             binding.stride = sizeof(Vertex);
         } else if (passName == "PASS_LIGHTING_OPAQUE") {
             binding.stride = sizeof(glm::vec4);
@@ -589,7 +641,7 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
         VkPipelineRasterizationStateCreateInfo rasterizer = {};
         rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         rasterizer.lineWidth = 1.0f;
-        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+        rasterizer.cullMode = VK_CULL_MODE_NONE; // TODO: implement cull mode
         rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 
         VkPipelineMultisampleStateCreateInfo multisampling = {};
@@ -798,8 +850,17 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
 
     int j = 0;
     int z = 0;
+    int p = 0;
+    VkShaderStageFlags currentStageFlags;
     for (auto binding : pipeline.requestedSets[i].bindings) {
         if (binding.used) {
+            // a giant hack
+            if (currentStageFlags != binding.stageFlags) {
+                z = 0;
+                p = 0;
+                currentStageFlags = binding.stageFlags;
+            }
+
             VkWriteDescriptorSet &descriptorWrite = writes.emplace_back();
             descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrite.descriptorType = binding.type;
@@ -812,7 +873,23 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
                 auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
-                info->imageView = m_renderer.dummyView;
+                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < 4) {
+                    auto name = pipeline.pixelShader.resource_parameters[p].name;
+                    qInfo() << "Requesting image" << name << "at" << j;
+                    if (strcmp(name, "g_SamplerGBuffer") == 0) {
+                        info->imageView = normalGBuffer.imageView;
+                    } else if (strcmp(name, "g_SamplerViewPosition") == 0) {
+                        // FIXME: hack because i don't know what samplerviewposition is yet
+                        info->imageView = normalGBuffer.imageView;
+                    } else {
+                        info->imageView = m_renderer.dummyView;
+                    }
+
+                    p++;
+                } else {
+                    info->imageView = m_renderer.dummyView;
+                }
+
                 info->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             } break;
             case VK_DESCRIPTOR_TYPE_SAMPLER: {
@@ -830,8 +907,7 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
                     info->range = buffer.size;
                 };
 
-                if (binding.stageFlags == VK_SHADER_STAGE_VERTEX_BIT && z < 4) {
-                    auto name = pipeline.vertexShader.scalar_parameters[z].name;
+                auto bindBuffer = [this, &useUniformBuffer, &info, j](const char *name) {
                     qInfo() << "Requesting" << name << "at" << j;
 
                     if (strcmp(name, "g_CameraParameter") == 0) {
@@ -842,16 +918,29 @@ VkDescriptorSet RenderSystem::createDescriptorFor(const CachedPipeline &pipeline
                         useUniformBuffer(g_InstanceParameter);
                     } else if (strcmp(name, "g_ModelParameter") == 0) {
                         useUniformBuffer(g_ModelParameter);
+                    } else if (strcmp(name, "g_MaterialParameter") == 0) {
+                        useUniformBuffer(g_MaterialParameter);
+                    } else if (strcmp(name, "g_LightParam") == 0) {
+                        useUniformBuffer(g_LightParam);
+                    } else if (strcmp(name, "g_CommonParameter") == 0) {
+                        useUniformBuffer(g_CommonParameter);
                     } else {
                         qInfo() << "Unknown resource:" << name;
                         info->buffer = m_renderer.dummyBuffer;
                         info->range = 655360;
                     }
+                };
 
+                if (binding.stageFlags == VK_SHADER_STAGE_VERTEX_BIT) {
+                    auto name = pipeline.vertexShader.scalar_parameters[z].name;
+
+                    bindBuffer(name);
                     z++;
-                } else if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && j == 0) {
-                    // TODO: temporary hack
-                    useUniformBuffer(g_MaterialParameter);
+                } else if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT) {
+                    auto name = pipeline.pixelShader.scalar_parameters[z].name;
+
+                    bindBuffer(name);
+                    z++;
                 } else {
                     // placeholder buffer so it at least doesn't crash
                     info->buffer = m_renderer.dummyBuffer;

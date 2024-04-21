@@ -84,7 +84,7 @@ private:
 
     // Structure definitions from https://github.com/Shaderlayan/Ouroboros
     struct CameraParameter {
-        glm::mat3x4 m_ViewMatrix;
+        glm::mat3x4 m_ViewMatrix; // TODO: does it need alignment?
         glm::mat3x4 m_InverseViewMatrix;
         glm::mat4 m_InverseViewProjectionMatrix;
         glm::mat4 m_InverseProjectionMatrix;
@@ -132,11 +132,39 @@ private:
     UniformBuffer g_ModelParameter;
 
     struct MaterialParameter {
-        glm::vec3 g_DiffuseColor;
+        glm::vec3 g_DiffuseColor; // TODO: align to vec4
         float g_AlphaThreshold;
     };
 
     UniformBuffer g_MaterialParameter;
+
+    struct CommonParameter {
+        glm::vec4 m_RenderTarget;
+        glm::vec4 m_Viewport;
+        glm::vec4 m_Misc;
+        glm::vec4 m_Misc2;
+    };
+
+    UniformBuffer g_CommonParameter;
+
+    struct LightParam {
+        glm::vec4 m_Position;
+        glm::vec4 m_Direction;
+        glm::vec4 m_DiffuseColor;
+        glm::vec4 m_SpecularColor;
+        glm::vec4 m_Attenuation;
+        /*glm::vec4 m_ClipMin;
+        glm::vec3 m_ClipMax;
+        glm::vec3 m_FadeScale;
+        glm::vec4 m_ShadowTexMask;
+        glm::vec4 m_PlaneRayDirection;
+        glm::mat3x4 m_PlaneInversMatrix;
+        glm::mat3x4 m_WorldViewInversMatrix;
+        glm::mat4 m_LightMapMatrix;
+        glm::mat4 m_WorldViewProjectionMatrix;*/
+    };
+
+    UniformBuffer g_LightParam;
 
     VkBuffer m_planeVertexBuffer;
     VkDeviceMemory m_planeVertexMemory;
