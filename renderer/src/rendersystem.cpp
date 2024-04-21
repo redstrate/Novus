@@ -17,6 +17,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 
 // TODO: maybe need UV?
+// note: SQEX passes the vertice positions as UV coordinates (yes, -1 to 1.) the shaders then transform them back with the g_CommonParameter.m_RenderTarget vec4
 const std::vector<glm::vec4> planeVertices = {
     {-1.0f, -1.0f, 0.0f, 1.0f},
     {1.0f, -1.0f, 0.0f, 1.0f},
