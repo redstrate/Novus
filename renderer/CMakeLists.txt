@@ -19,6 +19,7 @@ qt_add_resources(renderer
         "shaders"
         PREFIX "/"
         FILES
+        shaders/dummy.frag.spv
         shaders/imgui.frag.spv
         shaders/imgui.vert.spv
         shaders/mesh.frag.spv
