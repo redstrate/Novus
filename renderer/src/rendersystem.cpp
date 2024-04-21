@@ -168,15 +168,15 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
     glm::mat4 viewMatrix = m_renderer.view;
     glm::mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
 
-    cameraParameter.m_ViewMatrix = viewMatrix;
-    cameraParameter.m_InverseViewMatrix = glm::inverse(viewMatrix);
+    cameraParameter.m_ViewMatrix = glm::transpose(viewMatrix);
+    cameraParameter.m_InverseViewMatrix = glm::transpose(glm::inverse(viewMatrix));
     cameraParameter.m_ViewProjectionMatrix = glm::transpose(viewProjectionMatrix);
-    cameraParameter.m_InverseViewProjectionMatrix = glm::inverse(viewProjectionMatrix);
-    cameraParameter.m_InverseProjectionMatrix = glm::inverse(projectionMatrix);
-    cameraParameter.m_ProjectionMatrix = projectionMatrix;
-    /*cameraParameter.m_MainViewToProjectionMatrix = glm::mat4(1.0f); // ???
+    cameraParameter.m_InverseViewProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
+    cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(projectionMatrix));
+    cameraParameter.m_ProjectionMatrix = cameraParameter.m_ViewProjectionMatrix;
+    cameraParameter.m_MainViewToProjectionMatrix = cameraParameter.m_InverseViewProjectionMatrix;
     cameraParameter.m_EyePosition = glm::vec3(5.0f); // placeholder
-    cameraParameter.m_LookAtVector = glm::vec3(0.0f); // placeholder*/
+    cameraParameter.m_LookAtVector = glm::vec3(0.0f); // placeholder
 
     copyDataToUniform(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
 

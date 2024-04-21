@@ -85,15 +85,15 @@ private:
 
     // Structure definitions from https://github.com/Shaderlayan/Ouroboros
     struct CameraParameter {
-        /* m[0] - m[2] */ glm::mat3x4 m_ViewMatrix; // TODO: does it need alignment?
-        /* m[3] - m[5] */ glm::mat3x4 m_InverseViewMatrix;
-        /* m[6] - m[9] */ glm::mat4 m_InverseViewProjectionMatrix;
-        glm::mat4 m_InverseProjectionMatrix;
-        glm::mat4 m_ProjectionMatrix;
+        glm::mat3x4 m_ViewMatrix; // TODO: does it need alignment?
+        glm::mat3x4 m_InverseViewMatrix;
         glm::mat4 m_ViewProjectionMatrix;
-        /*glm::mat4 m_MainViewToProjectionMatrix;
+        glm::mat4 m_InverseViewProjectionMatrix;
+        glm::mat4 m_InverseProjectionMatrix;
+        glm::mat4 m_ProjectionMatrix; // FIXME: ourburos is wrong, this is actually viewProjection
+        glm::mat4 m_MainViewToProjectionMatrix;
         glm::vec3 m_EyePosition;
-        glm::vec3 m_LookAtVector;*/
+        glm::vec3 m_LookAtVector;
     };
 
     UniformBuffer g_CameraParameter;
