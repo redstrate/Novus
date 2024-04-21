@@ -89,7 +89,7 @@ private:
         glm::mat3x4 m_InverseViewMatrix;
         glm::mat4 m_ViewProjectionMatrix;
         glm::mat4 m_InverseViewProjectionMatrix;
-        glm::mat4 m_InverseProjectionMatrix;
+        glm::mat4 m_InverseProjectionMatrix; // used for view position recalc
         glm::mat4 m_ProjectionMatrix; // FIXME: ourburos is wrong, this is actually viewProjection
         glm::mat4 m_MainViewToProjectionMatrix;
         glm::vec3 m_EyePosition;

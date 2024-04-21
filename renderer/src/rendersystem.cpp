@@ -130,7 +130,7 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
         g_LightParam = createUniformBuffer(sizeof(LightParam));
 
         LightParam lightParam{};
-        lightParam.m_Position = glm::vec4(5);
+        lightParam.m_Position = glm::vec4(-5);
         lightParam.m_Direction = glm::normalize(glm::vec4(0) - lightParam.m_Position);
         lightParam.m_DiffuseColor = glm::vec4(1);
         lightParam.m_SpecularColor = glm::vec4(1);
@@ -146,7 +146,12 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
         g_CommonParameter = createUniformBuffer(sizeof(CommonParameter));
 
         CommonParameter commonParam{};
-        commonParam.m_RenderTarget = {640.0f, 480.0f, 0.0f, 0.0f}; // used to convert screen-space coordinates back into 0.0-1.0
+        /*commonParam.m_RenderTarget = {1640.0f / 2.0f,
+                                      480.0f / 2.0f,
+                                      640.0f / 2.0,
+                                      480.0f / 2.0}; // used to convert screen-space coordinates back into 0.0-1.0
+        */
+        commonParam.m_RenderTarget = {1.0f / 640.0f, 1.0f / 480.0f, 0.0f, 0.0f}; // used to convert screen-space coordinates back into 0.0-1.0
 
         copyDataToUniform(g_CommonParameter, &commonParam, sizeof(CommonParameter));
     }
@@ -172,9 +177,12 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
     cameraParameter.m_InverseViewMatrix = glm::transpose(glm::inverse(viewMatrix));
     cameraParameter.m_ViewProjectionMatrix = glm::transpose(viewProjectionMatrix);
     cameraParameter.m_InverseViewProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
-    cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(projectionMatrix));
-    cameraParameter.m_ProjectionMatrix = cameraParameter.m_ViewProjectionMatrix;
-    cameraParameter.m_MainViewToProjectionMatrix = cameraParameter.m_InverseViewProjectionMatrix;
+
+    // known params
+    cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
+    cameraParameter.m_ProjectionMatrix = glm::transpose(viewProjectionMatrix);
+
+    cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(glm::inverse(projectionMatrix));
     cameraParameter.m_EyePosition = glm::vec3(5.0f); // placeholder
     cameraParameter.m_LookAtVector = glm::vec3(0.0f); // placeholder
 
