@@ -1456,7 +1456,7 @@ void Renderer::createDummyTexture()
 
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = 1;
+    bufferInfo.size = 4;
     bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -1474,12 +1474,12 @@ void Renderer::createDummyTexture()
 
     vkBindBufferMemory(device, stagingBuffer, stagingBufferMemory, 0);
 
-    int dummydata[4] = {1, 1, 1, 1};
+    uint8_t dummydata[4] = {255, 255, 255, 255};
 
     // copy to staging buffer
     void *mapped_data;
-    vkMapMemory(device, stagingBufferMemory, 0, 4, 0, &mapped_data);
-    memcpy(mapped_data, dummydata, 1);
+    vkMapMemory(device, stagingBufferMemory, 0, 4 * sizeof(uint8_t), 0, &mapped_data);
+    memcpy(mapped_data, dummydata, 4 * sizeof(uint8_t));
     vkUnmapMemory(device, stagingBufferMemory);
 
     // copy staging buffer to image
