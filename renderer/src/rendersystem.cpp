@@ -56,9 +56,6 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
     : m_renderer(renderer)
     , m_data(data)
 {
-    normalGBuffer = createImage(640, 480, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-    viewPositionBuffer = createImage(640, 480, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     auto [vertexBuffer, vertexMemory] = m_renderer.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
@@ -144,17 +141,9 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
     // common data
     {
         g_CommonParameter = createUniformBuffer(sizeof(CommonParameter));
-
-        CommonParameter commonParam{};
-        /*commonParam.m_RenderTarget = {1640.0f / 2.0f,
-                                      480.0f / 2.0f,
-                                      640.0f / 2.0,
-                                      480.0f / 2.0}; // used to convert screen-space coordinates back into 0.0-1.0
-        */
-        commonParam.m_RenderTarget = {1.0f / 640.0f, 1.0f / 480.0f, 0.0f, 0.0f}; // used to convert screen-space coordinates back into 0.0-1.0
-
-        copyDataToUniform(g_CommonParameter, &commonParam, sizeof(CommonParameter));
     }
+
+    createImageResources();
 }
 
 void RenderSystem::testInit(::RenderModel *m)
@@ -169,7 +158,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
     // TODO: this shouldn't be here
     CameraParameter cameraParameter{};
 
-    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), 640.0f / 480.0f, 0.1f, 1000.0f);
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), (float)m_extent.width / (float)m_extent.height, 0.1f, 1000.0f);
     glm::mat4 viewMatrix = m_renderer.view;
     glm::mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
 
@@ -364,6 +353,8 @@ void RenderSystem::setSize(uint32_t width, uint32_t height)
     for (auto &[hash, cachedPipeline] : m_cachedPipelines) {
         cachedPipeline.cachedDescriptors.clear();
     }
+
+    createImageResources();
 }
 
 void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, const std::string_view passName)
@@ -696,21 +687,10 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-        VkViewport viewport = {};
-        viewport.width = 640.0;
-        viewport.height = 480.0;
-        viewport.maxDepth = 1.0f;
-
-        VkRect2D scissor = {};
-        scissor.extent.width = 640;
-        scissor.extent.height = 480;
-
         VkPipelineViewportStateCreateInfo viewportState = {};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewportState.viewportCount = 1;
-        viewportState.pViewports = &viewport;
         viewportState.scissorCount = 1;
-        viewportState.pScissors = &scissor;
 
         VkPipelineRasterizationStateCreateInfo rasterizer = {};
         rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -744,8 +724,12 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
         colorBlending.attachmentCount = colorBlendAttachments.size();
         colorBlending.pAttachments = colorBlendAttachments.data();
 
+        std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+
         VkPipelineDynamicStateCreateInfo dynamicState = {};
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamicState.dynamicStateCount = dynamicStates.size();
+        dynamicState.pDynamicStates = dynamicStates.data();
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -826,6 +810,17 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, std::string_view 
 
         i++;
     }
+
+    VkViewport viewport = {};
+    viewport.width = m_extent.width;
+    viewport.height = m_extent.height;
+    viewport.maxDepth = 1.0f;
+
+    VkRect2D scissor = {};
+    scissor.extent = m_extent;
+
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
 VkShaderModule RenderSystem::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
@@ -1118,4 +1113,20 @@ RenderSystem::VulkanImage RenderSystem::createImage(int width, int height, VkFor
     vkCreateImageView(m_renderer.device, &viewCreateInfo, nullptr, &imageView);
 
     return {image, imageView, imageMemory};
+}
+
+void RenderSystem::createImageResources()
+{
+    normalGBuffer = createImage(m_extent.width, m_extent.height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    viewPositionBuffer = createImage(m_extent.width, m_extent.height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+
+    CommonParameter commonParam{};
+    /*commonParam.m_RenderTarget = {1640.0f / 2.0f,
+                                  480.0f / 2.0f,
+                                  640.0f / 2.0,
+                                  480.0f / 2.0}; // used to convert screen-space coordinates back into 0.0-1.0
+    */
+    commonParam.m_RenderTarget = {1.0f / m_extent.width, 1.0f / m_extent.height, 0.0f, 0.0f}; // used to convert screen-space coordinates back into 0.0-1.0
+
+    copyDataToUniform(g_CommonParameter, &commonParam, sizeof(CommonParameter));
 }
