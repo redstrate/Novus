@@ -140,4 +140,14 @@ private:
 
     VkBuffer m_planeVertexBuffer;
     VkDeviceMemory m_planeVertexMemory;
+
+    struct VulkanImage {
+        VkImage image;
+        VkImageView imageView;
+        VkDeviceMemory imageMemory;
+    };
+
+    VulkanImage createImage(int width, int height, VkFormat format, VkImageUsageFlags usage);
+
+    VulkanImage normalGBuffer;
 };

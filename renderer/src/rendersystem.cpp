@@ -55,6 +55,8 @@ RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
     : m_renderer(renderer)
     , m_data(data)
 {
+    normalGBuffer = createImage(640, 480, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     auto [vertexBuffer, vertexMemory] = m_renderer.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
@@ -213,7 +215,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                     }
                 }
             }
-        } else if (false && pass == "PASS_LIGHTING_OPAQUE") {
+        } else if (pass == "PASS_LIGHTING_OPAQUE") {
             std::vector<uint32_t> systemKeys = {
                 physis_shpk_crc("DecodeDepthBuffer_RAWZ"),
             };
@@ -274,7 +276,7 @@ void RenderSystem::setSize(uint32_t width, uint32_t height)
 
 void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, const std::string_view passName)
 {
-    if (passName != "PASS_G_OPAQUE") {
+    if (passName != "PASS_G_OPAQUE" && passName != "PASS_LIGHTING_OPAQUE") {
         return;
     }
 
@@ -288,7 +290,7 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
         // normals, it seems like
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = m_renderer.swapchainViews[imageIndex];
+            attachmentInfo.imageView = normalGBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -378,7 +380,7 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
 void RenderSystem::endPass(VkCommandBuffer commandBuffer, std::string_view passName)
 {
-    if (passName != "PASS_G_OPAQUE") {
+    if (passName != "PASS_G_OPAQUE" && passName != "PASS_LIGHTING_OPAQUE") {
         return;
     }
     vkCmdEndRendering(commandBuffer);
@@ -903,4 +905,53 @@ void RenderSystem::copyDataToUniform(RenderSystem::UniformBuffer &uniformBuffer,
     vkMapMemory(m_renderer.device, uniformBuffer.memory, 0, size, 0, &mapped_data);
     memcpy(mapped_data, data, size);
     vkUnmapMemory(m_renderer.device, uniformBuffer.memory);
+}
+
+RenderSystem::VulkanImage RenderSystem::createImage(int width, int height, VkFormat format, VkImageUsageFlags usage)
+{
+    VkImage image;
+    VkImageView imageView;
+    VkDeviceMemory imageMemory;
+
+    VkImageCreateInfo imageCreateInfo = {};
+    imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageCreateInfo.extent.width = width;
+    imageCreateInfo.extent.height = height;
+    imageCreateInfo.extent.depth = 1;
+    imageCreateInfo.mipLevels = 1;
+    imageCreateInfo.arrayLayers = 1;
+    imageCreateInfo.format = format;
+    imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageCreateInfo.usage = usage;
+    imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    vkCreateImage(m_renderer.device, &imageCreateInfo, nullptr, &image);
+
+    VkMemoryRequirements memRequirements;
+    vkGetImageMemoryRequirements(m_renderer.device, image, &memRequirements);
+
+    VkMemoryAllocateInfo allocateInfo = {};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocateInfo.allocationSize = memRequirements.size;
+    allocateInfo.memoryTypeIndex = m_renderer.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    vkAllocateMemory(m_renderer.device, &allocateInfo, nullptr, &imageMemory);
+
+    vkBindImageMemory(m_renderer.device, image, imageMemory, 0);
+
+    VkImageViewCreateInfo viewCreateInfo = {};
+    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    viewCreateInfo.image = image;
+    viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    viewCreateInfo.format = format;
+    viewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; // TODO: hardcoded
+    viewCreateInfo.subresourceRange.levelCount = 1;
+    viewCreateInfo.subresourceRange.layerCount = 1;
+
+    vkCreateImageView(m_renderer.device, &viewCreateInfo, nullptr, &imageView);
+
+    return {image, imageView, imageMemory};
 }
