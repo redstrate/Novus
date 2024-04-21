@@ -18,7 +18,7 @@
 
 dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
 
-const std::array passes = {
+const std::array<std::string, 14> passes = {
     // Shadows?
     "PASS_0",
     "PASS_Z_OPAQUE",
@@ -38,27 +38,7 @@ const std::array passes = {
     "PASS_12",
     "PASS_14"};
 
-/*
-// TODO: auto-select node from material shader keys (see main.rs in physis)
-auto node = shpk->get_node(12);
-
-for (int i = 0; i < 16; i++) {
-    const int passIndex = node->pass_indices[i];
-    if (passIndex != -1) {
-        physis_ShaderPass *pass = node->passes[passIndex];
-
-        auto vertex_shader = shpk->shaders[pass->vertex_shader_index];
-        auto pixel_shader = shpk->shaders[pass->vertex_shader_index];
-
-        use_shader(vertex_shader);
-        use_shader(pixel_shader);
-
-        // set parameters from material
-        g_MaterialParameter = mtrl->constants;
-
-        draw();
-    }
-}*/
+const int INVALID_PASS = 255;
 
 RenderSystem::RenderSystem(Renderer &renderer, GameData *data)
     : m_renderer(renderer)
@@ -141,7 +121,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
         beginPass(imageIndex, commandBuffer, pass);
 
         // hardcoded to the known pass for now
-        if (std::string_view{"PASS_G_OPAQUE"} == pass) {
+        if (pass == "PASS_G_OPAQUE") {
             for (auto &model : m_renderModels) {
                 std::vector<uint32_t> systemKeys;
                 std::vector<uint32_t> sceneKeys = {
@@ -177,7 +157,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
 
                 // this is an index into the node's pass array, not to get confused with the global one we always follow.
                 const int passIndice = node.pass_indices[i];
-                if (passIndice != 255) {
+                if (passIndice != INVALID_PASS) {
                     const Pass currentPass = node.passes[passIndice];
 
                     const uint32_t vertexShaderIndice = currentPass.vertex_shader;
@@ -223,7 +203,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
                     }
                 }
             }
-        } else if (std::string_view{"PASS_LIGHTING_OPAQUE"} == pass) {
+        } else if (pass == "PASS_LIGHTING_OPAQUE") {
             std::vector<uint32_t> systemKeys = {
                 physis_shpk_crc("DecodeDepthBuffer_RAWZ"),
             };
@@ -253,7 +233,7 @@ void RenderSystem::render(uint32_t imageIndex, VkCommandBuffer commandBuffer)
             }
 
             const int passIndice = node.pass_indices[i];
-            if (passIndice != 255) {
+            if (passIndice != INVALID_PASS) {
                 const Pass currentPass = node.passes[passIndice];
 
                 const uint32_t vertexShaderIndice = currentPass.vertex_shader;
@@ -346,7 +326,6 @@ void RenderSystem::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
     if (depthStencilAttachment.imageView != VK_NULL_HANDLE) {
         renderingInfo.pDepthAttachment = &depthStencilAttachment;
-        // renderingInfo.pStencilAttachment = &depthStencilAttachment;
     }
 
     vkCmdBeginRendering(commandBuffer, &renderingInfo);
@@ -361,8 +340,6 @@ void RenderSystem::bindPipeline(VkCommandBuffer commandBuffer, physis_Shader &ve
 {
     const uint32_t hash = vertexShader.len + pixelShader.len;
     if (!m_cachedPipelines.contains(hash)) {
-        qInfo() << "Creating new pipeline...";
-
         auto vertexShaderModule = convertShaderModule(vertexShader, spv::ExecutionModelVertex);
         auto fragmentShaderModule = convertShaderModule(pixelShader, spv::ExecutionModelFragment);
 
