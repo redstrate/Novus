@@ -1,6 +1,6 @@
 [submodule "extern/libphysis"]
 	path = extern/libphysis
-	url = https://git.sr.ht/~redstrate/libphysis
+	url = ../libphysis
 [submodule "extern/dxbc"]
 	path = extern/dxbc
 	url = https://git.sr.ht/~redstrate/dxbc
