@@ -220,11 +220,13 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
 {
     RenderMaterial newMaterial;
 
-    std::string shpkPath = "shader/sm5/shpk/" + std::string(material.shpk_name);
+    if (material.shpk_name != nullptr) {
+        std::string shpkPath = "shader/sm5/shpk/" + std::string(material.shpk_name);
 
-    auto shpkData = physis_gamedata_extract_file(data, shpkPath.c_str());
-    if (shpkData.data != nullptr) {
-        newMaterial.shaderPackage = physis_parse_shpk(shpkData);
+        auto shpkData = physis_gamedata_extract_file(data, shpkPath.c_str());
+        if (shpkData.data != nullptr) {
+            newMaterial.shaderPackage = physis_parse_shpk(shpkData);
+        }
     }
 
     for (uint32_t i = 0; i < material.num_textures; i++) {
