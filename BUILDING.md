@@ -14,12 +14,26 @@ Currently the only way to build Novus is manually.
 * [Rust](https://www.rust-lang.org/)
 * [Corrosion](https://github.com/corrosion-rs/corrosion)
 
+### Getting source code
+
+Novus has git submodules that must be cloned alongside the repository, so make sure to pass the `--recursive` flag:
+
+```bash
+$ git clone --recursive https://github.com/redstrate/Novus.git
+```
+
+If you missed it, it's possible to initialize the submodules afterward:
+
+```bash
+$ git submodule update --init --recursive
+```
+
 ### Configuring
 
 To configure, run `cmake` in the source directory:
 
 ```bash
-$ cd novus
+$ cd Novus
 $ cmake -S . -B build
 ```
 
