@@ -4,7 +4,7 @@
 
 A suite of unofficial FFXIV modding tools, including a model viewer and data archive explorer.
 
-![Screenshot of some of the applications](misc/screenshot-main.png)
+![Screenshot of some of the applications](https://xiv.zone/novus.png)
 
 ## Components
 

@@ -1,9 +1,9 @@
-# Armoury
+# Gear Editor
 
-The Armoury can display gear pieces from FFXIV, and includes a full model viewer and export functionality. Basic character and bone editing is also supported.
+This tool can display gear pieces from FFXIV, and includes a full model viewer and export functionality. Basic character and bone editing is also supported.
 
-![Screenshot](../misc/armoury-screenshot.png)
+![Screenshot](https://xiv.zone/gear-editor.png)
 
 ## Note
 
-The viewport uses Vulkan, so it must be supported on your system in order to work.
+Vulkan 1.3 or higher is currently required. This requirement is planned to be lifted in the future.
