@@ -1,21 +1,21 @@
 # Novus
 
-[![builds.sr.ht status](https://builds.sr.ht/~redstrate/novus.svg)](https://builds.sr.ht/~redstrate/novus?)
+[![builds.sr.ht status](https://builds.sr.ht/~redstrate/novus.svg)](https://builds.sr.ht/~redstrate/novus)
 
-A suite of FFXIV modding tools for Linux.
+A suite of unofficial FFXIV modding tools, including a model viewer and data archive explorer.
 
 ![Screenshot of some of the applications](misc/screenshot-main.png)
 
 ## Components
 
-This repository contains many parts of Novus, such as:
+Here is an exhaustive list of tooling available here:
 
 * [Argcracker](argcracker), a program that can help decrypt game arguments.
 * [Gear Editor](armoury), a graphical gear and character viewer. It also supports GLTF import & export.
 * [Map Editor](mapeditor), a graphical map viewer.
 * [Excel Editor](karuku), a graphical program to view Excel data sheets.
 * [Model Viewer](mdlviewer), a graphical model viewer for MDL files.
-* [Data Explorer](sagasu), a graphical interface to explore FFXIV data archive files.
+* [Data Viewer](sagasu), a graphical interface to explore FFXIV data archive files.
 
 ## Building
 
