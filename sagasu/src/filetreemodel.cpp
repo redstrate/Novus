@@ -137,7 +137,7 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
         }
     } else if (role == Qt::DecorationRole) {
         if (item->type == TreeType::Folder) {
-            return QIcon::fromTheme(QStringLiteral("folder-black-symbolic"));
+            return QIcon::fromTheme(QStringLiteral("folder-symbolic"));
         } else if (item->type == TreeType::File) {
             QFileInfo info(item->name);
             const FileType type = FileTypes::getFileType(info.completeSuffix());
