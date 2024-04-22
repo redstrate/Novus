@@ -2,7 +2,7 @@
 
 [![builds.sr.ht status](https://builds.sr.ht/~redstrate/novus.svg)](https://builds.sr.ht/~redstrate/novus)
 
-A suite of unofficial FFXIV modding tools, including a model viewer and data archive explorer.
+A suite of unofficial FFXIV tools, including a model viewer and data archive explorer.
 
 ![Screenshot of some of the applications](https://xiv.zone/novus.png)
 
@@ -21,9 +21,10 @@ Here is an exhaustive list of tooling available here:
 
 Please refer to the [building document](BUILDING.md) for instructions on how to build Novus.
 
-## Contributing
+## Contributing & Support
 
-Please refer to the [contributing document](CONTRIBUTING.md) for everything you need to know to get started contributing to Novus.
+The best way you can help is by [monetarily supporting me](https://redstrate.com/fund/) or by submitting patches to
+help fix bugs or add functionality. Filing issues is appreciated, but I do this in my free time so please don't expect professional support.
 
 ## License
 

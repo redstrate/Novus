@@ -1,20 +1,20 @@
 # Building Novus
 
-## Dependencies
+Currently the only way to build Novus is manually.
 
-### Required
+## Manual
 
-All of these packages are required for Astra to build with a minimal set of features.
+### Dependencies
 
-* Linux
-    * Windows, macOS and other systems may work but are currently unsupported.
-* CMake 3.25 or later
-* Qt 5.15 or later
-* Rust
+* [Linux](https://kernel.org/)
+  * Windows, macOS and other systems may work but are currently unsupported. Patches are accepted to fix any problems with those OSes though.
+* [CMake](https://cmake.org) 3.25 or later
+* [Qt](https://www.qt.io/) 6.6 or later
+* [KDE Frameworks](https://develop.kde.org/products/frameworks/) 6
+* [Rust](https://www.rust-lang.org/)
+* [Corrosion](https://github.com/corrosion-rs/corrosion)
 
-## Configuring
-
-**Note:** Some dependencies will automatically be downloaded from the Internet if not found on your system. This functionality may change in the future.
+### Configuring
 
 To configure, run `cmake` in the source directory:
 
@@ -23,10 +23,10 @@ $ cd novus
 $ cmake -S . -B build
 ```
 
-This command will create a new build directory and configure the source directory (`.`). If you want to enable more options, pass the mnow:
+This command will create a new build directory and configure the source directory (`.`). If you want to enable more options, pass them now:
 
 ```bash
-$ cmake -S . -B build -DSOME_OVERRIDE=ON
+$ cmake -S . -B build -DENABLE_SOMETHING=ON
 ```
 
 ## Building
@@ -37,4 +37,4 @@ Now begin building the project:
 $ cmake --build build
 ```
 
-If the build was successful, you'll find each binary under their respective folder in `build/`.
+If the build was successful, the tool binaries will be found in `./build/bin`.
