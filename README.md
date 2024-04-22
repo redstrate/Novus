@@ -17,6 +17,10 @@ Here is an exhaustive list of tooling available here:
 * [Model Viewer](mdlviewer), a graphical model viewer for MDL files.
 * [Data Viewer](sagasu), a graphical interface to explore FFXIV data archive files.
 
+## Usage
+
+There are no releases at the moment, but builds will be coming soon. Your only option at the moment is to build Novus manually.
+
 ## Building
 
 Please refer to the [building document](BUILDING.md) for instructions on how to build Novus.
