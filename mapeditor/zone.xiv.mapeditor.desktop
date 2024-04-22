@@ -3,8 +3,8 @@
 [Desktop Entry]
 Name=Novus SDK
 Comment=FFXIV Data Editor
-Exec=novus-karaku %u
+Exec=novus-mapeditor %u
 Terminal=false
-Icon=zone.xiv.karaku
+Icon=zone.xiv.mapeditor
 Type=Application
 NoDisplay=true
