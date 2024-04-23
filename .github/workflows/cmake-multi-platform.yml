@@ -50,6 +50,13 @@ jobs:
         sudo apt-get install \
           gettext \
 
+    - name: Build zlib
+      if: runner.os == 'Windows'
+      run: |
+        git clone https://github.com/madler/zlib.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-zlib -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S extra-cmake-modules -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-zlib --target install
+
     - name: Build Extra CMake Modules
       run: |
         git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
