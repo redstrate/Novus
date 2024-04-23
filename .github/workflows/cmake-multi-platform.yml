@@ -59,6 +59,9 @@ jobs:
         Invoke-WebRequest https://versaweb.dl.sourceforge.net/project/gnuwin32/libintl/0.14.4/libintl-0.14.4-lib.zip -OutFile libintl.zip
         unzip libintl.zip -d ${{ steps.strings.outputs.prefix-dir }}
 
+        Invoke-WebRequest https://cfhcable.dl.sourceforge.net/project/gnuwin32/gettext/0.14.4/gettext-0.14.4-bin.zip -OutFile gettext.zip
+        unzip gettext.zip -d ${{ steps.strings.outputs.prefix-dir }}
+
     - name: Build zlib
       if: runner.os == 'Windows'
       run: |
