@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
         build_type: [Release]
-        c_compiler: [gcc, clang, cl]
+        c_compiler: [gcc, cl]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -26,13 +26,6 @@ jobs:
         exclude:
           - os: windows-latest
             c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
-          - os: ubuntu-latest # ubuntu's clang is too old?
-            c_compiler: clang
-            cpp_compiler: clang++
 
     steps:
     - name: Install Qt
