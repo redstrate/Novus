@@ -51,7 +51,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }}/extra-cmake-modules
+        -S extra-cmake-modules
         cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM
 
     - uses: actions/checkout@v3
