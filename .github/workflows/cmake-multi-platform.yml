@@ -48,29 +48,41 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "prefix-dir=${{ github.workspace }}/prefix" >> "$GITHUB_OUTPUT"
 
-    - name: Clone Extra CMake Modules
-      if: runner.os == 'windows-latest'
+    - name: Build and install Extra CMake Modules
       run: |
         git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
-
-    - name: Build and install Extra CMake Modules
-      if: runner.os == 'windows-latest'
-      run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S extra-cmake-modules -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-ECM
         cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM
 
-    - name: Clone KCoreAddons
-      if: runner.os == 'windows-latest'
+    - name: Build and install KCoreAddons
       run: |
         git clone https://invent.kde.org/frameworks/kcoreaddons.git
-
-    - name: Build and install KCoreAddons
-      if: runner.os == 'windows-latest'
-      run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kca -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcoreaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kca
         cmake --install ${{ steps.strings.outputs.build-output-dir }}-kca
+
+    - name: Build and install KConfig
+      run: |
+        git clone https://invent.kde.org/frameworks/kconfig.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kconfig -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kconfig -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kconfig
+        cmake --install ${{ steps.strings.outputs.build-output-dir }}-kconfig
+
+    - name: Build and install KArchive
+      run: |
+        git clone https://invent.kde.org/frameworks/karchive.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-karchive -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S karchive -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-karchive
+        cmake --install ${{ steps.strings.outputs.build-output-dir }}-karchive
+
+    - name: Build and install KI18n
+      run: |
+        git clone https://invent.kde.org/frameworks/ki18n.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ki18n -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ki18n -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ki18n
+        cmake --install ${{ steps.strings.outputs.build-output-dir }}-ki18n
+
 
     - uses: actions/checkout@v3
 
