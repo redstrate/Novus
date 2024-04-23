@@ -43,7 +43,7 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "prefix-dir=${{ github.workspace }}/prefix" >> "$GITHUB_OUTPUT"
 
-     - name: Setup Linux dependencies
+    - name: Setup Linux dependencies
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
