@@ -43,7 +43,7 @@ jobs:
 
     # Why does Windows need this?
     - name: Clear old build directiories
-      if: ${{ matrix.os }} == 'windows-latest'
+      if: matrix.os == 'windows-latest'
       run: |
         Remove-Item -LiteralPath "${{ steps.strings.outputs.build-output-dir }}-ECM" -Force -Recurse -ErrorAction Ignore
         Remove-Item -LiteralPath "${{ steps.strings.outputs.build-output-dir }}-kca" -Force -Recurse -ErrorAction Ignore
