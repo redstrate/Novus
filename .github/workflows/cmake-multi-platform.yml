@@ -93,14 +93,19 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-karchive -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S karchive -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF # TODO: enable bzip which we need later
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-karchive --target install
 
-    - name: Build KI18n
+    - name: Configure KI18n
       run: |
         git clone https://invent.kde.org/frameworks/ki18n.git
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-ki18n -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ki18n -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
-        if [ "$RUNNER_OS" == "Windows" ]; then
-            (Get-Content -ReadCount 0 ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake) -replace 'message(FATAL_ERROR "failed generating ${PO_DIR}")', 'message(WARNING "failed generating ${PO_DIR}")' | Set-Content ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake -WhatIf
-        fi
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ki18n
+
+    - name: Windows KI18n workaround
+      if: runner.os == 'Windows'
+      run: |
+        (Get-Content -ReadCount 0 ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake) -replace 'message(FATAL_ERROR "failed generating ${PO_DIR}")', 'message(WARNING "failed generating ${PO_DIR}")' | Set-Content ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake -WhatIf
+
+    - name: Build KI18n
+      run: |
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ki18n --target install
 
     - name: Configure
       run: >
