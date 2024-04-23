@@ -58,7 +58,7 @@ jobs:
 
         echo $Env:USERPROFILE\bin >> $Env:GITHUB_PATH
 
-        Invoke-WebRequest https://github.com/restic/test-assets/raw/master/libintl-0.11.5-2-bin.zip -OutFile libintl.zip
+        Invoke-WebRequest https://netactuate.dl.sourceforge.net/project/gnuwin32/libintl/0.14.4/libintl-0.14.4-bin.zip -OutFile libintl.zip
         unzip libintl.zip
 
     - name: Build zlib
