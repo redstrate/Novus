@@ -45,10 +45,10 @@ jobs:
     - name: Clear old build directiories
       if: ${{ matrix.os }} == 'windows-latest'
       run: |
-        rmdir ${{ steps.strings.outputs.build-output-dir }}-ECM /s /q
-        rmdir ${{ steps.strings.outputs.build-output-dir }}-kca /s /q
-        rmdir ${{ steps.strings.outputs.build-output-dir }}-kconfig /s /q
-        rmdir ${{ steps.strings.outputs.build-output-dir }}-karchive /s /q
+        rm -R ${{ steps.strings.outputs.build-output-dir }}-ECM
+        rm -R ${{ steps.strings.outputs.build-output-dir }}-kca
+        rm -R ${{ steps.strings.outputs.build-output-dir }}-kconfig
+        rm -R ${{ steps.strings.outputs.build-output-dir }}-karchive
 
     - name: Build and install Extra CMake Modules
       run: |
