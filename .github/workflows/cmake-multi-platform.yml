@@ -40,6 +40,7 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "prefix-dir=${{ github.workspace }}/prefix" >> "$GITHUB_OUTPUT"
 
     - name: Clone ECM
       run: |
@@ -47,7 +48,7 @@ jobs:
 
     - name: Build and install ECM
       run: |
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S extra-cmake-modules
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S extra-cmake-modules -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }}
         cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM
 
     - uses: actions/checkout@v3
