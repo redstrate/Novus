@@ -35,18 +35,22 @@ jobs:
             c_compiler: cl
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        repository: 'https://invent.kde.org/frameworks/extra-cmake-modules.git'
-        ref: 'v6.1.0'
+    - name: Clone ECM
+      run: |
+        git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
 
-    - name: Configure CMake
+    - name: Build and install ECM
       run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }}
+        -S ${{ github.workspace }}/extra-cmake-modules
+        cmake -I ${{ steps.strings.outputs.build-output-dir }}-ECM
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}/extra-cmake-modules
 
     - uses: actions/checkout@v3
 
