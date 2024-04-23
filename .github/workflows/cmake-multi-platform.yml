@@ -55,7 +55,7 @@ jobs:
     - name: Build and install Extra CMake Modules
       run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S extra-cmake-modules -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }}
-        cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM
+        cmake --install
 
     - name: Clone KCoreAddons
       run: |
@@ -64,7 +64,7 @@ jobs:
     - name: Build and install KCoreAddons
       run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kca -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcoreaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }}
-        cmake --install ${{ steps.strings.outputs.build-output-dir }}-kca
+        cmake --install
 
     - uses: actions/checkout@v3
 
