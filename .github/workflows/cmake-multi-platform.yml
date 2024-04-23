@@ -56,10 +56,8 @@ jobs:
       run: |
         $ProgressPreference = 'SilentlyContinue'
 
-        echo $Env:USERPROFILE\bin >> $Env:GITHUB_PATH
-
         Invoke-WebRequest https://netactuate.dl.sourceforge.net/project/gnuwin32/libintl/0.14.4/libintl-0.14.4-bin.zip -OutFile libintl.zip
-        unzip libintl.zip
+        unzip libintl.zip -d ${{ steps.strings.outputs.prefix-dir }}
 
     - name: Build zlib
       if: runner.os == 'Windows'
