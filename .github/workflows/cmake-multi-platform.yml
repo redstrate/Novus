@@ -56,7 +56,7 @@ jobs:
       run: |
         $ProgressPreference = 'SilentlyContinue'
 
-        Invoke-WebRequest https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-64.zip -OutFile libintl.zip
+        Invoke-WebRequest https://versaweb.dl.sourceforge.net/project/gnuwin32/libintl/0.14.4/libintl-0.14.4-lib.zip -OutFile libintl.zip
         unzip libintl.zip -d ${{ steps.strings.outputs.prefix-dir }}
 
     - name: Build zlib
