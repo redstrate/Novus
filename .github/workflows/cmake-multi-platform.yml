@@ -48,6 +48,15 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "prefix-dir=${{ github.workspace }}/prefix" >> "$GITHUB_OUTPUT"
 
+    # Why does Windows need this?
+    - name: Clear old build directiories
+      if: ${{ matrix.os }} == 'windows-latest'
+      run: |
+        rmdir ${{ steps.strings.outputs.build-output-dir }}-ECM /s /q
+        rmdir ${{ steps.strings.outputs.build-output-dir }}-kca /s /q
+        rmdir ${{ steps.strings.outputs.build-output-dir }}-kconfig /s /q
+        rmdir ${{ steps.strings.outputs.build-output-dir }}-karchive /s /q
+
     - name: Build and install Extra CMake Modules
       run: |
         git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
