@@ -37,6 +37,7 @@ jobs:
       with:
         version: "6.6.*"
         cache: true
+        modules: 'qthttpserver'
 
     - name: Set reusable strings
       id: strings
@@ -101,7 +102,7 @@ jobs:
     - name: Windows KI18n workaround
       if: runner.os == 'Windows'
       run: |
-        (Get-Content -ReadCount 0 ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake) -replace 'message(FATAL_ERROR "failed generating ${PO_DIR}")', 'message(WARNING "failed generating ${PO_DIR}")' | Set-Content ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake -WhatIf
+        (Get-Content -ReadCount 0 ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake) -replace 'message(FATAL_ERROR "failed generating ${PO_DIR}")', 'message(WARNING "failed generating ${PO_DIR}")' | Set-Content ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake
 
     - name: Build KI18n
       run: |
