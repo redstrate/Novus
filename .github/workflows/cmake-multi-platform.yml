@@ -35,6 +35,11 @@ jobs:
             c_compiler: cl
 
     steps:
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: "6.6.*"
+
     - name: Set reusable strings
       id: strings
       shell: bash
@@ -46,7 +51,7 @@ jobs:
       run: |
         git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
 
-    - name: Build and install ECM
+    - name: Build and install Extra CMake Modules
       run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S extra-cmake-modules -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }}
         cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM
