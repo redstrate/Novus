@@ -30,6 +30,8 @@ jobs:
             c_compiler: cl
 
     steps:
+    - uses: actions/checkout@v3
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
       with:
@@ -96,9 +98,6 @@ jobs:
         git clone https://invent.kde.org/frameworks/ki18n.git
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-ki18n -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ki18n -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-ki18n
-        cmake --install ${{ steps.strings.outputs.build-output-dir }}-ki18n
-
-    - uses: actions/checkout@v3
 
     - name: Configure CMake
       run: >
