@@ -42,7 +42,7 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "prefix-dir=${{ github.workspace }}/prefix" >> "$GITHUB_OUTPUT"
 
-    - name: Clone ECM
+    - name: Clone Extra CMake Modules
       run: |
         git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
 
@@ -50,6 +50,15 @@ jobs:
       run: |
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S extra-cmake-modules -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }}
         cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM
+
+    - name: Clone KCoreAddons
+      run: |
+        git clone https://invent.kde.org/frameworks/kcoreaddons.git
+
+    - name: Build and install KCoreAddons
+      run: |
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kca -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcoreaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }}
+        cmake --install ${{ steps.strings.outputs.build-output-dir }}-kca
 
     - uses: actions/checkout@v3
 
