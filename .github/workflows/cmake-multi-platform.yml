@@ -174,10 +174,10 @@ jobs:
         git clone https://invent.kde.org/frameworks/kcolorscheme.git
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcolorscheme -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
 
-    - name: Windows KColorScheme workaround
+    - name: Windows KI18n workaround
       if: (runner.os == 'Windows') && (steps.cache-prefix.outputs.cache-hit != 'true')
       run: |
-        (Get-Content -ReadCount 0 ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme/cmake/build-pofiles.cmake) -replace 'FATAL_ERROR', 'WARNING' | Set-Content ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme/cmake/build-pofiles.cmake
+        (Get-Content -ReadCount 0 ${{ steps.strings.outputs.prefix-dir }}/lib/cmake/KF6I18n/build-pofiles.cmake) -replace 'FATAL_ERROR', 'WARNING' | Set-Content ${{ steps.strings.outputs.prefix-dir }}/lib/cmake/KF6I18n/build-pofiles.cmake
 
     - name: Build KColorScheme
       if: steps.cache-prefix.outputs.cache-hit != 'true'
