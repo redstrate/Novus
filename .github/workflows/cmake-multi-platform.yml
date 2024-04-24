@@ -256,7 +256,7 @@ jobs:
         mv stb/* ${{ steps.strings.outputs.prefix-dir }}/include
 
     - name: Save Prefix
-      id: cache-prefix]-save
+      id: cache-prefix-save
       uses: actions/cache/save@v4
       with:
         path: ${{ steps.strings.outputs.prefix-dir }}
