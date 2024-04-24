@@ -124,15 +124,22 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcodecs -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcodecs -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcodecs --target install
 
+    - name: Build Plasma Wayland Protocols
+      if: runner.os == 'Linux'
+      run: |
+        git clone https://invent.kde.org/libraries/plasma-wayland-protocols.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-plasma-wayland-protocols -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S plasma-wayland-protocols -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-plasma-wayland-protocols --target install
+
     - name: Build KGuiAddons
       run: |
         git clone https://invent.kde.org/frameworks/kguiaddons.git
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kguiaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kguiaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kguiaddons --target install
 
-    - name: Build KWidgetAddons
+    - name: Build KWidgetsAddons
       run: |
-        git clone https://invent.kde.org/frameworks/kwidgetaddons.git
+        git clone https://invent.kde.org/frameworks/kwidgetsaddons.git
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kwidgetaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kwidgetaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kwidgetaddons --target install
 
