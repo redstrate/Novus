@@ -33,8 +33,5 @@ qt_generate_deploy_app_script(
 install(SCRIPT ${deploy_script})
 
 if (WIN32)
-    add_custom_command(TARGET novus-mdlviewer POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:novus-mdlviewer> ${CMAKE_INSTALL_BINDIR}
-            COMMAND_EXPAND_LISTS
-    )
+    install(FILES $<TARGET_RUNTIME_DLLS:novus-mdlviewer> DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
