@@ -170,7 +170,7 @@ jobs:
     - name: Windows KColorScheme workaround
       if: (runner.os == 'Windows') && (steps.cache-prefix.outputs.cache-hit != 'true')
       run: |
-        (Get-Content -ReadCount 0 ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake) -replace 'FATAL_ERROR', 'WARNING' | Set-Content ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake
+        (Get-Content -ReadCount 0 ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme/cmake/build-pofiles.cmake) -replace 'FATAL_ERROR', 'WARNING' | Set-Content ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme/cmake/build-pofiles.cmake
 
     - name: Build KColorScheme
       if: steps.cache-prefix.outputs.cache-hit != 'true'
