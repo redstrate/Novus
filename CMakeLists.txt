@@ -31,7 +31,7 @@ ecm_setup_version(${PROJECT_VERSION}
         VERSION_HEADER ${CMAKE_CURRENT_BINARY_DIR}/novus-version.h
 )
 
-find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent Core5Compat Sql HttpServer Network CONFIG REQUIRED)
+find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent Sql HttpServer Network CONFIG REQUIRED)
 find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons Config XmlGui Archive I18n)
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)

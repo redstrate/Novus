@@ -3,7 +3,6 @@
 
 #include <QDebug>
 #include <QString>
-#include <QStringRef>
 
 #include <physis.hpp>
 
@@ -54,7 +53,7 @@ inline QString decryptGameArg(uint32_t tickCount, const QString &sqexString)
 
     Blowfish *session = physis_blowfish_initialize(reinterpret_cast<uint8_t *>(buffer), 9);
 
-    QStringRef base64String(&sqexString, 12, sqexString.length() - 5 - 12);
+    QStringView base64String = sqexString.mid(12, sqexString.length() - 5 - 12);
     QByteArray base64Decoded =
         QByteArray::fromBase64(base64String.toUtf8(), QByteArray::Base64Option::Base64UrlEncoding | QByteArray::Base64Option::OmitTrailingEquals);
 
