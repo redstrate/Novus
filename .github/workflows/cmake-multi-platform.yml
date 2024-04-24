@@ -141,8 +141,8 @@ jobs:
     - name: Build KWidgetsAddons
       run: |
         git clone https://invent.kde.org/frameworks/kwidgetsaddons.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kwidgetaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kwidgetaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kwidgetaddons --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kwidgetsaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons --target install
 
     - name: Build KColorScheme
       run: |
