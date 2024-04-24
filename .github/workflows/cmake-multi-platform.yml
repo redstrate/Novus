@@ -52,6 +52,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install \
           gettext \
+          gperf \
 
     - name: Setup Windows dependencies
       if: runner.os == 'Windows'
