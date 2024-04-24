@@ -102,7 +102,7 @@ jobs:
     - name: Windows KI18n workaround
       if: runner.os == 'Windows'
       run: |
-        (Get-Content -ReadCount 0 "${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake)" -replace 'FATAL_ERROR', 'WARNING' | Set-Content "${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake"
+        (Get-Content -ReadCount 0 "${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake)" -replace 'FATAL_ERROR', 'WARNING' | Set-Content "${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake")
 
     - name: Build KI18n
       run: |
