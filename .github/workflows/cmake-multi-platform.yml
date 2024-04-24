@@ -144,10 +144,18 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kwidgetsaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons --target install
 
-    - name: Build KColorScheme
+    - name: Configure KColorScheme
       run: |
         git clone https://invent.kde.org/frameworks/kcolorscheme.git
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcolorscheme -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+
+    - name: Windows KColorScheme workaround
+      if: runner.os == 'Windows'
+      run: |
+        (Get-Content -ReadCount 0 ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake) -replace 'FATAL_ERROR', 'WARNING' | Set-Content ${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake
+
+    - name: Build KColorScheme
+      run: |
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme --target install
 
     - name: Build KConfigWidgets
@@ -177,13 +185,13 @@ jobs:
     - name: Build KTextWidgets
       run: |
         git clone https://invent.kde.org/frameworks/ktextwidgets.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ktextwidgets -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ktextwidgets -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ktextwidgets -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ktextwidgets -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF -DWITH_TEXT_TO_SPEECH=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-ktextwidgets --target install
 
-    - name: Build KXmlgui
+    - name: Build KXmlGui
       run: |
         git clone https://invent.kde.org/frameworks/kxmlgui.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kxmlgui -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kxmlgui -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kxmlgui -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kxmlgui -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF -DFORCE_DISABLE_KGLOBALACCEL=ON
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kxmlgui --target install
 
     - name: Configure
