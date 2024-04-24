@@ -53,6 +53,7 @@ jobs:
         sudo apt-get install \
           gettext \
           gperf \
+          libwayland-dev \
 
     - name: Setup Windows dependencies
       if: runner.os == 'Windows'
