@@ -48,10 +48,6 @@ jobs:
         vulkan-components: Vulkan-Headers, Vulkan-Loader, SPIRV-Cross
         vulkan-use-cache: true
 
-    - uses: hecrj/setup-rust-action@v2
-      with:
-        rust-version: ${{ matrix.os }}
-
     - name: Set reusable strings
       id: strings
       shell: bash
