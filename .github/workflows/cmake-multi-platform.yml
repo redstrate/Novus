@@ -65,8 +65,8 @@ jobs:
           libwayland-dev \
 
     - name: Cache Prefix
-      id: cache-prefix
-      uses: actions/cache@v4
+      id: cache-prefix-restore
+      uses: actions/cache/restore@v4
       with:
         path: ${{ steps.strings.outputs.prefix-dir }}
         key: ${{ runner.os }}-prefix
@@ -254,6 +254,13 @@ jobs:
       run: |
         git clone https://github.com/nothings/stb.git
         mv stb/* ${{ steps.strings.outputs.prefix-dir }}/include
+
+    - name: Save Prefix
+      id: cache-prefix]-save
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ steps.strings.outputs.prefix-dir }}
+        key: ${{ steps.cache-prefix-restore.outputs.cache-primary-key }}
 
     - name: Configure
       run: >
