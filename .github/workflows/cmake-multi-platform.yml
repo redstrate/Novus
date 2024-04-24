@@ -249,6 +249,12 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-nlohmann -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S json -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DJSON_BuildTests=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-nlohmann --target install
 
+    - name: Build stb
+      if: steps.cache-prefix.outputs.cache-hit != 'true'
+      run: |
+        git clone https://github.com/nothings/stb.git
+        mv stb/* ${{ steps.strings.outputs.prefix-dir }}/include
+
     - name: Configure
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
