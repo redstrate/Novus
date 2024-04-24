@@ -45,7 +45,7 @@ jobs:
       uses: humbletim/setup-vulkan-sdk@v1.2.0
       with:
         vulkan-query-version: latest
-        vulkan-components: Vulkan-Headers, Vulkan-Loader, SPIRV-Cross
+        vulkan-components: Vulkan-Headers, Vulkan-Loader, SPIRV-Cross, SPIRV-Headers
         vulkan-use-cache: true
 
     - name: Set reusable strings
