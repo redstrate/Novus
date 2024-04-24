@@ -229,14 +229,14 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     }
                     std::vector<uint32_t> subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
 
-                    const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
-                                                                                        systemKeys.size(),
-                                                                                        sceneKeys.data(),
-                                                                                        sceneKeys.size(),
-                                                                                        materialKeys.data(),
-                                                                                        materialKeys.size(),
-                                                                                        subviewKeys.data(),
-                                                                                        subviewKeys.size());
+                    const uint32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
+                                                                                       systemKeys.size(),
+                                                                                       sceneKeys.data(),
+                                                                                       sceneKeys.size(),
+                                                                                       materialKeys.data(),
+                                                                                       materialKeys.size(),
+                                                                                       subviewKeys.data(),
+                                                                                       subviewKeys.size());
                     const physis_SHPKNode node = physis_shpk_get_node(&renderMaterial.shaderPackage, selector);
 
                     // check if invalid
@@ -280,14 +280,14 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_shpk_crc("SUB_VIEW_MAIN"),
                 };
 
-                const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
-                                                                                    systemKeys.size(),
-                                                                                    nullptr,
-                                                                                    0,
-                                                                                    nullptr,
-                                                                                    0,
-                                                                                    subviewKeys.data(),
-                                                                                    subviewKeys.size());
+                const uint32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
+                                                                                   systemKeys.size(),
+                                                                                   nullptr,
+                                                                                   0,
+                                                                                   nullptr,
+                                                                                   0,
+                                                                                   subviewKeys.data(),
+                                                                                   subviewKeys.size());
                 const physis_SHPKNode node = physis_shpk_get_node(&createViewPositionShpk, selector);
 
                 // check if invalid
@@ -332,14 +332,14 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_shpk_crc("SUB_VIEW_MAIN"),
                 };
 
-                const u_int32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
-                                                                                    systemKeys.size(),
-                                                                                    sceneKeys.data(),
-                                                                                    sceneKeys.size(),
-                                                                                    nullptr,
-                                                                                    0,
-                                                                                    subviewKeys.data(),
-                                                                                    subviewKeys.size());
+                const uint32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
+                                                                                   systemKeys.size(),
+                                                                                   sceneKeys.data(),
+                                                                                   sceneKeys.size(),
+                                                                                   nullptr,
+                                                                                   0,
+                                                                                   subviewKeys.data(),
+                                                                                   subviewKeys.size());
                 const physis_SHPKNode node = physis_shpk_get_node(&directionalLightningShpk, selector);
 
                 // check if invalid
