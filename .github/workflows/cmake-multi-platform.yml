@@ -39,6 +39,13 @@ jobs:
         cache: true
         modules: 'qthttpserver qtwebsockets'
 
+    - name: Prepare Vulkan SDK
+      uses: humbletim/setup-vulkan-sdk@v1.2.0
+      with:
+        vulkan-query-version: latest
+        vulkan-components: Vulkan-Headers, Vulkan-Loader, SPIRV-Cross
+        vulkan-use-cache: true
+
     - name: Set reusable strings
       id: strings
       shell: bash
