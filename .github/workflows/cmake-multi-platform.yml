@@ -76,6 +76,20 @@ jobs:
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-ECM --target install
         cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM
 
+    - name: Configure KI18n
+      run: |
+        git clone https://invent.kde.org/frameworks/ki18n.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ki18n -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ki18n -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+
+    - name: Windows KI18n workaround
+      if: runner.os == 'Windows'
+      run: |
+        (Get-Content -ReadCount 0 "${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake)" -replace 'FATAL_ERROR', 'WARNING' | Set-Content "${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake")
+
+    - name: Build KI18n
+      run: |
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ki18n --target install
+
     - name: Build KCoreAddons
       run: |
         git clone https://invent.kde.org/frameworks/kcoreaddons.git
@@ -94,19 +108,71 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-karchive -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S karchive -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF # TODO: enable bzip which we need later
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-karchive --target install
 
-    - name: Configure KI18n
+    - name: Build KItemViews
       run: |
-        git clone https://invent.kde.org/frameworks/ki18n.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ki18n -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ki18n -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        git clone https://invent.kde.org/frameworks/kitemviews.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kitemviews -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kitemviews -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kitemviews --target install
 
-    - name: Windows KI18n workaround
-      if: runner.os == 'Windows'
+    - name: Build KCodecs
       run: |
-        (Get-Content -ReadCount 0 "${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake)" -replace 'FATAL_ERROR', 'WARNING' | Set-Content "${{ steps.strings.outputs.build-output-dir }}-ki18n/cmake/build-pofiles.cmake")
+        git clone https://invent.kde.org/frameworks/kcodecs.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcodecs -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcodecs -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcodecs --target install
 
-    - name: Build KI18n
+    - name: Build KGuiAddons
       run: |
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ki18n --target install
+        git clone https://invent.kde.org/frameworks/kguiaddons.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kguiaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kguiaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kguiaddons --target install
+
+    - name: Build KWidgetAddons
+      run: |
+        git clone https://invent.kde.org/frameworks/kwidgetaddons.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kwidgetaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kwidgetaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kwidgetaddons --target install
+
+    - name: Build KColorScheme
+      run: |
+        git clone https://invent.kde.org/frameworks/kcolorscheme.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcolorscheme -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme --target install
+
+    - name: Build KConfigWidgets
+      run: |
+        git clone https://invent.kde.org/frameworks/kconfigwidgets.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kconfigwidgets -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kconfigwidgets -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kconfigwidgets --target install
+
+    - name: Build KIconThemes
+      run: |
+        git clone https://invent.kde.org/frameworks/kiconthemes.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kiconthemes -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kiconthemes -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kiconthemes --target install
+
+    - name: Build Sonnet
+      run: |
+        git clone https://invent.kde.org/frameworks/sonnet.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-sonnet -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S sonnet -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-sonnet --target install
+
+    - name: Build KCompletion
+      run: |
+        git clone https://invent.kde.org/frameworks/kcompletion.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcompletion -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcompletion -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcompletion --target install
+
+    - name: Build KTextWidgets
+      run: |
+        git clone https://invent.kde.org/frameworks/ktextwidgets.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ktextwidgets -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ktextwidgets -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ktextwidgets --target install
+
+    - name: Build KXmlgui
+      run: |
+        git clone https://invent.kde.org/frameworks/kxmlgui.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kxmlgui -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kxmlgui -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kxmlgui --target install
 
     - name: Configure
       run: >
