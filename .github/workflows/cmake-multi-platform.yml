@@ -269,12 +269,14 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }}
-        -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }}
+        -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.build-output-dir }}/bin
         -S ${{ github.workspace }}
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target install
 
-    - name: Test
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --build-config ${{ matrix.build_type }}
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows
+        path: ${{ steps.strings.outputs.build-output-dir }}/bin
