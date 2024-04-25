@@ -25,16 +25,10 @@ else()
     install(FILES zone.xiv.novus.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 endif()
 
-set(deploy_tool_options_arg "")
-if (WIN32)
-    set(deploy_tool_options_arg --no-quick-import --no-virtualkeyboard --no-opengl-sw --plugindir "${CMAKE_INSTALL_PREFIX}/bin/bin/plugins" --libdir "${CMAKE_INSTALL_PREFIX}/bin/bin/")
-endif()
-
-# We only need to call windeployqt on one executable
+# We only need to call deploy on one executable
 qt_generate_deploy_app_script(
         TARGET novus-launcher
         OUTPUT_SCRIPT deploy_script
         NO_UNSUPPORTED_PLATFORM_ERROR
-        DEPLOY_TOOL_OPTIONS ${deploy_tool_options_arg}
 )
 install(SCRIPT ${deploy_script})
