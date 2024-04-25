@@ -19,3 +19,7 @@ target_include_directories(novus-launcher PUBLIC include)
 install(FILES zone.xiv.novus.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 install(FILES zone.xiv.novus.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 install(TARGETS novus-launcher ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
+
+if (WIN32)
+    install(FILES $<TARGET_RUNTIME_DLLS:novus-launcher> DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()

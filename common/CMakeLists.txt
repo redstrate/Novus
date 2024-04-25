@@ -1,7 +1,11 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
-add_library(novus-common STATIC)
+if (WIN32)
+    add_library(novus-common SHARED)
+else()
+    add_library(novus-common STATIC)
+endif()
 target_sources(novus-common
         PRIVATE
         include/aboutdata.h
@@ -35,5 +39,18 @@ target_link_libraries(novus-common
         Qt6::Widgets
         glm::glm)
 target_compile_definitions(novus-common PRIVATE TRANSLATION_DOMAIN="novus")
+set_target_properties(novus-common PROPERTIES
+        EXPORT_NAME NovusCommon
+)
+ecm_generate_export_header(novus-common
+        BASE_NAME NovusCommon
+        VERSION 1.0.0
+)
+
+target_include_directories(novus-common PUBLIC "$<BUILD_INTERFACE:${novus-common_INCLUDE_DIRS}>")
 
 add_library(Novus::Common ALIAS novus-common)
+
+if (WIN32)
+    install(FILES $<TARGET_RUNTIME_DLLS:novus-common> DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()

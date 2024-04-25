@@ -9,9 +9,11 @@
 #include <QString>
 #include <physis.hpp>
 
+#include "novuscommon_export.h"
+
 struct GameData;
 
-class FileCache
+class NOVUSCOMMON_EXPORT FileCache
 {
 public:
     explicit FileCache(GameData &data);

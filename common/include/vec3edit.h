@@ -7,7 +7,9 @@
 #include <QWidget>
 #include <glm/glm.hpp>
 
-class Vector3Edit : public QWidget
+#include "novuscommon_export.h"
+
+class NOVUSCOMMON_EXPORT Vector3Edit : public QWidget
 {
     Q_OBJECT
 

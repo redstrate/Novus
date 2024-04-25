@@ -5,9 +5,11 @@
 
 #include <QString>
 
+#include "novuscommon_export.h"
+
 enum class FileType { Unknown, ExcelList, ExcelHeader, ExcelData, Model, Texture, ShaderPackage, CharaMakeParams, Skeleton, Dictionary };
 
-class FileTypes
+class NOVUSCOMMON_EXPORT FileTypes
 {
 public:
     static FileType getFileType(const QString &extension);

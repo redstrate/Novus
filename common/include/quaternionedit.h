@@ -8,7 +8,9 @@
 
 #include <glm/glm.hpp>
 
-class QuaternionEdit : public QWidget
+#include "novuscommon_export.h"
+
+class NOVUSCOMMON_EXPORT QuaternionEdit : public QWidget
 {
     Q_OBJECT
 

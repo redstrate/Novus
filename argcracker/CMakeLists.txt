@@ -24,3 +24,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 endif ()
 
 install(TARGETS novus-argcracker ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
+
+if (WIN32)
+    install(FILES $<TARGET_RUNTIME_DLLS:novus-argcracker> DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()

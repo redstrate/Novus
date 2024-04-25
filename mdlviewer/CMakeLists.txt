@@ -24,3 +24,14 @@ target_link_libraries(novus-mdlviewer
 install(FILES zone.xiv.mdlviewer.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 install(FILES zone.xiv.mdlviewer.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 install(TARGETS novus-mdlviewer ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
+
+qt_generate_deploy_app_script(
+        TARGET novus-mdlviewer
+        OUTPUT_SCRIPT deploy_script
+        NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${deploy_script})
+
+if (WIN32)
+    install(FILES $<TARGET_RUNTIME_DLLS:novus-mdlviewer> DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
