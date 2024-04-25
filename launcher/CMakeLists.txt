@@ -25,16 +25,21 @@ else()
     install(FILES zone.xiv.novus.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 endif()
 
-set(deploy_tool_options_arg "")
-if (WIN32)
-    set(deploy_tool_options_arg --no-quick-import --no-virtualkeyboard --no-opengl-sw --plugindir "${CMAKE_INSTALL_PREFIX}/bin/bin/plugins" --libdir "${CMAKE_INSTALL_PREFIX}/bin/bin/" --no-translations)
-endif()
+# Qt 6.7 brings DEPLOY_TOOL_OPTIONS
+if(QT_VERSION_MINOR LESS 7)
+    set(deploy_tool_options_arg "")
+    if (WIN32)
+        set(deploy_tool_options_arg --no-quick-import --no-virtualkeyboard --no-opengl-sw --plugindir "${CMAKE_INSTALL_PREFIX}/bin/bin/plugins" --libdir "${CMAKE_INSTALL_PREFIX}/bin/bin/" --no-translations)
+    endif()
 
-# We only need to call windeployqt on one executable
-qt_generate_deploy_app_script(
-        TARGET novus-launcher
-        OUTPUT_SCRIPT deploy_script
-        NO_UNSUPPORTED_PLATFORM_ERROR
-        DEPLOY_TOOL_OPTIONS ${deploy_tool_options_arg}
-)
-install(SCRIPT ${deploy_script})
+    # We only need to call windeployqt on one executable
+    qt_generate_deploy_app_script(
+            TARGET novus-launcher
+            OUTPUT_SCRIPT deploy_script
+            NO_UNSUPPORTED_PLATFORM_ERROR
+            DEPLOY_TOOL_OPTIONS ${deploy_tool_options_arg}
+    )
+    install(SCRIPT ${deploy_script})
+else()
+    message(INFO "App deployment requires Qt 6.7")
+endif()
