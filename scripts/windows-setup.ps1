@@ -87,7 +87,7 @@ CheckCompileResult "kconfig"
 
 # Build KArchive
 Clone "karchive" "https://invent.kde.org/frameworks/karchive.git"
-Configure "karchive" "-DBUILD_TESTING=OFF" "-DWITH_BZIP2=OFF" "-DWITH_LIBLZMA=OFF" "-DWITH_LIBZSTD=OFF"
+Configure "karchive" "-DBUILD_TESTING=OFF -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF"
 cmake --build "$BuildDir-karchive" --config Debug --target install --parallel $NumCores
 CheckCompileResult "karchive"
 
@@ -149,13 +149,13 @@ CheckCompileResult "kcompletion"
 
 # Build KTextWidgets
 Clone "ktextwidgets" "https://invent.kde.org/frameworks/ktextwidgets.git"
-Configure "ktextwidgets" "-DBUILD_TESTING=OFF" "-DWITH_TEXT_TO_SPEECH=OFF"
+Configure "ktextwidgets" "-DBUILD_TESTING=OFF -DWITH_TEXT_TO_SPEECH=OFF"
 cmake --build "$BuildDir-ktextwidgets" --config Debug --target install --parallel $NumCores
 CheckCompileResult "ktextwidgets"
 
 # Build KXmlGui
 Clone "kxmlgui" "https://invent.kde.org/frameworks/kxmlgui.git"
-Configure "kxmlgui" "-DBUILD_TESTING=OFF" "-DFORCE_DISABLE_KGLOBALACCEL=ON"
+Configure "kxmlgui" "-DBUILD_TESTING=OFF -DFORCE_DISABLE_KGLOBALACCEL=ON"
 cmake --build "$BuildDir-kxmlgui" --config Debug --target install --parallel $NumCores
 CheckCompileResult "kxmlgui"
 
