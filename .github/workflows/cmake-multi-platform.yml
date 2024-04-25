@@ -265,6 +265,7 @@ jobs:
     - name: Save Prefix
       id: cache-prefix-save
       uses: actions/cache/save@v4
+      if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       with:
         path: ${{ steps.strings.outputs.prefix-dir }}
         key: ${{ steps.cache-prefix-restore.outputs.cache-primary-key }}
