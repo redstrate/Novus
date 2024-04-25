@@ -90,6 +90,9 @@ jobs:
         Invoke-WebRequest https://cfhcable.dl.sourceforge.net/project/gnuwin32/gperf/3.0.1/gperf-3.0.1-bin.zip -OutFile gperf.zip
         unzip gperf.zip -d ${{ steps.strings.outputs.prefix-dir }}
 
+        Invoke-WebRequest https://xiv.zone/distrib/dependencies/icoutils.zip -OutFile icoutils.zip
+        unzip icoutils.zip -d ${{ steps.strings.outputs.prefix-dir }}
+
     - name: Build zlib
       if: (runner.os == 'Windows') && (steps.cache-prefix-restore.outputs.cache-hit != 'true')
       run: |

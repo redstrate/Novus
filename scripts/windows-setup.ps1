@@ -51,6 +51,9 @@ Expand-Archive -Path "$LocalDir/iconv.zip" -DestinationPath $PrefixDir -Force
 Invoke-WebRequest https://cfhcable.dl.sourceforge.net/project/gnuwin32/gperf/3.0.1/gperf-3.0.1-bin.zip -OutFile "$LocalDir/gperf.zip"
 Expand-Archive -Path "$LocalDir/gperf.zip" -DestinationPath $PrefixDir -Force
 
+Invoke-WebRequest https://xiv.zone/distrib/dependencies/icoutils.zip -OutFile "$LocalDir/icoutils.zip"
+Expand-Archive -Path "$LocalDir/icoutils.zip" -DestinationPath $PrefixDir -Force
+
 # Build zlib
 Clone "zlib" "https://github.com/madler/zlib.git"
 Configure "zlib" "-DBUILD_TESTING=OFF"
