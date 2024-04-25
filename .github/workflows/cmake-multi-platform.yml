@@ -295,11 +295,6 @@ jobs:
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/zlib.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
         Copy-Item -Path $env:Qt6_DIR/bin/Qt6PrintSupport.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
 
-    - name: Cleanup bin files
-      if: runner.os == 'Windows'
-      run: |
-        rm -Path ${{ steps.strings.outputs.build-output-dir }}/bin/Release
-
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
       with:
