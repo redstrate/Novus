@@ -8,8 +8,10 @@ $LocalDir = "./local"
 $BuildDir = "$LocalDir/build"
 $PrefixDir = (Get-Location).Path + "/prefix"
 
-function Configure($Name, $Args = "") {
-    cmake -B "$BuildDir-$Name" "-DCMAKE_PREFIX_PATH=$PrefixDir" "-DCMAKE_CXX_COMPILER=cl" "-DCMAKE_C_COMPILER=cl" "-DCMAKE_BUILD_TYPE=Debug" "-S" "$LocalDir/$Name" "-DCMAKE_INSTALL_PREFIX=$PrefixDir" $Args
+function Configure($Name, $ExtraArgs = "") {
+    $Command = "cmake -B $BuildDir-$Name -DCMAKE_PREFIX_PATH=$PrefixDir -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl -DCMAKE_BUILD_TYPE=Debug -S $LocalDir/$Name -DCMAKE_INSTALL_PREFIX=$PrefixDir $ExtraArgs"
+    Write-Output "Running $Command"
+    Invoke-Expression $Command
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to configure $Name"
     }
