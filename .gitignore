@@ -6,3 +6,6 @@ build/*
 .idea/
 .directory
 .clang-format
+# Windows
+local/
+prefix/
