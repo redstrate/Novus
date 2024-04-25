@@ -15,6 +15,18 @@ function Configure($Name, $Args = "") {
     }
 }
 
+function Clone($Name, $Url) {
+    if (Test-Path "$LocalDir/$Name") {
+        Write-Information "Skipping clone of $Name because it's source directory already exists"
+    } else {
+        git clone --depth=1 $Url "$LocalDir/$Name"
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to clone $Name from $Url"
+        }
+    }
+}
+
 if (!(Test-Path $LocalDir)) {
     New-Item -ItemType Directory -Path $LocalDir
 }
@@ -30,18 +42,18 @@ Invoke-WebRequest https://cfhcable.dl.sourceforge.net/project/gnuwin32/gperf/3.0
 Expand-Archive -Path "$LocalDir/gperf.zip" -DestinationPath $PrefixDir -Force
 
 # Build zlib
-git clone "https://github.com/madler/zlib.git" "$LocalDir/zlib"
+Clone "zlib" "https://github.com/madler/zlib.git"
 Configure "zlib" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-zlib" --config Debug --target install
 
 # Build Extra CMake Modules
-git clone https://invent.kde.org/frameworks/extra-cmake-modules.git "$LocalDir/extra-cmake-modules"
+Clone "extra-cmake-modules" "https://invent.kde.org/frameworks/extra-cmake-modules.git"
 Configure "extra-cmake-modules" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-extra-cmake-modules" --config Debug --target install
 cmake --install "$BuildDir-extra-cmake-modules" --config Debug
 
 # Build KI18n
-git clone https://invent.kde.org/frameworks/ki18n.git "$LocalDir/ki18n"
+Clone "ki18n" "https://invent.kde.org/frameworks/ki18n.git"
 # Workaround for Windows
 Configure "ki18n" "-DBUILD_TESTING=OFF"
 
@@ -49,102 +61,102 @@ Configure "ki18n" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-ki18n" --config Debug --target install
 
 # Build KCoreAddons
-git clone https://invent.kde.org/frameworks/kcoreaddons.git "$LocalDir/kcoreaddons"
+Clone "kcoreaddons" "https://invent.kde.org/frameworks/kcoreaddons.git"
 Configure "kcoreaddons" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kcoreaddons" --config Debug --target install
 
 # Build KConfig
-git clone https://invent.kde.org/frameworks/kconfig.git "$LocalDir/kconfig"
+Clone "kconfig" "https://invent.kde.org/frameworks/kconfig.git"
 Configure "kconfig" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kconfig" --config Debug --target install
 
 # Build KArchive
-git clone https://invent.kde.org/frameworks/karchive.git "$LocalDir/karchive"
+Clone "karchive" "https://invent.kde.org/frameworks/karchive.git"
 Configure "karchive" "-DBUILD_TESTING=OFF" "-DWITH_BZIP2=OFF" "-DWITH_LIBLZMA=OFF" "-DWITH_LIBZSTD=OFF"
 cmake --build "$BuildDir-karchive" --config Debug --target install
 
 # Build KItemViews
-git clone https://invent.kde.org/frameworks/kitemviews.git "$LocalDir/kitemviews"
+Clone "kitemviews" "https://invent.kde.org/frameworks/kitemviews.git"
 Configure "kitemviews" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kitemviews" --config Debug --target install
 
 # Build KCodecs
-git clone https://invent.kde.org/frameworks/kcodecs.git "$LocalDir/kcodecs"
+Clone "kcodecs" "https://invent.kde.org/frameworks/kcodecs.git"
 Configure "kcodecs" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kcodecs" --config Debug --target install
 
 # Build KGuiAddons
-git clone https://invent.kde.org/frameworks/kguiaddons.git "$LocalDir/kguiaddons"
+Clone "kguiaddons" "https://invent.kde.org/frameworks/kguiaddons.git"
 Configure "kguiaddons" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kguiaddons" --config Debug --target install
 
 # Build KWidgetsAddons
-git clone https://invent.kde.org/frameworks/kwidgetsaddons.git "$LocalDir/kwidgetsaddons"
+Clone "kwidgetsaddons" "https://invent.kde.org/frameworks/kwidgetsaddons.git"
 Configure "kwidgetsaddons" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kwidgetsaddons" --config Debug --target install
 
 # Build KColorScheme
-git clone https://invent.kde.org/frameworks/kcolorscheme.git "$LocalDir/kcolorscheme"
+Clone "kcolorscheme" "https://invent.kde.org/frameworks/kcolorscheme.git"
 Configure "kcolorscheme" "-DBUILD_TESTING=OFF"
 # Workaround for Windows
 (Get-Content -ReadCount 0 "$PrefixDir/lib/cmake/KF6I18n/build-pofiles.cmake") -replace 'FATAL_ERROR', 'WARNING' | Set-Content "$PrefixDir/lib/cmake/KF6I18n/build-pofiles.cmake"
 cmake --build "$BuildDir-kcolorscheme" --config Debug --target install
 
 # Build KConfigWidgets
-git clone https://invent.kde.org/frameworks/kconfigwidgets.git "$LocalDir/kconfigwidgets"
+Clone "kconfigwidgets" "https://invent.kde.org/frameworks/kconfigwidgets.git"
 Configure "kconfigwidgets" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kconfigwidgets" --config Debug --target install
 
 # Build KIconThemes
-git clone https://invent.kde.org/frameworks/kiconthemes.git "$LocalDir/kiconthemes"
+Clone "kiconthemes" "https://invent.kde.org/frameworks/kiconthemes.git"
 Configure "kiconthemes" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kiconthemes" --config Debug --target install
 
 # Build Sonnet
-git clone https://invent.kde.org/frameworks/sonnet.git "$LocalDir/sonnet"
+Clone "sonnet" "https://invent.kde.org/frameworks/sonnet.git"
 Configure "sonnet" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-sonnet" --config Debug --target install
 
 # Build KCompletion
-git clone https://invent.kde.org/frameworks/kcompletion.git "$LocalDir/kcompletion"
+Clone "kcompletion" "https://invent.kde.org/frameworks/kcompletion.git"
 Configure "kcompletion" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kcompletion" --config Debug --target install
 
 # Build KTextWidgets
-git clone https://invent.kde.org/frameworks/ktextwidgets.git "$LocalDir/ktextwidgets"
+Clone "ktextwidgets" "https://invent.kde.org/frameworks/ktextwidgets.git"
 Configure "ktextwidgets" "-DBUILD_TESTING=OFF" "-DWITH_TEXT_TO_SPEECH=OFF"
 cmake --build "$BuildDir-ktextwidgets" --config Debug --target install
 
 # Build KXmlGui
-git clone https://invent.kde.org/frameworks/kxmlgui.git "$LocalDir/kxmlgui"
+Clone "kxmlgui" "https://invent.kde.org/frameworks/kxmlgui.git"
 Configure "kxmlgui" "-DBUILD_TESTING=OFF" "-DFORCE_DISABLE_KGLOBALACCEL=ON"
 cmake --build "$BuildDir-kxmlgui" --config Debug --target install
 
 # Build glm
-git clone https://github.com/g-truc/glm.git "$LocalDir/glm"
+Clone "glm" "https://github.com/g-truc/glm.git"
 Configure "glm" "-DGLM_BUILD_TESTS=OFF"
 cmake --build "$BuildDir-glm" --config Debug --target install
 
 # Build Corrosion
-git clone https://github.com/corrosion-rs/corrosion.git "$LocalDir/corrosion"
+Clone "corrosion" "https://github.com/corrosion-rs/corrosion.git"
 Configure "corrosion" "-DCORROSION_BUILD_TESTS=OFF"
 cmake --build "$BuildDir-corrosion" --config Debug --target install
 
 # Build nlohmann
-git clone https://github.com/nlohmann/json.git "$LocalDir/json"
+Clone "json" "https://github.com/nlohmann/json.git"
 Configure "json" "-DJSON_BuildTests=OFF"
 cmake --build "$BuildDir-json" --config Debug --target install
 
 # Build stb
-git clone https://github.com/nothings/stb.git "$LocalDir/stb"
+Clone "stb" "https://github.com/nothings/stb.git"
 mv $LocalDir/stb/* $PrefixDir/include
 
 # Build SPIRV-Cross
-git clone https://github.com/KhronosGroup/SPIRV-Cross.git "$LocalDir/SPIRV-Cross"
+Clone "SPIRV-Cross" "https://github.com/KhronosGroup/SPIRV-Cross.git"
 Configure "SPIRV-Cross"
 cmake --build "$BuildDir-SPIRV-Cross" --config Debug --target install
 
 # Build SPIRV-Headers
-git clone https://github.com/KhronosGroup/SPIRV-Headers.git "$LocalDir/SPIRV-Headers"
+Clone "SPIRV-Headers" "https://github.com/KhronosGroup/SPIRV-Headers.git"
 Configure "SPIRV-Headers"
 cmake --build "$BuildDir-SPIRV-Headers" --config Debug --target install
