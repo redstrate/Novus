@@ -1,7 +1,5 @@
 # Novus
 
-[![builds.sr.ht status](https://builds.sr.ht/~redstrate/novus.svg)](https://builds.sr.ht/~redstrate/novus)
-
 A suite of unofficial FFXIV tools, including a model viewer and data archive explorer.
 
 ![Screenshot of some of the applications](https://xiv.zone/novus.png)
@@ -19,7 +17,7 @@ Here is an exhaustive list of tooling available here:
 
 ## Usage
 
-There are no releases at the moment, but builds will be coming soon. Your only option at the moment is to build Novus manually.
+There are no releases at the moment, but experimental builds are currently available for Windows and Linux via [GitHub Actions](https://github.com/redstrate/Novus/actions). Note that the Linux binaries may not be completely portable.
 
 ## Building
 
