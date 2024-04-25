@@ -5,7 +5,9 @@
 
 #include <QMainWindow>
 
-class NovusMainWindow : public QMainWindow
+#include "novuscommon_export.h"
+
+class NOVUSCOMMON_EXPORT NovusMainWindow : public QMainWindow
 {
 public:
     explicit NovusMainWindow();

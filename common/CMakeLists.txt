@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: CC0-1.0
 
 if (WIN32)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_library(novus-common SHARED)
 else()
     add_library(novus-common STATIC)
@@ -40,6 +39,15 @@ target_link_libraries(novus-common
         Qt6::Widgets
         glm::glm)
 target_compile_definitions(novus-common PRIVATE TRANSLATION_DOMAIN="novus")
+set_target_properties(novus-common PROPERTIES
+        EXPORT_NAME NovusCommon
+)
+ecm_generate_export_header(novus-common
+        BASE_NAME NovusCommon
+        VERSION 1.0.0
+)
+
+target_include_directories(novus-common PUBLIC "$<BUILD_INTERFACE:${novus-common_INCLUDE_DIRS}>")
 
 add_library(Novus::Common ALIAS novus-common)
 

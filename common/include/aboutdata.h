@@ -6,4 +6,7 @@
 #include <KAboutData>
 #include <QString>
 
-void customizeAboutData(const QString &componentName, const QString &desktopFilename, const QString &applicationTitle, const QString &applicationDescription);
+#include "novuscommon_export.h"
+
+NOVUSCOMMON_EXPORT void
+customizeAboutData(const QString &componentName, const QString &desktopFilename, const QString &applicationTitle, const QString &applicationDescription);

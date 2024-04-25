@@ -5,4 +5,6 @@
 
 #include <QString>
 
-QString getGameDirectory();
+#include "novuscommon_export.h"
+
+NOVUSCOMMON_EXPORT QString getGameDirectory();
