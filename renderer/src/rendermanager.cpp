@@ -196,6 +196,7 @@ RenderManager::RenderManager(GameData *data)
     VkPhysicalDeviceFeatures enabledFeatures{};
     enabledFeatures.shaderClipDistance = VK_TRUE;
     enabledFeatures.shaderCullDistance = VK_TRUE;
+    enabledFeatures.fillModeNonSolid = VK_TRUE;
 
     VkPhysicalDeviceVulkan11Features enabled11Features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES};
     enabled11Features.shaderDrawParameters = VK_TRUE;

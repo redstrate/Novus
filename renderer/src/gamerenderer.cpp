@@ -1054,19 +1054,19 @@ void GameRenderer::createImageResources()
     m_normalGBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                              m_device.swapChain->extent.height,
                                              VK_FORMAT_R8G8B8A8_UNORM,
-                                             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+                                             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     m_viewPositionBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                                   m_device.swapChain->extent.height,
                                                   VK_FORMAT_R8G8B8A8_UNORM,
-                                                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+                                                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     m_compositeBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                                m_device.swapChain->extent.height,
                                                VK_FORMAT_R8G8B8A8_UNORM,
-                                               VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+                                               VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     m_depthBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                            m_device.swapChain->extent.height,
                                            VK_FORMAT_D32_SFLOAT,
-                                           VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+                                           VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
     CommonParameter commonParam{};
     commonParam.m_RenderTarget = {1.0f / m_device.swapChain->extent.width,

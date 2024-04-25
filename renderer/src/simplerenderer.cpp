@@ -430,7 +430,7 @@ void SimpleRenderer::initDescriptors()
 
 void SimpleRenderer::initTextures(int width, int height)
 {
-    m_compositeTexture = m_device.createTexture(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    m_compositeTexture = m_device.createTexture(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     m_depthTexture = m_device.createTexture(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
