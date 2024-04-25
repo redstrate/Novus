@@ -24,10 +24,11 @@ target_link_libraries(novus-karuku
         Qt6::Widgets
         Qt6::Network)
 
-install(FILES zone.xiv.karaku.desktop DESTINATION ${KDE_INSTALL_APPDIR})
-install(FILES zone.xiv.karaku.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 install(TARGETS novus-karuku ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
 if (WIN32)
     install(FILES $<TARGET_RUNTIME_DLLS:novus-karuku> DESTINATION ${CMAKE_INSTALL_BINDIR})
+else()
+    install(FILES zone.xiv.karaku.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+    install(FILES zone.xiv.karaku.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 endif()

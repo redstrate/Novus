@@ -48,10 +48,11 @@ target_link_libraries(novus-sagasu
         Qt6::Concurrent
         Qt6::Network)
 
-install(FILES zone.xiv.sagasu.desktop DESTINATION ${KDE_INSTALL_APPDIR})
-install(FILES zone.xiv.sagasu.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 install(TARGETS novus-sagasu ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
 if (WIN32)
     install(FILES $<TARGET_RUNTIME_DLLS:novus-sagasu> DESTINATION ${CMAKE_INSTALL_BINDIR})
+else()
+    install(FILES zone.xiv.sagasu.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+    install(FILES zone.xiv.sagasu.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 endif()
