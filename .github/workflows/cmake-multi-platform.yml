@@ -298,7 +298,7 @@ jobs:
     - name: Cleanup bin files
       if: runner.os == 'Windows'
       run: |
-        rm ${{ steps.strings.outputs.build-output-dir }}/bin/Release
+        rm -Path ${{ steps.strings.outputs.build-output-dir }}/bin/Release
 
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
