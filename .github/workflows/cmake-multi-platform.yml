@@ -316,4 +316,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ runner.os }}-package
-        path: ${{ steps.strings.outputs.build-output-dir }}/bin
+        path: ${{ steps.strings.outputs.build-output-dir }}/bin/bin
