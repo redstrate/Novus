@@ -52,3 +52,14 @@ $ cmake --build build
 ```
 
 If the build was successful, the tool binaries will be found in `./build/bin`.
+
+## Windows
+
+Install the following:
+
+* [Qt 6.6](https://doc.qt.io/qt-6/get-and-install-qt.html) (with support for the HTTP Server and WebSockets)
+* [Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows)
+* [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/) (for a C++ compiler)
+* CMake (can be installed with the Visual Studio Build Tools)
+
+Afterwards, run `.\scripts\windows-setup.ps1` and `.\scripts\windows-build.ps1` in PowerShell.
