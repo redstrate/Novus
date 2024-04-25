@@ -1,7 +1,11 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
-add_library(novus-common STATIC)
+if (WIN32)
+    add_library(novus-common SHARED)
+else()
+    add_library(novus-common STATIC)
+endif()
 target_sources(novus-common
         PRIVATE
         include/aboutdata.h
