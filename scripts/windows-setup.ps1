@@ -16,7 +16,7 @@ function Clone($Name, $Url) {
     if (Test-Path "$LocalDir/$Name") {
         Write-Information "Skipping clone of $Name because it's source directory already exists"
     } else {
-        git clone $Url "$LocalDir/$Name"
+        git clone --depth=1 $Url "$LocalDir/$Name"
 
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to clone $Name from $Url"
