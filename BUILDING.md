@@ -61,6 +61,7 @@ Install the following:
 * [Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows)
 * [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/) (for a C++ compiler)
 * CMake (can be installed with the Visual Studio Build Tools)
+* [Rust](https://www.rust-lang.org/tools/install)
 
 Make sure your Qt bin (like `C:\Qt\6.7.0\msvc2019_64\bin`) is in your `PATH` environment variable before building, otherwise Qt will not be picked up by CMake.
 
