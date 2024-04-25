@@ -27,6 +27,8 @@ endif()
 
 # Qt 6.7 brings DEPLOY_TOOL_OPTIONS
 if(Qt6_VERSION_MINOR LESS 7)
+    message(INFO "App deployment requires Qt 6.7")
+else()
     set(deploy_tool_options_arg "")
     if (WIN32)
         set(deploy_tool_options_arg --no-quick-import --no-virtualkeyboard --no-opengl-sw --plugindir "${CMAKE_INSTALL_PREFIX}/bin/bin/plugins" --libdir "${CMAKE_INSTALL_PREFIX}/bin/bin/" --no-translations)
@@ -40,6 +42,4 @@ if(Qt6_VERSION_MINOR LESS 7)
             DEPLOY_TOOL_OPTIONS ${deploy_tool_options_arg}
     )
     install(SCRIPT ${deploy_script})
-else()
-    message(INFO "App deployment requires Qt 6.7")
 endif()
