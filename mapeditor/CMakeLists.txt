@@ -36,6 +36,10 @@ ecm_add_app_icon(novus-mapeditor
 )
 
 if (WIN32)
+    set_target_properties(novus-mapeditor PROPERTIES
+            WIN32_EXECUTABLE TRUE
+            OUTPUT_NAME "MapEditor")
+
     install(FILES $<TARGET_RUNTIME_DLLS:novus-mapeditor> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
     install(FILES zone.xiv.mapeditor.desktop DESTINATION ${KDE_INSTALL_APPDIR})

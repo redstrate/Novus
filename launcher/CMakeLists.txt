@@ -19,10 +19,9 @@ target_include_directories(novus-launcher PUBLIC include)
 install(TARGETS novus-launcher ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
 if (WIN32)
-    set_target_properties(
-            novus-launcher
-            PROPERTIES WIN32_EXECUTABLE TRUE
-    )
+    set_target_properties(novus-launcher PROPERTIES
+            WIN32_EXECUTABLE TRUE
+            OUTPUT_NAME "NovusSDK")
 
     install(FILES $<TARGET_RUNTIME_DLLS:novus-launcher> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()

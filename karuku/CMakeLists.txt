@@ -36,6 +36,10 @@ ecm_add_app_icon(novus-karuku
 )
 
 if (WIN32)
+    set_target_properties(novus-karuku PROPERTIES
+            WIN32_EXECUTABLE TRUE
+            OUTPUT_NAME "ExcelEditor")
+
     install(FILES $<TARGET_RUNTIME_DLLS:novus-karuku> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
     install(FILES zone.xiv.karaku.desktop DESTINATION ${KDE_INSTALL_APPDIR})

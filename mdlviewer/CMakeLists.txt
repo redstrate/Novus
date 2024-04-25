@@ -33,6 +33,10 @@ ecm_add_app_icon(novus-mdlviewer
 )
 
 if (WIN32)
+    set_target_properties(novus-mdlviewer PROPERTIES
+            WIN32_EXECUTABLE TRUE
+            OUTPUT_NAME "ModelViewer")
+
     install(FILES $<TARGET_RUNTIME_DLLS:novus-mdlviewer> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
     install(FILES zone.xiv.mdlviewer.desktop DESTINATION ${KDE_INSTALL_APPDIR})

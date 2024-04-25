@@ -60,6 +60,10 @@ ecm_add_app_icon(novus-sagasu
 )
 
 if (WIN32)
+    set_target_properties(novus-sagasu PROPERTIES
+            WIN32_EXECUTABLE TRUE
+            OUTPUT_NAME "DataExplorer")
+
     install(FILES $<TARGET_RUNTIME_DLLS:novus-sagasu> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
     install(FILES zone.xiv.sagasu.desktop DESTINATION ${KDE_INSTALL_APPDIR})

@@ -61,6 +61,10 @@ ecm_add_app_icon(novus-armoury
 )
 
 if (WIN32)
+    set_target_properties(novus-armoury PROPERTIES
+            WIN32_EXECUTABLE TRUE
+            OUTPUT_NAME "Armoury")
+
     install(FILES $<TARGET_RUNTIME_DLLS:novus-armoury> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
     install(FILES zone.xiv.armoury.desktop DESTINATION ${KDE_INSTALL_APPDIR})
