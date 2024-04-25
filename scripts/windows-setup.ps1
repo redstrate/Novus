@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 NotNite <hi@notnite.com>
+# SPDX-License-Identifier: CC0-1.0
+
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $true
 
