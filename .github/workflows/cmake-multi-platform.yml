@@ -281,7 +281,7 @@ jobs:
 
     - name: Copy required DLLs
       if: runner.os == 'Windows'
-      run: >
+      run: |
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/KF6ItemViews.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/KF6IconWidgets.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/KF6GuiAddons.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
