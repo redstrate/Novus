@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 if (WIN32)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_library(novus-common SHARED)
 else()
     add_library(novus-common STATIC)
