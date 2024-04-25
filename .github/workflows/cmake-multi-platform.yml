@@ -81,8 +81,11 @@ jobs:
       run: |
         $ProgressPreference = 'SilentlyContinue'
 
-        Invoke-WebRequest https://xiv.zone/distrib/dependencies/gettext.zip -OutFile libintl.zip
-        unzip libintl.zip -d ${{ steps.strings.outputs.prefix-dir }}
+        Invoke-WebRequest https://xiv.zone/distrib/dependencies/gettext.zip -OutFile gettext.zip
+        unzip gettext.zip -d ${{ steps.strings.outputs.prefix-dir }}
+        
+        Invoke-WebRequest https://xiv.zone/distrib/dependencies/iconv.zip -OutFile iconv.zip
+        unzip iconv.zip -d ${{ steps.strings.outputs.prefix-dir }}
 
         Invoke-WebRequest https://cfhcable.dl.sourceforge.net/project/gnuwin32/gperf/3.0.1/gperf-3.0.1-bin.zip -OutFile gperf.zip
         unzip gperf.zip -d ${{ steps.strings.outputs.prefix-dir }}
