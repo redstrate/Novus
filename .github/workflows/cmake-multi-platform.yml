@@ -309,6 +309,7 @@ jobs:
         Copy-Item -Path $env:Qt6_DIR/bin/Qt6PrintSupport.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
 
     - name: Cleanup bin files
+      if: runner.os == 'Windows'
       run: |
         rm ${{ steps.strings.outputs.build-output-dir }}/bin/Release
 
