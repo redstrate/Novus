@@ -279,6 +279,16 @@ jobs:
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target install
 
+    - name: Copy required DLLs
+      if: runner.os == 'Windows'
+      run: >
+        cp ${{ steps.strings.outputs.prefix-dir }}/bin/KF6ItemViews.dll ${{ steps.strings.outputs.build-output-dir }}/bin/bin
+        cp ${{ steps.strings.outputs.prefix-dir }}/bin/KF6IconWidgets.dll ${{ steps.strings.outputs.build-output-dir }}/bin/bin
+        cp ${{ steps.strings.outputs.prefix-dir }}/bin/KF6GuiAddons.dll ${{ steps.strings.outputs.build-output-dir }}/bin/bin
+        cp ${{ steps.strings.outputs.prefix-dir }}/bin/KF6ColorScheme.dll ${{ steps.strings.outputs.build-output-dir }}/bin/bin
+        cp ${{ steps.strings.outputs.prefix-dir }}/bin/intl-8.dll ${{ steps.strings.outputs.build-output-dir }}/bin/bin
+        cp $env:Qt6_DIR/bin/Qt6PrintSupport.dll ${{ steps.strings.outputs.build-output-dir }}/bin/bin
+
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
       with:
