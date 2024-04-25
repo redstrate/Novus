@@ -25,10 +25,10 @@ endif ()
 
 install(TARGETS novus-argcracker ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
+ecm_mark_nongui_executable(novus-argcracker)
+
 if (WIN32)
-    set_target_properties(novus-argcracker PROPERTIES
-            WIN32_EXECUTABLE TRUE
-            OUTPUT_NAME "ArgCracker")
+    set_target_properties(novus-argcracker PROPERTIES OUTPUT_NAME "ArgCracker")
 
     install(FILES $<TARGET_RUNTIME_DLLS:novus-argcracker> DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

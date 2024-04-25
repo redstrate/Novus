@@ -27,6 +27,7 @@ include(FeatureSummary)
 include(FetchContent)
 include(ECMGenerateExportHeader)
 include(ECMAddAppIcon)
+include(ECMMarkNonGuiExecutable)
 
 ecm_setup_version(${PROJECT_VERSION}
         VARIABLE_PREFIX NOVUS
