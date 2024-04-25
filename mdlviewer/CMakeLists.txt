@@ -23,6 +23,15 @@ target_link_libraries(novus-mdlviewer
 
 install(TARGETS novus-mdlviewer ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
+ecm_add_app_icon(novus-mdlviewer
+        ICONS
+        zone.xiv.mdlviewer.svg
+        ${CMAKE_SOURCE_DIR}/resources/16-model.png
+        ${CMAKE_SOURCE_DIR}/resources/32-model.png
+        ${CMAKE_SOURCE_DIR}/resources/48-model.png
+        ${CMAKE_SOURCE_DIR}/resources/256-model.png
+)
+
 if (WIN32)
     install(FILES $<TARGET_RUNTIME_DLLS:novus-mdlviewer> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()

@@ -26,6 +26,15 @@ target_link_libraries(novus-karuku
 
 install(TARGETS novus-karuku ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
+ecm_add_app_icon(novus-karuku
+        ICONS
+        zone.xiv.karaku.svg
+        ${CMAKE_SOURCE_DIR}/resources/16-excel.png
+        ${CMAKE_SOURCE_DIR}/resources/32-excel.png
+        ${CMAKE_SOURCE_DIR}/resources/48-excel.png
+        ${CMAKE_SOURCE_DIR}/resources/256-excel.png
+)
+
 if (WIN32)
     install(FILES $<TARGET_RUNTIME_DLLS:novus-karuku> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()

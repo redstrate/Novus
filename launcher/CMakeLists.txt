@@ -19,11 +19,25 @@ target_include_directories(novus-launcher PUBLIC include)
 install(TARGETS novus-launcher ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
 if (WIN32)
+    set_target_properties(
+            novus-launcher
+            PROPERTIES WIN32_EXECUTABLE TRUE
+    )
+
     install(FILES $<TARGET_RUNTIME_DLLS:novus-launcher> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
     install(FILES zone.xiv.novus.desktop DESTINATION ${KDE_INSTALL_APPDIR})
     install(FILES zone.xiv.novus.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 endif()
+
+ecm_add_app_icon(novus-launcher
+        ICONS
+        zone.xiv.novus.svg
+        ${CMAKE_SOURCE_DIR}/resources/16-launcher.png
+        ${CMAKE_SOURCE_DIR}/resources/32-launcher.png
+        ${CMAKE_SOURCE_DIR}/resources/48-launcher.png
+        ${CMAKE_SOURCE_DIR}/resources/256-launcher.png
+)
 
 # We only need to call deploy on one executable
 qt_generate_deploy_app_script(

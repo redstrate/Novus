@@ -51,6 +51,15 @@ target_link_libraries(novus-armoury
 
 install(TARGETS novus-armoury ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
+ecm_add_app_icon(novus-armoury
+        ICONS
+        zone.xiv.armoury.svg
+        ${CMAKE_SOURCE_DIR}/resources/16-armoury.png
+        ${CMAKE_SOURCE_DIR}/resources/32-armoury.png
+        ${CMAKE_SOURCE_DIR}/resources/48-armoury.png
+        ${CMAKE_SOURCE_DIR}/resources/256-armoury.png
+)
+
 if (WIN32)
     install(FILES $<TARGET_RUNTIME_DLLS:novus-armoury> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()

@@ -26,6 +26,15 @@ target_link_libraries(novus-mapeditor
 
 install(TARGETS novus-mapeditor ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 
+ecm_add_app_icon(novus-mapeditor
+        ICONS
+        zone.xiv.mapeditor.svg
+        ${CMAKE_SOURCE_DIR}/resources/16-map.png
+        ${CMAKE_SOURCE_DIR}/resources/32-map.png
+        ${CMAKE_SOURCE_DIR}/resources/48-map.png
+        ${CMAKE_SOURCE_DIR}/resources/256-map.png
+)
+
 if (WIN32)
     install(FILES $<TARGET_RUNTIME_DLLS:novus-mapeditor> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
