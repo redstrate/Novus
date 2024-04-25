@@ -37,3 +37,7 @@ target_link_libraries(novus-common
 target_compile_definitions(novus-common PRIVATE TRANSLATION_DOMAIN="novus")
 
 add_library(Novus::Common ALIAS novus-common)
+
+if (WIN32)
+    install(FILES $<TARGET_RUNTIME_DLLS:novus-common> DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
