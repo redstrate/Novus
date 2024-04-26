@@ -259,6 +259,15 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-nlohmann -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S json -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DJSON_BuildTests=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-nlohmann --config ${{ matrix.build_type }} --target install
 
+    - name: Build Breeze Icons
+      if: (runner.os == 'Windows') && (steps.cache-prefix-restore.outputs.cache-hit != 'true')
+      continue-on-error: true
+      run: |
+        git clone https://invent.kde.org/frameworks/breeze-icons.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-breeze-icons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S breeze-icons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DICONS_LIBRARY=ON -DSKIP_INSTALL_ICONS=ON
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-breeze-icons --config ${{ matrix.build_type }} --target install
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-breeze-icons --config ${{ matrix.build_type }} --target install
+
     - name: Build stb
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |

@@ -42,6 +42,11 @@ if (NOT TARGET glm::glm)
     add_library(glm::glm ALIAS glm)
 endif ()
 
+# TODO: we should really do this on all platforms anyway
+if (WIN32)
+    find_package(KF6BreezeIcons REQUIRED)
+endif ()
+
 add_subdirectory(extern)
 add_subdirectory(renderer)
 add_subdirectory(karuku)

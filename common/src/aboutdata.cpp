@@ -7,8 +7,19 @@
 
 #include "novus-version.h"
 
+#ifdef Q_OS_WIN
+#include <BreezeIcons>
+#include <QIcon>
+#endif
+
 void customizeAboutData(const QString &componentName, const QString &desktopFilename, const QString &applicationTitle, const QString &applicationDescription)
 {
+    // TODO: we shouldn't do this here
+#ifdef Q_OS_WIN
+    BreezeIcons::initIcons();
+    QIcon::setThemeName(QStringLiteral("Breeze"));
+#endif
+
     KAboutData about(componentName,
                      applicationTitle,
                      QStringLiteral(NOVUS_VERSION_STRING),
