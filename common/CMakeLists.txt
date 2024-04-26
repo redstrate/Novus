@@ -47,6 +47,12 @@ ecm_generate_export_header(novus-common
         VERSION 1.0.0
 )
 
+if (WIN32)
+    target_link_libraries(novus-common PRIVATE
+            KF6::BreezeIcons
+    )
+endif ()
+
 target_include_directories(novus-common PUBLIC "$<BUILD_INTERFACE:${novus-common_INCLUDE_DIRS}>")
 
 add_library(Novus::Common ALIAS novus-common)
