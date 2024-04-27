@@ -215,13 +215,18 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     if (renderMaterial.type == MaterialType::Skin) {
                         systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
                     }
-                    std::vector<uint32_t> sceneKeys = {
-                        physis_shpk_crc("TransformViewSkin"),
-                        physis_shpk_crc("GetAmbientLight_SH"),
-                        physis_shpk_crc("GetReflectColor_Texture"),
-                        physis_shpk_crc("GetAmbientOcclusion_None"),
-                        physis_shpk_crc("ApplyDitherClipOff"),
-                    };
+                    std::vector<uint32_t> sceneKeys;
+                    if (model.skinned) {
+                        sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
+                    } else {
+                        sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
+                    }
+
+                    sceneKeys.push_back(physis_shpk_crc("GetAmbientLight_SH"));
+                    sceneKeys.push_back(physis_shpk_crc("GetReflectColor_Texture"));
+                    sceneKeys.push_back(physis_shpk_crc("GetAmbientOcclusion_None"));
+                    sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
+
                     std::vector<uint32_t> materialKeys;
                     for (int j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
                         auto id = renderMaterial.shaderPackage.material_keys[j].id;
