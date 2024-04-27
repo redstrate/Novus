@@ -18,6 +18,7 @@ public:
     explicit SingleGearView(GameData *data, FileCache &cache, QWidget *parent = nullptr);
 
     QString getLoadedGearPath() const;
+    QList<physis_Material> getLoadedMaterials() const;
 
 Q_SIGNALS:
     void gearChanged();
@@ -30,6 +31,8 @@ Q_SIGNALS:
 
     void addToFullModelViewer(GearInfo &info);
     void importedModel();
+
+    void doneLoadingModel();
 
 public Q_SLOTS:
     void clear();

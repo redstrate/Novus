@@ -7,7 +7,7 @@
 
 #include "novuscommon_export.h"
 
-enum class FileType { Unknown, ExcelList, ExcelHeader, ExcelData, Model, Texture, ShaderPackage, CharaMakeParams, Skeleton, Dictionary };
+enum class FileType { Unknown, ExcelList, ExcelHeader, ExcelData, Model, Texture, ShaderPackage, CharaMakeParams, Skeleton, Dictionary, Material };
 
 class NOVUSCOMMON_EXPORT FileTypes
 {

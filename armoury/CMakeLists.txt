@@ -11,7 +11,6 @@ target_sources(novus-armoury
         include/gearlistwidget.h
         include/gearview.h
         include/mainwindow.h
-        include/materialview.h
         include/metadataview.h
         include/penumbraapi.h
         include/settingswindow.h
@@ -25,7 +24,6 @@ target_sources(novus-armoury
         src/gearview.cpp
         src/main.cpp
         src/mainwindow.cpp
-        src/materialview.cpp
         src/metadataview.cpp
         src/penumbraapi.cpp
         src/settingswindow.cpp
@@ -41,6 +39,7 @@ target_link_libraries(novus-armoury
         Novus::MdlPart
         Novus::CmpPart
         Novus::SklbPart
+        Novus::MtrlPart
         Physis::Physis
         Physis::Logger
         imgui

@@ -3,14 +3,15 @@
 
 #include "mainwindow.h"
 
+#include <KLocalizedString>
 #include <QApplication>
 #include <QListWidget>
 #include <QMenuBar>
 #include <QSplitter>
 #include <physis.hpp>
 
-#include "materialpropertyedit.h"
 #include "materialview.h"
+#include "mtrlpart.h"
 
 MainWindow::MainWindow(GameData *data)
     : NovusMainWindow()
@@ -27,9 +28,9 @@ MainWindow::MainWindow(GameData *data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    auto materialProperty = new MaterialPropertyEdit(data);
+    auto materialProperty = new MtrlPart(data);
     materialProperty->setMaximumWidth(400);
-    materialProperty->setMaterial(m_material);
+    materialProperty->load(m_material);
     dummyWidget->addWidget(materialProperty);
 
     auto matView = new MaterialView(data, cache);

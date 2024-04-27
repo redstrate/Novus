@@ -5,12 +5,10 @@ add_executable(novus-mateditor)
 target_sources(novus-mateditor
         PRIVATE
         include/mainwindow.h
-        include/materialpropertyedit.h
         include/materialview.h
 
         src/main.cpp
         src/mainwindow.cpp
-        src/materialpropertyedit.cpp
         src/materialview.cpp)
 target_include_directories(novus-mateditor
         PUBLIC
@@ -19,9 +17,10 @@ target_link_libraries(novus-mateditor
         PRIVATE
         Novus::Common
         Novus::MdlPart
-        Novus::TexPart
+        Novus::MtrlPart
         Physis::Physis
         Physis::Logger
+        KF6::I18n
         Qt6::Core
         Qt6::Widgets)
 

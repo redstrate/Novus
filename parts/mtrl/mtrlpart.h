@@ -11,14 +11,14 @@
 #include <QTabWidget>
 #include <physis.hpp>
 
-class MaterialPropertyEdit : public QWidget
+class MtrlPart : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MaterialPropertyEdit(GameData *data, QWidget *parent = nullptr);
+    explicit MtrlPart(GameData *data, QWidget *parent = nullptr);
 
-    void setMaterial(physis_Material material);
+    void load(physis_Material file);
 
 private:
     void rebuild();

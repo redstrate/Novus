@@ -39,6 +39,7 @@ MDLPart::MDLPart(GameData *data, FileCache &cache, QWidget *parent)
     vkWindow->setVulkanInstance(inst);
 
     auto widget = QWidget::createWindowContainer(vkWindow);
+    widget->installEventFilter(vkWindow);
 
     viewportLayout->addWidget(widget);
 
@@ -330,6 +331,11 @@ bool MDLPart::wireframe() const
 {
     // return renderer->wireframe;
     return false;
+}
+
+int MDLPart::numModels() const
+{
+    return models.size();
 }
 
 #include "moc_mdlpart.cpp"

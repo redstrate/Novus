@@ -37,6 +37,21 @@ void VulkanWindow::exposeEvent(QExposeEvent *)
     }
 }
 
+bool VulkanWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::Hide:
+        // QWindow is reset when hiding a widget container without "SurfaceAboutToBeDestroyed" notification (Qt bug, tested on 6.5.1)
+        m_renderer->destroySwapchain();
+        m_initialized = false;
+        break;
+    default:
+        break;
+    }
+    // dispatchEvent(event, watched);
+    return QWindow::eventFilter(watched, event);
+}
+
 bool VulkanWindow::event(QEvent *e)
 {
     switch (e->type()) {
@@ -52,11 +67,16 @@ bool VulkanWindow::event(QEvent *e)
                                resizeEvent->size().height() * screen()->devicePixelRatio());
         }
     } break;
-    case QEvent::PlatformSurface:
-        if (dynamic_cast<QPlatformSurfaceEvent *>(e)->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed && m_initialized) {
+    case QEvent::Hide: {
+        m_renderer->destroySwapchain();
+    } break;
+    case QEvent::PlatformSurface: {
+        auto surfaceEvent = dynamic_cast<QPlatformSurfaceEvent *>(e);
+        auto surfaceEventType = surfaceEvent->surfaceEventType();
+        if (surfaceEventType == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed && m_initialized) {
             m_renderer->destroySwapchain();
         }
-        break;
+    } break;
     case QEvent::MouseButtonPress: {
         auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
 

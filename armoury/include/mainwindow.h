@@ -9,8 +9,8 @@
 
 #include "fullmodelviewer.h"
 #include "gearview.h"
-#include "materialview.h"
 #include "metadataview.h"
+#include "mtrlpart.h"
 #include "novusmainwindow.h"
 #include "singlegearview.h"
 
@@ -31,7 +31,7 @@ protected:
 private:
     SingleGearView *gearView = nullptr;
     FullModelViewer *fullModelViewer = nullptr;
-    MaterialView *materialView = nullptr;
+    QTabWidget *materialsView = nullptr;
     MetadataView *metadataView = nullptr;
 
     GameData &data;

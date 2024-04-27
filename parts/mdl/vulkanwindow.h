@@ -15,6 +15,7 @@ public:
 
     void exposeEvent(QExposeEvent *) override;
 
+    bool eventFilter(QObject *watched, QEvent *event) override;
     bool event(QEvent *e) override;
 
     void render();

@@ -38,6 +38,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
 
     connect(this, &SingleGearView::gotMDLPath, this, [this, mdlPathEdit] {
         mdlPathEdit->setText(gearView->getLoadedGearPath());
+        Q_EMIT doneLoadingModel();
     });
 
     auto topControlLayout = new QHBoxLayout();
@@ -440,6 +441,20 @@ void SingleGearView::importModel(const QString &filename)
 
     qInfo() << "Successfully imported model!";
     Q_EMIT importedModel();
+}
+
+QList<physis_Material> SingleGearView::getLoadedMaterials() const
+{
+    QList<physis_Material> materialPaths;
+
+    for (int i = 0; i < gearView->part().numModels(); i++) {
+        auto model = gearView->part().getModel(i);
+        for (auto material : model.materials) {
+            materialPaths.push_back(material.mat);
+        }
+    }
+
+    return materialPaths;
 }
 
 #include "moc_singlegearview.cpp"

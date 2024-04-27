@@ -49,13 +49,13 @@ MainWindow::MainWindow(GameData *in_data)
     });
     connect(gearView, &SingleGearView::importedModel, m_api, &PenumbraApi::redrawAll);
 
-    materialView = new MaterialView(&data);
+    materialsView = new QTabWidget();
 
     metadataView = new MetadataView(&data);
 
     auto tabWidget = new QTabWidget();
     tabWidget->addTab(gearView, i18nc("@title:tab", "Models"));
-    tabWidget->addTab(materialView, i18nc("@title:tab", "Materials"));
+    tabWidget->addTab(materialsView, i18nc("@title:tab", "Materials"));
     tabWidget->addTab(metadataView, i18nc("@title:tab", "Metadata"));
     tabWidget->setDocumentMode(true); // Don't draw the borders
     tabWidget->tabBar()->setExpanding(true);
@@ -64,6 +64,19 @@ MainWindow::MainWindow(GameData *in_data)
     fullModelViewer = new FullModelViewer(&data, cache);
     connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {
         gearView->setFMVAvailable(!loading);
+    });
+
+    connect(gearView, &SingleGearView::doneLoadingModel, this, [this, in_data] {
+        materialsView->clear();
+
+        int i = 0;
+        for (auto material : gearView->getLoadedMaterials()) {
+            auto materialView = new MtrlPart(in_data);
+            materialView->load(material);
+            materialsView->addTab(materialView, i18n("Material %1", i)); // TODO: it would be nice to get the actual material name here
+
+            i++;
+        }
     });
 }
 

@@ -350,11 +350,10 @@ void RenderManager::resize(VkSurfaceKHR surface, int width, int height)
 
 void RenderManager::destroySwapchain()
 {
-    // TODO: port to new swapchain aPI
-    /*if (swapchain != VK_NULL_HANDLE) {
-        vkDestroySwapchainKHR(device, swapchain, nullptr);
-        swapchain = VK_NULL_HANDLE;
-    }*/
+    if (m_device->swapChain->swapchain != VK_NULL_HANDLE) {
+        vkDestroySwapchainKHR(m_device->device, m_device->swapChain->swapchain, nullptr);
+        m_device->swapChain->swapchain = VK_NULL_HANDLE;
+    }
 }
 
 void RenderManager::render(const std::vector<DrawObject> &models)

@@ -14,7 +14,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("shpk"), FileType::ShaderPackage},
                                                      {QStringLiteral("cmp"), FileType::CharaMakeParams},
                                                      {QStringLiteral("sklb"), FileType::Skeleton},
-                                                     {QStringLiteral("dic"), FileType::Dictionary}};
+                                                     {QStringLiteral("dic"), FileType::Dictionary},
+                                                     {QStringLiteral("mtrl"), FileType::Material}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -25,7 +26,8 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::ShaderPackage, i18n("Shader Package")},
                                                 {FileType::CharaMakeParams, i18n("Chara Make Params")},
                                                 {FileType::Skeleton, i18n("Skeleton")},
-                                                {FileType::Dictionary, i18n("Dictionary")}};
+                                                {FileType::Dictionary, i18n("Dictionary")},
+                                                {FileType::Material, i18n("Material")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -36,7 +38,8 @@ const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiter
                                                 {FileType::ShaderPackage, QStringLiteral("paint-pattern-symbolic")},
                                                 {FileType::CharaMakeParams, QStringLiteral("step_object_SoftBody-symbolic")},
                                                 {FileType::Skeleton, QStringLiteral("user-symbolic")},
-                                                {FileType::Dictionary, QStringLiteral("accessories-dictionary-symbolic")}};
+                                                {FileType::Dictionary, QStringLiteral("accessories-dictionary-symbolic")},
+                                                {FileType::Material, QStringLiteral("map-globe-symbolic")}};
 
 FileType FileTypes::getFileType(const QString &extension)
 {

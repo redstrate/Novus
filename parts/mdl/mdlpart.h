@@ -47,6 +47,8 @@ public:
     void setWireframe(bool wireframe);
     bool wireframe() const;
 
+    int numModels() const;
+
 Q_SIGNALS:
     void modelChanged();
     void skeletonChanged();

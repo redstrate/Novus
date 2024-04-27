@@ -24,6 +24,7 @@
 #include "filetypes.h"
 #include "hexpart.h"
 #include "mdlpart.h"
+#include "mtrlpart.h"
 #include "shpkpart.h"
 #include "sklbpart.h"
 #include "texpart.h"
@@ -131,6 +132,11 @@ void MainWindow::refreshParts(const QString &path)
         auto dicWidget = new DicPart();
         dicWidget->load(file);
         partHolder->addTab(dicWidget, i18nc("@title:tab", "Dictionary"));
+    } break;
+    case FileType::Material: {
+        auto mtrlWidget = new MtrlPart(data);
+        mtrlWidget->load(physis_material_parse(file));
+        partHolder->addTab(mtrlWidget, i18nc("@title:tab", "Material"));
     } break;
     default:
         break;
