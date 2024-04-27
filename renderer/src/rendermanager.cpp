@@ -100,8 +100,8 @@ RenderManager::RenderManager(GameData *data)
     createInfo.ppEnabledExtensionNames = instanceExtensions.data();
     createInfo.enabledExtensionCount = instanceExtensions.size();
     createInfo.pApplicationInfo = &applicationInfo;
-    createInfo.ppEnabledLayerNames = layers;
-    createInfo.enabledLayerCount = 1;
+    // createInfo.ppEnabledLayerNames = layers;
+    // createInfo.enabledLayerCount = 1;
 
     vkCreateInstance(&createInfo, nullptr, &m_device->instance);
 

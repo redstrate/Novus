@@ -84,7 +84,6 @@ private:
     Buffer g_CameraParameter;
     Buffer g_InstanceParameter;
     Buffer g_ModelParameter;
-    Buffer g_MaterialParameter;
     Buffer g_TransparencyMaterialParameter;
     Buffer g_CommonParameter;
     Buffer g_LightParam;

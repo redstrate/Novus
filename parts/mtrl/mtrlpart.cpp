@@ -221,7 +221,7 @@ void MtrlPart::rebuild()
         auto layout = new QFormLayout();
         groupBox->setLayout(layout);
 
-        auto label = new QLabel(QString::number(constant.value));
+        auto label = new QLabel(QStringLiteral("%1 %2 %3 %4").arg(constant.values[0]).arg(constant.values[1]).arg(constant.values[2]).arg(constant.values[3]));
         layout->addRow(i18n("Value:"), label);
     }
 }

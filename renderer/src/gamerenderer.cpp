@@ -100,16 +100,6 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
 
     // material data
     {
-        g_MaterialParameter = m_device.createBuffer(sizeof(MaterialParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-
-        MaterialParameters materialParameter{};
-        materialParameter.parameters[0] = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f); // diffuse color then alpha threshold
-        materialParameter.parameters[5].z = 1.0f;
-        m_device.copyToBuffer(g_MaterialParameter, &materialParameter, sizeof(MaterialParameters));
-    }
-
-    // material data
-    {
         g_TransparencyMaterialParameter = m_device.createBuffer(sizeof(MaterialParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         MaterialParameters materialParameter{};
@@ -1202,7 +1192,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                     info->range = buffer.size;
                 };
 
-                auto bindBuffer = [this, &useUniformBuffer, &info, j, &object, pass](const char *name) {
+                auto bindBuffer = [this, &useUniformBuffer, &info, j, &object, pass, material](const char *name) {
                     qInfo() << "Requesting" << name << "at" << j;
 
                     if (strcmp(name, "g_CameraParameter") == 0) {
@@ -1219,7 +1209,9 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                             // The composite semi-transparency uses a different alphathreshold
                             useUniformBuffer(g_TransparencyMaterialParameter);
                         } else {
-                            useUniformBuffer(g_MaterialParameter);
+                            Q_ASSERT(material);
+                            Q_ASSERT(material->materialBuffer.buffer);
+                            useUniformBuffer(material->materialBuffer);
                         }
                     } else if (strcmp(name, "g_LightParam") == 0) {
                         useUniformBuffer(g_LightParam);

@@ -29,6 +29,8 @@ struct RenderMaterial {
     RenderTexture *normalTexture = nullptr;
     RenderTexture *specularTexture = nullptr;
     RenderTexture *multiTexture = nullptr;
+
+    Buffer materialBuffer;
 };
 
 struct DrawObject {
