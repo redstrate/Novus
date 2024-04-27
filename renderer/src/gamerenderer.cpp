@@ -677,7 +677,7 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
             colorAttachments.push_back(attachmentInfo);
         }
     } else if (passName == "PASS_COMPOSITE_SEMITRANSPARENCY") {
-        // normals, it seems like
+        // composite
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
             attachmentInfo.imageView = m_compositeBuffer.imageView;
@@ -691,6 +691,17 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
             attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
+        }
+
+        // depth buffer for depth testing
+        {
+            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            attachmentInfo.imageView = m_depthBuffer.imageView;
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            depthStencilAttachment = attachmentInfo;
         }
     }
 
@@ -967,8 +978,10 @@ GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passN
         VkPipelineDepthStencilStateCreateInfo depthStencil = {};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = VK_TRUE;
-        depthStencil.depthWriteEnable = VK_TRUE;
-        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+        if (passName == "PASS_G_OPAQUE") {
+            depthStencil.depthWriteEnable = VK_TRUE;
+        }
+        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
         depthStencil.maxDepthBounds = 1.0f;
 
         std::array<VkFormat, 3> colorAttachmentFormats = {VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED};
