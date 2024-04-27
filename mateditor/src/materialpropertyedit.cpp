@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "materialpropertyedit.h"
+#include "texpart.h"
 
 #include <KLocalizedString>
 #include <QFormLayout>
@@ -355,8 +356,13 @@ MaterialPropertyEdit::MaterialPropertyEdit(GameData *data, QWidget *parent)
     m_texturesLayout = new QVBoxLayout();
     texturesTab->setLayout(m_texturesLayout);
 
+    auto constantsTab = new QWidget();
+    m_constantsLayout = new QVBoxLayout();
+    constantsTab->setLayout(m_constantsLayout);
+
     m_tabWidget->addTab(propertiesTab, i18n("Parameters"));
     m_tabWidget->addTab(texturesTab, i18n("Textures"));
+    m_tabWidget->addTab(constantsTab, i18n("Constants"));
 
     setLayout(m_itemsLayout);
 
@@ -502,6 +508,32 @@ void MaterialPropertyEdit::rebuild()
 
         auto groupBox = new QGroupBox(name);
         m_texturesLayout->addWidget(groupBox);
+
+        auto layout = new QFormLayout();
+        groupBox->setLayout(layout);
+
+        auto texWidget = new TexPart(m_data);
+        texWidget->load(physis_gamedata_extract_file(m_data, m_material.textures[i]));
+        layout->addRow(i18n("Value:"), texWidget);
+    }
+
+    child = nullptr;
+    while ((child = m_constantsLayout->takeAt(0)) != nullptr) {
+        child->widget()->setParent(nullptr);
+        child->widget()->deleteLater();
+    }
+
+    for (int i = 0; i < m_material.num_constants; i++) {
+        const auto constant = m_material.constants[i];
+
+        auto groupBox = new QGroupBox(QString::number(constant.id));
+        m_constantsLayout->addWidget(groupBox);
+
+        auto layout = new QFormLayout();
+        groupBox->setLayout(layout);
+
+        auto label = new QLabel(QString::number(constant.value));
+        layout->addRow(i18n("Value:"), label);
     }
 }
 

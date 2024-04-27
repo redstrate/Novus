@@ -20,7 +20,7 @@ MainWindow::MainWindow(GameData *data)
     setMinimumSize(1280, 720);
     setupMenubar();
 
-    auto matFile = physis_gamedata_extract_file(data, "chara/equipment/e0028/material/v0020/mt_c0101e0028_top_a.mtrl");
+    auto matFile = physis_gamedata_extract_file(data, "chara/equipment/e0028/material/v0001/mt_c0101e0028_top_a.mtrl");
     m_material = physis_material_parse(matFile);
 
     auto dummyWidget = new QSplitter();

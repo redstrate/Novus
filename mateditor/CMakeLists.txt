@@ -19,6 +19,7 @@ target_link_libraries(novus-mateditor
         PRIVATE
         Novus::Common
         Novus::MdlPart
+        Novus::TexPart
         Physis::Physis
         Physis::Logger
         Qt6::Core

@@ -29,6 +29,7 @@ private:
     QTabWidget *m_tabWidget = nullptr;
     QVBoxLayout *m_propertiesLayout = nullptr;
     QVBoxLayout *m_texturesLayout = nullptr;
+    QVBoxLayout *m_constantsLayout = nullptr;
 
     physis_Material m_material = {};
     physis_SHPK m_shpk = {};
