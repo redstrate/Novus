@@ -279,7 +279,12 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                         bool found = false;
                         for (int z = 0; z < renderMaterial.mat.num_shader_keys; z++) {
                             if (renderMaterial.mat.shader_keys[z].category == id) {
-                                materialKeys.push_back(renderMaterial.mat.shader_keys[z].value);
+                                // TODO: Temporary workaround for materials that need tile normals
+                                if (id == 0xB616DC5A) {
+                                    materialKeys.push_back(0x22A4AABF);
+                                } else {
+                                    materialKeys.push_back(renderMaterial.mat.shader_keys[z].value);
+                                }
                                 found = true;
                             }
                         }
@@ -900,6 +905,13 @@ GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passN
 
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        colorBlendAttachment.blendEnable = VK_TRUE;
+        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
         std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
 
