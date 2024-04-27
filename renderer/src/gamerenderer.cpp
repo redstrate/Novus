@@ -224,8 +224,21 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     };
                     std::vector<uint32_t> materialKeys;
                     for (int j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
-                        auto value = renderMaterial.shaderPackage.material_keys[j].default_value;
-                        materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
+                        auto id = renderMaterial.shaderPackage.material_keys[j].id;
+
+                        bool found = false;
+                        for (int z = 0; z < renderMaterial.mat.num_shader_keys; z++) {
+                            if (renderMaterial.mat.shader_keys[z].category == id) {
+                                materialKeys.push_back(renderMaterial.mat.shader_keys[z].value);
+                                found = true;
+                            }
+                        }
+
+                        // Fall back to default if needed
+                        if (!found) {
+                            auto value = renderMaterial.shaderPackage.material_keys[j].default_value;
+                            materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
+                        }
                     }
                     std::vector<uint32_t> subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
 

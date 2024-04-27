@@ -21,6 +21,7 @@ struct RenderTexture {
 enum class MaterialType { Object, Skin };
 
 struct RenderMaterial {
+    physis_Material mat;
     MaterialType type = MaterialType::Object;
     physis_SHPK shaderPackage;
 

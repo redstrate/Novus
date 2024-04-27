@@ -219,6 +219,7 @@ void MDLPart::reloadBoneData()
 RenderMaterial MDLPart::createMaterial(const physis_Material &material)
 {
     RenderMaterial newMaterial;
+    newMaterial.mat = material;
 
     if (material.shpk_name != nullptr) {
         std::string shpkPath = "shader/sm5/shpk/" + std::string(material.shpk_name);
