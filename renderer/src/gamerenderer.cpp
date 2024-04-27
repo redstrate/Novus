@@ -205,7 +205,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                 }
 
                 for (const auto &part : model.parts) {
-                    auto &renderMaterial = model.materials[part.materialIndex];
+                    RenderMaterial renderMaterial = model.materials[part.materialIndex];
+
+                    if (part.materialIndex + 1 > model.materials.size()) {
+                        renderMaterial = model.materials[0]; // TODO: better fallback
+                    }
 
                     if (renderMaterial.shaderPackage.p_ptr == nullptr) {
                         qWarning() << "Invalid shader package!";
