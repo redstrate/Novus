@@ -214,11 +214,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
     cameraParameter.m_InverseViewProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
 
     // known params
-    cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
+    cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(camera.perspective));
     cameraParameter.m_ProjectionMatrix = glm::transpose(viewProjectionMatrix);
 
     cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(glm::inverse(camera.perspective));
-    cameraParameter.m_EyePosition = glm::vec3(5.0f); // placeholder
+    cameraParameter.m_EyePosition = camera.position; // placeholder
     cameraParameter.m_LookAtVector = glm::vec3(0.0f); // placeholder
 
     m_device.copyToBuffer(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
@@ -343,7 +343,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
             }
 
             endPass(commandBuffer, pass);
+
+            m_device.transitionTexture(commandBuffer, m_depthBuffer, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         } else if (pass == "PASS_LIGHTING_OPAQUE") {
+            m_device.transitionTexture(commandBuffer, m_normalGBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
             // first we need to generate the view positions with createviewpositions
             beginPass(imageIndex, commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION");
             {
@@ -390,6 +394,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                 }
             }
             endPass(commandBuffer, pass);
+
+            m_device.transitionTexture(commandBuffer, m_viewPositionBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
             beginPass(imageIndex, commandBuffer, pass);
             // then run the directionallighting shader
@@ -442,6 +448,12 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                 }
             }
             endPass(commandBuffer, pass);
+
+            m_device.transitionTexture(commandBuffer, m_lightBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            m_device.transitionTexture(commandBuffer,
+                                       m_lightSpecularBuffer,
+                                       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         } else if (pass == "PASS_COMPOSITE_SEMITRANSPARENCY") {
             beginPass(imageIndex, commandBuffer, pass);
 
@@ -532,6 +544,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
             }
 
             endPass(commandBuffer, pass);
+
+            m_device.transitionTexture(commandBuffer, m_compositeBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
 
         i++;
@@ -557,6 +571,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
     VkRenderingAttachmentInfo depthStencilAttachment{};
 
     if (passName == "PASS_G_OPAQUE") {
+        m_device.transitionTexture(commandBuffer, m_normalGBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
         // normals, it seems like
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
@@ -573,27 +589,7 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
             colorAttachments.push_back(attachmentInfo);
         }
 
-        // unknown, seems to be background?
-        {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = VK_NULL_HANDLE;
-            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-            colorAttachments.push_back(attachmentInfo);
-        }
-
-        // unknown, seems to be background?
-        {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = VK_NULL_HANDLE;
-            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-            colorAttachments.push_back(attachmentInfo);
-        }
+        m_device.transitionTexture(commandBuffer, m_depthBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
         // depth
         {
@@ -607,49 +603,52 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
             depthStencilAttachment = attachmentInfo;
         }
     } else if (passName == "PASS_LIGHTING_OPAQUE") {
-        // normals, it seems like
+        m_device.transitionTexture(commandBuffer, m_lightBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+        // diffuse
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
             attachmentInfo.imageView = m_lightBuffer.imageView;
-            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-            attachmentInfo.clearValue.color.float32[0] = 0.24;
-            attachmentInfo.clearValue.color.float32[1] = 0.24;
-            attachmentInfo.clearValue.color.float32[2] = 0.24;
             attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
         }
+
+        m_device.transitionTexture(commandBuffer, m_lightSpecularBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         // specular?
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
             attachmentInfo.imageView = m_lightSpecularBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
         }
     } else if (passName == "PASS_LIGHTING_OPAQUE_VIEWPOSITION") {
+        m_device.transitionTexture(commandBuffer, m_viewPositionBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
         // TODO: Hack we should not be using a special pass for this, we should just design our API better
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
             attachmentInfo.imageView = m_viewPositionBuffer.imageView;
-            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-            attachmentInfo.clearValue.color.float32[0] = 0.24;
-            attachmentInfo.clearValue.color.float32[1] = 0.24;
-            attachmentInfo.clearValue.color.float32[2] = 0.24;
             attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
         }
     } else if (passName == "PASS_Z_OPAQUE") {
+        m_device.transitionTexture(commandBuffer, m_ZBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        m_device.transitionTexture(commandBuffer, m_depthBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+
         // normals, it seems like
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
@@ -665,18 +664,9 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
             colorAttachments.push_back(attachmentInfo);
         }
-
-        // unknown
-        {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = VK_NULL_HANDLE;
-            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-            colorAttachments.push_back(attachmentInfo);
-        }
     } else if (passName == "PASS_COMPOSITE_SEMITRANSPARENCY") {
+        m_device.transitionTexture(commandBuffer, m_compositeBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
         // composite
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
@@ -692,6 +682,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
             colorAttachments.push_back(attachmentInfo);
         }
+
+        m_device.transitionTexture(commandBuffer, m_depthBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
         // depth buffer for depth testing
         {
@@ -935,9 +927,7 @@ GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passN
 
         int colorAttachmentCount = 1;
         // TODO: hardcoded, should be a reusable function to get the color attachments
-        if (passName == "PASS_G_OPAQUE") {
-            colorAttachmentCount = 3;
-        } else if (passName == "PASS_LIGHTING_OPAQUE") {
+        if (passName == "PASS_LIGHTING_OPAQUE") {
             colorAttachmentCount = 2;
         }
 
@@ -984,11 +974,15 @@ GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passN
         depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
         depthStencil.maxDepthBounds = 1.0f;
 
-        std::array<VkFormat, 3> colorAttachmentFormats = {VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED};
+        std::array<VkFormat, 3> colorAttachmentFormats = {VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM};
 
         VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = {};
         pipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-        pipelineRenderingCreateInfo.colorAttachmentCount = 3; // TODO: hardcoded
+        if (passName == "PASS_LIGHTING_OPAQUE") {
+            pipelineRenderingCreateInfo.colorAttachmentCount = 2; // TODO: hardcoded
+        } else {
+            pipelineRenderingCreateInfo.colorAttachmentCount = 1;
+        }
         pipelineRenderingCreateInfo.pColorAttachmentFormats = colorAttachmentFormats.data();
         pipelineRenderingCreateInfo.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT; // TODO: hardcoded
 
@@ -1280,30 +1274,43 @@ void GameRenderer::createImageResources()
                                              m_device.swapChain->extent.height,
                                              VK_FORMAT_R8G8B8A8_UNORM,
                                              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_normalGBuffer, "Normal GBuffer");
+
     m_viewPositionBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                                   m_device.swapChain->extent.height,
                                                   VK_FORMAT_R8G8B8A8_UNORM,
                                                   VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_viewPositionBuffer, "View Position");
+
     m_lightBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                            m_device.swapChain->extent.height,
                                            VK_FORMAT_R8G8B8A8_UNORM,
                                            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_lightBuffer, "Light Diffuse");
+
     m_lightSpecularBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                                    m_device.swapChain->extent.height,
                                                    VK_FORMAT_R8G8B8A8_UNORM,
                                                    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_lightSpecularBuffer, "Light Specular");
+
     m_compositeBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                                m_device.swapChain->extent.height,
                                                VK_FORMAT_R8G8B8A8_UNORM,
                                                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_compositeBuffer, "Composite");
+
     m_ZBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                        m_device.swapChain->extent.height,
                                        VK_FORMAT_R8G8B8A8_UNORM,
                                        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_ZBuffer, "ZBuffer");
+
     m_depthBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                            m_device.swapChain->extent.height,
                                            VK_FORMAT_D32_SFLOAT,
                                            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_depthBuffer, "Depth");
 
     CommonParameter commonParam{};
     commonParam.m_RenderTarget = {1.0f / m_device.swapChain->extent.width,

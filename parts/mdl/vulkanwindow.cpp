@@ -227,10 +227,12 @@ void VulkanWindow::render()
         m_renderer->camera.view = glm::translate(m_renderer->camera.view, part->position);
         m_renderer->camera.view *= glm::mat4_cast(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(part->pitch, glm::vec3(1, 0, 0)));
         m_renderer->camera.view = glm::inverse(m_renderer->camera.view);
+        m_renderer->camera.position = part->position;
     } else {
         glm::vec3 position(part->cameraDistance * sin(part->yaw), part->cameraDistance * part->pitch, part->cameraDistance * cos(part->yaw));
 
         m_renderer->camera.view = glm::lookAt(part->position + position, part->position, glm::vec3(0, -1, 0));
+        m_renderer->camera.position = part->position + position;
     }
 
     m_renderer->render(models);

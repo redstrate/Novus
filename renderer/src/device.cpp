@@ -124,14 +124,15 @@ Texture Device::createTexture(const int width, const int height, const VkFormat 
     viewCreateInfo.image = image;
     viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewCreateInfo.format = format;
-    viewCreateInfo.subresourceRange.aspectMask =
-        usage == VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT; // TODO: hardcoded
+    viewCreateInfo.subresourceRange.aspectMask = (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) == VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+        ? VK_IMAGE_ASPECT_DEPTH_BIT
+        : VK_IMAGE_ASPECT_COLOR_BIT; // TODO: hardcoded
     viewCreateInfo.subresourceRange.levelCount = 1;
     viewCreateInfo.subresourceRange.layerCount = 1;
 
     vkCreateImageView(device, &viewCreateInfo, nullptr, &imageView);
 
-    return {image, imageView, imageMemory};
+    return {format, viewCreateInfo.subresourceRange, image, imageView, imageMemory};
 }
 
 Texture Device::createDummyTexture()
@@ -308,4 +309,35 @@ void Device::inlineTransitionImageLayout(VkCommandBuffer commandBuffer,
     }
 
     vkCmdPipelineBarrier(commandBuffer, src_stage_mask, dst_stage_mask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+}
+
+void Device::transitionTexture(VkCommandBuffer commandBuffer, Texture &texture, VkImageLayout oldLayout, VkImageLayout newLayout)
+{
+    inlineTransitionImageLayout(commandBuffer, texture.image, texture.format, texture.range.aspectMask, texture.range, oldLayout, newLayout);
+}
+
+VkResult Device::nameObject(VkObjectType type, uint64_t object, std::string_view name)
+{
+    if (object == 0x0) {
+        return VK_ERROR_DEVICE_LOST;
+    }
+
+    VkDebugUtilsObjectNameInfoEXT info = {};
+    info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    info.objectType = type;
+    info.pObjectName = name.data();
+    info.objectHandle = object;
+
+    auto func = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT");
+    if (func != nullptr)
+        return func(device, &info);
+    else
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+}
+
+void Device::nameTexture(Texture &texture, std::string_view name)
+{
+    nameObject(VK_OBJECT_TYPE_IMAGE, reinterpret_cast<uint64_t>(texture.image), name.data());
+    nameObject(VK_OBJECT_TYPE_IMAGE_VIEW, reinterpret_cast<uint64_t>(texture.imageView), name.data());
+    nameObject(VK_OBJECT_TYPE_DEVICE_MEMORY, reinterpret_cast<uint64_t>(texture.imageMemory), name.data());
 }

@@ -8,6 +8,8 @@
 class Texture
 {
 public:
+    VkFormat format;
+    VkImageSubresourceRange range;
     VkImage image;
     VkImageView imageView;
     VkDeviceMemory imageMemory;

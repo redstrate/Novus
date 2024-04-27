@@ -51,4 +51,9 @@ public:
                                      VkImageLayout newLayout,
                                      VkPipelineStageFlags src_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                      VkPipelineStageFlags dst_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+
+    void transitionTexture(VkCommandBuffer commandBuffer, Texture &texture, VkImageLayout oldLayout, VkImageLayout newLayout);
+
+    VkResult nameObject(VkObjectType type, uint64_t object, std::string_view name);
+    void nameTexture(Texture &texture, std::string_view name);
 };
