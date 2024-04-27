@@ -79,6 +79,13 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
 
         InstanceParameter instanceParameter{};
         instanceParameter.g_InstanceParameter.m_MulColor = glm::vec4(1.0f);
+
+        const float wetnessMin = 0.0f;
+        const float wetnessMax = 1.0f;
+        const float maybeWetness = 0.0f;
+
+        instanceParameter.g_InstanceParameter.m_Wetness = {maybeWetness, 2.0f, wetnessMin, wetnessMax};
+
         m_device.copyToBuffer(g_InstanceParameter, &instanceParameter, sizeof(InstanceParameter));
     }
 
@@ -87,6 +94,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         g_ModelParameter = m_device.createBuffer(sizeof(ModelParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         ModelParameter modelParameter{};
+        modelParameter.g_ModelParameter.m_Params = glm::vec4(1.0f);
         m_device.copyToBuffer(g_ModelParameter, &modelParameter, sizeof(ModelParameter));
     }
 
@@ -136,7 +144,6 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         g_SceneParameter = m_device.createBuffer(sizeof(SceneParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         SceneParameter sceneParameter{};
-
         m_device.copyToBuffer(g_SceneParameter, &sceneParameter, sizeof(SceneParameter));
     }
 
