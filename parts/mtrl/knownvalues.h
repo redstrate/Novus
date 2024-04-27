@@ -318,4 +318,19 @@ const QHash<uint, const char *> keys = {
 
     {0xC8BD1DEF, "Specular Map Mode"},
     {0x198D11CD, "Color"},
-    {0xA02F4828, "Multi"}};
+    {0xA02F4828, "Multi"},
+
+    {physis_shpk_crc("g_DiffuseColor"), "g_DiffuseColor"},
+    {physis_shpk_crc("g_AlphaThreshold"), "g_AlphaThreshold"},
+    {physis_shpk_crc("g_FresnelValue0"), "g_FresnelValue0"},
+    {physis_shpk_crc("g_SpecularMask"), "g_SpecularMask"},
+    {physis_shpk_crc("g_LipFresnelValue0"), "g_LipFresnelValue0"},
+    {physis_shpk_crc("g_Shininess"), "g_Shininess"},
+    {physis_shpk_crc("g_EmissiveColor"), "g_EmissiveColor"},
+    {physis_shpk_crc("g_LipShininess"), "g_LipShininess"},
+    {physis_shpk_crc("g_TileScale"), "g_TileScale"},
+    {physis_shpk_crc("g_AmbientOcclusionMask"), "g_AmbientOcclusionMask"},
+    {physis_shpk_crc("g_TileIndex"), "g_TileIndex"},
+    {physis_shpk_crc("g_AmbientOcclusionMask"), "g_AmbientOcclusionMask"},
+    {physis_shpk_crc("g_ScatteringLevel"), "g_ScatteringLevel"},
+    {physis_shpk_crc("g_NormalScale"), "g_NormalScale"}};

@@ -210,7 +210,12 @@ void MtrlPart::rebuild()
     for (int i = 0; i < m_material.num_constants; i++) {
         const auto constant = m_material.constants[i];
 
-        auto groupBox = new QGroupBox(QString::number(constant.id));
+        QString name = i18n("Unknown %1", QString::number(constant.id));
+        if (keys.contains(constant.id)) {
+            name = QString::fromLatin1(keys[constant.id]);
+        }
+
+        auto groupBox = new QGroupBox(name);
         m_constantsLayout->addWidget(groupBox);
 
         auto layout = new QFormLayout();
