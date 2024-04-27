@@ -344,10 +344,19 @@ MaterialPropertyEdit::MaterialPropertyEdit(GameData *data, QWidget *parent)
     auto selectShaderPackageButton = new QPushButton(i18n("Shaders…"));
     shaderPackageLayout->addWidget(selectShaderPackageButton);
 
-    m_propertiesFrame = new QFrame();
+    m_tabWidget = new QTabWidget();
+    m_itemsLayout->addWidget(m_tabWidget);
+
+    auto propertiesTab = new QWidget();
     m_propertiesLayout = new QVBoxLayout();
-    m_propertiesFrame->setLayout(m_propertiesLayout);
-    m_itemsLayout->addWidget(m_propertiesFrame);
+    propertiesTab->setLayout(m_propertiesLayout);
+
+    auto texturesTab = new QWidget();
+    m_texturesLayout = new QVBoxLayout();
+    texturesTab->setLayout(m_texturesLayout);
+
+    m_tabWidget->addTab(propertiesTab, i18n("Parameters"));
+    m_tabWidget->addTab(texturesTab, i18n("Textures"));
 
     setLayout(m_itemsLayout);
 
@@ -417,6 +426,82 @@ void MaterialPropertyEdit::rebuild()
         }
 
         layout->addRow(i18n("Value:"), label);
+    }
+
+    child = nullptr;
+    while ((child = m_texturesLayout->takeAt(0)) != nullptr) {
+        child->widget()->setParent(nullptr);
+        child->widget()->deleteLater();
+    }
+
+    for (int i = 0; i < m_material.num_samplers; i++) {
+        const auto sampler = m_material.samplers[i];
+
+        QString name;
+        switch (sampler.texture_usage) {
+        case TextureUsage::Sampler:
+        case TextureUsage::Sampler0:
+        case TextureUsage::Sampler1:
+            name = i18n("Generic");
+            break;
+        case TextureUsage::SamplerCatchlight:
+            name = i18n("Catchlight");
+            break;
+        case TextureUsage::SamplerColorMap0:
+            name = i18n("Color Map 0");
+            break;
+        case TextureUsage::SamplerColorMap1:
+            name = i18n("Color Map 1");
+            break;
+        case TextureUsage::SamplerDiffuse:
+            name = i18n("Diffuse");
+            break;
+        case TextureUsage::SamplerEnvMap:
+            name = i18n("Environment Map");
+            break;
+        case TextureUsage::SamplerMask:
+            name = i18n("Mask");
+            break;
+        case TextureUsage::SamplerNormal:
+            name = i18n("Normal");
+            break;
+        case TextureUsage::SamplerNormalMap0:
+            name = i18n("Normal Map 0");
+            break;
+        case TextureUsage::SamplerNormalMap1:
+            name = i18n("Normal Map 1");
+            break;
+        case TextureUsage::SamplerReflection:
+            name = i18n("Reflection");
+            break;
+        case TextureUsage::SamplerSpecular:
+            name = i18n("Specular");
+            break;
+        case TextureUsage::SamplerSpecularMap0:
+            name = i18n("Specular Map 0");
+            break;
+        case TextureUsage::SamplerSpecularMap1:
+            name = i18n("Specular Map 1");
+            break;
+        case TextureUsage::SamplerWaveMap:
+            name = i18n("Wave Map");
+            break;
+        case TextureUsage::SamplerWaveletMap0:
+            name = i18n("Wavelet Map 0");
+            break;
+        case TextureUsage::SamplerWaveletMap1:
+            name = i18n("Wavelet Map 1");
+            break;
+        case TextureUsage::SamplerWhitecapMap:
+            name = i18n("Whitecap Map");
+            break;
+        default:
+            name = i18n("Unknown");
+            break;
+        }
+
+        auto groupBox = new QGroupBox(name);
+        m_texturesLayout->addWidget(groupBox);
     }
 }
 

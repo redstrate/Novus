@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QWidget>
 
+#include <QTabWidget>
 #include <physis.hpp>
 
 class MaterialPropertyEdit : public QWidget
@@ -24,8 +25,10 @@ private:
 
     QVBoxLayout *m_itemsLayout = nullptr;
     QLineEdit *m_shaderPackageName = nullptr;
-    QFrame *m_propertiesFrame = nullptr;
+
+    QTabWidget *m_tabWidget = nullptr;
     QVBoxLayout *m_propertiesLayout = nullptr;
+    QVBoxLayout *m_texturesLayout = nullptr;
 
     physis_Material m_material = {};
     physis_SHPK m_shpk = {};
