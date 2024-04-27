@@ -58,6 +58,7 @@ add_subdirectory(common)
 add_subdirectory(mapeditor)
 add_subdirectory(mdlviewer)
 add_subdirectory(launcher)
+add_subdirectory(mateditor)
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
