@@ -14,6 +14,7 @@ Here is an exhaustive list of tooling available here:
 * [Excel Editor](karuku), a graphical program to view Excel data sheets.
 * [Model Viewer](mdlviewer), a graphical model viewer for MDL files.
 * [Data Viewer](sagasu), a graphical interface to explore FFXIV data archive files.
+* [Material Editor](mateditor), a program to view material files.
 
 ## Usage
 
