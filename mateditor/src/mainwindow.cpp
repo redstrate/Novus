@@ -27,7 +27,7 @@ MainWindow::MainWindow(GameData *data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    auto materialProperty = new MaterialPropertyEdit();
+    auto materialProperty = new MaterialPropertyEdit(data);
     materialProperty->setMaximumWidth(400);
     materialProperty->setMaterial(m_material);
     dummyWidget->addWidget(materialProperty);

@@ -15,7 +15,7 @@ class MaterialPropertyEdit : public QWidget
     Q_OBJECT
 
 public:
-    explicit MaterialPropertyEdit(QWidget *parent = nullptr);
+    explicit MaterialPropertyEdit(GameData *data, QWidget *parent = nullptr);
 
     void setMaterial(physis_Material material);
 
@@ -24,6 +24,11 @@ private:
 
     QVBoxLayout *m_itemsLayout = nullptr;
     QLineEdit *m_shaderPackageName = nullptr;
+    QFrame *m_propertiesFrame = nullptr;
+    QVBoxLayout *m_propertiesLayout = nullptr;
 
-    physis_Material m_material;
+    physis_Material m_material = {};
+    physis_SHPK m_shpk = {};
+
+    GameData *m_data = nullptr;
 };
