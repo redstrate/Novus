@@ -73,24 +73,36 @@ private:
     Device &m_device;
     GameData *m_data = nullptr;
 
-    VkDescriptorSet createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, int i, const RenderMaterial *material);
-    void bindDescriptorSets(VkCommandBuffer commandBuffer, CachedPipeline &pipeline, const DrawObject *object, const RenderMaterial *material);
+    VkDescriptorSet
+    createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, int i, const RenderMaterial *material, std::string_view pass);
+    void bindDescriptorSets(VkCommandBuffer commandBuffer,
+                            CachedPipeline &pipeline,
+                            const DrawObject *object,
+                            const RenderMaterial *material,
+                            std::string_view pass);
 
     Buffer g_CameraParameter;
     Buffer g_InstanceParameter;
     Buffer g_ModelParameter;
     Buffer g_MaterialParameter;
+    Buffer g_TransparencyMaterialParameter;
     Buffer g_CommonParameter;
     Buffer g_LightParam;
     Buffer g_SceneParameter;
     Buffer g_CustomizeParameter;
+    Buffer g_MaterialParameterDynamic;
+    Buffer g_DecalColor;
+    Buffer g_AmbientParam;
 
     Buffer m_planeVertexBuffer;
 
     Texture m_normalGBuffer;
     Texture m_viewPositionBuffer;
     Texture m_depthBuffer;
+    Texture m_lightBuffer;
+    Texture m_lightSpecularBuffer;
     Texture m_compositeBuffer;
+    Texture m_ZBuffer; // what is this?
     Texture m_dummyTex;
     VkSampler m_sampler;
     Buffer m_dummyBuffer;

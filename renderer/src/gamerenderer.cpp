@@ -33,24 +33,24 @@ dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
 
 const std::array<std::string, 14> passes = {
     // Shadows?
-    "PASS_0",
+    /* 0 */ "PASS_0",
     // Z "prepass"
-    "PASS_Z_OPAQUE",
+    /* 1 */ "PASS_Z_OPAQUE",
     // computes and stores normals (TODO: denote how these normals are special)
-    "PASS_G_OPAQUE",
+    /* 2 */ "PASS_G_OPAQUE",
     // g run for each light
     // takes view pos, then unknown texture and normal
-    "PASS_LIGHTING_OPAQUE",
-    "PASS_G_SEMITRANSPARENCY",
-    "PASS_COMPOSITE_OPAQUE",
-    "PASS_7",
-    "PASS_WATER",
-    "PASS_WATER_Z",
-    "PASS_SEMITRANSPARENCY",
-    "PASS_COMPOSITE_SEMITRANSPARENCY",
-    "PASS_10",
-    "PASS_12",
-    "PASS_14"};
+    /* 3 */ "PASS_LIGHTING_OPAQUE",
+    /* 4 */ "PASS_G_SEMITRANSPARENCY",
+    /* 5 */ "PASS_COMPOSITE_OPAQUE",
+    /* 6 */ "PASS_7",
+    /* 7 */ "PASS_WATER",
+    /* 8 */ "PASS_WATER_Z",
+    /* 9 */ "PASS_SEMITRANSPARENCY",
+    /* 10 */ "PASS_COMPOSITE_SEMITRANSPARENCY",
+    /* 11 */ "PASS_10",
+    /* 12 */ "PASS_12",
+    /* 13 */ "PASS_14"};
 
 const int INVALID_PASS = 255;
 
@@ -78,6 +78,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         g_InstanceParameter = m_device.createBuffer(sizeof(InstanceParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         InstanceParameter instanceParameter{};
+        instanceParameter.g_InstanceParameter.m_MulColor = glm::vec4(1.0f);
         m_device.copyToBuffer(g_InstanceParameter, &instanceParameter, sizeof(InstanceParameter));
     }
 
@@ -94,9 +95,19 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         g_MaterialParameter = m_device.createBuffer(sizeof(MaterialParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
         MaterialParameters materialParameter{};
-        materialParameter.parameters[0] = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+        materialParameter.parameters[0] = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f); // diffuse color then alpha threshold
         materialParameter.parameters[5].z = 1.0f;
         m_device.copyToBuffer(g_MaterialParameter, &materialParameter, sizeof(MaterialParameters));
+    }
+
+    // material data
+    {
+        g_TransparencyMaterialParameter = m_device.createBuffer(sizeof(MaterialParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+        MaterialParameters materialParameter{};
+        materialParameter.parameters[0] = glm::vec4(1.0f, 1.0f, 1.0f, 2.0f); // diffuse color then alpha threshold
+        materialParameter.parameters[5].z = 1.0f;
+        m_device.copyToBuffer(g_TransparencyMaterialParameter, &materialParameter, sizeof(MaterialParameters));
     }
 
     // light data
@@ -136,6 +147,36 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         CustomizeParameter customizeParameter{};
 
         m_device.copyToBuffer(g_CustomizeParameter, &customizeParameter, sizeof(CustomizeParameter));
+    }
+
+    // material parameter dynamic
+    {
+        g_MaterialParameterDynamic = m_device.createBuffer(sizeof(MaterialParameterDynamic), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+        MaterialParameterDynamic materialParameterDynamic{};
+
+        m_device.copyToBuffer(g_MaterialParameterDynamic, &materialParameterDynamic, sizeof(CustomizeParameter));
+    }
+
+    // decal color
+    {
+        g_DecalColor = m_device.createBuffer(sizeof(glm::vec4), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+        glm::vec4 color{};
+
+        m_device.copyToBuffer(g_DecalColor, &color, sizeof(glm::vec4));
+    }
+
+    // ambient params
+    {
+        g_AmbientParam = m_device.createBuffer(sizeof(AmbientParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+        AmbientParameters ambientParameters{};
+        for (int i = 0; i < 6; i++) {
+            ambientParameters.g_AmbientParam[i] = glm::vec4(1.0f);
+        }
+
+        m_device.copyToBuffer(g_AmbientParam, &ambientParameters, sizeof(glm::vec4));
     }
 
     VkSamplerCreateInfo samplerInfo = {};
@@ -278,7 +319,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                         physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
 
                         auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
-                        bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial);
+                        bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
                         vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer.buffer, offsets);
@@ -328,7 +369,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_Shader pixelShader = createViewPositionShpk.pixel_shaders[pixelShaderIndice];
 
                     auto &pipeline = bindPipeline(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION", vertexShader, pixelShader);
-                    bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr);
+                    bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr, pass);
 
                     VkDeviceSize offsets[] = {0};
                     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer.buffer, offsets);
@@ -380,7 +421,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
 
                     auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
-                    bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr);
+                    bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr, pass);
 
                     VkDeviceSize offsets[] = {0};
                     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_planeVertexBuffer.buffer, offsets);
@@ -388,6 +429,96 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
                 }
             }
+            endPass(commandBuffer, pass);
+        } else if (pass == "PASS_COMPOSITE_SEMITRANSPARENCY") {
+            beginPass(imageIndex, commandBuffer, pass);
+
+            for (auto &model : models) {
+                for (const auto &part : model.parts) {
+                    RenderMaterial renderMaterial = model.materials[part.materialIndex];
+
+                    if (part.materialIndex + 1 > model.materials.size()) {
+                        renderMaterial = model.materials[0]; // TODO: better fallback
+                    }
+
+                    if (renderMaterial.shaderPackage.p_ptr == nullptr) {
+                        qWarning() << "Invalid shader package!";
+                    }
+
+                    std::vector<uint32_t> systemKeys;
+                    if (renderMaterial.type == MaterialType::Skin) {
+                        systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
+                    }
+                    std::vector<uint32_t> sceneKeys;
+                    if (model.skinned) {
+                        sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
+                    } else {
+                        sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
+                    }
+
+                    sceneKeys.push_back(physis_shpk_crc("GetAmbientLight_SH"));
+                    sceneKeys.push_back(physis_shpk_crc("GetReflectColor_Texture"));
+                    sceneKeys.push_back(physis_shpk_crc("GetAmbientOcclusion_None"));
+                    sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
+
+                    std::vector<uint32_t> materialKeys;
+                    for (int j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
+                        auto id = renderMaterial.shaderPackage.material_keys[j].id;
+
+                        bool found = false;
+                        for (int z = 0; z < renderMaterial.mat.num_shader_keys; z++) {
+                            if (renderMaterial.mat.shader_keys[z].category == id) {
+                                materialKeys.push_back(renderMaterial.mat.shader_keys[z].value);
+                                found = true;
+                            }
+                        }
+
+                        // Fall back to default if needed
+                        if (!found) {
+                            auto value = renderMaterial.shaderPackage.material_keys[j].default_value;
+                            materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
+                        }
+                    }
+                    std::vector<uint32_t> subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
+
+                    const uint32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
+                                                                                       systemKeys.size(),
+                                                                                       sceneKeys.data(),
+                                                                                       sceneKeys.size(),
+                                                                                       materialKeys.data(),
+                                                                                       materialKeys.size(),
+                                                                                       subviewKeys.data(),
+                                                                                       subviewKeys.size());
+                    const physis_SHPKNode node = physis_shpk_get_node(&renderMaterial.shaderPackage, selector);
+
+                    // check if invalid
+                    if (node.pass_count == 0) {
+                        continue;
+                    }
+
+                    // this is an index into the node's pass array, not to get confused with the global one we always follow.
+                    const int passIndice = node.pass_indices[i];
+                    if (passIndice != INVALID_PASS) {
+                        const Pass currentPass = node.passes[passIndice];
+
+                        const uint32_t vertexShaderIndice = currentPass.vertex_shader;
+                        const uint32_t pixelShaderIndice = currentPass.pixel_shader;
+
+                        physis_Shader vertexShader = renderMaterial.shaderPackage.vertex_shaders[vertexShaderIndice];
+                        physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
+
+                        auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                        bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial, pass);
+
+                        VkDeviceSize offsets[] = {0};
+                        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer.buffer, offsets);
+                        vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+
+                        vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
+                    }
+                }
+            }
+
             endPass(commandBuffer, pass);
         }
 
@@ -467,7 +598,7 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
         // normals, it seems like
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = m_compositeBuffer.imageView;
+            attachmentInfo.imageView = m_lightBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -480,10 +611,10 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
             colorAttachments.push_back(attachmentInfo);
         }
 
-        // unknown
+        // specular?
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = VK_NULL_HANDLE;
+            attachmentInfo.imageView = m_lightSpecularBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -510,7 +641,7 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
         // normals, it seems like
         {
             VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-            attachmentInfo.imageView = m_compositeBuffer.imageView;
+            attachmentInfo.imageView = m_ZBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -530,6 +661,22 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
+    } else if (passName == "PASS_COMPOSITE_SEMITRANSPARENCY") {
+        // normals, it seems like
+        {
+            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            attachmentInfo.imageView = m_compositeBuffer.imageView;
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            attachmentInfo.clearValue.color.float32[0] = 0.24;
+            attachmentInfo.clearValue.color.float32[1] = 0.24;
+            attachmentInfo.clearValue.color.float32[2] = 0.24;
+            attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
         }
@@ -576,7 +723,7 @@ GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passN
         VkVertexInputBindingDescription binding = {};
 
         // TODO: temporary
-        if (passName == "PASS_G_OPAQUE" || passName == "PASS_Z_OPAQUE") {
+        if (passName == "PASS_G_OPAQUE" || passName == "PASS_Z_OPAQUE" || passName == "PASS_COMPOSITE_SEMITRANSPARENCY") {
             binding.stride = sizeof(Vertex);
         } else if (passName == "PASS_LIGHTING_OPAQUE" || passName == "PASS_LIGHTING_OPAQUE_VIEWPOSITION") {
             binding.stride = sizeof(glm::vec4);
@@ -927,7 +1074,8 @@ spirv_cross::CompilerGLSL GameRenderer::getShaderModuleResources(const physis_Sh
     return spirv_cross::CompilerGLSL(result.code.data(), result.code.dwords());
 }
 
-VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline &pipeline, int i, const RenderMaterial *material)
+VkDescriptorSet
+GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline &pipeline, int i, const RenderMaterial *material, std::string_view pass)
 {
     VkDescriptorSet set;
 
@@ -977,7 +1125,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, cons
                 auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
-                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < 4) {
+                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT) {
                     auto name = pipeline.pixelShader.resource_parameters[p].name;
                     qInfo() << "Requesting image" << name << "at" << j;
                     if (strcmp(name, "g_SamplerGBuffer") == 0) {
@@ -989,6 +1137,18 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, cons
                     } else if (strcmp(name, "g_SamplerNormal") == 0) {
                         Q_ASSERT(material);
                         info->imageView = material->normalTexture->view;
+                    } else if (strcmp(name, "g_SamplerLightDiffuse") == 0) {
+                        Q_ASSERT(material);
+                        info->imageView = m_lightBuffer.imageView;
+                    } else if (strcmp(name, "g_SamplerLightSpecular") == 0) {
+                        Q_ASSERT(material);
+                        info->imageView = m_lightSpecularBuffer.imageView;
+                    } else if (strcmp(name, "g_SamplerDiffuse") == 0) {
+                        Q_ASSERT(material);
+                        info->imageView = material->diffuseTexture->view;
+                    } else if (strcmp(name, "g_SamplerSpecular") == 0) {
+                        Q_ASSERT(material);
+                        info->imageView = material->specularTexture->view;
                     } else {
                         info->imageView = m_dummyTex.imageView;
                         qInfo() << "Unknown image" << name;
@@ -1016,7 +1176,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, cons
                     info->range = buffer.size;
                 };
 
-                auto bindBuffer = [this, &useUniformBuffer, &info, j, &object](const char *name) {
+                auto bindBuffer = [this, &useUniformBuffer, &info, j, &object, pass](const char *name) {
                     qInfo() << "Requesting" << name << "at" << j;
 
                     if (strcmp(name, "g_CameraParameter") == 0) {
@@ -1029,7 +1189,12 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, cons
                     } else if (strcmp(name, "g_ModelParameter") == 0) {
                         useUniformBuffer(g_ModelParameter);
                     } else if (strcmp(name, "g_MaterialParameter") == 0) {
-                        useUniformBuffer(g_MaterialParameter);
+                        if (pass == "PASS_COMPOSITE_SEMITRANSPARENCY") {
+                            // The composite semi-transparency uses a different alphathreshold
+                            useUniformBuffer(g_TransparencyMaterialParameter);
+                        } else {
+                            useUniformBuffer(g_MaterialParameter);
+                        }
                     } else if (strcmp(name, "g_LightParam") == 0) {
                         useUniformBuffer(g_LightParam);
                     } else if (strcmp(name, "g_CommonParameter") == 0) {
@@ -1038,6 +1203,12 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object, cons
                         useUniformBuffer(g_CustomizeParameter);
                     } else if (strcmp(name, "g_SceneParameter") == 0) {
                         useUniformBuffer(g_SceneParameter);
+                    } else if (strcmp(name, "g_MaterialParameterDynamic") == 0) {
+                        useUniformBuffer(g_MaterialParameterDynamic);
+                    } else if (strcmp(name, "g_DecalColor") == 0) {
+                        useUniformBuffer(g_DecalColor);
+                    } else if (strcmp(name, "g_AmbientParam") == 0) {
+                        useUniformBuffer(g_AmbientParam);
                     } else {
                         qInfo() << "Unknown resource:" << name;
                         info->buffer = m_dummyBuffer.buffer;
@@ -1081,10 +1252,22 @@ void GameRenderer::createImageResources()
                                                   m_device.swapChain->extent.height,
                                                   VK_FORMAT_R8G8B8A8_UNORM,
                                                   VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_lightBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                           m_device.swapChain->extent.height,
+                                           VK_FORMAT_R8G8B8A8_UNORM,
+                                           VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_lightSpecularBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                                   m_device.swapChain->extent.height,
+                                                   VK_FORMAT_R8G8B8A8_UNORM,
+                                                   VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     m_compositeBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                                m_device.swapChain->extent.height,
                                                VK_FORMAT_R8G8B8A8_UNORM,
                                                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_ZBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                       m_device.swapChain->extent.height,
+                                       VK_FORMAT_R8G8B8A8_UNORM,
+                                       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     m_depthBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                            m_device.swapChain->extent.height,
                                            VK_FORMAT_D32_SFLOAT,
@@ -1095,6 +1278,8 @@ void GameRenderer::createImageResources()
                                   1.0f / m_device.swapChain->extent.height,
                                   0.0f,
                                   0.0f}; // used to convert screen-space coordinates back into 0.0-1.0
+    commonParam.m_Misc = glm::vec4(1.0f);
+    commonParam.m_Misc2 = glm::vec4(1.0f);
 
     m_device.copyToBuffer(g_CommonParameter, &commonParam, sizeof(CommonParameter));
 }
@@ -1107,12 +1292,13 @@ Texture &GameRenderer::getCompositeTexture()
 void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer,
                                       GameRenderer::CachedPipeline &pipeline,
                                       const DrawObject *object,
-                                      const RenderMaterial *material)
+                                      const RenderMaterial *material,
+                                      std::string_view pass)
 {
     int i = 0;
     for (auto setLayout : pipeline.setLayouts) {
         if (!pipeline.cachedDescriptors.count(i)) {
-            if (auto descriptor = createDescriptorFor(object, pipeline, i, material); descriptor != VK_NULL_HANDLE) {
+            if (auto descriptor = createDescriptorFor(object, pipeline, i, material, pass); descriptor != VK_NULL_HANDLE) {
                 pipeline.cachedDescriptors[i] = descriptor;
             } else {
                 continue;

@@ -88,3 +88,11 @@ struct CustomizeParameter {
     glm::vec4 m_RightColor;
     glm::vec4 m_OptionColor;
 };
+
+struct MaterialParameterDynamic {
+    glm::vec4 m_EmissiveColor;
+};
+
+struct AmbientParameters {
+    glm::vec4 g_AmbientParam[6];
+};
