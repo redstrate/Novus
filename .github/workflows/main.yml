@@ -11,6 +11,13 @@ env:
   MAKEFLAGS: '-j 2'
 
 jobs:
+  reuse:
+    runs-on: ubumntu-latest
+
+    steps:
+    - name: REUSE Compliance Check
+      uses: fsfe/reuse-action@v3
+
   build:
     runs-on: ${{ matrix.os }}
 
