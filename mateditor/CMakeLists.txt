@@ -29,7 +29,7 @@ install(TARGETS novus-mateditor ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_
 if (WIN32)
     set_target_properties(novus-mateditor PROPERTIES
             WIN32_EXECUTABLE TRUE
-            OUTPUT_NAME "MaterialEdtiro")
+            OUTPUT_NAME "MaterialEditor")
 
     install(FILES $<TARGET_RUNTIME_DLLS:novus-mateditor> DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
