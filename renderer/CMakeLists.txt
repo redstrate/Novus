@@ -15,6 +15,7 @@ target_sources(renderer
         include/drawobject.h
         include/gamerenderer.h
         include/rendermanager.h
+        include/scene.h
         include/shaderstructs.h
         include/simplerenderer.h
         include/swapchain.h

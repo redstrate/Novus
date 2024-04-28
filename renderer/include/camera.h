@@ -16,7 +16,7 @@ struct Camera {
     float nearPlane = 0.1f;
 
     /// Far plane
-    float farPlane = 100.0f;
+    float farPlane = 1000.0f;
 
     glm::mat4 perspective, view;
     glm::vec3 position;

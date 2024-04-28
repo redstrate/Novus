@@ -135,7 +135,7 @@ Texture Device::createTexture(const int width, const int height, const VkFormat 
     return {format, viewCreateInfo.subresourceRange, image, imageView, imageMemory};
 }
 
-Texture Device::createDummyTexture()
+Texture Device::createDummyTexture(std::array<uint8_t, 4> values)
 {
     auto texture = createTexture(1, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
@@ -164,12 +164,10 @@ Texture Device::createDummyTexture()
 
     vkBindBufferMemory(device, stagingBuffer, stagingBufferMemory, 0);
 
-    uint8_t dummydata[4] = {255, 255, 255, 255};
-
     // copy to staging buffer
     void *mapped_data;
     vkMapMemory(device, stagingBufferMemory, 0, 4 * sizeof(uint8_t), 0, &mapped_data);
-    memcpy(mapped_data, dummydata, 4 * sizeof(uint8_t));
+    memcpy(mapped_data, values.data(), 4 * sizeof(uint8_t));
     vkUnmapMemory(device, stagingBufferMemory);
 
     // copy staging buffer to image

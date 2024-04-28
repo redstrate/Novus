@@ -404,7 +404,7 @@ void RenderManager::render(const std::vector<DrawObject> &models)
 
     updateCamera(camera);
 
-    m_renderer->render(commandBuffer, m_device->swapChain->currentFrame, camera, models);
+    m_renderer->render(commandBuffer, m_device->swapChain->currentFrame, camera, scene, models);
 
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

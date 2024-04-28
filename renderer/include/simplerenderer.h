@@ -30,7 +30,7 @@ public:
 
     void resize() override;
 
-    void render(VkCommandBuffer commandBuffer, uint32_t currentFrame, Camera &camera, const std::vector<DrawObject> &models) override;
+    void render(VkCommandBuffer commandBuffer, uint32_t currentFrame, Camera &camera, Scene &scene, const std::vector<DrawObject> &models) override;
 
     Texture &getCompositeTexture() override;
 

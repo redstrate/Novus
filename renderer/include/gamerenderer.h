@@ -30,7 +30,7 @@ public:
 
     void resize() override;
 
-    void render(VkCommandBuffer commandBuffer, uint32_t currentFrame, Camera &camera, const std::vector<DrawObject> &models) override;
+    void render(VkCommandBuffer commandBuffer, uint32_t currentFrame, Camera &camera, Scene &scene, const std::vector<DrawObject> &models) override;
 
     Texture &getCompositeTexture() override;
 
@@ -104,5 +104,7 @@ private:
     Texture m_ZBuffer; // what is this?
     Texture m_dummyTex;
     VkSampler m_sampler;
+    VkSampler m_normalSampler;
     Buffer m_dummyBuffer;
+    Texture m_placeholderTileNormal;
 };

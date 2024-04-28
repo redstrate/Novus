@@ -12,8 +12,8 @@ struct CameraParameter {
     glm::mat4 m_InverseProjectionMatrix; // used for view position recalc
     glm::mat4 m_ProjectionMatrix; // FIXME: ourburos is wrong, this is actually viewProjection
     glm::mat4 m_MainViewToProjectionMatrix;
-    glm::vec3 m_EyePosition;
-    glm::vec3 m_LookAtVector;
+    glm::vec4 m_EyePosition;
+    glm::vec4 m_LookAtVector;
 };
 
 struct JointMatrixArray {

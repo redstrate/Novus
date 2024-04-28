@@ -20,13 +20,13 @@
 // TODO: maybe need UV?
 // note: SQEX passes the vertice positions as UV coordinates (yes, -1 to 1.) the shaders then transform them back with the g_CommonParameter.m_RenderTarget vec4
 const std::vector<glm::vec4> planeVertices = {
-    {-1.0f, -1.0f, 0.0f, 1.0f},
-    {1.0f, -1.0f, 0.0f, 1.0f},
-    {1.0f, 1.0f, 0.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f, 1.0f},
+    {-1.0f, 1.0f, 1.0f, 1.0f},
+    {-1.0f, -1.0f, 1.0f, 1.0f},
 
-    {-1.0f, 1.0f, 0.0f, 1.0f},
-    {-1.0f, -1.0f, 0.0f, 1.0f},
-    {1.0f, 1.0f, 0.0f, 1.0f},
+    {-1.0f, -1.0f, 1.0f, 1.0f},
+    {1.0f, -1.0f, 1.0f, 1.0f},
+    {1.0f, 1.0f, 1.0f, 1.0f},
 };
 
 dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
@@ -61,6 +61,9 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     m_dummyTex = m_device.createDummyTexture();
     m_dummyBuffer = m_device.createDummyBuffer();
 
+    // don't know how to get tile normal yet
+    m_placeholderTileNormal = m_device.createDummyTexture({128, 128, 255, 255});
+
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     m_device.copyToBuffer(m_planeVertexBuffer, (void *)planeVertices.data(), vertexSize);
@@ -84,7 +87,9 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         const float wetnessMax = 1.0f;
         const float maybeWetness = 0.0f;
 
-        instanceParameter.g_InstanceParameter.m_Wetness = {maybeWetness, 2.0f, wetnessMin, wetnessMax};
+        // instanceParameter.g_InstanceParameter.m_Wetness = {maybeWetness, 2.0f, wetnessMin, wetnessMax};
+        // instanceParameter.g_InstanceParameter.m_CameraLight.m_DiffuseSpecular = glm::vec4(1.0f);
+        // instanceParameter.g_InstanceParameter.m_CameraLight.m_Rim = glm::vec4(1.0f);
 
         m_device.copyToBuffer(g_InstanceParameter, &instanceParameter, sizeof(InstanceParameter));
     }
@@ -178,20 +183,29 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
 
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.maxLod = 1.0f;
+    samplerInfo.magFilter = VK_FILTER_NEAREST;
+    samplerInfo.minFilter = VK_FILTER_NEAREST;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    samplerInfo.maxAnisotropy = 1.0f;
 
     vkCreateSampler(m_device.device, &samplerInfo, nullptr, &m_sampler);
+
+    samplerInfo.magFilter = VK_FILTER_LINEAR;
+    samplerInfo.minFilter = VK_FILTER_LINEAR;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+
+    vkCreateSampler(m_device.device, &samplerInfo, nullptr, &m_normalSampler);
 
     createImageResources();
 }
 
-void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Camera &camera, const std::vector<DrawObject> &models)
+void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Camera &camera, Scene &scene, const std::vector<DrawObject> &models)
 {
     // TODO: this shouldn't be here
     CameraParameter cameraParameter{};
@@ -204,12 +218,12 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
     cameraParameter.m_InverseViewProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
 
     // known params
-    cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(camera.perspective));
+    cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
     cameraParameter.m_ProjectionMatrix = glm::transpose(viewProjectionMatrix);
 
     cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(glm::inverse(camera.perspective));
-    cameraParameter.m_EyePosition = camera.position; // placeholder
-    cameraParameter.m_LookAtVector = glm::vec3(0.0f); // placeholder
+    cameraParameter.m_EyePosition = glm::vec4(camera.position, 0.0f);
+    cameraParameter.m_LookAtVector = glm::vec4(0.0f); // placeholder
 
     m_device.copyToBuffer(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
 
@@ -276,12 +290,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                         bool found = false;
                         for (int z = 0; z < renderMaterial.mat.num_shader_keys; z++) {
                             if (renderMaterial.mat.shader_keys[z].category == id) {
-                                // TODO: Temporary workaround for materials that need tile normals
-                                if (id == 0xB616DC5A) {
-                                    materialKeys.push_back(0x22A4AABF);
-                                } else {
-                                    materialKeys.push_back(renderMaterial.mat.shader_keys[z].value);
-                                }
+                                materialKeys.push_back(renderMaterial.mat.shader_keys[z].value);
                                 found = true;
                             }
                         }
@@ -897,7 +906,7 @@ GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passN
         rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         rasterizer.lineWidth = 1.0f;
         rasterizer.cullMode = VK_CULL_MODE_NONE; // TODO: implement cull mode
-        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
         VkPipelineMultisampleStateCreateInfo multisampling = {};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -905,7 +914,7 @@ GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passN
 
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachment.blendEnable = VK_TRUE;
+        colorBlendAttachment.blendEnable = VK_FALSE;
         colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
         colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
         colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
@@ -957,7 +966,9 @@ GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passN
 
         VkPipelineDepthStencilStateCreateInfo depthStencil = {};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-        depthStencil.depthTestEnable = VK_TRUE;
+        if (passName != "PASS_LIGHTING_OPAQUE_VIEWPOSITION") {
+            depthStencil.depthTestEnable = VK_TRUE;
+        }
         if (passName == "PASS_G_OPAQUE") {
             depthStencil.depthWriteEnable = VK_TRUE;
         }
@@ -1165,6 +1176,8 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                     } else if (strcmp(name, "g_SamplerSpecular") == 0) {
                         Q_ASSERT(material);
                         info->imageView = material->specularTexture->view;
+                    } else if (strcmp(name, "g_SamplerTileNormal") == 0) {
+                        info->imageView = m_placeholderTileNormal.imageView;
                     } else {
                         info->imageView = m_dummyTex.imageView;
                         qInfo() << "Unknown image" << name;
@@ -1181,7 +1194,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                 auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
-                info->sampler = m_sampler;
+                info->sampler = m_normalSampler;
             } break;
             case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
                 auto info = &bufferInfo.emplace_back();
@@ -1270,7 +1283,7 @@ void GameRenderer::createImageResources()
 
     m_viewPositionBuffer = m_device.createTexture(m_device.swapChain->extent.width,
                                                   m_device.swapChain->extent.height,
-                                                  VK_FORMAT_R8G8B8A8_UNORM,
+                                                  VK_FORMAT_R16G16B16A16_SFLOAT,
                                                   VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     m_device.nameTexture(m_viewPositionBuffer, "View Position");
 

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <string_view>
 #include <vector>
 
@@ -35,7 +36,7 @@ public:
 
     Texture createTexture(int width, int height, VkFormat format, VkImageUsageFlags usage);
 
-    Texture createDummyTexture();
+    Texture createDummyTexture(std::array<uint8_t, 4> values = {255, 255, 255, 255});
     Buffer createDummyBuffer();
 
     VkCommandBuffer beginSingleTimeCommands();

@@ -15,6 +15,7 @@
 #include "camera.h"
 #include "device.h"
 #include "drawobject.h"
+#include "scene.h"
 
 class ImGuiPass;
 struct ImGuiContext;
@@ -40,6 +41,7 @@ public:
     VkRenderPass presentationRenderPass() const;
 
     Camera camera;
+    Scene scene;
 
     ImGuiContext *ctx = nullptr;
 
