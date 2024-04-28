@@ -107,4 +107,7 @@ private:
     VkSampler m_normalSampler;
     Buffer m_dummyBuffer;
     Texture m_placeholderTileNormal;
+
+    // Dawntrail changes part of the rendering system
+    bool m_dawntrailMode = false;
 };

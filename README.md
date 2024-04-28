@@ -22,7 +22,7 @@ There are no releases at the moment, but experimental builds are currently avail
 
 ### Supported Game Versions
 
-I have only tested Novus on 6.x (Endwalker) so far, and it has limited support for 7.x (Dawntrail) except for the new renderer.
+I have only tested Novus on 6.x (Endwalker) so far, and it has limited support for 7.x (Dawntrail) except for the new renderer. If you're using Novus against Dawntrail, make sure to set the `NOVUS_IS_DAWNTRAIL=1` environment variable.
 
 ## Building
 

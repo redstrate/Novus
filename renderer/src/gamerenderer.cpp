@@ -58,6 +58,8 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     : m_device(device)
     , m_data(data)
 {
+    m_dawntrailMode = qgetenv("NOVUS_IS_DAWNTRAIL") == QByteArrayLiteral("1");
+
     m_dummyTex = m_device.createDummyTexture();
     m_dummyBuffer = m_device.createDummyBuffer();
 
@@ -82,6 +84,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
 
         InstanceParameter instanceParameter{};
         instanceParameter.g_InstanceParameter.m_MulColor = glm::vec4(1.0f);
+        instanceParameter.g_InstanceParameter.m_EnvParameter = glm::vec4(1.0f);
 
         const float wetnessMin = 0.0f;
         const float wetnessMax = 1.0f;
@@ -268,20 +271,37 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     }
 
                     std::vector<uint32_t> systemKeys;
-                    if (renderMaterial.type == MaterialType::Skin) {
+                    // Dawntrail has no more decode depth buffers it seems
+                    if (renderMaterial.type == MaterialType::Skin && !m_dawntrailMode) {
                         systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
                     }
                     std::vector<uint32_t> sceneKeys;
-                    if (model.skinned) {
-                        sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
-                    } else {
-                        sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
-                    }
+                    if (m_dawntrailMode) {
+                        sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
+                        sceneKeys.push_back(physis_shpk_crc("ApplyDissolveColorOff"));
+                        sceneKeys.push_back(physis_shpk_crc("GetCustumizeColorAuraOff"));
 
-                    sceneKeys.push_back(physis_shpk_crc("GetAmbientLight_SH"));
-                    sceneKeys.push_back(physis_shpk_crc("GetReflectColor_Texture"));
-                    sceneKeys.push_back(physis_shpk_crc("GetAmbientOcclusion_None"));
-                    sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
+                        if (model.skinned) {
+                            sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
+                        } else {
+                            sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
+                        }
+
+                        sceneKeys.push_back(physis_shpk_crc("ApplyVertexMovementOff"));
+                        sceneKeys.push_back(physis_shpk_crc("CalculateInstancingPosition_Off"));
+
+                    } else {
+                        if (model.skinned) {
+                            sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
+                        } else {
+                            sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
+                        }
+
+                        sceneKeys.push_back(physis_shpk_crc("GetAmbientLight_SH"));
+                        sceneKeys.push_back(physis_shpk_crc("GetReflectColor_Texture"));
+                        sceneKeys.push_back(physis_shpk_crc("GetAmbientOcclusion_None"));
+                        sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
+                    }
 
                     std::vector<uint32_t> materialKeys;
                     for (int j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
@@ -350,9 +370,10 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
             // first we need to generate the view positions with createviewpositions
             beginPass(imageIndex, commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION");
             {
-                std::vector<uint32_t> systemKeys = {
-                    physis_shpk_crc("DecodeDepthBuffer_RAWZ"),
-                };
+                std::vector<uint32_t> systemKeys = {};
+                if (!m_dawntrailMode) {
+                    systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
+                }
                 std::vector<uint32_t> subviewKeys = {
                     physis_shpk_crc("Default"),
                     physis_shpk_crc("SUB_VIEW_MAIN"),
@@ -399,9 +420,10 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
             beginPass(imageIndex, commandBuffer, pass);
             // then run the directionallighting shader
             {
-                std::vector<uint32_t> systemKeys = {
-                    physis_shpk_crc("DecodeDepthBuffer_RAWZ"),
-                };
+                std::vector<uint32_t> systemKeys = {};
+                if (!m_dawntrailMode) {
+                    systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
+                }
                 std::vector<uint32_t> sceneKeys = {
                     physis_shpk_crc("GetDirectionalLight_Enable"),
                     physis_shpk_crc("GetFakeSpecular_Disable"),
@@ -469,20 +491,36 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     }
 
                     std::vector<uint32_t> systemKeys;
-                    if (renderMaterial.type == MaterialType::Skin) {
+                    if (renderMaterial.type == MaterialType::Skin && !m_dawntrailMode) {
                         systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
                     }
                     std::vector<uint32_t> sceneKeys;
-                    if (model.skinned) {
-                        sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
-                    } else {
-                        sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
-                    }
+                    if (m_dawntrailMode) {
+                        sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
+                        sceneKeys.push_back(physis_shpk_crc("ApplyDissolveColorOff"));
+                        sceneKeys.push_back(physis_shpk_crc("GetCustumizeColorAuraOff"));
 
-                    sceneKeys.push_back(physis_shpk_crc("GetAmbientLight_SH"));
-                    sceneKeys.push_back(physis_shpk_crc("GetReflectColor_Texture"));
-                    sceneKeys.push_back(physis_shpk_crc("GetAmbientOcclusion_None"));
-                    sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
+                        if (model.skinned) {
+                            sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
+                        } else {
+                            sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
+                        }
+
+                        sceneKeys.push_back(physis_shpk_crc("ApplyVertexMovementOff"));
+                        sceneKeys.push_back(physis_shpk_crc("CalculateInstancingPosition_Off"));
+
+                    } else {
+                        if (model.skinned) {
+                            sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
+                        } else {
+                            sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
+                        }
+
+                        sceneKeys.push_back(physis_shpk_crc("GetAmbientLight_SH"));
+                        sceneKeys.push_back(physis_shpk_crc("GetReflectColor_Texture"));
+                        sceneKeys.push_back(physis_shpk_crc("GetAmbientOcclusion_None"));
+                        sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
+                    }
 
                     std::vector<uint32_t> materialKeys;
                     for (int j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
@@ -1066,7 +1104,9 @@ VkShaderModule GameRenderer::convertShaderModule(const physis_Shader &shader, sp
     // Here you can also set up decorations if you want (binding = #N).
     i = 0;
     for (auto texture : resources.separate_images) {
-        glsl.set_name(texture.id, shader.resource_parameters[i].name);
+        if (i < shader.num_resource_parameters) {
+            glsl.set_name(texture.id, shader.resource_parameters[i].name);
+        }
         i++;
     }
 
@@ -1152,7 +1192,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                 auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
-                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT) {
+                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < pipeline.pixelShader.num_resource_parameters) {
                     auto name = pipeline.pixelShader.resource_parameters[p].name;
                     qInfo() << "Requesting image" << name << "at" << j;
                     if (strcmp(name, "g_SamplerGBuffer") == 0) {
