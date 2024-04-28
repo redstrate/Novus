@@ -92,6 +92,7 @@ private:
     Buffer g_MaterialParameterDynamic;
     Buffer g_DecalColor;
     Buffer g_AmbientParam;
+    Buffer g_ShaderTypeParameter;
 
     Buffer m_planeVertexBuffer;
 

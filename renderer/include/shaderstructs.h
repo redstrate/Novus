@@ -16,8 +16,12 @@ struct CameraParameter {
     glm::vec4 m_LookAtVector;
 };
 
-struct JointMatrixArray {
+struct JointMatrixArrayARR {
     glm::mat3x4 g_JointMatrixArray[64];
+};
+
+struct JointMatrixArrayDawntrail {
+    glm::mat3x4 g_JointMatrixArray[768];
 };
 
 struct CameraLight {
@@ -95,4 +99,11 @@ struct MaterialParameterDynamic {
 
 struct AmbientParameters {
     glm::vec4 g_AmbientParam[6];
+    // As seen in Dawntrail characterlegacy.shpk
+    glm::vec4 g_AdditionalAmbientParam[4];
+};
+
+// Dawntrail, unknown purpose
+struct ShaderTypeParameter {
+    glm::vec4 m[2044];
 };

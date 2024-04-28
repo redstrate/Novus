@@ -180,8 +180,20 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         for (int i = 0; i < 6; i++) {
             ambientParameters.g_AmbientParam[i] = glm::vec4(1.0f);
         }
+        for (int i = 0; i < 4; i++) {
+            ambientParameters.g_AdditionalAmbientParam[i] = glm::vec4(1.0f);
+        }
 
-        m_device.copyToBuffer(g_AmbientParam, &ambientParameters, sizeof(glm::vec4));
+        m_device.copyToBuffer(g_AmbientParam, &ambientParameters, sizeof(AmbientParameters));
+    }
+
+    // shader type parameter
+    if (m_dawntrailMode) {
+        g_ShaderTypeParameter = m_device.createBuffer(sizeof(ShaderTypeParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+
+        ShaderTypeParameter shaderTypeParameter{};
+
+        m_device.copyToBuffer(g_ShaderTypeParameter, &g_ShaderTypeParameter, sizeof(ShaderTypeParameter));
     }
 
     VkSamplerCreateInfo samplerInfo = {};
@@ -1192,7 +1204,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                 auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
-                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < pipeline.pixelShader.num_resource_parameters) {
+                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p + 1 < pipeline.pixelShader.num_resource_parameters) {
                     auto name = pipeline.pixelShader.resource_parameters[p].name;
                     qInfo() << "Requesting image" << name << "at" << j;
                     if (strcmp(name, "g_SamplerGBuffer") == 0) {
@@ -1280,6 +1292,8 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         useUniformBuffer(g_DecalColor);
                     } else if (strcmp(name, "g_AmbientParam") == 0) {
                         useUniformBuffer(g_AmbientParam);
+                    } else if (strcmp(name, "g_ShaderTypeParameter") == 0) {
+                        useUniformBuffer(g_ShaderTypeParameter);
                     } else {
                         qInfo() << "Unknown resource:" << name;
                         info->buffer = m_dummyBuffer.buffer;
