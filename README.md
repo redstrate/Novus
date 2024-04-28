@@ -20,6 +20,10 @@ Here is an exhaustive list of tooling available here:
 
 There are no releases at the moment, but experimental builds are currently available for Windows and Linux via [GitHub Actions](https://github.com/redstrate/Novus/actions). Note that the Linux binaries may not be completely portable.
 
+### Supported Game Versions
+
+I have only tested Novus on 6.x (Endwalker) so far, and it has limited support for 7.x (Dawntrail) except for the new renderer.
+
 ## Building
 
 Please refer to the [building document](BUILDING.md) for instructions on how to build Novus.
