@@ -87,6 +87,10 @@ void SklbPart::treeItemClicked(QTreeWidgetItem *item, int column)
             currentScale = glm::make_vec3(skeleton.bones[i].scale);
             currentEditedBone = &skeleton.bones[i];
 
+            QSignalBlocker posBlocker(posEdit);
+            QSignalBlocker rotBlocker(rotationEdit);
+            QSignalBlocker sclBlocker(scaleEdit);
+
             posEdit->setEnabled(true);
             posEdit->setVector(currentPosition);
 
