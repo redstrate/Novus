@@ -520,138 +520,19 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
     DrawObject.boneInfoBuffer = m_device->createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 }
 
-RenderTexture RenderManager::addTexture(const uint32_t width, const uint32_t height, const uint8_t *data, const uint32_t data_size)
+Texture RenderManager::addGameTexture(physis_Texture gameTexture)
 {
-    RenderTexture newTexture = {};
-
-    VkImageCreateInfo imageInfo = {};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = width;
-    imageInfo.extent.height = height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-
-    vkCreateImage(m_device->device, &imageInfo, nullptr, &newTexture.handle);
-
-    VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(m_device->device, newTexture.handle, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = m_device->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    vkAllocateMemory(m_device->device, &allocInfo, nullptr, &newTexture.memory);
-
-    vkBindImageMemory(m_device->device, newTexture.handle, newTexture.memory, 0);
-
-    // copy image data
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = data_size;
-    bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    vkCreateBuffer(m_device->device, &bufferInfo, nullptr, &stagingBuffer);
-
-    // allocate staging memory
-    vkGetBufferMemoryRequirements(m_device->device, stagingBuffer, &memRequirements);
-
-    allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex =
-        m_device->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    vkAllocateMemory(m_device->device, &allocInfo, nullptr, &stagingBufferMemory);
-
-    vkBindBufferMemory(m_device->device, stagingBuffer, stagingBufferMemory, 0);
-
-    // copy to staging buffer
-    void *mapped_data;
-    vkMapMemory(m_device->device, stagingBufferMemory, 0, data_size, 0, &mapped_data);
-    memcpy(mapped_data, data, data_size);
-    vkUnmapMemory(m_device->device, stagingBufferMemory);
-
-    // copy staging buffer to image
-    VkCommandBuffer commandBuffer = m_device->beginSingleTimeCommands();
-
-    VkImageSubresourceRange range = {};
-    range.baseMipLevel = 0;
-    range.levelCount = 1;
-    range.baseArrayLayer = 0;
-    range.layerCount = 1;
-
-    m_device->inlineTransitionImageLayout(commandBuffer,
-                                          newTexture.handle,
-                                          imageInfo.format,
-                                          VK_IMAGE_ASPECT_COLOR_BIT,
-                                          range,
-                                          VK_IMAGE_LAYOUT_UNDEFINED,
-                                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-    VkBufferImageCopy region = {};
-    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    region.imageSubresource.mipLevel = 0;
-    region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = 1;
-    region.imageExtent = {(uint32_t)width, (uint32_t)height, 1};
-
-    vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, newTexture.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-
-    m_device->inlineTransitionImageLayout(commandBuffer,
-                                          newTexture.handle,
-                                          imageInfo.format,
-                                          VK_IMAGE_ASPECT_COLOR_BIT,
-                                          range,
-                                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    m_device->endSingleTimeCommands(commandBuffer);
-
-    range = {};
-    range.levelCount = 1;
-    range.layerCount = 1;
-    range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-    VkImageViewCreateInfo viewInfo = {};
-    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewInfo.image = newTexture.handle;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format = imageInfo.format;
-    viewInfo.subresourceRange = range;
-
-    vkCreateImageView(m_device->device, &viewInfo, nullptr, &newTexture.view);
-
-    VkSamplerCreateInfo samplerInfo = {};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.maxLod = 1.0f;
-
-    vkCreateSampler(m_device->device, &samplerInfo, nullptr, &newTexture.sampler);
-
-    return newTexture;
+    return m_device->addGameTexture(gameTexture);
 }
 
 Device &RenderManager::device()
 {
     return *m_device;
+}
+
+VkSampler RenderManager::defaultSampler()
+{
+    return m_sampler;
 }
 
 void RenderManager::updateCamera(Camera &camera)

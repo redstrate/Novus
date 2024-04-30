@@ -34,7 +34,7 @@ public:
 
     DrawObject addDrawObject(const physis_MDL &model, int lod);
     void reloadDrawObject(DrawObject &model, uint32_t lod);
-    RenderTexture addTexture(uint32_t width, uint32_t height, const uint8_t *data, uint32_t data_size);
+    Texture addGameTexture(physis_Texture gameTexture);
 
     void render(const std::vector<DrawObject> &models);
 
@@ -46,6 +46,8 @@ public:
     ImGuiContext *ctx = nullptr;
 
     Device &device();
+
+    VkSampler defaultSampler();
 
 private:
     void updateCamera(Camera &camera);

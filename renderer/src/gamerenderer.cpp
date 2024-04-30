@@ -63,8 +63,8 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     m_dummyTex = m_device.createDummyTexture();
     m_dummyBuffer = m_device.createDummyBuffer();
 
-    // don't know how to get tile normal yet
-    m_placeholderTileNormal = m_device.createDummyTexture({128, 128, 255, 255});
+    m_tileNormal = m_device.addGameTexture(physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_n.tex")));
+    m_tileDiffuse = m_device.addGameTexture(physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_d.tex")));
 
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -178,7 +178,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
 
         AmbientParameters ambientParameters{};
         for (int i = 0; i < 6; i++) {
-            ambientParameters.g_AmbientParam[i] = glm::vec4(1.0f);
+            ambientParameters.g_AmbientParam[i] = glm::vec4(0.1f);
         }
         for (int i = 0; i < 4; i++) {
             ambientParameters.g_AdditionalAmbientParam[i] = glm::vec4(1.0f);
@@ -1204,7 +1204,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                 auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
-                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p + 1 < pipeline.pixelShader.num_resource_parameters) {
+                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < pipeline.pixelShader.num_resource_parameters) {
                     auto name = pipeline.pixelShader.resource_parameters[p].name;
                     qInfo() << "Requesting image" << name << "at" << j;
                     if (strcmp(name, "g_SamplerGBuffer") == 0) {
@@ -1215,7 +1215,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         info->imageView = m_depthBuffer.imageView;
                     } else if (strcmp(name, "g_SamplerNormal") == 0) {
                         Q_ASSERT(material);
-                        info->imageView = material->normalTexture->view;
+                        info->imageView = material->normalTexture->imageView;
                     } else if (strcmp(name, "g_SamplerLightDiffuse") == 0) {
                         Q_ASSERT(material);
                         info->imageView = m_lightBuffer.imageView;
@@ -1224,12 +1224,14 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         info->imageView = m_lightSpecularBuffer.imageView;
                     } else if (strcmp(name, "g_SamplerDiffuse") == 0) {
                         Q_ASSERT(material);
-                        info->imageView = material->diffuseTexture->view;
+                        info->imageView = material->diffuseTexture->imageView;
                     } else if (strcmp(name, "g_SamplerSpecular") == 0) {
                         Q_ASSERT(material);
-                        info->imageView = material->specularTexture->view;
+                        info->imageView = material->specularTexture->imageView;
                     } else if (strcmp(name, "g_SamplerTileNormal") == 0) {
-                        info->imageView = m_placeholderTileNormal.imageView;
+                        info->imageView = m_tileNormal.imageView;
+                    } else if (strcmp(name, "g_SamplerTileDiffuse") == 0) {
+                        info->imageView = m_tileDiffuse.imageView;
                     } else {
                         info->imageView = m_dummyTex.imageView;
                         qInfo() << "Unknown image" << name;

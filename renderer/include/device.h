@@ -7,9 +7,11 @@
 #include <string_view>
 #include <vector>
 
+#include <QtLogging>
 #include <vulkan/vulkan.h>
 
 #include "buffer.h"
+#include "physis.hpp"
 #include "texture.h"
 
 class SwapChain;
@@ -57,4 +59,6 @@ public:
 
     VkResult nameObject(VkObjectType type, uint64_t object, std::string_view name);
     void nameTexture(Texture &texture, std::string_view name);
+
+    Texture addGameTexture(physis_Texture gameTexture);
 };

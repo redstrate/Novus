@@ -3,19 +3,14 @@
 
 #pragma once
 
+#include "texture.h"
+
 struct RenderPart {
     size_t numIndices;
 
     Buffer vertexBuffer, indexBuffer;
 
     int materialIndex = 0;
-};
-
-struct RenderTexture {
-    VkImage handle = VK_NULL_HANDLE;
-    VkDeviceMemory memory = VK_NULL_HANDLE;
-    VkImageView view = VK_NULL_HANDLE;
-    VkSampler sampler = VK_NULL_HANDLE;
 };
 
 enum class MaterialType { Object, Skin };
@@ -25,10 +20,10 @@ struct RenderMaterial {
     MaterialType type = MaterialType::Object;
     physis_SHPK shaderPackage;
 
-    RenderTexture *diffuseTexture = nullptr;
-    RenderTexture *normalTexture = nullptr;
-    RenderTexture *specularTexture = nullptr;
-    RenderTexture *multiTexture = nullptr;
+    std::optional<Texture> diffuseTexture;
+    std::optional<Texture> normalTexture;
+    std::optional<Texture> specularTexture;
+    std::optional<Texture> multiTexture;
 
     Buffer materialBuffer;
 };

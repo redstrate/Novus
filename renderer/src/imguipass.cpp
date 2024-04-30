@@ -302,9 +302,18 @@ void ImGuiPass::createFontImage()
     int width = 0, height = 0;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    auto texture = renderer_.addTexture(width, height, pixels, width * height * 4);
-    fontImageView_ = texture.view;
-    fontSampler_ = texture.sampler;
+    // TODO: haha, no
+    physis_Texture texture;
+    texture.texture_type = TextureType::TwoDimensional;
+    texture.width = width;
+    texture.height = height;
+    texture.depth = 1;
+    texture.rgba = pixels;
+    texture.rgba_size = width * height * 4;
+
+    auto tex = renderer_.addGameTexture(texture);
+    fontImageView_ = tex.imageView;
+    fontSampler_ = renderer_.defaultSampler();
 
     io.Fonts->SetTexID(static_cast<ImTextureID>(fontImageView_));
 }

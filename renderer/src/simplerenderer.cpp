@@ -439,13 +439,13 @@ uint64_t SimpleRenderer::hash(const DrawObject &model, const RenderMaterial &mat
     uint64_t hash = 0;
     hash += reinterpret_cast<intptr_t>((void *)&model);
     if (material.diffuseTexture)
-        hash += reinterpret_cast<intptr_t>((void *)material.diffuseTexture);
+        hash += reinterpret_cast<intptr_t>((void *)&material.diffuseTexture);
     if (material.normalTexture)
-        hash += reinterpret_cast<intptr_t>((void *)material.normalTexture);
+        hash += reinterpret_cast<intptr_t>((void *)&material.normalTexture);
     if (material.specularTexture)
-        hash += reinterpret_cast<intptr_t>((void *)material.specularTexture);
+        hash += reinterpret_cast<intptr_t>((void *)&material.specularTexture);
     if (material.multiTexture)
-        hash += reinterpret_cast<intptr_t>((void *)material.multiTexture);
+        hash += reinterpret_cast<intptr_t>((void *)&material.multiTexture);
     return hash;
 }
 
@@ -487,8 +487,8 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     if (material.diffuseTexture) {
-        imageInfo.imageView = material.diffuseTexture->view;
-        imageInfo.sampler = material.diffuseTexture->sampler;
+        imageInfo.imageView = material.diffuseTexture->imageView;
+        imageInfo.sampler = m_sampler;
     } else {
         imageInfo.imageView = m_dummyTex.imageView;
         imageInfo.sampler = m_sampler;
@@ -508,8 +508,8 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     normalImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     if (material.normalTexture) {
-        normalImageInfo.imageView = material.normalTexture->view;
-        normalImageInfo.sampler = material.normalTexture->sampler;
+        normalImageInfo.imageView = material.normalTexture->imageView;
+        normalImageInfo.sampler = m_sampler;
 
         VkWriteDescriptorSet normalDescriptorWrite2 = {};
         normalDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -526,8 +526,8 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     specularImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     if (material.specularTexture) {
-        specularImageInfo.imageView = material.specularTexture->view;
-        specularImageInfo.sampler = material.specularTexture->sampler;
+        specularImageInfo.imageView = material.specularTexture->imageView;
+        specularImageInfo.sampler = m_sampler;
 
         VkWriteDescriptorSet specularDescriptorWrite2 = {};
         specularDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -544,8 +544,8 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     multiImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     if (material.multiTexture) {
-        multiImageInfo.imageView = material.multiTexture->view;
-        multiImageInfo.sampler = material.multiTexture->sampler;
+        multiImageInfo.imageView = material.multiTexture->imageView;
+        multiImageInfo.sampler = m_sampler;
 
         VkWriteDescriptorSet multiDescriptorWrite2 = {};
         multiDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

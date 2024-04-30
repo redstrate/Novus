@@ -107,7 +107,8 @@ private:
     VkSampler m_sampler;
     VkSampler m_normalSampler;
     Buffer m_dummyBuffer;
-    Texture m_placeholderTileNormal;
+    Texture m_tileNormal;
+    Texture m_tileDiffuse;
 
     // Dawntrail changes part of the rendering system
     bool m_dawntrailMode = false;

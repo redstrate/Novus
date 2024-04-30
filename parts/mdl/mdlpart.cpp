@@ -258,24 +258,16 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
         if (texture.rgba != nullptr) {
             switch (type) {
             case 'm': {
-                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
-
-                newMaterial.multiTexture = new RenderTexture(tex);
+                newMaterial.multiTexture = renderer->addGameTexture(texture);
             } break;
             case 'd': {
-                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
-
-                newMaterial.diffuseTexture = new RenderTexture(tex);
+                newMaterial.diffuseTexture = renderer->addGameTexture(texture);
             } break;
             case 'n': {
-                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
-
-                newMaterial.normalTexture = new RenderTexture(tex);
+                newMaterial.normalTexture = renderer->addGameTexture(texture);
             } break;
             case 's': {
-                auto tex = renderer->addTexture(texture.width, texture.height, texture.rgba, texture.rgba_size);
-
-                newMaterial.specularTexture = new RenderTexture(tex);
+                newMaterial.specularTexture = renderer->addGameTexture(texture);
             } break;
             default:
                 qDebug() << "unhandled type" << type;
