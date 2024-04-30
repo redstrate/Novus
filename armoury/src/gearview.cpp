@@ -107,6 +107,13 @@ void GearView::addGear(GearInfo &gear)
     qDebug() << "Adding gear" << gear.name.c_str();
 
     queuedGearAdditions.emplace_back(gear);
+
+    for (auto loadedGear : loadedGears) {
+        if (loadedGear.info.slot == gear.slot) {
+            queuedGearRemovals.push_back(loadedGear);
+        }
+    }
+
     gearDirty = true;
 
     Q_EMIT gearChanged();
