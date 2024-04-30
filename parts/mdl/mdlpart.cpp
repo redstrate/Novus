@@ -13,6 +13,7 @@
 #include <QVulkanWindow>
 #include <cmath>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/matrix_major_storage.hpp>
 
 #include "filecache.h"
 #include "vulkanwindow.h"
@@ -187,22 +188,10 @@ void MDLPart::reloadBoneData()
 
                     for (uint32_t k = 0; k < model.model.num_affected_bones; k++) {
                         if (std::string_view{model.model.affected_bone_names[k]} == std::string_view{deformBone.name}) {
-                            deformBones[k] = glm::mat4{deformBone.deform[0],
-                                                       deformBone.deform[1],
-                                                       deformBone.deform[2],
-                                                       deformBone.deform[3],
-                                                       deformBone.deform[4],
-                                                       deformBone.deform[5],
-                                                       deformBone.deform[6],
-                                                       deformBone.deform[7],
-                                                       deformBone.deform[8],
-                                                       deformBone.deform[9],
-                                                       deformBone.deform[10],
-                                                       deformBone.deform[11],
-                                                       0.0f,
-                                                       0.0f,
-                                                       0.0f,
-                                                       1.0f};
+                            deformBones[k] = glm::rowMajor4(glm::vec4{deformBone.deform[0], deformBone.deform[1], deformBone.deform[2], deformBone.deform[3]},
+                                                            glm::vec4{deformBone.deform[4], deformBone.deform[5], deformBone.deform[6], deformBone.deform[7]},
+                                                            glm::vec4{deformBone.deform[8], deformBone.deform[9], deformBone.deform[10], deformBone.deform[11]},
+                                                            glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
                         }
                     }
                 }
@@ -210,8 +199,7 @@ void MDLPart::reloadBoneData()
 
             for (uint32_t i = 0; i < model.model.num_affected_bones; i++) {
                 const int originalBoneId = boneMapping[i];
-                qInfo() << "Remapped" << originalBoneId << "to" << i;
-                model.boneData[i] = boneData[originalBoneId].localTransform * deformBones[i] * boneData[originalBoneId].inversePose;
+                model.boneData[i] = deformBones[i] * boneData[originalBoneId].localTransform * boneData[originalBoneId].inversePose;
             }
         }
     }
