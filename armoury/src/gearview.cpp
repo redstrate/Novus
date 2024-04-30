@@ -272,13 +272,10 @@ MDLPart &GearView::part() const
 
 void GearView::updatePart()
 {
-    qInfo() << raceDirty << gearDirty << updating;
     if (raceDirty) {
         // if race changes, all of the models need to be reloaded.
         // TODO: in the future, we can be a bit smarter about this, lots of races use the same model (hyur)
-        for (auto &part : loadedGears) {
-            mdlPart->removeModel(part.mdl);
-        }
+        mdlPart->clear();
         queuedGearAdditions = loadedGears;
         loadedGears.clear();
         gearDirty = true;
@@ -376,8 +373,8 @@ void GearView::updatePart()
         queuedGearRemovals.clear();
     }
 
-    if (face) {
-        const auto mdlPath = QLatin1String(physis_build_character_path(CharacterCategory::Face, *face, currentRace, currentSubrace, currentGender));
+    const auto loadBodyPart = [this, &sanitizeMdlPath](int index, CharacterCategory category, auto build_material_path_func) {
+        const auto mdlPath = QLatin1String(physis_build_character_path(category, index, currentRace, currentSubrace, currentGender));
         auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
@@ -387,7 +384,7 @@ void GearView::updatePart()
                 for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                     const char *material_name = mdl.material_names[i];
                     const std::string skinmtrl_path =
-                        physis_build_face_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *face, material_name);
+                        build_material_path_func(physis_get_race_code(currentRace, currentSubrace, currentGender), index, material_name);
 
                     if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                         auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
@@ -398,73 +395,22 @@ void GearView::updatePart()
                 mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
             }
         }
+    };
+
+    if (face) {
+        loadBodyPart(*face, CharacterCategory::Face, physis_build_face_material_path);
     }
 
     if (hair) {
-        const auto mdlPath = QLatin1String(physis_build_character_path(CharacterCategory::Hair, *hair, currentRace, currentSubrace, currentGender));
-        auto mdl_data = cache.lookupFile(mdlPath);
-
-        if (mdl_data.size > 0) {
-            auto mdl = physis_mdl_parse(mdl_data);
-            if (mdl.p_ptr != nullptr) {
-                std::vector<physis_Material> materials;
-                for (uint32_t i = 0; i < mdl.num_material_names; i++) {
-                    const char *material_name = mdl.material_names[i];
-                    const std::string skinmtrl_path =
-                        physis_build_hair_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *hair, material_name);
-
-                    if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                        materials.push_back(mat);
-                    }
-                }
-
-                mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
-            }
-        }
+        loadBodyPart(*hair, CharacterCategory::Hair, physis_build_hair_material_path);
     }
 
     if (ear) {
-        const auto mdlPath = QLatin1String(physis_build_character_path(CharacterCategory::Ear, *ear, currentRace, currentSubrace, currentGender));
-        auto mdl_data = cache.lookupFile(mdlPath);
-
-        if (mdl_data.size > 0) {
-            auto mdl = physis_mdl_parse(mdl_data);
-            if (mdl.p_ptr != nullptr) {
-                std::vector<physis_Material> materials;
-                for (uint32_t i = 0; i < mdl.num_material_names; i++) {
-                    const char *material_name = mdl.material_names[i];
-                    const std::string skinmtrl_path =
-                        physis_build_ear_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *ear, material_name);
-
-                    if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                        materials.push_back(mat);
-                    }
-                }
-
-                mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
-            }
-        }
+        loadBodyPart(*ear, CharacterCategory::Ear, physis_build_ear_material_path);
     }
 
     if (tail) {
-        const auto mdlPath = QLatin1String(physis_build_character_path(CharacterCategory::Tail, *tail, currentRace, currentSubrace, currentGender));
-        auto mdl_data = cache.lookupFile(mdlPath);
-
-        if (mdl_data.size > 0) {
-            auto mdl = physis_mdl_parse(mdl_data);
-            if (mdl.p_ptr != nullptr) {
-                const char *material_name = mdl.material_names[0];
-                const std::string skinmtrl_path =
-                    physis_build_tail_material_path(physis_get_race_code(currentRace, currentSubrace, currentGender), *tail, material_name);
-
-                if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                    auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                    mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), {mat}, currentLod);
-                }
-            }
-        }
+        loadBodyPart(*tail, CharacterCategory::Tail, physis_build_tail_material_path);
     }
 
     raceDirty = false;
@@ -492,9 +438,11 @@ QString GearView::getLoadedGearPath() const
 void GearView::changeEvent(QEvent *event)
 {
     switch (event->type()) {
-    case QEvent::EnabledChange: {
+    case QEvent::EnabledChange:
         mdlPart->setEnabled(isEnabled());
-    } break;
+        break;
+    default:
+        break;
     }
     QFrame::changeEvent(event);
 }
