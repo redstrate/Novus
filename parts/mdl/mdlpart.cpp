@@ -253,6 +253,8 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             newMaterial.type = MaterialType::Skin;
         }
 
+        newMaterial.tableTexture = renderer->device().createDummyTexture();
+
         char type = t[t.length() - 5];
         auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
         if (texture.rgba != nullptr) {

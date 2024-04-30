@@ -1213,7 +1213,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         info->imageView = m_viewPositionBuffer.imageView;
                     } else if (strcmp(name, "g_SamplerDepth") == 0) {
                         info->imageView = m_depthBuffer.imageView;
-                    } else if (strcmp(name, "g_SamplerNormal") == 0) {
+                    } else if (strcmp(name, "g_SamplerNormal") == 0 || strcmp(name, "g_SamplerIndex") == 0) {
                         Q_ASSERT(material);
                         info->imageView = material->normalTexture->imageView;
                     } else if (strcmp(name, "g_SamplerLightDiffuse") == 0) {
@@ -1232,6 +1232,9 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         info->imageView = m_tileNormal.imageView;
                     } else if (strcmp(name, "g_SamplerTileDiffuse") == 0) {
                         info->imageView = m_tileDiffuse.imageView;
+                    } else if (strcmp(name, "g_SamplerTable") == 0) {
+                        Q_ASSERT(material);
+                        info->imageView = material->tableTexture.imageView;
                     } else {
                         info->imageView = m_dummyTex.imageView;
                         qInfo() << "Unknown image" << name;
