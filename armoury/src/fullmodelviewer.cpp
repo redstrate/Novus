@@ -6,6 +6,7 @@
 #include "boneeditor.h"
 #include "magic_enum.hpp"
 #include <KLocalizedString>
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QFormLayout>
@@ -95,9 +96,22 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
 
     m_boneEditor = new BoneEditor(gearView);
 
+    auto debugWidget = new QWidget();
+    auto debugLayout = new QFormLayout();
+    debugWidget->setLayout(debugLayout);
+
+    auto racialTransformsBox = new QCheckBox();
+    racialTransformsBox->setChecked(true);
+    connect(racialTransformsBox, &QCheckBox::clicked, this, [this](bool checked) {
+        gearView->part().enableRacialDeform = checked;
+        gearView->part().reloadRenderer();
+    });
+    debugLayout->addRow(i18n("Enable Racial Deforms"), racialTransformsBox);
+
     auto tabWidget = new QTabWidget();
     tabWidget->addTab(m_boneEditor, i18nc("@title:tab", "Bone Editor"));
     tabWidget->addTab(characterEditorWidget, i18nc("@title:tab", "Character Editor"));
+    tabWidget->addTab(debugWidget, i18nc("@title:tab", "Debug"));
     viewportLayout->addWidget(tabWidget);
 
     auto controlLayout = new QHBoxLayout();

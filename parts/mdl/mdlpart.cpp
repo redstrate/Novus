@@ -181,17 +181,20 @@ void MDLPart::reloadBoneData()
             }
 
             // get deform matrices
-            auto deform = physis_pbd_get_deform_matrix(pbd, model.from_body_id, model.to_body_id);
-            if (deform.num_bones != 0) {
-                for (int i = 0; i < deform.num_bones; i++) {
-                    auto deformBone = deform.bones[i];
+            if (enableRacialDeform) {
+                auto deform = physis_pbd_get_deform_matrix(pbd, model.from_body_id, model.to_body_id);
+                if (deform.num_bones != 0) {
+                    for (int i = 0; i < deform.num_bones; i++) {
+                        auto deformBone = deform.bones[i];
 
-                    for (uint32_t k = 0; k < model.model.num_affected_bones; k++) {
-                        if (std::string_view{model.model.affected_bone_names[k]} == std::string_view{deformBone.name}) {
-                            deformBones[k] = glm::rowMajor4(glm::vec4{deformBone.deform[0], deformBone.deform[1], deformBone.deform[2], deformBone.deform[3]},
-                                                            glm::vec4{deformBone.deform[4], deformBone.deform[5], deformBone.deform[6], deformBone.deform[7]},
-                                                            glm::vec4{deformBone.deform[8], deformBone.deform[9], deformBone.deform[10], deformBone.deform[11]},
-                                                            glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
+                        for (uint32_t k = 0; k < model.model.num_affected_bones; k++) {
+                            if (std::string_view{model.model.affected_bone_names[k]} == std::string_view{deformBone.name}) {
+                                deformBones[k] =
+                                    glm::rowMajor4(glm::vec4{deformBone.deform[0], deformBone.deform[1], deformBone.deform[2], deformBone.deform[3]},
+                                                   glm::vec4{deformBone.deform[4], deformBone.deform[5], deformBone.deform[6], deformBone.deform[7]},
+                                                   glm::vec4{deformBone.deform[8], deformBone.deform[9], deformBone.deform[10], deformBone.deform[11]},
+                                                   glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
+                            }
                         }
                     }
                 }

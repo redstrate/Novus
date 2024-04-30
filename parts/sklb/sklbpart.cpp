@@ -112,7 +112,6 @@ void SklbPart::treeItemClicked(QTreeWidgetItem *item, int column)
                                                                    m_matrices.bones[j].deform[10],
                                                                    m_matrices.bones[j].deform[11]},
                                                          glm::vec4{0.0f, 0.0f, 0.0f, 1.0f});
-                        ;
 
                         glm::vec3 scale;
                         glm::quat rotation;

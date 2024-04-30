@@ -51,6 +51,8 @@ public:
 
     physis_PBD pbd{};
 
+    bool enableRacialDeform = true;
+
 Q_SIGNALS:
     void modelChanged();
     void skeletonChanged();
