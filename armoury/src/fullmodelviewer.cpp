@@ -55,9 +55,11 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
     cmp = physis_cmp_parse(physis_gamedata_extract_file(data, "chara/xls/charamake/human.cmp"));
 
     gearView = new GearView(data, cache);
-    updateCharacterParameters();
 
     connect(gearView, &GearView::modelReloaded, this, &FullModelViewer::updateCharacterParameters);
+    connect(gearView, &GearView::raceChanged, this, &FullModelViewer::updateRaceData);
+    connect(gearView, &GearView::subraceChanged, this, &FullModelViewer::updateRaceData);
+    connect(gearView, &GearView::genderChanged, this, &FullModelViewer::updateRaceData);
 
     auto viewportLayout = new QHBoxLayout();
     viewportLayout->setContentsMargins(0, 0, 0, 0);
@@ -91,8 +93,10 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
     characterEditorLayout->addWidget(addEarGroup());
     characterEditorLayout->addWidget(addTailGroup());
 
+    m_boneEditor = new BoneEditor(gearView);
+
     auto tabWidget = new QTabWidget();
-    tabWidget->addTab(new BoneEditor(gearView), i18nc("@title:tab", "Bone Editor"));
+    tabWidget->addTab(m_boneEditor, i18nc("@title:tab", "Bone Editor"));
     tabWidget->addTab(characterEditorWidget, i18nc("@title:tab", "Character Editor"));
     viewportLayout->addWidget(tabWidget);
 
@@ -138,6 +142,8 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
         tabWidget->setEnabled(!loading);
     });
 
+    updateCharacterParameters();
+    updateRaceData();
     reloadGear();
 }
 
@@ -290,6 +296,13 @@ void FullModelViewer::updateSupportedSubraces()
     for (auto subrace : physis_get_supported_subraces(gearView->currentRace).subraces) {
         subraceCombo->addItem(QLatin1String(magic_enum::enum_name(subrace).data()), (int)subrace);
     }
+}
+
+void FullModelViewer::updateRaceData()
+{
+    m_boneEditor->load_pbd(gearView->part().pbd,
+                           physis_get_race_code(Race::Hyur, Subrace::Midlander, gearView->currentGender),
+                           physis_get_race_code(gearView->currentRace, gearView->currentSubrace, gearView->currentGender));
 }
 
 QGroupBox *FullModelViewer::addFaceGroup()

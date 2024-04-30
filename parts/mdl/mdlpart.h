@@ -49,6 +49,8 @@ public:
 
     int numModels() const;
 
+    physis_PBD pbd{};
+
 Q_SIGNALS:
     void modelChanged();
     void skeletonChanged();
@@ -91,7 +93,6 @@ private:
 
     GameData *data = nullptr;
     FileCache &cache;
-    physis_PBD pbd{};
 
     std::vector<DrawObject> models;
 

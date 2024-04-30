@@ -6,6 +6,7 @@
 #include <QGroupBox>
 #include <QMainWindow>
 
+#include "boneeditor.h"
 #include "gearview.h"
 
 struct GameData;
@@ -39,6 +40,7 @@ private:
     void updateBustScaling(float scale);
     void updateCharacterParameters();
     void updateSupportedSubraces();
+    void updateRaceData();
 
     QGroupBox *addFaceGroup();
     QGroupBox *addHairGroup();
@@ -53,6 +55,8 @@ private:
 
     GameData *data = nullptr;
     physis_CMP cmp{};
+
+    BoneEditor *m_boneEditor;
 
     float heightScale = 0.5f;
     float bustScale = 1.0f;
