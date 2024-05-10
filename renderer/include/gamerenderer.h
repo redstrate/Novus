@@ -64,7 +64,6 @@ private:
                                  physis_Shader &vertexShader,
                                  physis_Shader &pixelShader,
                                  std::string_view shaderName);
-    spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
 
     void createImageResources();
 

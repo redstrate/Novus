@@ -842,10 +842,10 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
             binding.stride = sizeof(glm::vec4);
         }
 
-        auto vertex_glsl = getShaderModuleResources(vertexShader);
+        auto vertex_glsl = m_shaderManager.getShaderModuleResources(vertexShader);
         auto vertex_resources = vertex_glsl.get_shader_resources();
 
-        auto fragment_glsl = getShaderModuleResources(pixelShader);
+        auto fragment_glsl = m_shaderManager.getShaderModuleResources(pixelShader);
         auto fragment_resources = fragment_glsl.get_shader_resources();
 
         std::vector<RequestedSet> requestedSets;
@@ -1129,20 +1129,6 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     return pipeline;
-}
-
-spirv_cross::CompilerGLSL GameRenderer::getShaderModuleResources(const physis_Shader &shader)
-{
-    dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
-
-    dxvk::DxbcModule module(reader);
-
-    dxvk::DxbcModuleInfo info;
-    auto result = module.compile(info, "test");
-
-    // glsl.build_combined_image_samplers();
-
-    return spirv_cross::CompilerGLSL(result.code.data(), result.code.dwords());
 }
 
 VkDescriptorSet

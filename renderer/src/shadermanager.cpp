@@ -18,6 +18,20 @@ ShaderManager::ShaderManager(Device &device)
 {
 }
 
+spirv_cross::CompilerGLSL ShaderManager::getShaderModuleResources(const physis_Shader &shader)
+{
+    dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
+
+    dxvk::DxbcModule module(reader);
+
+    dxvk::DxbcModuleInfo info;
+    auto result = module.compile(info, "test");
+
+    // glsl.build_combined_image_samplers();
+
+    return spirv_cross::CompilerGLSL(result.code.data(), result.code.dwords());
+}
+
 VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
 {
     dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);

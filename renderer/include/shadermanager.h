@@ -8,6 +8,7 @@
 
 #include <glslang/Public/ShaderLang.h>
 #include <spirv.hpp>
+#include <spirv_glsl.hpp>
 #include <vulkan/vulkan.h>
 
 struct physis_Shader;
@@ -18,6 +19,7 @@ class ShaderManager
 public:
     explicit ShaderManager(Device &device);
 
+    spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
     VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
 
 private:
