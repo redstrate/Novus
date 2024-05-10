@@ -3,11 +3,11 @@ Upstream-Name: Novus
 Upstream-Contact: Joshua Goins <josh@redstrate.com>
 Source: https://git.sr.ht/~redstrate/novus
 
-Files: .gitmodules scripts/* README.md BUILDING.md CONTRIBUTING.md argcracker/README.md armoury/README.md karuku/README.md sagasu/README.md mdlviewer/README.md renderer/README.md launcher/README.md .clang-format .build.yml misc/* renderer/shaders/*.spv mapeditor/README.md .github/* mateditor/README.md
+Files: .gitmodules scripts/* README.md BUILDING.md CONTRIBUTING.md apps/argcracker/README.md apps/armoury/README.md apps/karuku/README.md apps/sagasu/README.md apps/mdlviewer/README.md renderer/README.md apps/launcher/README.md .clang-format .build.yml misc/* renderer/shaders/*.spv apps/mapeditor/README.md .github/* apps/mateditor/README.md
 Copyright: Joshua Goins <josh@redstrate.com>
 License: CC0-1.0
 
-Files: armoury/zone.xiv.armoury.svg karuku/zone.xiv.karaku.svg launcher/zone.xiv.novus.svg mapeditor/zone.xiv.mapeditor.svg mdlviewer/zone.xiv.mdlviewer.svg sagasu/zone.xiv.sagasu.svg resources/*
+Files: apps/armoury/zone.xiv.armoury.svg apps/karuku/zone.xiv.karaku.svg apps/launcher/zone.xiv.novus.svg apps/mapeditor/zone.xiv.mapeditor.svg apps/mdlviewer/zone.xiv.mdlviewer.svg apps/sagasu/zone.xiv.sagasu.svg resources/*
 Copyright: Joshua Goins <josh@redstrate.com>
 License: CC-BY-SA-4.0
 
