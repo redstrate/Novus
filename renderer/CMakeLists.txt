@@ -17,6 +17,7 @@ target_sources(renderer
         include/gamerenderer.h
         include/rendermanager.h
         include/scene.h
+        include/shadermanager.h
         include/shaderstructs.h
         include/simplerenderer.h
         include/swapchain.h
@@ -27,6 +28,7 @@ target_sources(renderer
         src/imguipass.cpp
         src/imguipass.h
         src/rendermanager.cpp
+        src/shadermanager.cpp
         src/simplerenderer.cpp
         src/swapchain.cpp)
 qt_add_resources(renderer

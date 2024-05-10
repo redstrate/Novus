@@ -60,6 +60,7 @@ const int INVALID_PASS = 255;
 GameRenderer::GameRenderer(Device &device, GameData *data)
     : m_device(device)
     , m_data(data)
+    , m_shaderManager(device)
 {
     m_dawntrailMode = qgetenv("NOVUS_IS_DAWNTRAIL") == QByteArrayLiteral("1");
 
@@ -812,8 +813,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
 {
     const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data());
     if (!m_cachedPipelines.contains(hash)) {
-        auto vertexShaderModule = convertShaderModule(vertexShader, spv::ExecutionModelVertex);
-        auto fragmentShaderModule = convertShaderModule(pixelShader, spv::ExecutionModelFragment);
+        auto vertexShaderModule = m_shaderManager.convertShaderModule(vertexShader, spv::ExecutionModelVertex);
+        auto fragmentShaderModule = m_shaderManager.convertShaderModule(pixelShader, spv::ExecutionModelFragment);
 
         m_device.nameObject(VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(vertexShaderModule), shaderName);
         m_device.nameObject(VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(fragmentShaderModule), shaderName);
@@ -1128,129 +1129,6 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     return pipeline;
-}
-
-std::vector<uint32_t> compileGLSL(const std::string_view sourceString, const EShLanguage sourceLanguage)
-{
-    static bool ProcessInitialized = false;
-
-    if (!ProcessInitialized) {
-        glslang::InitializeProcess();
-        ProcessInitialized = true;
-    }
-
-    const char *InputCString = sourceString.data();
-
-    glslang::TShader shader(sourceLanguage);
-    shader.setStrings(&InputCString, 1);
-
-    int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
-
-    shader.setEnvInput(glslang::EShSourceGlsl, sourceLanguage, glslang::EShClientVulkan, ClientInputSemanticsVersion);
-
-    shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_3);
-    shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
-
-    if (!shader.parse(GetDefaultResources(), 100, false, EShMsgDefault)) {
-        return {};
-    }
-
-    glslang::TProgram Program;
-    Program.addShader(&shader);
-
-    if (!Program.link(EShMsgDefault)) {
-        return {};
-    }
-
-    std::vector<unsigned int> SpirV;
-    spv::SpvBuildLogger logger;
-
-    glslang::SpvOptions spvOptions;
-    spvOptions.generateDebugInfo = true;
-    spvOptions.stripDebugInfo = false;
-    spvOptions.disableOptimizer = true;
-    spvOptions.emitNonSemanticShaderDebugSource = true;
-    spvOptions.emitNonSemanticShaderDebugInfo = true;
-
-    glslang::GlslangToSpv(*Program.getIntermediate(sourceLanguage), SpirV, &logger, &spvOptions);
-
-    return SpirV;
-}
-
-VkShaderModule GameRenderer::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
-{
-    dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
-
-    dxvk::DxbcModule module(reader);
-
-    dxvk::DxbcModuleInfo info;
-    auto result = module.compile(info, "test");
-
-    // TODO: for debug only
-    spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
-
-    auto resources = glsl.get_shader_resources();
-
-    int i = 0;
-    for (auto texture : resources.stage_inputs) {
-        if (texture.name == "v0") {
-            glsl.set_name(texture.id, "Position");
-        } else if (texture.name == "v1") {
-            glsl.set_name(texture.id, "Color");
-        } else if (texture.name == "v2") {
-            glsl.set_name(texture.id, "Normal");
-        } else if (texture.name == "v3") {
-            glsl.set_name(texture.id, "TexCoord");
-        } else if (texture.name == "v4") {
-            glsl.set_name(texture.id, "Tangent");
-        } else if (texture.name == "v5") {
-            glsl.set_name(texture.id, "Bitangent");
-        } else if (texture.name == "v6") {
-            glsl.set_name(texture.id, "BoneWeight");
-        } else if (texture.name == "v7") {
-            glsl.set_name(texture.id, "BoneId");
-        }
-        // glsl.set_name(texture.id, shader.)
-        // qInfo() << shader.resource_parameters[i].name << texture.id;
-        // qInfo() << "stage input" << i << texture.name << glsl.get_type(texture.type_id).width;
-        i++;
-        // glsl.set_name(remap.combined_id, "SPIRV_Cross_Combined");
-    }
-
-    // Here you can also set up decorations if you want (binding = #N).
-    i = 0;
-    for (auto texture : resources.separate_images) {
-        if (i < shader.num_resource_parameters) {
-            glsl.set_name(texture.id, shader.resource_parameters[i].name);
-        }
-        i++;
-    }
-
-    i = 0;
-    for (auto buffer : resources.uniform_buffers) {
-        glsl.set_name(buffer.id, shader.scalar_parameters[i].name);
-        i++;
-    }
-
-    spirv_cross::CompilerGLSL::Options options;
-    options.vulkan_semantics = true;
-    options.enable_420pack_extension = false;
-    glsl.set_common_options(options);
-    glsl.set_entry_point("main", executionModel);
-
-    qInfo() << "Compiled GLSL:" << glsl.compile().c_str();
-
-    auto newModule = compileGLSL(glsl.compile(), executionModel == spv::ExecutionModelVertex ? EShLanguage::EShLangVertex : EShLanguage::EShLangFragment);
-
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = newModule.size() * sizeof(uint32_t);
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(newModule.data());
-
-    VkShaderModule shaderModule;
-    vkCreateShaderModule(m_device.device, &createInfo, nullptr, &shaderModule);
-
-    return shaderModule;
 }
 
 spirv_cross::CompilerGLSL GameRenderer::getShaderModuleResources(const physis_Shader &shader)

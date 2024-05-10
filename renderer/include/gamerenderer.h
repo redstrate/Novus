@@ -16,6 +16,7 @@
 #include "baserenderer.h"
 #include "buffer.h"
 #include "drawobject.h"
+#include "shadermanager.h"
 #include "shaderstructs.h"
 #include "texture.h"
 
@@ -63,7 +64,6 @@ private:
                                  physis_Shader &vertexShader,
                                  physis_Shader &pixelShader,
                                  std::string_view shaderName);
-    VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
     spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
 
     void createImageResources();
@@ -77,6 +77,7 @@ private:
 
     Device &m_device;
     GameData *m_data = nullptr;
+    ShaderManager m_shaderManager;
 
     VkDescriptorSet
     createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, int i, const RenderMaterial *material, std::string_view pass);
