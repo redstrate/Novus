@@ -58,7 +58,11 @@ private:
 
     void beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, std::string_view passName);
     void endPass(VkCommandBuffer commandBuffer, std::string_view passName);
-    CachedPipeline &bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader);
+    CachedPipeline &bindPipeline(VkCommandBuffer commandBuffer,
+                                 std::string_view passName,
+                                 physis_Shader &vertexShader,
+                                 physis_Shader &pixelShader,
+                                 std::string_view shaderName);
     VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
     spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
 
@@ -66,6 +70,7 @@ private:
 
     physis_SHPK directionalLightningShpk;
     physis_SHPK createViewPositionShpk;
+    physis_SHPK backgroundShpk;
 
     // combined vertex + pixel code length
     std::unordered_map<uint32_t, CachedPipeline> m_cachedPipelines;

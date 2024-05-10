@@ -100,8 +100,11 @@ RenderManager::RenderManager(GameData *data)
     createInfo.ppEnabledExtensionNames = instanceExtensions.data();
     createInfo.enabledExtensionCount = instanceExtensions.size();
     createInfo.pApplicationInfo = &applicationInfo;
-    // createInfo.ppEnabledLayerNames = layers;
-    // createInfo.enabledLayerCount = 1;
+
+    if (qgetenv("NOVUS_ENABLE_VALIDATION") == QByteArrayLiteral("1")) {
+        createInfo.ppEnabledLayerNames = layers;
+        createInfo.enabledLayerCount = 1;
+    }
 
     vkCreateInstance(&createInfo, nullptr, &m_device->instance);
 
@@ -520,9 +523,9 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
     DrawObject.boneInfoBuffer = m_device->createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 }
 
-Texture RenderManager::addGameTexture(physis_Texture gameTexture)
+Texture RenderManager::addGameTexture(VkFormat format, physis_Texture gameTexture)
 {
-    return m_device->addGameTexture(gameTexture);
+    return m_device->addGameTexture(format, gameTexture);
 }
 
 Device &RenderManager::device()

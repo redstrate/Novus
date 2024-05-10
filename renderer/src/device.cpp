@@ -340,7 +340,13 @@ void Device::nameTexture(Texture &texture, std::string_view name)
     nameObject(VK_OBJECT_TYPE_DEVICE_MEMORY, reinterpret_cast<uint64_t>(texture.imageMemory), name.data());
 }
 
-Texture Device::addGameTexture(physis_Texture gameTexture)
+void Device::nameBuffer(Buffer &buffer, std::string_view name)
+{
+    nameObject(VK_OBJECT_TYPE_BUFFER, reinterpret_cast<uint64_t>(buffer.buffer), name.data());
+    nameObject(VK_OBJECT_TYPE_DEVICE_MEMORY, reinterpret_cast<uint64_t>(buffer.memory), name.data());
+}
+
+Texture Device::addGameTexture(VkFormat format, physis_Texture gameTexture)
 {
     Texture newTexture = {};
 
@@ -359,7 +365,7 @@ Texture Device::addGameTexture(physis_Texture gameTexture)
     imageInfo.extent.depth = gameTexture.depth;
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
-    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+    imageInfo.format = format;
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -468,4 +474,25 @@ Texture Device::addGameTexture(physis_Texture gameTexture)
     vkCreateImageView(device, &viewInfo, nullptr, &newTexture.imageView);
 
     return newTexture;
+}
+
+void Device::beginDebugMarker(VkCommandBuffer command_buffer, VkDebugUtilsLabelEXT marker_info)
+{
+    auto func = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetDeviceProcAddr(device, "vkCmdBeginDebugUtilsLabelEXT");
+    if (func != nullptr)
+        func(command_buffer, &marker_info);
+}
+
+void Device::endDebugMarker(VkCommandBuffer command_buffer)
+{
+    auto func = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetDeviceProcAddr(device, "vkCmdEndDebugUtilsLabelEXT");
+    if (func != nullptr)
+        func(command_buffer);
+}
+
+void Device::insertDebugLabel(VkCommandBuffer command_buffer, VkDebugUtilsLabelEXT label_info)
+{
+    auto func = (PFN_vkCmdInsertDebugUtilsLabelEXT)vkGetDeviceProcAddr(device, "vkCmdInsertDebugUtilsLabelEXT");
+    if (func != nullptr)
+        func(command_buffer, &label_info);
 }

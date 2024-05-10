@@ -223,6 +223,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             // create the material parameters for this shader package
             newMaterial.materialBuffer =
                 renderer->device().createBuffer(newMaterial.shaderPackage.material_parameters_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+            renderer->device().nameBuffer(newMaterial.materialBuffer, "g_MaterialParameter"); // TODO: add material name
 
             // assumed to be floats, maybe not always true?
             std::vector<float> buffer(newMaterial.shaderPackage.material_parameters_size / sizeof(float));
@@ -253,23 +254,72 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             newMaterial.type = MaterialType::Skin;
         }
 
-        newMaterial.tableTexture = renderer->device().createDummyTexture();
+        if (material.color_table.num_rows > 0) {
+            int width = 4;
+            int height = material.color_table.num_rows;
+
+            qInfo() << "Creating color table" << width << "X" << height;
+
+            std::vector<float> rgbaData(width * height * 4);
+            int offset = 0;
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    const auto row = material.color_table.rows[y];
+
+                    glm::vec4 color;
+                    if (x == 0) {
+                        color = glm::vec4{row.diffuse_color[0], row.diffuse_color[1], row.diffuse_color[2], row.specular_strength};
+                    } else if (x == 1) {
+                        color = glm::vec4{row.specular_color[0], row.specular_color[1], row.specular_color[2], row.gloss_strength};
+                    } else if (x == 2) {
+                        color = glm::vec4{row.emissive_color[0], row.emissive_color[1], row.emissive_color[2], row.tile_set};
+                    } else if (x == 3) {
+                        color = glm::vec4{row.material_repeat[0], row.material_repeat[1], row.material_skew[0], row.material_skew[1]};
+                    }
+
+                    rgbaData[offset] = color.x;
+                    rgbaData[offset + 1] = color.y;
+                    rgbaData[offset + 2] = color.z;
+                    rgbaData[offset + 3] = color.a;
+
+                    offset += 4;
+                }
+            }
+
+            physis_Texture textureConfig;
+            textureConfig.texture_type = TextureType::TwoDimensional;
+            textureConfig.width = width;
+            textureConfig.height = height;
+            textureConfig.depth = 1;
+            textureConfig.rgba = reinterpret_cast<uint8_t *>(rgbaData.data());
+            textureConfig.rgba_size = rgbaData.size() * sizeof(float);
+
+            // TODO: use 16-bit floating points like the game
+            newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
+            renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
+        }
+
+        qInfo() << "Loading" << t;
 
         char type = t[t.length() - 5];
         auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
         if (texture.rgba != nullptr) {
             switch (type) {
             case 'm': {
-                newMaterial.multiTexture = renderer->addGameTexture(texture);
+                newMaterial.multiTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
+                renderer->device().nameTexture(*newMaterial.multiTexture, material.textures[i]);
             } break;
             case 'd': {
-                newMaterial.diffuseTexture = renderer->addGameTexture(texture);
+                newMaterial.diffuseTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
+                renderer->device().nameTexture(*newMaterial.diffuseTexture, material.textures[i]);
             } break;
             case 'n': {
-                newMaterial.normalTexture = renderer->addGameTexture(texture);
+                newMaterial.normalTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
+                renderer->device().nameTexture(*newMaterial.normalTexture, material.textures[i]);
             } break;
             case 's': {
-                newMaterial.specularTexture = renderer->addGameTexture(texture);
+                newMaterial.specularTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
+                renderer->device().nameTexture(*newMaterial.specularTexture, material.textures[i]);
             } break;
             default:
                 qDebug() << "unhandled type" << type;

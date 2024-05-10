@@ -8,6 +8,9 @@
 #include <QDebug>
 
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glslang/Public/ResourceLimits.h>
+#include <glslang/Public/ShaderLang.h>
+#include <glslang/SPIRV/GlslangToSpv.h>
 #include <physis.hpp>
 #include <spirv_glsl.hpp>
 
@@ -63,8 +66,11 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     m_dummyTex = m_device.createDummyTexture();
     m_dummyBuffer = m_device.createDummyBuffer();
 
-    m_tileNormal = m_device.addGameTexture(physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_n.tex")));
-    m_tileDiffuse = m_device.addGameTexture(physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_d.tex")));
+    m_tileNormal =
+        m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_n.tex")));
+    m_device.nameTexture(m_tileNormal, "chara/common/texture/-tile_n.tex");
+    m_tileDiffuse = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_t"Exexture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_d.tex")));
+    m_device.nameTexture(m_tileDiffuse, "chara/common/texture/-tile_d.tex");
 
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -72,15 +78,18 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
 
     directionalLightningShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/directionallighting.shpk"));
     createViewPositionShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/createviewposition.shpk"));
+    backgroundShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/bg.shpk"));
 
     // camera data
     {
         g_CameraParameter = m_device.createBuffer(sizeof(CameraParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_CameraParameter, "g_CameraParameter");
     }
 
     // instance data
     {
         g_InstanceParameter = m_device.createBuffer(sizeof(InstanceParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_InstanceParameter, "g_InstanceParameter");
 
         InstanceParameter instanceParameter{};
         instanceParameter.g_InstanceParameter.m_MulColor = glm::vec4(1.0f);
@@ -100,6 +109,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // model data
     {
         g_ModelParameter = m_device.createBuffer(sizeof(ModelParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_ModelParameter, "g_ModelParameter");
 
         ModelParameter modelParameter{};
         modelParameter.g_ModelParameter.m_Params = glm::vec4(1.0f);
@@ -109,6 +119,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // material data
     {
         g_TransparencyMaterialParameter = m_device.createBuffer(sizeof(MaterialParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_TransparencyMaterialParameter, "g_TransparencyMaterialParameter");
 
         MaterialParameters materialParameter{};
         materialParameter.parameters[0] = glm::vec4(1.0f, 1.0f, 1.0f, 2.0f); // diffuse color then alpha threshold
@@ -119,6 +130,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // light data
     {
         g_LightParam = m_device.createBuffer(sizeof(LightParam), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_LightParam, "g_LightParam");
 
         LightParam lightParam{};
         lightParam.m_Position = glm::vec4(-5);
@@ -135,11 +147,13 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // common data
     {
         g_CommonParameter = m_device.createBuffer(sizeof(CommonParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_CommonParameter, "g_CommonParameter");
     }
 
     // scene data
     {
         g_SceneParameter = m_device.createBuffer(sizeof(SceneParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_SceneParameter, "g_SceneParameter");
 
         SceneParameter sceneParameter{};
         m_device.copyToBuffer(g_SceneParameter, &sceneParameter, sizeof(SceneParameter));
@@ -148,8 +162,18 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // customize data
     {
         g_CustomizeParameter = m_device.createBuffer(sizeof(CustomizeParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_CustomizeParameter, "g_CustomizeParameter");
 
         CustomizeParameter customizeParameter{};
+        customizeParameter.m_SkinColor = glm::vec4(1.0f);
+        customizeParameter.m_HairFresnelValue0 = glm::vec4(1.0f);
+        customizeParameter.m_LipColor = glm::vec4(1.0f);
+        customizeParameter.m_MainColor = glm::vec4(1.0f);
+        customizeParameter.m_HairFresnelValue0 = glm::vec4(1.0f);
+        customizeParameter.m_MeshColor = glm::vec4(1.0f);
+        customizeParameter.m_LeftColor = glm::vec4(1.0f);
+        customizeParameter.m_RightColor = glm::vec4(1.0f);
+        customizeParameter.m_OptionColor = glm::vec4(1.0f);
 
         m_device.copyToBuffer(g_CustomizeParameter, &customizeParameter, sizeof(CustomizeParameter));
     }
@@ -157,6 +181,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // material parameter dynamic
     {
         g_MaterialParameterDynamic = m_device.createBuffer(sizeof(MaterialParameterDynamic), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_MaterialParameterDynamic, "g_MaterialParameterDynamic");
 
         MaterialParameterDynamic materialParameterDynamic{};
 
@@ -166,6 +191,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // decal color
     {
         g_DecalColor = m_device.createBuffer(sizeof(glm::vec4), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_DecalColor, "g_DecalColor");
 
         glm::vec4 color{};
 
@@ -175,6 +201,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // ambient params
     {
         g_AmbientParam = m_device.createBuffer(sizeof(AmbientParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_AmbientParam, "g_AmbientParam");
 
         AmbientParameters ambientParameters{};
         for (int i = 0; i < 6; i++) {
@@ -190,6 +217,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     // shader type parameter
     if (m_dawntrailMode) {
         g_ShaderTypeParameter = m_device.createBuffer(sizeof(ShaderTypeParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_ShaderTypeParameter, "g_ShaderTypeParameter");
 
         ShaderTypeParameter shaderTypeParameter{};
 
@@ -249,6 +277,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
             beginPass(imageIndex, commandBuffer, pass);
 
             for (auto &model : models) {
+                VkDebugUtilsLabelEXT labelExt{};
+                labelExt.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+                labelExt.pLabelName = model.name.toStdString().c_str();
+                m_device.beginDebugMarker(commandBuffer, labelExt);
+
                 // copy bone data
                 {
                     const size_t bufferSize = sizeof(glm::mat3x4) * 64;
@@ -361,7 +394,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                         physis_Shader vertexShader = renderMaterial.shaderPackage.vertex_shaders[vertexShaderIndice];
                         physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
 
-                        auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                        auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader, renderMaterial.mat.shpk_name);
                         bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
@@ -371,6 +404,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                         vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
                     }
                 }
+
+                m_device.endDebugMarker(commandBuffer);
             }
 
             endPass(commandBuffer, pass);
@@ -416,7 +451,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_Shader vertexShader = createViewPositionShpk.vertex_shaders[vertexShaderIndice];
                     physis_Shader pixelShader = createViewPositionShpk.pixel_shaders[pixelShaderIndice];
 
-                    auto &pipeline = bindPipeline(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION", vertexShader, pixelShader);
+                    auto &pipeline = bindPipeline(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION", vertexShader, pixelShader, "createviewposition.shpk");
                     bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr, pass);
 
                     VkDeviceSize offsets[] = {0};
@@ -471,7 +506,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     physis_Shader vertexShader = directionalLightningShpk.vertex_shaders[vertexShaderIndice];
                     physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
 
-                    auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                    auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader, "directionallighting.shpk");
                     bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr, pass);
 
                     VkDeviceSize offsets[] = {0};
@@ -580,7 +615,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                         physis_Shader vertexShader = renderMaterial.shaderPackage.vertex_shaders[vertexShaderIndice];
                         physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
 
-                        auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader);
+                        auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader, renderMaterial.mat.shpk_name);
                         bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
@@ -613,6 +648,11 @@ void GameRenderer::resize()
 
 void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, const std::string_view passName)
 {
+    VkDebugUtilsLabelEXT labelExt{};
+    labelExt.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+    labelExt.pLabelName = passName.data();
+    m_device.beginDebugMarker(commandBuffer, labelExt);
+
     VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO};
     renderingInfo.renderArea.extent = m_device.swapChain->extent;
 
@@ -760,15 +800,23 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 void GameRenderer::endPass(VkCommandBuffer commandBuffer, std::string_view passName)
 {
     vkCmdEndRendering(commandBuffer);
+
+    m_device.endDebugMarker(commandBuffer);
 }
 
-GameRenderer::CachedPipeline &
-GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passName, physis_Shader &vertexShader, physis_Shader &pixelShader)
+GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer commandBuffer,
+                                                         std::string_view passName,
+                                                         physis_Shader &vertexShader,
+                                                         physis_Shader &pixelShader,
+                                                         std::string_view shaderName)
 {
     const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data());
     if (!m_cachedPipelines.contains(hash)) {
         auto vertexShaderModule = convertShaderModule(vertexShader, spv::ExecutionModelVertex);
         auto fragmentShaderModule = convertShaderModule(pixelShader, spv::ExecutionModelFragment);
+
+        m_device.nameObject(VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(vertexShaderModule), shaderName);
+        m_device.nameObject(VK_OBJECT_TYPE_SHADER_MODULE, reinterpret_cast<uint64_t>(fragmentShaderModule), shaderName);
 
         VkPipelineShaderStageCreateInfo vertexShaderStageInfo = {};
         vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1082,6 +1130,53 @@ GameRenderer::bindPipeline(VkCommandBuffer commandBuffer, std::string_view passN
     return pipeline;
 }
 
+std::vector<uint32_t> compileGLSL(const std::string_view sourceString, const EShLanguage sourceLanguage)
+{
+    static bool ProcessInitialized = false;
+
+    if (!ProcessInitialized) {
+        glslang::InitializeProcess();
+        ProcessInitialized = true;
+    }
+
+    const char *InputCString = sourceString.data();
+
+    glslang::TShader shader(sourceLanguage);
+    shader.setStrings(&InputCString, 1);
+
+    int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
+
+    shader.setEnvInput(glslang::EShSourceGlsl, sourceLanguage, glslang::EShClientVulkan, ClientInputSemanticsVersion);
+
+    shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_3);
+    shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
+
+    if (!shader.parse(GetDefaultResources(), 100, false, EShMsgDefault)) {
+        return {};
+    }
+
+    glslang::TProgram Program;
+    Program.addShader(&shader);
+
+    if (!Program.link(EShMsgDefault)) {
+        return {};
+    }
+
+    std::vector<unsigned int> SpirV;
+    spv::SpvBuildLogger logger;
+
+    glslang::SpvOptions spvOptions;
+    spvOptions.generateDebugInfo = true;
+    spvOptions.stripDebugInfo = false;
+    spvOptions.disableOptimizer = true;
+    spvOptions.emitNonSemanticShaderDebugSource = true;
+    spvOptions.emitNonSemanticShaderDebugInfo = true;
+
+    glslang::GlslangToSpv(*Program.getIntermediate(sourceLanguage), SpirV, &logger, &spvOptions);
+
+    return SpirV;
+}
+
 VkShaderModule GameRenderer::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
 {
     dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
@@ -1091,14 +1186,6 @@ VkShaderModule GameRenderer::convertShaderModule(const physis_Shader &shader, sp
     dxvk::DxbcModuleInfo info;
     auto result = module.compile(info, "test");
 
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = result.code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(result.code.data());
-
-    VkShaderModule shaderModule;
-    vkCreateShaderModule(m_device.device, &createInfo, nullptr, &shaderModule);
-
     // TODO: for debug only
     spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
 
@@ -1106,6 +1193,23 @@ VkShaderModule GameRenderer::convertShaderModule(const physis_Shader &shader, sp
 
     int i = 0;
     for (auto texture : resources.stage_inputs) {
+        if (texture.name == "v0") {
+            glsl.set_name(texture.id, "Position");
+        } else if (texture.name == "v1") {
+            glsl.set_name(texture.id, "Color");
+        } else if (texture.name == "v2") {
+            glsl.set_name(texture.id, "Normal");
+        } else if (texture.name == "v3") {
+            glsl.set_name(texture.id, "TexCoord");
+        } else if (texture.name == "v4") {
+            glsl.set_name(texture.id, "Tangent");
+        } else if (texture.name == "v5") {
+            glsl.set_name(texture.id, "Bitangent");
+        } else if (texture.name == "v6") {
+            glsl.set_name(texture.id, "BoneWeight");
+        } else if (texture.name == "v7") {
+            glsl.set_name(texture.id, "BoneId");
+        }
         // glsl.set_name(texture.id, shader.)
         // qInfo() << shader.resource_parameters[i].name << texture.id;
         // qInfo() << "stage input" << i << texture.name << glsl.get_type(texture.type_id).width;
@@ -1135,6 +1239,16 @@ VkShaderModule GameRenderer::convertShaderModule(const physis_Shader &shader, sp
     glsl.set_entry_point("main", executionModel);
 
     qInfo() << "Compiled GLSL:" << glsl.compile().c_str();
+
+    auto newModule = compileGLSL(glsl.compile(), executionModel == spv::ExecutionModelVertex ? EShLanguage::EShLangVertex : EShLanguage::EShLangFragment);
+
+    VkShaderModuleCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = newModule.size() * sizeof(uint32_t);
+    createInfo.pCode = reinterpret_cast<const uint32_t *>(newModule.data());
+
+    VkShaderModule shaderModule;
+    vkCreateShaderModule(m_device.device, &createInfo, nullptr, &shaderModule);
 
     return shaderModule;
 }
@@ -1228,13 +1342,20 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                     } else if (strcmp(name, "g_SamplerSpecular") == 0) {
                         Q_ASSERT(material);
                         info->imageView = material->specularTexture->imageView;
+                    } else if (strcmp(name, "g_SamplerMask") == 0) {
+                        Q_ASSERT(material);
+                        info->imageView = material->multiTexture->imageView;
                     } else if (strcmp(name, "g_SamplerTileNormal") == 0) {
                         info->imageView = m_tileNormal.imageView;
                     } else if (strcmp(name, "g_SamplerTileDiffuse") == 0) {
                         info->imageView = m_tileDiffuse.imageView;
                     } else if (strcmp(name, "g_SamplerTable") == 0) {
                         Q_ASSERT(material);
-                        info->imageView = material->tableTexture.imageView;
+                        if (!material->tableTexture.has_value()) {
+                            qWarning() << "Attempted to use table texture for a non-dyeable material. Something has went wrong!";
+                        } else {
+                            info->imageView = material->tableTexture->imageView;
+                        }
                     } else {
                         info->imageView = m_dummyTex.imageView;
                         qInfo() << "Unknown image" << name;

@@ -311,7 +311,7 @@ void ImGuiPass::createFontImage()
     texture.rgba = pixels;
     texture.rgba_size = width * height * 4;
 
-    auto tex = renderer_.addGameTexture(texture);
+    auto tex = renderer_.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
     fontImageView_ = tex.imageView;
     fontSampler_ = renderer_.defaultSampler();
 

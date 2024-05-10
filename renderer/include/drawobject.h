@@ -25,7 +25,7 @@ struct RenderMaterial {
     std::optional<Texture> specularTexture;
     std::optional<Texture> multiTexture;
 
-    Texture tableTexture;
+    std::optional<Texture> tableTexture;
 
     Buffer materialBuffer;
 };

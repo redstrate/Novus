@@ -59,6 +59,11 @@ public:
 
     VkResult nameObject(VkObjectType type, uint64_t object, std::string_view name);
     void nameTexture(Texture &texture, std::string_view name);
+    void nameBuffer(Buffer &buffer, std::string_view name);
 
-    Texture addGameTexture(physis_Texture gameTexture);
+    Texture addGameTexture(VkFormat format, physis_Texture gameTexture);
+
+    void beginDebugMarker(VkCommandBuffer command_buffer, VkDebugUtilsLabelEXT marker_info);
+    void endDebugMarker(VkCommandBuffer command_buffer);
+    void insertDebugLabel(VkCommandBuffer command_buffer, VkDebugUtilsLabelEXT label_info);
 };
