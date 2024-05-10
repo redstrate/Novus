@@ -69,7 +69,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     m_tileNormal =
         m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_n.tex")));
     m_device.nameTexture(m_tileNormal, "chara/common/texture/-tile_n.tex");
-    m_tileDiffuse = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_t"Exexture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_d.tex")));
+    m_tileDiffuse = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_d.tex")));
     m_device.nameTexture(m_tileDiffuse, "chara/common/texture/-tile_d.tex");
 
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
