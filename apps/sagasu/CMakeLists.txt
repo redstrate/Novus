@@ -53,7 +53,6 @@ install(TARGETS novus-sagasu ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARG
 
 ecm_add_app_icon(novus-sagasu
         ICONS
-        zone.xiv.sagasu.svg
         ${CMAKE_SOURCE_DIR}/resources/16-data.png
         ${CMAKE_SOURCE_DIR}/resources/32-data.png
         ${CMAKE_SOURCE_DIR}/resources/48-data.png

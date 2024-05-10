@@ -28,7 +28,6 @@ install(TARGETS novus-mapeditor ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_
 
 ecm_add_app_icon(novus-mapeditor
         ICONS
-        zone.xiv.mapeditor.svg
         ${CMAKE_SOURCE_DIR}/resources/16-map.png
         ${CMAKE_SOURCE_DIR}/resources/32-map.png
         ${CMAKE_SOURCE_DIR}/resources/48-map.png

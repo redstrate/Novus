@@ -49,16 +49,9 @@ endif ()
 
 add_subdirectory(extern)
 add_subdirectory(renderer)
-add_subdirectory(karuku)
-add_subdirectory(armoury)
-add_subdirectory(argcracker)
-add_subdirectory(sagasu)
 add_subdirectory(parts)
 add_subdirectory(common)
-add_subdirectory(mapeditor)
-add_subdirectory(mdlviewer)
-add_subdirectory(launcher)
-add_subdirectory(mateditor)
+add_subdirectory(apps)
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
 

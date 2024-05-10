@@ -52,7 +52,6 @@ install(TARGETS novus-armoury ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_AR
 
 ecm_add_app_icon(novus-armoury
         ICONS
-        zone.xiv.armoury.svg
         ${CMAKE_SOURCE_DIR}/resources/16-armoury.png
         ${CMAKE_SOURCE_DIR}/resources/32-armoury.png
         ${CMAKE_SOURCE_DIR}/resources/48-armoury.png

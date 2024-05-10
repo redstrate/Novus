@@ -31,7 +31,6 @@ endif()
 
 ecm_add_app_icon(novus-launcher
         ICONS
-        zone.xiv.novus.svg
         ${CMAKE_SOURCE_DIR}/resources/16-launcher.png
         ${CMAKE_SOURCE_DIR}/resources/32-launcher.png
         ${CMAKE_SOURCE_DIR}/resources/48-launcher.png

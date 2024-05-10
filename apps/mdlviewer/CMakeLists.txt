@@ -25,7 +25,6 @@ install(TARGETS novus-mdlviewer ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_
 
 ecm_add_app_icon(novus-mdlviewer
         ICONS
-        zone.xiv.mdlviewer.svg
         ${CMAKE_SOURCE_DIR}/resources/16-model.png
         ${CMAKE_SOURCE_DIR}/resources/32-model.png
         ${CMAKE_SOURCE_DIR}/resources/48-model.png
