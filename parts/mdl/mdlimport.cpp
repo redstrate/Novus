@@ -49,8 +49,8 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             const QStringList lodPartNumber = parts[2].split(QLatin1Char('.'));
 
             const int lodNumber = 0;
-            const int partNumber = lodPartNumber[0].toInt();
-            const int submeshNumber = lodPartNumber[1].toInt();
+            const uint32_t partNumber = lodPartNumber[0].toInt();
+            const uint32_t submeshNumber = lodPartNumber[1].toInt();
 
             qInfo() << "- Part:" << partNumber;
             qInfo() << "- Submesh:" << submeshNumber;
@@ -177,7 +177,7 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                     auto joints = model.skins[0].joints;
 
                     int realBoneId = 0;
-                    for (int j = 0; j < existingModel.num_affected_bones; j++) {
+                    for (uint32_t j = 0; j < existingModel.num_affected_bones; j++) {
                         if (strcmp(existingModel.affected_bone_names[j], model.nodes[joints[originalBoneId]].name.c_str()) == 0) {
                             realBoneId = j;
                             break;
@@ -227,7 +227,8 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 }
             }
 
-            newSubmeshes.push_back({.index_count = static_cast<uint32_t>(submesh.indices.size()), .index_offset = static_cast<uint32_t>(index_offset)});
+            newSubmeshes.push_back(
+                {.submesh_index = 0, .index_count = static_cast<uint32_t>(submesh.indices.size()), .index_offset = static_cast<uint32_t>(index_offset)});
 
             index_offset += submesh.indices.size();
             vertex_offset += submesh.vertices.size();

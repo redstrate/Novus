@@ -19,7 +19,7 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
     // TODO: just write the code better! dummy!!
     size_t required_nodes = 1;
     required_nodes += model.num_affected_bones;
-    for (int i = 0; i < lod.num_parts; i++) {
+    for (uint32_t i = 0; i < lod.num_parts; i++) {
         required_nodes += lod.parts[i].num_submeshes;
     }
 
@@ -247,7 +247,7 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             vertexBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
             std::vector<Vertex> newVertices;
-            for (int a = 0; a < lod.parts[i].num_vertices; a++) {
+            for (uint32_t a = 0; a < lod.parts[i].num_vertices; a++) {
                 Vertex vertex = lod.parts[i].vertices[a];
 
                 // Account for additional root bone

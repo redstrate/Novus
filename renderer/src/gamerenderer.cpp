@@ -96,13 +96,13 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         instanceParameter.g_InstanceParameter.m_MulColor = glm::vec4(1.0f);
         instanceParameter.g_InstanceParameter.m_EnvParameter = glm::vec4(1.0f);
 
-        const float wetnessMin = 0.0f;
+        /*const float wetnessMin = 0.0f;
         const float wetnessMax = 1.0f;
         const float maybeWetness = 0.0f;
 
-        // instanceParameter.g_InstanceParameter.m_Wetness = {maybeWetness, 2.0f, wetnessMin, wetnessMax};
-        // instanceParameter.g_InstanceParameter.m_CameraLight.m_DiffuseSpecular = glm::vec4(1.0f);
-        // instanceParameter.g_InstanceParameter.m_CameraLight.m_Rim = glm::vec4(1.0f);
+        instanceParameter.g_InstanceParameter.m_Wetness = {maybeWetness, 2.0f, wetnessMin, wetnessMax};
+        instanceParameter.g_InstanceParameter.m_CameraLight.m_DiffuseSpecular = glm::vec4(1.0f);
+        instanceParameter.g_InstanceParameter.m_CameraLight.m_Rim = glm::vec4(1.0f);*/
 
         m_device.copyToBuffer(g_InstanceParameter, &instanceParameter, sizeof(InstanceParameter));
     }
@@ -222,7 +222,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
 
         ShaderTypeParameter shaderTypeParameter{};
 
-        m_device.copyToBuffer(g_ShaderTypeParameter, &g_ShaderTypeParameter, sizeof(ShaderTypeParameter));
+        m_device.copyToBuffer(g_ShaderTypeParameter, &shaderTypeParameter, sizeof(ShaderTypeParameter));
     }
 
     VkSamplerCreateInfo samplerInfo = {};
@@ -249,8 +249,10 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     createImageResources();
 }
 
-void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Camera &camera, Scene &scene, const std::vector<DrawObject> &models)
+void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObject> &models)
 {
+    Q_UNUSED(scene)
+
     // TODO: this shouldn't be here
     CameraParameter cameraParameter{};
 
@@ -272,10 +274,10 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
     m_device.copyToBuffer(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
 
     int i = 0;
-    for (const auto pass : passes) {
+    for (const auto &pass : passes) {
         // hardcoded to the known pass for now
         if (pass == "PASS_G_OPAQUE" || pass == "PASS_Z_OPAQUE") {
-            beginPass(imageIndex, commandBuffer, pass);
+            beginPass(commandBuffer, pass);
 
             for (auto &model : models) {
                 VkDebugUtilsLabelEXT labelExt{};
@@ -308,7 +310,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                 for (const auto &part : model.parts) {
                     RenderMaterial renderMaterial = model.materials[part.materialIndex];
 
-                    if (part.materialIndex + 1 > model.materials.size()) {
+                    if (static_cast<size_t>(part.materialIndex + 1) > model.materials.size()) {
                         renderMaterial = model.materials[0]; // TODO: better fallback
                     }
 
@@ -354,7 +356,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                         auto id = renderMaterial.shaderPackage.material_keys[j].id;
 
                         bool found = false;
-                        for (int z = 0; z < renderMaterial.mat.num_shader_keys; z++) {
+                        for (uint32_t z = 0; z < renderMaterial.mat.num_shader_keys; z++) {
                             if (renderMaterial.mat.shader_keys[z].category == id) {
                                 materialKeys.push_back(renderMaterial.mat.shader_keys[z].value);
                                 found = true;
@@ -363,7 +365,6 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
 
                         // Fall back to default if needed
                         if (!found) {
-                            auto value = renderMaterial.shaderPackage.material_keys[j].default_value;
                             materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
                         }
                     }
@@ -409,14 +410,14 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                 m_device.endDebugMarker(commandBuffer);
             }
 
-            endPass(commandBuffer, pass);
+            endPass(commandBuffer);
 
             m_device.transitionTexture(commandBuffer, m_depthBuffer, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         } else if (pass == "PASS_LIGHTING_OPAQUE") {
             m_device.transitionTexture(commandBuffer, m_normalGBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
             // first we need to generate the view positions with createviewpositions
-            beginPass(imageIndex, commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION");
+            beginPass(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION");
             {
                 std::vector<uint32_t> systemKeys = {};
                 if (!m_dawntrailMode) {
@@ -461,11 +462,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
                 }
             }
-            endPass(commandBuffer, pass);
+            endPass(commandBuffer);
 
             m_device.transitionTexture(commandBuffer, m_viewPositionBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-            beginPass(imageIndex, commandBuffer, pass);
+            beginPass(commandBuffer, pass);
             // then run the directionallighting shader
             {
                 std::vector<uint32_t> systemKeys = {};
@@ -516,7 +517,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                     vkCmdDraw(commandBuffer, 6, 1, 0, 0);
                 }
             }
-            endPass(commandBuffer, pass);
+            endPass(commandBuffer);
 
             m_device.transitionTexture(commandBuffer, m_lightBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             m_device.transitionTexture(commandBuffer,
@@ -524,13 +525,13 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         } else if (pass == "PASS_COMPOSITE_SEMITRANSPARENCY") {
-            beginPass(imageIndex, commandBuffer, pass);
+            beginPass(commandBuffer, pass);
 
             for (auto &model : models) {
                 for (const auto &part : model.parts) {
                     RenderMaterial renderMaterial = model.materials[part.materialIndex];
 
-                    if (part.materialIndex + 1 > model.materials.size()) {
+                    if (static_cast<size_t>(part.materialIndex + 1) > model.materials.size()) {
                         renderMaterial = model.materials[0]; // TODO: better fallback
                     }
 
@@ -575,7 +576,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                         auto id = renderMaterial.shaderPackage.material_keys[j].id;
 
                         bool found = false;
-                        for (int z = 0; z < renderMaterial.mat.num_shader_keys; z++) {
+                        for (uint32_t z = 0; z < renderMaterial.mat.num_shader_keys; z++) {
                             if (renderMaterial.mat.shader_keys[z].category == id) {
                                 materialKeys.push_back(renderMaterial.mat.shader_keys[z].value);
                                 found = true;
@@ -584,7 +585,6 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
 
                         // Fall back to default if needed
                         if (!found) {
-                            auto value = renderMaterial.shaderPackage.material_keys[j].default_value;
                             materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
                         }
                     }
@@ -628,7 +628,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, uint32_t imageIndex, Ca
                 }
             }
 
-            endPass(commandBuffer, pass);
+            endPass(commandBuffer);
 
             m_device.transitionTexture(commandBuffer, m_compositeBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
@@ -647,14 +647,15 @@ void GameRenderer::resize()
     createImageResources();
 }
 
-void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, const std::string_view passName)
+void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_view passName)
 {
     VkDebugUtilsLabelEXT labelExt{};
     labelExt.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     labelExt.pLabelName = passName.data();
     m_device.beginDebugMarker(commandBuffer, labelExt);
 
-    VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO};
+    VkRenderingInfo renderingInfo{};
+    renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
     renderingInfo.renderArea.extent = m_device.swapChain->extent;
 
     std::vector<VkRenderingAttachmentInfo> colorAttachments;
@@ -665,7 +666,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
         // normals, it seems like
         {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
             attachmentInfo.imageView = m_normalGBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -683,7 +685,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
         // depth
         {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
             attachmentInfo.imageView = m_depthBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -697,7 +700,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
         // diffuse
         {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
             attachmentInfo.imageView = m_lightBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -711,7 +715,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
         // specular?
         {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
             attachmentInfo.imageView = m_lightSpecularBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -725,7 +730,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
         // TODO: Hack we should not be using a special pass for this, we should just design our API better
         {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
             attachmentInfo.imageView = m_viewPositionBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -741,7 +747,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
         // normals, it seems like
         {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
             attachmentInfo.imageView = m_ZBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -759,7 +766,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
         // composite
         {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
             attachmentInfo.imageView = m_compositeBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -777,7 +785,8 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
 
         // depth buffer for depth testing
         {
-            VkRenderingAttachmentInfo attachmentInfo{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
             attachmentInfo.imageView = m_depthBuffer.imageView;
             attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -798,7 +807,7 @@ void GameRenderer::beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer,
     vkCmdBeginRendering(commandBuffer, &renderingInfo);
 }
 
-void GameRenderer::endPass(VkCommandBuffer commandBuffer, std::string_view passName)
+void GameRenderer::endPass(VkCommandBuffer commandBuffer)
 {
     vkCmdEndRendering(commandBuffer);
 
@@ -1109,6 +1118,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         m_cachedPipelines[hash] = CachedPipeline{.pipeline = pipeline,
                                                  .pipelineLayout = pipelineLayout,
                                                  .setLayouts = setLayouts,
+                                                 .cachedDescriptors = {},
                                                  .requestedSets = requestedSets,
                                                  .vertexShader = vertexShader,
                                                  .pixelShader = pixelShader};
@@ -1307,6 +1317,8 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                     info->range = 655360;
                 }
             } break;
+            default:
+                break;
             }
         }
         j++;
@@ -1383,8 +1395,7 @@ void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer,
                                       const RenderMaterial *material,
                                       std::string_view pass)
 {
-    int i = 0;
-    for (auto setLayout : pipeline.setLayouts) {
+    for (size_t i = 0; i < pipeline.setLayouts.size(); i++) {
         if (!pipeline.cachedDescriptors.count(i)) {
             if (auto descriptor = createDescriptorFor(object, pipeline, i, material, pass); descriptor != VK_NULL_HANDLE) {
                 pipeline.cachedDescriptors[i] = descriptor;
@@ -1395,7 +1406,5 @@ void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer,
 
         // TODO: we can pass all descriptors in one function call
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, i, 1, &pipeline.cachedDescriptors[i], 0, nullptr);
-
-        i++;
     }
 }

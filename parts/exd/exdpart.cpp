@@ -131,7 +131,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
             }
 
             // TODO: index could be different
-            if (z >= 0 && z < definitionList.size()) {
+            if (z < definitionList.size()) {
                 columnType = definitionList[z].toObject()[QLatin1String("name")].toString();
             }
 
@@ -147,7 +147,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
 
                 auto [columnString, columnRow] = getColumnData(columnData);
 
-                if (z >= 0 && z < definitionList.size()) {
+                if (z < definitionList.size()) {
                     auto definition = definitionList[z].toObject();
                     if (definition.contains(QLatin1String("converter"))
                         && definition[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QLatin1String("link")) {

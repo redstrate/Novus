@@ -89,7 +89,8 @@ RenderManager::RenderManager(GameData *data)
     debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
     debugCreateInfo.pfnUserCallback = DebugCallback;
 
-    VkApplicationInfo applicationInfo = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
+    VkApplicationInfo applicationInfo = {};
+    applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.apiVersion = VK_API_VERSION_1_3;
 
     const char *layers[] = {"VK_LAYER_KHRONOS_validation"};
@@ -209,23 +210,27 @@ RenderManager::RenderManager(GameData *data)
     enabledFeatures.shaderCullDistance = VK_TRUE;
     enabledFeatures.fillModeNonSolid = VK_TRUE;
 
-    VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR localReadFeaturesKhr{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR};
+    VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR localReadFeaturesKhr{};
+    localReadFeaturesKhr.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR;
     localReadFeaturesKhr.dynamicRenderingLocalRead = VK_TRUE;
 
-    VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT unusedAttachmentsFeaturesExt{
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT};
+    VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT unusedAttachmentsFeaturesExt{};
+    unusedAttachmentsFeaturesExt.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT;
     unusedAttachmentsFeaturesExt.dynamicRenderingUnusedAttachments = VK_TRUE;
     unusedAttachmentsFeaturesExt.pNext = &localReadFeaturesKhr;
 
-    VkPhysicalDeviceVulkan11Features enabled11Features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES};
+    VkPhysicalDeviceVulkan11Features enabled11Features{};
+    enabled11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
     enabled11Features.shaderDrawParameters = VK_TRUE;
     enabled11Features.pNext = &unusedAttachmentsFeaturesExt;
 
-    VkPhysicalDeviceVulkan12Features enabled12Features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    VkPhysicalDeviceVulkan12Features enabled12Features{};
+    enabled12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
     enabled12Features.vulkanMemoryModel = VK_TRUE;
     enabled12Features.pNext = &enabled11Features;
 
-    VkPhysicalDeviceVulkan13Features enabled13Features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    VkPhysicalDeviceVulkan13Features enabled13Features{};
+    enabled13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
     enabled13Features.shaderDemoteToHelperInvocation = VK_TRUE;
     enabled13Features.dynamicRendering = VK_TRUE;
     enabled13Features.synchronization2 = VK_TRUE;
@@ -348,7 +353,7 @@ bool RenderManager::initSwapchain(VkSurfaceKHR surface, int width, int height)
     initBlitPipeline(); // this creates a desc set for the renderer's offscreen texture. need to make sure we regen it
 
     m_framebuffers.resize(m_device->swapChain->swapchainImages.size());
-    for (int i = 0; i < m_device->swapChain->swapchainImages.size(); i++) {
+    for (size_t i = 0; i < m_device->swapChain->swapchainImages.size(); i++) {
         VkFramebufferCreateInfo framebufferInfo = {};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = m_renderPass;
@@ -407,7 +412,7 @@ void RenderManager::render(const std::vector<DrawObject> &models)
 
     updateCamera(camera);
 
-    m_renderer->render(commandBuffer, m_device->swapChain->currentFrame, camera, scene, models);
+    m_renderer->render(commandBuffer, camera, scene, models);
 
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

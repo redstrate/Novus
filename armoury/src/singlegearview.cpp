@@ -140,11 +140,6 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     importButton->setIcon(QIcon::fromTheme(QStringLiteral("document-import")));
     connect(importButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
-            // TODO: deduplicate
-            const auto sanitizeMdlPath = [](const QString &mdlPath) -> QString {
-                return QString(mdlPath).section(QLatin1Char('/'), -1).remove(QStringLiteral(".mdl"));
-            };
-
             KConfig config(QStringLiteral("novusrc"));
             KConfigGroup game = config.group(QStringLiteral("Armoury"));
             QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));

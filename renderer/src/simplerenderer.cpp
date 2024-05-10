@@ -48,8 +48,10 @@ void SimpleRenderer::resize()
     vkCreateFramebuffer(m_device.device, &framebufferInfo, nullptr, &m_framebuffer);
 }
 
-void SimpleRenderer::render(VkCommandBuffer commandBuffer, uint32_t currentFrame, Camera &camera, Scene &scene, const std::vector<DrawObject> &models)
+void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObject> &models)
 {
+    Q_UNUSED(scene)
+
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = m_renderPass;

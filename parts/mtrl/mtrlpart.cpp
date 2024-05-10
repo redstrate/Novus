@@ -91,7 +91,7 @@ void MtrlPart::rebuild()
         uint32_t value = 0;
 
         bool found = false;
-        for (int j = 0; j < m_material.num_shader_keys; j++) {
+        for (uint32_t j = 0; j < m_material.num_shader_keys; j++) {
             auto shaderKey = m_material.shader_keys[j];
 
             if (shaderKey.category == materialKey.id) {
@@ -124,7 +124,7 @@ void MtrlPart::rebuild()
         child->widget()->deleteLater();
     }
 
-    for (int i = 0; i < m_material.num_samplers; i++) {
+    for (uint32_t i = 0; i < m_material.num_samplers; i++) {
         const auto sampler = m_material.samplers[i];
 
         QString name;
@@ -207,7 +207,7 @@ void MtrlPart::rebuild()
         child->widget()->deleteLater();
     }
 
-    for (int i = 0; i < m_material.num_constants; i++) {
+    for (uint32_t i = 0; i < m_material.num_constants; i++) {
         const auto constant = m_material.constants[i];
 
         QString name = i18n("Unknown %1", QString::number(constant.id));

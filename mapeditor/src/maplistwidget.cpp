@@ -46,7 +46,7 @@ MapListWidget::MapListWidget(GameData *data, QWidget *parent)
     for (uint32_t i = 0; i < exd.row_count; i++) {
         const char *id = exd.row_data[i].column_data[6].string._0;
 
-        int territoryTypeKey = exd.row_data[i].column_data[15].u_int16._0;
+        const uint16_t territoryTypeKey = exd.row_data[i].column_data[15].u_int16._0;
         if (territoryTypeKey > 0 && territoryTypeKey < territoryExd.row_count) {
             const char *bg = territoryExd.row_data[territoryTypeKey].column_data[1].string._0;
 

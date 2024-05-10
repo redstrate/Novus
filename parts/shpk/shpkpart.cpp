@@ -50,8 +50,9 @@ void SHPKPart::load(physis_Buffer buffer)
             shaderTextEdit->setText(QLatin1String(glsl.compile().c_str()));
 
             pageTabWidget->addTab(shaderTextEdit, name);
-        } catch (std::exception exception) {
+        } catch (const std::exception &exception) {
             // TODO: display the error
+            Q_UNUSED(exception)
         }
     };
 

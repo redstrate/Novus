@@ -31,7 +31,7 @@ public:
 
     void resize() override;
 
-    void render(VkCommandBuffer commandBuffer, uint32_t currentFrame, Camera &camera, Scene &scene, const std::vector<DrawObject> &models) override;
+    void render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObject> &models) override;
 
     Texture &getCompositeTexture() override;
 
@@ -57,8 +57,8 @@ private:
         physis_Shader vertexShader, pixelShader;
     };
 
-    void beginPass(uint32_t imageIndex, VkCommandBuffer commandBuffer, std::string_view passName);
-    void endPass(VkCommandBuffer commandBuffer, std::string_view passName);
+    void beginPass(VkCommandBuffer commandBuffer, std::string_view passName);
+    void endPass(VkCommandBuffer commandBuffer);
     CachedPipeline &bindPipeline(VkCommandBuffer commandBuffer,
                                  std::string_view passName,
                                  physis_Shader &vertexShader,

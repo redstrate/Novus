@@ -103,7 +103,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
             m_detailsLayout->addRow(i18n("LOD #:"), new QLabel(QString::number(mdl.num_lod)));
 
             uint32_t triangleCount = 0;
-            for (int i = 0; i < mdl.lods[0].num_parts; i++) {
+            for (uint32_t i = 0; i < mdl.lods[0].num_parts; i++) {
                 triangleCount += mdl.lods[0].parts[i].num_indices / 3;
             }
 

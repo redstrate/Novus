@@ -141,6 +141,8 @@ bool MDLPart::event(QEvent *event)
     case QEvent::KeyRelease:
         vkWindow->event(event);
         break;
+    default:
+        break;
     }
     return QWidget::event(event);
 }
@@ -229,14 +231,14 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             std::vector<float> buffer(newMaterial.shaderPackage.material_parameters_size / sizeof(float));
 
             // copy the material data
-            for (int i = 0; i < newMaterial.shaderPackage.num_material_parameters; i++) {
+            for (uint32_t i = 0; i < newMaterial.shaderPackage.num_material_parameters; i++) {
                 auto param = newMaterial.shaderPackage.material_parameters[i];
 
-                for (int j = 0; j < newMaterial.mat.num_constants; j++) {
+                for (uint32_t j = 0; j < newMaterial.mat.num_constants; j++) {
                     auto constant = newMaterial.mat.constants[j];
 
                     if (constant.id == param.id) {
-                        for (int z = 0; z < constant.num_values; z++) {
+                        for (uint32_t z = 0; z < constant.num_values; z++) {
                             buffer[(param.byte_offset / sizeof(float)) + z] = constant.values[z];
                         }
                     }
@@ -383,6 +385,7 @@ void MDLPart::removeModel(const physis_MDL &mdl)
 
 void MDLPart::setWireframe(bool wireframe)
 {
+    Q_UNUSED(wireframe)
     // renderer->wireframe = wireframe;
 }
 
