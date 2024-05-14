@@ -70,7 +70,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    for (auto model : models) {
+    for (const auto &model : models) {
         if (model.skinned) {
             if (m_wireframe) {
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skinnedPipelineWireframe);
@@ -110,7 +110,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             if (static_cast<size_t>(part.materialIndex) >= model.materials.size()) {
                 material = &defaultMaterial;
             } else {
-                material = &model.materials[part.materialIndex];
+                material = const_cast<RenderMaterial *>(&model.materials[part.materialIndex]);
             }
 
             const auto h = hash(model, *material);
@@ -439,15 +439,15 @@ void SimpleRenderer::initTextures(int width, int height)
 uint64_t SimpleRenderer::hash(const DrawObject &model, const RenderMaterial &material)
 {
     uint64_t hash = 0;
-    hash += reinterpret_cast<intptr_t>((void *)&model);
+    hash += reinterpret_cast<intptr_t>((void *)model.model.p_ptr);
     if (material.diffuseTexture)
-        hash += reinterpret_cast<intptr_t>((void *)&material.diffuseTexture);
+        hash += reinterpret_cast<intptr_t>(material.diffuseTexture->image);
     if (material.normalTexture)
-        hash += reinterpret_cast<intptr_t>((void *)&material.normalTexture);
+        hash += reinterpret_cast<intptr_t>(material.normalTexture->image);
     if (material.specularTexture)
-        hash += reinterpret_cast<intptr_t>((void *)&material.specularTexture);
+        hash += reinterpret_cast<intptr_t>(material.specularTexture->image);
     if (material.multiTexture)
-        hash += reinterpret_cast<intptr_t>((void *)&material.multiTexture);
+        hash += reinterpret_cast<intptr_t>(material.multiTexture->image);
     return hash;
 }
 
