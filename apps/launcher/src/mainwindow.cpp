@@ -20,6 +20,7 @@
 static QMap<QString, QPair<QString, QString>> applications = {
     {QStringLiteral("Gear Editor"), {QStringLiteral("zone.xiv.armoury"), GEAREDITOR_EXECUTABLE}},
     {QStringLiteral("Map Editor"), {QStringLiteral("zone.xiv.mapeditor"), MAPEDITOR_EXECUTABLE}},
+    {QStringLiteral("Material Editor"), {QStringLiteral("zone.xiv.mateditor"), MATEDITOR_EXECUTABLE}},
     {QStringLiteral("Excel Editor"), {QStringLiteral("zone.xiv.karaku"), EXCELEDITOR_EXECUTABLE}},
     {QStringLiteral("Data Explorer"), {QStringLiteral("zone.xiv.sagasu"), DATAEXPLORER_EXECUTABLE}},
     {QStringLiteral("Model Viewer"), {QStringLiteral("zone.xiv.mdlviewer"), MDLVIEWER_EXECUTABLE}}};
