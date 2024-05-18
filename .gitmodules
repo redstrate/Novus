@@ -3,4 +3,4 @@
 	url = ../libphysis
 [submodule "extern/dxbc"]
 	path = extern/dxbc
-	url = https://git.sr.ht/~redstrate/dxbc
+	url = ../dxbc
