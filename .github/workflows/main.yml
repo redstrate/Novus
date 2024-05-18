@@ -321,6 +321,9 @@ jobs:
       if: runner.os == 'Windows'
       run: |
         Remove-Item -Path ${{ steps.strings.outputs.build-output-dir }}/bin/bin/opengl32sw.dll
+        Remove-Item -Path ${{ steps.strings.outputs.build-output-dir }}/bin/Release -Force -Recurse
+        Remove-Item -Path ${{ steps.strings.outputs.build-output-dir }}/bin/physis.dll
+        Remove-Item -Path ${{ steps.strings.outputs.build-output-dir }}/bin/physis.pdb
 
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
