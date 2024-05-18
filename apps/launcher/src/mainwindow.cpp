@@ -15,12 +15,14 @@
 #include <QUrl>
 #include <QVBoxLayout>
 
+#include "launcherconfig.h"
+
 static QMap<QString, QPair<QString, QString>> applications = {
-    {QStringLiteral("Gear Editor"), {QStringLiteral("zone.xiv.armoury"), QStringLiteral("novus-armoury")}},
-    {QStringLiteral("Map Editor"), {QStringLiteral("zone.xiv.mapeditor"), QStringLiteral("novus-mapeditor")}},
-    {QStringLiteral("Excel Editor"), {QStringLiteral("zone.xiv.karaku"), QStringLiteral("novus-karuku")}},
-    {QStringLiteral("Data Explorer"), {QStringLiteral("zone.xiv.sagasu"), QStringLiteral("novus-sagasu")}},
-    {QStringLiteral("Model Viewer"), {QStringLiteral("zone.xiv.mdlviewer"), QStringLiteral("novus-mdlviewer")}}};
+    {QStringLiteral("Gear Editor"), {QStringLiteral("zone.xiv.armoury"), GEAREDITOR_EXECUTABLE}},
+    {QStringLiteral("Map Editor"), {QStringLiteral("zone.xiv.mapeditor"), MAPEDITOR_EXECUTABLE}},
+    {QStringLiteral("Excel Editor"), {QStringLiteral("zone.xiv.karaku"), EXCELEDITOR_EXECUTABLE}},
+    {QStringLiteral("Data Explorer"), {QStringLiteral("zone.xiv.sagasu"), DATAEXPLORER_EXECUTABLE}},
+    {QStringLiteral("Model Viewer"), {QStringLiteral("zone.xiv.mdlviewer"), MDLVIEWER_EXECUTABLE}}};
 
 static QMap<QString, QString> links = {{QStringLiteral("XIV Dev Wiki"), QStringLiteral("https://xiv.dev")},
                                        {QStringLiteral("XIV Docs"), QStringLiteral("https://docs.xiv.zone")}};
