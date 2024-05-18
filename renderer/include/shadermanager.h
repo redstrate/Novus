@@ -6,12 +6,11 @@
 #include <string_view>
 #include <vector>
 
-#include <glslang/Public/ShaderLang.h>
+#include <physis.hpp>
 #include <spirv.hpp>
 #include <spirv_glsl.hpp>
 #include <vulkan/vulkan.h>
 
-struct physis_Shader;
 class Device;
 
 class ShaderManager
@@ -23,7 +22,7 @@ public:
     VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
 
 private:
-    std::vector<uint32_t> compileGLSL(const std::string_view sourceString, const EShLanguage sourceLanguage);
+    std::vector<uint32_t> compileGLSL(std::string_view sourceString, ShaderStage stage);
 
     Device &m_device;
 };

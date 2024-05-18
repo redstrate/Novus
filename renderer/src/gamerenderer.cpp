@@ -5,17 +5,11 @@
 
 #include <array>
 
-#include <QDebug>
-
 #include <glm/ext/matrix_clip_space.hpp>
-#include <glslang/Public/ResourceLimits.h>
-#include <glslang/Public/ShaderLang.h>
-#include <glslang/SPIRV/GlslangToSpv.h>
 #include <physis.hpp>
 #include <spirv_glsl.hpp>
 
 #include "camera.h"
-#include "dxbc_module.h"
 #include "dxbc_reader.h"
 #include "rendermanager.h"
 #include "swapchain.h"
