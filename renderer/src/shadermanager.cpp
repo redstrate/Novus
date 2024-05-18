@@ -5,11 +5,15 @@
 
 #include <dxbc_module.h>
 #include <dxbc_reader.h>
-#include <glslang/Public/ResourceLimits.h>
-#include <glslang/SPIRV/GlslangToSpv.h>
-#include <glslang/SPIRV/Logger.h>
 #include <physis.hpp>
 #include <spirv_glsl.hpp>
+
+#ifdef HAVE_GLSLANG
+#include <glslang/Public/ResourceLimits.h>
+#include <glslang/Public/ShaderLang.h>
+#include <glslang/SPIRV/GlslangToSpv.h>
+#include <glslang/SPIRV/Logger.h>
+#endif
 
 #include "device.h"
 
@@ -27,9 +31,7 @@ spirv_cross::CompilerGLSL ShaderManager::getShaderModuleResources(const physis_S
     dxvk::DxbcModuleInfo info;
     auto result = module.compile(info, "test");
 
-    // glsl.build_combined_image_samplers();
-
-    return spirv_cross::CompilerGLSL(result.code.data(), result.code.dwords());
+    return {result.code.data(), result.code.dwords()};
 }
 
 VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
@@ -41,6 +43,10 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
     dxvk::DxbcModuleInfo info;
     auto result = module.compile(info, "test");
 
+    VkShaderModuleCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+
+#ifdef HAVE_GLSLANG
     // TODO: for debug only
     spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
 
@@ -65,11 +71,7 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
         } else if (texture.name == "v7") {
             glsl.set_name(texture.id, "BoneId");
         }
-        // glsl.set_name(texture.id, shader.)
-        // qInfo() << shader.resource_parameters[i].name << texture.id;
-        // qInfo() << "stage input" << i << texture.name << glsl.get_type(texture.type_id).width;
         i++;
-        // glsl.set_name(remap.combined_id, "SPIRV_Cross_Combined");
     }
 
     // Here you can also set up decorations if you want (binding = #N).
@@ -93,12 +95,13 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
     glsl.set_common_options(options);
     glsl.set_entry_point("main", executionModel);
 
-    auto newModule = compileGLSL(glsl.compile(), executionModel == spv::ExecutionModelVertex ? EShLanguage::EShLangVertex : EShLanguage::EShLangFragment);
-
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    auto newModule = compileGLSL(glsl.compile(), executionModel == spv::ExecutionModelVertex ? ShaderStage::Vertex : ShaderStage::Pixel);
     createInfo.codeSize = newModule.size() * sizeof(uint32_t);
     createInfo.pCode = reinterpret_cast<const uint32_t *>(newModule.data());
+#else
+    createInfo.codeSize = result.code.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t *>(result.code.data());
+#endif
 
     VkShaderModule shaderModule;
     vkCreateShaderModule(m_device.device, &createInfo, nullptr, &shaderModule);
@@ -106,8 +109,9 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
     return shaderModule;
 }
 
-std::vector<uint32_t> ShaderManager::compileGLSL(const std::string_view sourceString, const EShLanguage sourceLanguage)
+std::vector<uint32_t> ShaderManager::compileGLSL(const std::string_view sourceString, const ShaderStage stage)
 {
+#ifdef HAVE_GLSLANG
     static bool ProcessInitialized = false;
 
     if (!ProcessInitialized) {
@@ -116,6 +120,16 @@ std::vector<uint32_t> ShaderManager::compileGLSL(const std::string_view sourceSt
     }
 
     const char *InputCString = sourceString.data();
+
+    EShLanguage sourceLanguage = EShLanguage::EShLangVertex;
+    switch (stage) {
+    case ShaderStage::Vertex:
+        sourceLanguage = EShLanguage::EShLangVertex;
+        break;
+    case ShaderStage::Pixel:
+        sourceLanguage = EShLanguage::EShLangFragment;
+        break;
+    }
 
     glslang::TShader shader(sourceLanguage);
     shader.setStrings(&InputCString, 1);
@@ -151,4 +165,7 @@ std::vector<uint32_t> ShaderManager::compileGLSL(const std::string_view sourceSt
     glslang::GlslangToSpv(*Program.getIntermediate(sourceLanguage), SpirV, &logger, &spvOptions);
 
     return SpirV;
+#else
+    return {};
+#endif
 }

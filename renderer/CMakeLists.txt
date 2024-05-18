@@ -4,7 +4,7 @@
 find_package(spirv_cross_core REQUIRED)
 find_package(spirv_cross_glsl REQUIRED)
 find_package(SPIRV-Headers REQUIRED)
-find_package(glslang REQUIRED)
+find_package(glslang) # for additional debug information in the GLSL
 
 add_library(renderer STATIC)
 target_sources(renderer
@@ -53,10 +53,16 @@ target_link_libraries(renderer
         imgui
         dxbc
         spirv-cross-core
-        spirv-cross-glsl
-        glslang::SPIRV
-        glslang::glslang-default-resource-limits)
+        spirv-cross-glsl)
 target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_ENABLE_EXPERIMENTAL)
 target_compile_options(renderer PUBLIC -fexceptions) # needed for spirv-cross and dxbc
+
+if (glslang_FOUND)
+    target_link_libraries(renderer
+            PUBLIC
+            glslang::SPIRV
+            glslang::glslang-default-resource-limits)
+    target_compile_definitions(renderer PRIVATE HAVE_GLSLANG)
+endif ()
 
 add_library(Novus::Renderer ALIAS renderer)
