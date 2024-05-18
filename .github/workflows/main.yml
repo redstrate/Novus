@@ -212,7 +212,7 @@ jobs:
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kconfigwidgets --config ${{ matrix.build_type }} --target install
 
     - name: Build Breeze Icons
-      if: (runner.os == 'Windows') && (steps.cache-prefix-restore.outputs.cache-hit != 'true')
+      if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       continue-on-error: true
       run: |
         git clone https://invent.kde.org/frameworks/breeze-icons.git
