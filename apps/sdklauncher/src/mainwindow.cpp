@@ -23,7 +23,8 @@ static QMap<QString, QPair<QString, QString>> applications = {
     {QStringLiteral("Material Editor"), {QStringLiteral("zone.xiv.mateditor"), MATEDITOR_EXECUTABLE}},
     {QStringLiteral("Excel Editor"), {QStringLiteral("zone.xiv.karaku"), EXCELEDITOR_EXECUTABLE}},
     {QStringLiteral("Data Explorer"), {QStringLiteral("zone.xiv.sagasu"), DATAEXPLORER_EXECUTABLE}},
-    {QStringLiteral("Model Viewer"), {QStringLiteral("zone.xiv.mdlviewer"), MDLVIEWER_EXECUTABLE}}};
+    {QStringLiteral("Model Viewer"), {QStringLiteral("zone.xiv.mdlviewer"), MDLVIEWER_EXECUTABLE}},
+    {QStringLiteral("Game Launcher"), {QStringLiteral("zone.xiv.gamelauncher"), GAMELAUNCHER_EXECUTABLE}}};
 
 static QMap<QString, QString> links = {{QStringLiteral("XIV Dev Wiki"), QStringLiteral("https://xiv.dev")},
                                        {QStringLiteral("XIV Docs"), QStringLiteral("https://docs.xiv.zone")}};

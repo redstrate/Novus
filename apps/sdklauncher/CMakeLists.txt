@@ -13,6 +13,7 @@ file (GENERATE
 #define MATEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-mateditor>\")\n\
 #define MDLVIEWER_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-mdlviewer>\")\n\
 #define DATAEXPLORER_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-sagasu>\")\n\
+#define GAMELAUNCHER_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-gamelauncher>\")\n\
         "
 )
 
