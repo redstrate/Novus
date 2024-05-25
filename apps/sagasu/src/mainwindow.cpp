@@ -14,6 +14,7 @@
 #include <QMessageBox>
 #include <QNetworkReply>
 #include <QSplitter>
+#include <QStatusBar>
 #include <QTemporaryDir>
 
 #include "cmppart.h"
@@ -38,6 +39,19 @@ MainWindow::MainWindow(const QString &gamePath, GameData *data)
     setMinimumSize(1280, 720);
 
     m_mgr = new QNetworkAccessManager(this);
+
+    m_offsetLabel = new QLabel(i18n("Offset: Unknown"));
+    statusBar()->addWidget(m_offsetLabel);
+    auto separatorLine = new QFrame();
+    separatorLine->setFrameShape(QFrame::VLine);
+    statusBar()->addWidget(separatorLine);
+    m_hashLabel = new QLabel(i18n("Hash: Unknown"));
+    statusBar()->addWidget(m_hashLabel);
+    auto separatorLine2 = new QFrame();
+    separatorLine2->setFrameShape(QFrame::VLine);
+    statusBar()->addWidget(separatorLine2);
+    m_fileTypeLabel = new QLabel(i18n("File Type: Unknown"));
+    statusBar()->addWidget(m_fileTypeLabel);
 
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
@@ -83,11 +97,22 @@ void MainWindow::refreshParts(const QString &path)
         return;
     }
 
+    QFileInfo info(path);
+    std::string filenameStd = info.fileName().toStdString();
+
+    auto crcHash = physis_calculate_hash(filenameStd.c_str());
+    m_hashLabel->setText(i18n("Hash: 0x%1", QString::number(crcHash, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
+
+    // FIXME: this is terrible, we should not be recalculating this. it isn't a huge deal with the file + index caching, but still
+    auto datOffset = physis_gamedata_find_offset(data, pathStd.c_str());
+    m_offsetLabel->setText(i18n("Offset: 0x%1", QString::number(datOffset, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
+
     auto file = physis_gamedata_extract_file(data, path.toStdString().c_str());
 
-    QFileInfo info(path);
-
     const FileType type = FileTypes::getFileType(info.completeSuffix());
+
+    m_fileTypeLabel->setText(i18n("File Type: %1", FileTypes::getFiletypeName(type)));
+
     switch (type) {
     case FileType::ExcelList: {
         auto exlWidget = new EXLPart(data);

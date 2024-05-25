@@ -13,6 +13,8 @@
 #include "hashdatabase.h"
 #include "novusmainwindow.h"
 
+#include <QLabel>
+
 struct GameData;
 
 class MainWindow : public NovusMainWindow
@@ -30,6 +32,9 @@ private:
     HashDatabase m_database;
     QNetworkAccessManager *m_mgr = nullptr;
     FileTreeWindow *m_tree = nullptr;
+    QLabel *m_offsetLabel = nullptr;
+    QLabel *m_hashLabel = nullptr;
+    QLabel *m_fileTypeLabel = nullptr;
 
     void refreshParts(const QString &path);
 };

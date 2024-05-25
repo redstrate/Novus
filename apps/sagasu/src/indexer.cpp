@@ -257,6 +257,7 @@ int main(int argc, char *argv[])
     database.addFile(QStringLiteral("chara/xls/charamake/human.cmp"));
     database.addFile(QStringLiteral("chara/human/c0101/skeleton/base/b0001/skl_c0101b0001.sklb"));
     database.addFile(QStringLiteral("chara/equipment/e0028/material/v0001/mt_c0101e0028_top_a.mtrl"));
+    database.addFile(QStringLiteral("exd/item.exh"));
 
     return 0;
 }
