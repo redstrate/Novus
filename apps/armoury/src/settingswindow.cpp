@@ -5,6 +5,7 @@
 
 #include <KConfig>
 #include <KConfigGroup>
+#include <KLocalizedString>
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -14,12 +15,12 @@
 SettingsWindow::SettingsWindow(QWidget *parent)
     : QWidget(parent)
 {
-    setWindowTitle(QStringLiteral("Settings"));
+    setWindowTitle(i18n("Settings"));
 
     auto layout = new QVBoxLayout();
     setLayout(layout);
 
-    auto sourcesBox = new QGroupBox(QStringLiteral("Sources Output"));
+    auto sourcesBox = new QGroupBox(i18n("Sources Output"));
     layout->addWidget(sourcesBox);
 
     auto sourcesLayout = new QFormLayout();
@@ -46,9 +47,9 @@ SettingsWindow::SettingsWindow(QWidget *parent)
     });
     sourcesBoxLayout->addWidget(selectSourceUrlButton);
 
-    sourcesLayout->addRow(QStringLiteral("Sources Directory"), sourcesBoxLayoutContainer);
+    sourcesLayout->addRow(i18n("Sources directory:"), sourcesBoxLayoutContainer);
 
-    auto penumbraBox = new QGroupBox(QStringLiteral("Penumbra Output"));
+    auto penumbraBox = new QGroupBox(i18n("Penumbra Output"));
     layout->addWidget(penumbraBox);
 
     auto penumbraLayout = new QFormLayout();
@@ -72,9 +73,9 @@ SettingsWindow::SettingsWindow(QWidget *parent)
     });
     outputBoxLayout->addWidget(selectHomeUrlButton);
 
-    penumbraLayout->addRow(QStringLiteral("Output Directory"), outputBoxLayoutContainer);
+    penumbraLayout->addRow(i18n("Output directory:"), outputBoxLayoutContainer);
 
-    auto blenderBox = new QGroupBox(QStringLiteral("Blender"));
+    auto blenderBox = new QGroupBox(i18n("Blender"));
     layout->addWidget(blenderBox);
 
     auto blenderLayout = new QFormLayout();
@@ -98,17 +99,17 @@ SettingsWindow::SettingsWindow(QWidget *parent)
     });
     blenderBoxLayout->addWidget(selectBlenderButton);
 
-    blenderLayout->addRow(QStringLiteral("Blender Path"), blenderBoxLayoutContainer);
+    blenderLayout->addRow(i18n("Blender path:"), blenderBoxLayoutContainer);
 
     auto bottomButtonLayout = new QHBoxLayout();
     layout->addLayout(bottomButtonLayout);
 
-    auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), QStringLiteral("Cancel"));
+    auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), i18n("Cancel"));
     connect(cancelButton, &QPushButton::clicked, this, &QWidget::close);
     bottomButtonLayout->addWidget(cancelButton);
     bottomButtonLayout->addStretch(1);
 
-    auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), QStringLiteral("Apply"));
+    auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), i18n("Apply"));
     connect(saveButton, &QPushButton::clicked, this, [this] {
         applySettings();
         close();

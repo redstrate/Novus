@@ -104,13 +104,13 @@ void MainWindow::setupFileMenu(QMenu *menu)
     auto downloadList = menu->addAction(i18nc("@action:inmenu", "Download Definitions…"));
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
-        const int ret =
-            QMessageBox::information(this,
-                                     i18nc("@title:window", "Download Confirmation"),
-                                     i18n("This will download the definitions from the  <a "
-                                          "href=\"https://github.com/xivapi/SaintCoinach\">SaintCoinach repository on GitHub</a>.<br><br>Continue?"),
-                                     QMessageBox::Ok | QMessageBox::Cancel,
-                                     QMessageBox::Ok);
+        const int ret = QMessageBox::information(
+            this,
+            i18nc("@title:window", "Download Confirmation"),
+            i18n("Novus will download the definitions from the <a "
+                 "href=\"https://github.com/xivapi/SaintCoinach\">SaintCoinach repository on GitHub</a>.<br><br>Would you still like to continue?"),
+            QMessageBox::Ok | QMessageBox::Cancel,
+            QMessageBox::Ok);
 
         if (ret != QMessageBox::Ok) {
             return;

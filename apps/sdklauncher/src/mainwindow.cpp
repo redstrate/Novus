@@ -92,7 +92,7 @@ MainWindow::MainWindow()
 
     auto gameCombo = new QComboBox();
     gameCombo->setMaximumWidth(175);
-    formLayout->addRow(i18n("Current Game"), gameCombo);
+    formLayout->addRow(i18n("Current game"), gameCombo);
     formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
     gameCombo->addItem(game.readEntry("GameDir"));
 
