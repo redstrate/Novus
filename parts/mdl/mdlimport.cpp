@@ -40,6 +40,25 @@ void importModel(physis_MDL &existingModel, const QString &filename)
     };
     std::vector<ProcessedPart> processingParts;
 
+    struct ShapeSubmesh {
+        int affected_submesh = 0;
+        std::vector<NewShapeValue> values;
+    };
+
+    struct ShapeMesh {
+        int affected_part = 0;
+
+        std::vector<ShapeSubmesh> submeshes;
+    };
+
+    struct Shape {
+        std::string name;
+
+        std::vector<ShapeMesh> meshes;
+    };
+
+    std::vector<Shape> shapes;
+
     for (const auto &node : model.nodes) {
         // Detect if it's a mesh node
         if (node.mesh >= 0) {
@@ -190,6 +209,75 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 newVertices.push_back(vertex);
             }
 
+            // shapes
+            const auto &shapeTargets = mesh.primitives[0].targets;
+            if (!shapeTargets.empty()) {
+                const auto &shapeTargetNames = mesh.extras.Get("targetNames").Get<tinygltf::Value::Array>();
+
+                for (int i = 0; i < shapeTargets.size(); i++) {
+                    const auto shapeTargetName = shapeTargetNames[i].Get<std::string>();
+                    qInfo() << "- Importing shape" << shapeTargetName << "for" << partNumber << submeshNumber;
+
+                    Shape *targetShape;
+                    if (auto it = std::find_if(shapes.begin(),
+                                               shapes.end(),
+                                               [shapeTargetName](const Shape &shape) {
+                                                   return shape.name == shapeTargetName;
+                                               });
+                        it != shapes.end()) {
+                        targetShape = &*it;
+                    } else {
+                        targetShape = &shapes.emplace_back(Shape{.name = shapeTargetName});
+                    }
+
+                    ShapeMesh *targetShapeMesh;
+                    if (auto it = std::find_if(targetShape->meshes.begin(),
+                                               targetShape->meshes.end(),
+                                               [partNumber](const ShapeMesh &shape) {
+                                                   return shape.affected_part == partNumber;
+                                               });
+                        it != targetShape->meshes.end()) {
+                        targetShapeMesh = &*it;
+                    } else {
+                        targetShapeMesh = &targetShape->meshes.emplace_back(ShapeMesh{.affected_part = partNumber});
+                    }
+
+                    ShapeSubmesh *targetShapeSubMesh = &targetShapeMesh->submeshes.emplace_back(ShapeSubmesh{.affected_submesh = submeshNumber});
+
+                    const auto &positionMorphAccessor = model.accessors[shapeTargets[i].at("POSITION")];
+                    const auto &positionMorphView = model.bufferViews[positionMorphAccessor.bufferView];
+                    const auto &positionMorphBuffer = model.buffers[positionMorphView.buffer];
+
+                    std::vector<NewShapeValue> morphedVertices;
+
+                    for (size_t i = 0; i < positionMorphAccessor.count; i++) {
+                        auto ptr = (positionMorphBuffer.data.data() + (positionMorphAccessor.ByteStride(positionMorphView) * i) + positionMorphView.byteOffset
+                                    + positionMorphAccessor.byteOffset);
+
+                        // vertex data
+                        auto const positionData = *reinterpret_cast<glm::vec3 const *>(ptr);
+                        auto oldPosition = glm::vec3(newVertices[i].position[0], newVertices[i].position[1], newVertices[i].position[2]);
+
+                        auto combined = oldPosition - positionData;
+
+                        if (positionData != glm::vec3(0)) {
+                            // FIXME: lol wut
+                            int j = 0;
+                            std::ranges::for_each(processedSubMesh.indices, [&j, i, combined, &morphedVertices](auto index) {
+                                if (index == i) {
+                                    // TODO: this is wrong, we can use the same vertex for multiple replacements
+                                    morphedVertices.push_back(
+                                        {.base_index = static_cast<uint32_t>(j), .replacing_vertex = Vertex{.position = {combined.x, combined.y, combined.z}}});
+                                }
+                                j++;
+                            });
+                        }
+                    }
+
+                    targetShapeSubMesh->values = morphedVertices;
+                }
+            }
+
             // don't add duplicate vertex data!!
             if (processedPart->lastPositionViewUsed != positionAccessor.bufferView) {
                 processedPart->lastPositionViewUsed = positionAccessor.bufferView;
@@ -243,6 +331,55 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                                     combinedIndices.data(),
                                     newSubmeshes.size(),
                                     newSubmeshes.data());
+    }
+
+    physis_mdl_remove_shape_meshes(&existingModel);
+
+    int i = 0;
+    for (auto &shape : shapes) {
+        qInfo() << "Adding shape mesh" << shape.name;
+
+        std::sort(shape.meshes.begin(), shape.meshes.end(), [](const ShapeMesh &a, const ShapeMesh &b) {
+            return a.affected_part < b.affected_part;
+        });
+
+        int j = 0;
+        for (auto &shapeMesh : shape.meshes) {
+            std::sort(shapeMesh.submeshes.begin(), shapeMesh.submeshes.end(), [](const ShapeSubmesh &a, const ShapeSubmesh &b) {
+                return a.affected_submesh < b.affected_submesh;
+            });
+
+            std::vector<NewShapeValue> combinedValues;
+
+            size_t index_offset = 0;
+
+            for (auto &submesh : processingParts[shapeMesh.affected_part].subMeshes) {
+                if (auto it = std::find_if(shapeMesh.submeshes.cbegin(),
+                                           shapeMesh.submeshes.cend(),
+                                           [submesh](const ShapeSubmesh &a) {
+                                               return a.affected_submesh == submesh.subMeshIndex;
+                                           });
+                    it != shapeMesh.submeshes.cend()) {
+                    for (auto &shapeValue : it->values) {
+                        combinedValues.push_back(NewShapeValue{.base_index = static_cast<uint32_t>(index_offset + shapeValue.base_index),
+                                                               .replacing_vertex = shapeValue.replacing_vertex});
+                    }
+                }
+
+                index_offset += submesh.indices.size();
+            }
+
+            // TODO: re-enable once this actually works
+            /*physis_mdl_add_shape_mesh(&existingModel,
+                                      0, // lod
+                                      i, // shape index
+                                      j, // shape mesh index
+                                      shapeMesh.affected_part, // affected part (will be translated to mesh index on the physis side)
+                                      combinedValues.size(),
+                                      combinedValues.data());*/
+            j++;
+        }
+        i++;
     }
 
     qInfo() << "Successfully imported model!";
