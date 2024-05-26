@@ -41,12 +41,12 @@ void importModel(physis_MDL &existingModel, const QString &filename)
     std::vector<ProcessedPart> processingParts;
 
     struct ShapeSubmesh {
-        int affected_submesh = 0;
+        uint32_t affected_submesh = 0;
         std::vector<NewShapeValue> values;
     };
 
     struct ShapeMesh {
-        int affected_part = 0;
+        uint32_t affected_part = 0;
 
         std::vector<ShapeSubmesh> submeshes;
     };
