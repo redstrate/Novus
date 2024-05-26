@@ -181,8 +181,6 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 7;
         }
 
-        mesh_offset += part.num_submeshes;
-
         // Vertices
         {
             auto &positionAccessor = gltfModel.accessors.emplace_back();
@@ -294,6 +292,47 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
 
             indexBufferView.byteLength = indexBuffer.data.size();
         }
+
+        // Shapes
+        {
+            for (uint32_t j = 0; j < part.num_submeshes; j++) {
+                auto &gltfPrimitive = gltfModel.meshes[mesh_offset + j].primitives[0];
+
+                std::vector<tinygltf::Value> morphNames;
+
+                for (int s = 0; s < part.num_shapes; s++) {
+                    auto &shape = part.shapes[s];
+
+                    morphNames.push_back(tinygltf::Value(shape.name));
+
+                    gltfPrimitive.targets.push_back({{"POSITION", gltfModel.accessors.size()}});
+
+                    auto &positionMorphAccessor = gltfModel.accessors.emplace_back();
+                    positionMorphAccessor.bufferView = gltfModel.bufferViews.size();
+                    positionMorphAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+                    positionMorphAccessor.count = lod.parts[i].num_vertices;
+                    positionMorphAccessor.type = TINYGLTF_TYPE_VEC3;
+
+                    auto &positionMorphBufferView = gltfModel.bufferViews.emplace_back();
+                    positionMorphBufferView.name = "Part " + std::to_string(i) + " " + shape.name + " Morph Position Buffer View";
+                    positionMorphBufferView.buffer = gltfModel.buffers.size();
+                    positionMorphBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
+
+                    auto &positionMorphBuffer = gltfModel.buffers.emplace_back();
+                    positionMorphBuffer.name = "Part " + std::to_string(i) + " " + shape.name + " Morph Position Buffer";
+                    positionMorphBuffer.data.resize(lod.parts[i].num_vertices * sizeof(Vertex));
+                    memcpy(positionMorphBuffer.data.data(), shape.morphed_vertices, positionMorphBuffer.data.size());
+
+                    positionMorphBufferView.byteLength = positionMorphBuffer.data.size();
+                    positionMorphBufferView.byteStride = sizeof(Vertex);
+                }
+
+                gltfModel.meshes[mesh_offset + j].extras =
+                    tinygltf::Value(std::map<std::string, tinygltf::Value>{{"targetNames", tinygltf::Value(morphNames)}});
+            }
+        }
+
+        mesh_offset += part.num_submeshes;
     }
 
     auto &scene = gltfModel.scenes.emplace_back();
