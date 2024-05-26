@@ -12,6 +12,7 @@ public:
 
 public Q_SLOTS:
     void redrawAll();
+    void openWindow();
 
 private:
     QNetworkAccessManager *m_mgr = nullptr;

@@ -13,3 +13,8 @@ void PenumbraApi::redrawAll()
 {
     m_mgr->post(QNetworkRequest(QUrl(QStringLiteral("http://localhost:42069/api/redrawAll"))), QByteArray{});
 }
+
+void PenumbraApi::openWindow()
+{
+    m_mgr->post(QNetworkRequest(QUrl(QStringLiteral("http://localhost:42069/api/openwindow"))), QByteArray{});
+}

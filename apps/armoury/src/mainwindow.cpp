@@ -107,6 +107,18 @@ void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
         fmvMenu->setChecked(fullModelViewer->isVisible());
     });
 
+    auto penumbraMenu = menuBar->addMenu(i18nc("@title:menu", "Penumbra"));
+
+    auto redrawAction = penumbraMenu->addAction(i18nc("@action:inmenu", "Redraw All"));
+    connect(redrawAction, &QAction::triggered, [this] {
+        m_api->redrawAll();
+    });
+
+    auto openWindowAction = penumbraMenu->addAction(i18nc("@action:inmenu", "Open Window"));
+    connect(openWindowAction, &QAction::triggered, [this] {
+        m_api->openWindow();
+    });
+
     auto settingsMenu = menuBar->addMenu(i18nc("@title:menu", "Settings"));
 
     auto settingsAction = settingsMenu->addAction(i18nc("@action:inmenu", "Configure Armoury…"));
