@@ -22,6 +22,8 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     , gearView(new GearView(data, cache))
     , data(data)
 {
+    gearView->setWhatsThis(i18n("A 3D preview of the gear model."));
+
     // We don't want to see the face in this view
     gearView->setHair(-1);
     gearView->setEar(-1);
@@ -31,6 +33,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     setLayout(layout);
 
     auto mdlPathEdit = new QLineEdit();
+    mdlPathEdit->setWhatsThis(i18n("The path to this gear's model file."));
     mdlPathEdit->setReadOnly(true);
 
     connect(this, &SingleGearView::gotMDLPath, this, [this, mdlPathEdit] {
@@ -47,30 +50,35 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     layout->addLayout(topControlLayout);
 
     raceCombo = new QComboBox();
+    raceCombo->setWhatsThis(i18n("The race used in the gear model preview. Note that this only shows races that have unique models for this gear."));
     connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
         setRace(static_cast<Race>(raceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(raceCombo);
 
     subraceCombo = new QComboBox();
+    subraceCombo->setWhatsThis(i18n("The subrace used in the gear model preview. Note that this only shows subraces that have unique models for this gear."));
     connect(subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
         setSubrace(static_cast<Subrace>(subraceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(subraceCombo);
 
     genderCombo = new QComboBox();
+    genderCombo->setWhatsThis(i18n("The gender used in the gear model preview. Note that this only shows gender that have unique models for this gear."));
     connect(genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
         setGender(static_cast<Gender>(genderCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(genderCombo);
 
     lodCombo = new QComboBox();
+    lodCombo->setWhatsThis(i18n("The level of detail to preview. The higher the number, the lower the detail."));
     connect(lodCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
         setLevelOfDetail(index);
     });
     controlLayout->addWidget(lodCombo);
 
     addToFMVButton = new QPushButton(i18nc("@action:button FMV is an abbreviation for Full Model Viewer", "Add to FMV"));
+    addToFMVButton->setWhatsThis(i18n("Add this gear to the Full Model Viewer window, to preview on a full character."));
     addToFMVButton->setIcon(QIcon::fromTheme(QStringLiteral("list-add-user")));
     connect(addToFMVButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
@@ -79,6 +87,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     });
 
     editButton = new QPushButton(i18nc("@action:button", "Edit"));
+    editButton->setWhatsThis(i18n("Edit this model directly in Blender."));
     editButton->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
     connect(editButton, &QPushButton::clicked, this, [this](bool) {
         // Export in default location
@@ -122,6 +131,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     topControlLayout->addWidget(editButton);
 
     importButton = new QPushButton(i18nc("@action:button", "Import…"));
+    importButton->setWhatsThis(i18n("Import a different model for this gear."));
     importButton->setIcon(QIcon::fromTheme(QStringLiteral("document-import")));
     connect(importButton, &QPushButton::clicked, this, [this](bool) {
         if (currentGear.has_value()) {
@@ -200,6 +210,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
 
     exportButton = new QPushButton(i18nc("@action:button", "Export"));
     exportButton->setMenu(testMenu);
+    exportButton->setWhatsThis(i18n("Export this gear's model."));
     exportButton->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
 
     topControlLayout->addWidget(exportButton);
