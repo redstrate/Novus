@@ -89,6 +89,8 @@ protected:
 
 private:
     RenderMaterial createMaterial(const physis_Material &mat);
+    RenderMaterial createOrCacheMaterial(const physis_Material &mat);
+    uint64_t getMaterialHash(const physis_Material &mat);
 
     void calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone);
     void calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone);
@@ -97,6 +99,7 @@ private:
     FileCache &cache;
 
     std::vector<DrawObject> models;
+    std::unordered_map<uint64_t, RenderMaterial> renderMaterialCache;
 
     RenderManager *renderer = nullptr;
     VulkanWindow *vkWindow = nullptr;

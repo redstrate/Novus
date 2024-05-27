@@ -92,11 +92,11 @@ void MDLPart::addModel(physis_MDL mdl,
     model.skinned = skinned;
 
     std::transform(materials.begin(), materials.end(), std::back_inserter(model.materials), [this](const physis_Material &mat) {
-        return createMaterial(mat);
+        return createOrCacheMaterial(mat);
     });
 
     if (materials.empty()) {
-        model.materials.push_back(createMaterial(physis_Material{}));
+        model.materials.push_back(createOrCacheMaterial(physis_Material{}));
     }
 
     models.push_back(model);
@@ -333,6 +333,28 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
     }
 
     return newMaterial;
+}
+
+RenderMaterial MDLPart::createOrCacheMaterial(const physis_Material &mat)
+{
+    auto hash = getMaterialHash(mat);
+    if (!renderMaterialCache.contains(hash)) {
+        renderMaterialCache[hash] = createMaterial(mat);
+    }
+
+    return renderMaterialCache[hash];
+}
+
+uint64_t MDLPart::getMaterialHash(const physis_Material &mat)
+{
+    // TODO: this hash is terrible
+    uint64_t hash = strlen(mat.shpk_name);
+    hash += mat.num_constants;
+    hash += mat.num_samplers;
+    hash += mat.num_shader_keys;
+    hash += mat.num_textures;
+
+    return hash;
 }
 
 void MDLPart::calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone)
