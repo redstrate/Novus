@@ -88,7 +88,7 @@ void customizeAboutData(const QString &componentName, const QString &desktopFile
                        {},
                        QStringLiteral("https://github.com/Neargye/magic_enum"),
                        KAboutLicense::MIT);
-    about.setBugAddress(QByteArrayLiteral("https://lists.sr.ht/~redstrate/public-inbox"));
+    about.setBugAddress(QByteArrayLiteral("https://github.com/redstrate/Novus/issues"));
     about.setComponentName(componentName);
     about.setProgramLogo(desktopFilename);
     about.setDesktopFileName(desktopFilename);

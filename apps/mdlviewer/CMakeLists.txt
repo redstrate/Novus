@@ -22,6 +22,7 @@ target_link_libraries(novus-mdlviewer
         Qt6::Widgets)
 
 install(TARGETS novus-mdlviewer ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES mdlviewer.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)
 
 ecm_add_app_icon(novus-mdlviewer
         ICONS

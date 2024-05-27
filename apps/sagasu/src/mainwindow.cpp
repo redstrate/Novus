@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include <KActionCollection>
 #include <KLocalizedString>
 #include <KZip>
 #include <QApplication>
@@ -31,11 +32,11 @@
 #include "texpart.h"
 
 MainWindow::MainWindow(const QString &gamePath, GameData *data)
-    : NovusMainWindow()
+    : KXmlGuiWindow()
     , data(data)
     , fileCache(*data)
 {
-    setupMenubar();
+    // setupMenubar();
     setMinimumSize(1280, 720);
 
     m_mgr = new QNetworkAccessManager(this);
@@ -86,6 +87,14 @@ MainWindow::MainWindow(const QString &gamePath, GameData *data)
     dummyWidget->addWidget(partHolder);
 
     refreshParts({});
+
+    setupActions();
+    setupGUI(Keys | Save | Create, QStringLiteral("dataexplorer.rc"));
+
+    // We don't provide help (yet)
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
+    // This isn't KDE software
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 }
 
 void MainWindow::refreshParts(const QString &path)
@@ -177,9 +186,9 @@ void MainWindow::refreshParts(const QString &path)
     partHolder->tabBar()->setExpanding(true);
 }
 
-void MainWindow::setupFileMenu(QMenu *menu)
+void MainWindow::setupActions()
 {
-    auto openList = menu->addAction(i18nc("@action:inmenu", "Import Path List…"));
+    auto openList = new QAction(i18nc("@action:inmenu", "Import Path List…"));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getOpenFileName(nullptr, i18nc("@title:window", "Open Path List"), QStringLiteral("~"));
@@ -199,8 +208,9 @@ void MainWindow::setupFileMenu(QMenu *menu)
 
         QMessageBox::information(this, i18nc("@title:window", "Import Complete"), i18n("Successfully imported path list!"), QMessageBox::Ok, QMessageBox::Ok);
     });
+    actionCollection()->addAction(QStringLiteral("import_list"), openList);
 
-    auto downloadList = menu->addAction(i18nc("@action:inmenu", "Download Path List…"));
+    auto downloadList = new QAction(i18nc("@action:inmenu", "Download Path List…"));
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
         const int ret =
@@ -253,4 +263,5 @@ void MainWindow::setupFileMenu(QMenu *menu)
                                      QMessageBox::Ok);
         });
     });
+    actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
 }

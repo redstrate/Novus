@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
-    customizeAboutData(QStringLiteral("sagasu"),
+    customizeAboutData(QStringLiteral("novus"),
                        QStringLiteral("zone.xiv.sagasu"),
                        QStringLiteral("Data Explorer"),
                        i18n("Program to explore FFXIV data archives."));

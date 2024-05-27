@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include <KActionCollection>
 #include <KLocalizedString>
 #include <KZip>
 #include <QApplication>
@@ -23,11 +24,10 @@
 #include "sheetlistwidget.h"
 
 MainWindow::MainWindow(GameData *data)
-    : NovusMainWindow()
+    : KXmlGuiWindow()
     , data(data)
 {
     setMinimumSize(1280, 720);
-    setupMenubar();
 
     mgr = new QNetworkAccessManager(this);
 
@@ -55,6 +55,14 @@ MainWindow::MainWindow(GameData *data)
 
         exdPart->loadSheet(name, file, definitionsDir.absoluteFilePath(QStringLiteral("%1.json").arg(name)));
     });
+
+    setupActions();
+    setupGUI(Keys | Save | Create, QStringLiteral("exceleditor.rc"));
+
+    // We don't provide help (yet)
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
+    // This isn't KDE software
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 }
 
 static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath)
@@ -79,9 +87,9 @@ static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath
     return false;
 }
 
-void MainWindow::setupFileMenu(QMenu *menu)
+void MainWindow::setupActions()
 {
-    auto openList = menu->addAction(i18nc("@action:inmenu", "Import Definitions…"));
+    auto openList = new QAction(i18nc("@action:inmenu", "Import Definitions…"));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getExistingDirectory(nullptr, i18nc("@title:window", "Open Defintions Directory"), QStringLiteral("~"));
@@ -100,8 +108,9 @@ void MainWindow::setupFileMenu(QMenu *menu)
 
         QMessageBox::information(this, i18nc("@title:window", "Definitions"), i18n("Successfully imported definitions!"));
     });
+    actionCollection()->addAction(QStringLiteral("import_list"), openList);
 
-    auto downloadList = menu->addAction(i18nc("@action:inmenu", "Download Definitions…"));
+    auto downloadList = new QAction(i18nc("@action:inmenu", "Download Definitions…"));
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
         const int ret = QMessageBox::information(
@@ -159,6 +168,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
             QMessageBox::information(this, i18nc("@title:window", "Definitions"), i18n("Successfully downloaded and imported definitions!"));
         });
     });
+    actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
 }
 
 #include "moc_mainwindow.cpp"

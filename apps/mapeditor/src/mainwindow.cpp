@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include <KActionCollection>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QHBoxLayout>
@@ -16,12 +17,11 @@
 #include "mapview.h"
 
 MainWindow::MainWindow(GameData *data)
-    : NovusMainWindow()
+    : KXmlGuiWindow()
     , data(data)
     , cache(*data)
 {
     setMinimumSize(1280, 720);
-    setupMenubar();
 
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
@@ -45,6 +45,13 @@ MainWindow::MainWindow(GameData *data)
         auto tera = physis_parse_tera(tera_buffer);
         mapView->addTerrain(bgPath, tera);
     });
+
+    setupGUI(Keys | Save | Create);
+
+    // We don't provide help (yet)
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
+    // This isn't KDE software
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 }
 
 #include "moc_mainwindow.cpp"

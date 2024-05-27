@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "novusmainwindow.h"
+#include <KXmlGuiWindow>
 
-class MainWindow : public NovusMainWindow
+class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 

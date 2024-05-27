@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gui name="geareditor"
+     version="1"
+     xmlns="https://www.kde.org/standards/kxmlgui/1.0"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
+                         https://www.kde.org/standards/kxmlgui/1.0/kxmlgui.xsd">
+  <MenuBar>
+    <Menu name="penumbra" >
+      <text>Penumbra</text>
+      <Action name="redraw_all" />
+      <Action name="open_window" />
+    </Menu>
+    <Menu name="tools" >
+      <text>Tools</text>
+      <Action name="cmp_editor" />
+    </Menu>
+    <Menu name="view" >
+      <text>View</text>
+      <Action name="show_fmv" />
+    </Menu>
+  </MenuBar>
+</gui>

@@ -30,10 +30,8 @@ static QMap<QString, QString> links = {{QStringLiteral("XIV Dev Wiki"), QStringL
                                        {QStringLiteral("XIV Docs"), QStringLiteral("https://docs.xiv.zone")}};
 
 MainWindow::MainWindow()
-    : NovusMainWindow()
+    : KXmlGuiWindow()
 {
-    setupMenubar();
-
     auto appList = new QListWidget();
 
     auto applicationHeader = new QListWidgetItem();
@@ -102,6 +100,9 @@ MainWindow::MainWindow()
     centralWidget->setLayout(mainLayout);
 
     setCentralWidget(centralWidget);
+
+    // setupGUI(StandardWindowOption::ToolBar | StandardWindowOption::Keys | StandardWindowOption::StatusBar | StandardWindowOption::Save);
+    createGUI();
 }
 
 #include "moc_mainwindow.cpp"

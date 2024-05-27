@@ -16,10 +16,7 @@ int main(int argc, char *argv[])
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
-    customizeAboutData(QStringLiteral("mdlviewer"),
-                       QStringLiteral("zone.xiv.mdlviewer"),
-                       QStringLiteral("MDLViewer"),
-                       i18n("Program to view FFXIV MDL files."));
+    customizeAboutData(QStringLiteral("novus"), QStringLiteral("zone.xiv.mdlviewer"), QStringLiteral("MDLViewer"), i18n("Program to view FFXIV MDL files."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

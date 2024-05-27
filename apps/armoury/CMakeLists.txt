@@ -49,6 +49,7 @@ target_link_libraries(novus-armoury
         Qt6::Network)
 
 install(TARGETS novus-armoury ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES geareditor.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)
 
 ecm_add_app_icon(novus-armoury
         ICONS

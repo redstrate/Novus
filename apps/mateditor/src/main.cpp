@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
-    customizeAboutData(QStringLiteral("mateditor"),
+    customizeAboutData(QStringLiteral("novus"),
                        QStringLiteral("zone.xiv.mateditor"),
                        QStringLiteral("Material Editor"),
                        i18n("Program to view FFXIV materials."));

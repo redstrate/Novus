@@ -3,23 +3,21 @@
 
 #pragma once
 
+#include <KXmlGuiWindow>
 #include <QNetworkAccessManager>
-
-#include "novusmainwindow.h"
 
 struct GameData;
 
-class MainWindow : public NovusMainWindow
+class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(GameData *data);
 
-protected:
-    void setupFileMenu(QMenu *menu) override;
-
 private:
+    void setupActions();
+
     GameData *data = nullptr;
     QNetworkAccessManager *mgr = nullptr;
 };

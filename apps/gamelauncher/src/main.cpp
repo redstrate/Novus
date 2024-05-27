@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
-    customizeAboutData(QStringLiteral("gamelauncher"),
+    customizeAboutData(QStringLiteral("novus"),
                        QStringLiteral("zone.xiv.gamelauncher"),
                        QStringLiteral("Game Launcher"),
                        i18n("Program to launch the game for debug purposes."));

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <KXmlGuiWindow>
 #include <QComboBox>
 #include <physis.hpp>
 #include <unordered_map>
@@ -11,24 +12,25 @@
 #include "gearview.h"
 #include "metadataview.h"
 #include "mtrlpart.h"
-#include "novusmainwindow.h"
 #include "singlegearview.h"
 
 struct GameData;
 class FileCache;
 class PenumbraApi;
 
-class MainWindow : public NovusMainWindow
+class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(GameData *data);
 
-protected:
-    void setupAdditionalMenus(QMenuBar *menuBar) override;
+public Q_SLOTS:
+    void configure();
 
 private:
+    void setupActions();
+
     SingleGearView *gearView = nullptr;
     FullModelViewer *fullModelViewer = nullptr;
     QTabWidget *materialsView = nullptr;

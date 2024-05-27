@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <KXmlGuiWindow>
 #include <QMap>
 #include <QMdiArea>
 #include <QNetworkAccessManager>
@@ -11,21 +12,19 @@
 #include "filecache.h"
 #include "filetreewindow.h"
 #include "hashdatabase.h"
-#include "novusmainwindow.h"
 
 #include <QLabel>
 
 struct GameData;
 
-class MainWindow : public NovusMainWindow
+class MainWindow : public KXmlGuiWindow
 {
 public:
     MainWindow(const QString &gamePath, GameData *data);
 
-protected:
-    void setupFileMenu(QMenu *menu) override;
-
 private:
+    void setupActions();
+
     GameData *data = nullptr;
     QTabWidget *partHolder = nullptr;
     FileCache fileCache;

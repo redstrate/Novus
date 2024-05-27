@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
-    customizeAboutData(QStringLiteral("armoury"), QStringLiteral("zone.xiv.armoury"), QStringLiteral("Gear Editor"), i18n("Program to view FFXIV gear."));
+    customizeAboutData(QStringLiteral("novus"), QStringLiteral("zone.xiv.armoury"), QStringLiteral("Gear Editor"), i18n("Program to view FFXIV gear."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

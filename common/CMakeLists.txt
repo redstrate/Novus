@@ -11,7 +11,6 @@ target_sources(novus-common
         include/aboutdata.h
         include/filecache.h
         include/filetypes.h
-        include/novusmainwindow.h
         include/quaternionedit.h
         include/settings.h
         include/vec3edit.h
@@ -19,7 +18,6 @@ target_sources(novus-common
         src/aboutdata.cpp
         src/filecache.cpp
         src/filetypes.cpp
-        src/novusmainwindow.cpp
         src/quaternionedit.cpp
         src/settings.cpp
         src/vec3edit.cpp)

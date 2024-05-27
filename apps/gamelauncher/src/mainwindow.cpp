@@ -4,19 +4,20 @@
 #include "mainwindow.h"
 #include "settings.h"
 
+#include <KActionCollection>
 #include <KLocalizedString>
 #include <QApplication>
+#include <QFormLayout>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QMenuBar>
-#include <QFormLayout>
-#include <QPushButton>
 #include <QProcess>
-#include <QLineEdit>
+#include <QPushButton>
 
-MainWindow::MainWindow() : NovusMainWindow()
+MainWindow::MainWindow()
+    : KXmlGuiWindow()
 {
     setMinimumSize(1280, 720);
-    setupMenubar();
 
     process = new QProcess();
     process->setWorkingDirectory(getGameDirectory());
@@ -38,6 +39,13 @@ MainWindow::MainWindow() : NovusMainWindow()
         process->start();
     });
     layout->addWidget(launchGameButton);
+
+    setupGUI(Keys | Save | Create);
+
+    // We don't provide help (yet)
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
+    // This isn't KDE software
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 }
 
 #include "moc_mainwindow.cpp"

@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include <KActionCollection>
 #include <KLocalizedString>
 #include <QAction>
 #include <QApplication>
@@ -18,12 +19,11 @@
 #include "mdlpart.h"
 
 MainWindow::MainWindow(GameData *data)
-    : NovusMainWindow()
+    : KXmlGuiWindow()
     , data(data)
     , cache(FileCache{*data})
 {
     setMinimumSize(640, 480);
-    setupMenubar();
 
     auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
@@ -68,11 +68,19 @@ MainWindow::MainWindow(GameData *data)
     tabWidget->tabBar()->setExpanding(true);
 
     layout->addWidget(tabWidget);
+
+    setupActions();
+    setupGUI(Keys | Save | Create, QStringLiteral("mdlviewer.rc"));
+
+    // We don't provide help (yet)
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
+    // This isn't KDE software
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 }
 
-void MainWindow::setupFileMenu(QMenu *menu)
+void MainWindow::setupActions()
 {
-    auto openMDLFile = menu->addAction(i18nc("@action:inmenu MDL is an abbreviation for a file type", "Open MDL…"));
+    auto openMDLFile = new QAction(i18nc("@action:inmenu MDL is an abbreviation for a file type", "Open MDL…"));
     openMDLFile->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openMDLFile, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getOpenFileName(nullptr, i18nc("@title:window", "Open MDL File"), QStringLiteral("~"), i18n("FFXIV Model File (*.mdl)"));
@@ -110,6 +118,7 @@ void MainWindow::setupFileMenu(QMenu *menu)
             m_detailsLayout->addRow(i18n("Triangle #:"), new QLabel(QString::number(triangleCount)));
         }
     });
+    actionCollection()->addAction(QStringLiteral("open_mdl"), openMDLFile);
 }
 
 #include "moc_mainwindow.cpp"

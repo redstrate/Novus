@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
-    customizeAboutData(QStringLiteral("launcher"),
+    customizeAboutData(QStringLiteral("novus"),
                        QStringLiteral("zone.xiv.novus"),
                        QStringLiteral("Novus SDK"),
                        i18n("Handles setting up and launching various Novus SDK components."));

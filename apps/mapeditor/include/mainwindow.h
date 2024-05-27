@@ -3,12 +3,13 @@
 
 #pragma once
 
+#include <KXmlGuiWindow>
+
 #include "filecache.h"
-#include "novusmainwindow.h"
 
 struct GameData;
 
-class MainWindow : public NovusMainWindow
+class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 

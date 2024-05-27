@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include <QProcess>
+#include <KXmlGuiWindow>
 
-#include "novusmainwindow.h"
+#include <QProcess>
 
 struct GameData;
 
-class MainWindow : public NovusMainWindow
+class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 

@@ -8,6 +8,7 @@
 #include <QTableWidget>
 #include <QTimer>
 
+#include <KActionCollection>
 #include <KLocalizedString>
 #include <QAction>
 #include <QApplication>
@@ -24,13 +25,12 @@
 #include "settingswindow.h"
 
 MainWindow::MainWindow(GameData *in_data)
-    : NovusMainWindow()
+    : KXmlGuiWindow()
     , data(*in_data)
     , cache(FileCache{*in_data})
     , m_api(new PenumbraApi(this))
 {
     setMinimumSize(QSize(800, 600));
-    setupMenubar();
 
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
@@ -78,55 +78,63 @@ MainWindow::MainWindow(GameData *in_data)
             i++;
         }
     });
+
+    setupActions();
+    setupGUI(Keys | Save | Create, QStringLiteral("geareditor.rc"));
+
+    // We don't provide help (yet)
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
+    // This isn't KDE software
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 }
 
-void MainWindow::setupAdditionalMenus(QMenuBar *menuBar)
+void MainWindow::configure()
 {
-    auto toolsMenu = menuBar->addMenu(i18nc("@title:menu", "Tools"));
+    auto settingsWindow = new SettingsWindow();
+    settingsWindow->show();
+}
 
-    auto cmpEditorMenu = toolsMenu->addAction(i18nc("@action:inmenu CMP is an abbreviation", "CMP Editor"));
-    cmpEditorMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
-    connect(cmpEditorMenu, &QAction::triggered, [this] {
-        auto cmpEditor = new CmpEditor(&data);
-        cmpEditor->show();
-    });
+void MainWindow::setupActions()
+{
+    KStandardAction::preferences(this, &MainWindow::configure, actionCollection());
+    KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 
-    auto windowMenu = menuBar->addMenu(i18nc("@title:menu", "Window"));
-
-    auto fmvMenu = windowMenu->addAction(i18nc("@action:inmenu", "Full Model Viewer"));
-    fmvMenu->setCheckable(true);
-    fmvMenu->setIcon(QIcon::fromTheme(QStringLiteral("user-symbolic")));
-    connect(fmvMenu, &QAction::toggled, [this](bool toggled) {
+    auto showFMVAction = new QAction(this);
+    showFMVAction->setText(i18n("&Full Model Viewer"));
+    showFMVAction->setCheckable(true);
+    showFMVAction->setIcon(QIcon::fromTheme(QStringLiteral("user-symbolic")));
+    connect(showFMVAction, &QAction::toggled, [this](bool toggled) {
         if (toggled) {
             fullModelViewer->show();
         } else {
             fullModelViewer->hide();
         }
     });
-    connect(fullModelViewer, &FullModelViewer::visibleChanged, this, [this, fmvMenu] {
-        fmvMenu->setChecked(fullModelViewer->isVisible());
+    connect(fullModelViewer, &FullModelViewer::visibleChanged, this, [this, showFMVAction] {
+        showFMVAction->setChecked(fullModelViewer->isVisible());
     });
+    actionCollection()->addAction(QStringLiteral("show_fmv"), showFMVAction);
 
-    auto penumbraMenu = menuBar->addMenu(i18nc("@title:menu", "Penumbra"));
+    auto cmpEditorAction = new QAction(this);
+    cmpEditorAction->setText(i18n("&CMP Editor"));
+    cmpEditorAction->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
+    connect(cmpEditorAction, &QAction::triggered, [this] {
+        auto cmpEditor = new CmpEditor(&data);
+        cmpEditor->show();
+    });
+    actionCollection()->addAction(QStringLiteral("cmp_editor"), cmpEditorAction);
 
-    auto redrawAction = penumbraMenu->addAction(i18nc("@action:inmenu", "Redraw All"));
+    auto redrawAction = new QAction(i18nc("@action:inmenu", "Redraw All"));
     connect(redrawAction, &QAction::triggered, [this] {
         m_api->redrawAll();
     });
+    actionCollection()->addAction(QStringLiteral("redraw_all"), redrawAction);
 
-    auto openWindowAction = penumbraMenu->addAction(i18nc("@action:inmenu", "Open Window"));
+    auto openWindowAction = new QAction(i18nc("@action:inmenu", "Open Window"));
     connect(openWindowAction, &QAction::triggered, [this] {
         m_api->openWindow();
     });
-
-    auto settingsMenu = menuBar->addMenu(i18nc("@title:menu", "Settings"));
-
-    auto settingsAction = settingsMenu->addAction(i18nc("@action:inmenu", "Configure Armoury…"));
-    settingsAction->setIcon(QIcon::fromTheme(QStringLiteral("configure-symbolic")));
-    connect(settingsAction, &QAction::triggered, [this] {
-        auto settingsWindow = new SettingsWindow();
-        settingsWindow->show();
-    });
+    actionCollection()->addAction(QStringLiteral("open_window"), openWindowAction);
 }
 
 #include "moc_mainwindow.cpp"

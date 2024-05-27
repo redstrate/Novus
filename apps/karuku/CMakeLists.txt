@@ -25,6 +25,7 @@ target_link_libraries(novus-karuku
         Qt6::Network)
 
 install(TARGETS novus-karuku ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES exceleditor.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)
 
 ecm_add_app_icon(novus-karuku
         ICONS

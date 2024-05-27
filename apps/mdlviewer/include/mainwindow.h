@@ -4,22 +4,22 @@
 #pragma once
 
 #include "filecache.h"
-#include "novusmainwindow.h"
 
+#include <KXmlGuiWindow>
 #include <QFormLayout>
 
 struct GameData;
 class MDLPart;
 
-class MainWindow : public NovusMainWindow
+class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(GameData *data);
 
-protected:
-    void setupFileMenu(QMenu *menu) override;
+private:
+    void setupActions();
 
     GameData *data = nullptr;
     MDLPart *part = nullptr;
