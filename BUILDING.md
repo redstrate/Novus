@@ -1,13 +1,26 @@
 # Building Novus
 
-Currently the only way to build Novus is manually.
+There are two methods to build Novus, either via [Flatpak](https://flatpak.org/) or manually using your system libraries. It's highly recommended to prefer the Flatpak, especially if you don't have experience with CMake, C++ and such.
+
+## Flatpak
+
+Building the Flatpak version is easy, and there's a helper script to speed up the process. You must run it from the repository root:
+
+```shell
+cd novus
+./scripts/build-flatpak.sh
+```
+
+The process should only take a few minutes on a moderately powerful machine. It does require an Internet connection and the relevant permissions to install the required Flatpak runtimes and extensions.
+
+When it's complete, a file called `novus.flatpak` will appear in the repository root and that can be installed with the `flatpak` CLI tool or your preferred application store.
 
 ## Manual
 
 ### Dependencies
 
-* [Linux](https://kernel.org/)
-  * Windows, macOS and other systems may work but are currently unsupported. Patches are accepted to fix any problems with those OSes though.
+* [Linux](https://kernel.org/) or Windows
+  * macOS may work but is currently unsupported. Patches are accepted to fix any problems with macOS builds though.
 * [CMake](https://cmake.org) 3.25 or later
 * [Qt](https://www.qt.io/) 6.6 or later
 * [KDE Frameworks](https://develop.kde.org/products/frameworks/) 6
