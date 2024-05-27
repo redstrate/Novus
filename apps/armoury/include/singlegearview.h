@@ -17,7 +17,6 @@ class SingleGearView : public QWidget
 public:
     explicit SingleGearView(GameData *data, FileCache &cache, QWidget *parent = nullptr);
 
-    QString getLoadedGearPath() const;
     QList<physis_Material> getLoadedMaterials() const;
 
 Q_SIGNALS:
@@ -62,7 +61,6 @@ private:
     QComboBox *raceCombo, *subraceCombo, *genderCombo, *lodCombo;
     QPushButton *addToFMVButton, *editButton, *importButton, *exportButton;
 
-    bool loadingComboData = false;
     bool fmvAvailable = false;
 
     GameData *data = nullptr;

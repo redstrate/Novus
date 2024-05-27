@@ -7,15 +7,12 @@
 
 BoneEditor::BoneEditor(GearView *gearView, QWidget *parent)
     : SklbPart(parent)
-    , gearView(gearView)
 {
     connect(&gearView->part(), &MDLPart::skeletonChanged, this, [this, gearView] {
         load(*gearView->part().skeleton);
     });
 
-    connect(this, &SklbPart::valueChanged, this, [gearView] {
-        gearView->part().reloadRenderer();
-    });
+    connect(this, &SklbPart::valueChanged, &gearView->part(), &MDLPart::reloadRenderer);
 
     if (gearView->part().skeleton) {
         load(*gearView->part().skeleton);

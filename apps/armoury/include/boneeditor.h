@@ -13,7 +13,4 @@ class BoneEditor : public SklbPart
 
 public:
     explicit BoneEditor(GearView *gearView, QWidget *parent = nullptr);
-
-private:
-    GearView *gearView = nullptr;
 };

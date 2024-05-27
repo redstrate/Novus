@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include <QGroupBox>
 #include <QMainWindow>
 
-#include "boneeditor.h"
 #include "gearview.h"
 
 struct GameData;
 class FileCache;
+class QGroupBox;
+class BoneEditor;
 
 class FullModelViewer : public QMainWindow
 {

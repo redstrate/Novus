@@ -108,7 +108,7 @@ void GearView::addGear(GearInfo &gear)
 
     queuedGearAdditions.emplace_back(gear);
 
-    for (auto loadedGear : loadedGears) {
+    for (const auto &loadedGear : loadedGears) {
         if (loadedGear.info.slot == gear.slot) {
             queuedGearRemovals.push_back(loadedGear);
         }
@@ -265,7 +265,6 @@ void GearView::reloadRaceDeforms()
     qDebug() << "Loading race deform matrices for " << magic_enum::enum_name(currentRace).data() << magic_enum::enum_name(currentSubrace).data()
              << magic_enum::enum_name(currentGender).data();
     const int raceCode = physis_get_race_code(currentRace, currentSubrace, currentGender);
-    qDebug() << "Race code: " << raceCode;
 
     QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
     std::string skelNameStd = skelName.toStdString();
@@ -297,7 +296,6 @@ void GearView::updatePart()
             auto mdlPath = QLatin1String(
                 physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, currentRace, currentSubrace, currentGender, gearAddition.info.slot));
 
-            qInfo() << "Looking up" << magic_enum::enum_name(currentRace) << magic_enum::enum_name(currentSubrace) << magic_enum::enum_name(currentGender);
             auto mdl_data = cache.lookupFile(mdlPath);
 
             // attempt to load the next best race
@@ -313,11 +311,11 @@ void GearView::updatePart()
             }
 
             if (fallbackRace != currentRace) {
-                qInfo() << "Fell back to hyur race for" << mdlPath;
+                qDebug() << "Fell back to hyur race for" << mdlPath;
             }
 
             if (fallbackSubrace != currentSubrace) {
-                qInfo() << "Fell back to midlander subrace for" << mdlPath;
+                qDebug() << "Fell back to midlander subrace for" << mdlPath;
             }
 
             if (mdl_data.size > 0) {

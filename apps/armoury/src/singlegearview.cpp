@@ -6,7 +6,6 @@
 #include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
-#include <QDebug>
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QMenu>
@@ -20,17 +19,15 @@
 
 SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)
+    , gearView(new GearView(data, cache))
     , data(data)
 {
-    gearView = new GearView(data, cache);
-
     // We don't want to see the face in this view
     gearView->setHair(-1);
     gearView->setEar(-1);
     gearView->setFace(-1);
 
     auto layout = new QVBoxLayout();
-    // layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
     auto mdlPathEdit = new QLineEdit();
@@ -51,36 +48,24 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
 
     raceCombo = new QComboBox();
     connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        if (loadingComboData)
-            return;
-
         setRace(static_cast<Race>(raceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(raceCombo);
 
     subraceCombo = new QComboBox();
     connect(subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        if (loadingComboData)
-            return;
-
         setSubrace(static_cast<Subrace>(subraceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(subraceCombo);
 
     genderCombo = new QComboBox();
     connect(genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        if (loadingComboData)
-            return;
-
         setGender(static_cast<Gender>(genderCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(genderCombo);
 
     lodCombo = new QComboBox();
     connect(lodCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        if (loadingComboData)
-            return;
-
         setLevelOfDetail(index);
     });
     controlLayout->addWidget(lodCombo);
@@ -282,8 +267,6 @@ void SingleGearView::setSubrace(Subrace subrace)
         return;
     }
 
-    qInfo() << "Setting subrace to" << magic_enum::enum_name(subrace);
-
     currentSubrace = subrace;
     Q_EMIT subraceChanged();
 }
@@ -321,7 +304,10 @@ void SingleGearView::reloadGear()
     editButton->setEnabled(currentGear.has_value());
 
     if (currentGear.has_value()) {
-        loadingComboData = true;
+        QSignalBlocker raceBlocker(raceCombo);
+        QSignalBlocker subraceBlocker(subraceCombo);
+        QSignalBlocker genderBlocker(genderCombo);
+        QSignalBlocker lodBlocker(lodCombo);
 
         const auto oldRace = static_cast<Race>(raceCombo->itemData(raceCombo->currentIndex()).toInt());
         const auto oldSubrace = static_cast<Subrace>(subraceCombo->itemData(subraceCombo->currentIndex()).toInt());
@@ -392,8 +378,6 @@ void SingleGearView::reloadGear()
         if (oldLod < gearView->lodCount()) {
             lodCombo->setCurrentIndex(oldLod);
         }
-
-        loadingComboData = false;
     }
 }
 
@@ -405,11 +389,6 @@ void SingleGearView::setFMVAvailable(const bool available)
     }
 }
 
-QString SingleGearView::getLoadedGearPath() const
-{
-    return gearView->getLoadedGearPath();
-}
-
 void SingleGearView::importModel(const QString &filename)
 {
     auto &mdl = gearView->part().getModel(0);
@@ -418,14 +397,14 @@ void SingleGearView::importModel(const QString &filename)
 
     gearView->part().reloadModel(0);
 
-    KConfig config(QStringLiteral("novusrc"));
-    KConfigGroup game = config.group(QStringLiteral("Armoury"));
-    QString outputDirectory = game.readEntry(QStringLiteral("PenumbraOutputDirectory"));
+    const KConfig config(QStringLiteral("novusrc"));
+    const KConfigGroup game = config.group(QStringLiteral("Armoury"));
+    const QDir outputDirectory = game.readEntry(QStringLiteral("PenumbraOutputDirectory"));
 
-    QFileInfo info(QStringLiteral("%1/%2").arg(outputDirectory, gearView->getLoadedGearPath()));
+    const QFileInfo info(outputDirectory.absoluteFilePath(gearView->getLoadedGearPath()));
 
     auto buffer = physis_mdl_write(&mdl.model);
-    QFile file(QStringLiteral("%1/%2").arg(outputDirectory, gearView->getLoadedGearPath()));
+    QFile file(info.absoluteFilePath());
 
     if (!QDir().exists(info.absolutePath()))
         QDir().mkpath(info.absolutePath());
@@ -434,7 +413,6 @@ void SingleGearView::importModel(const QString &filename)
     file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
     file.close();
 
-    qInfo() << "Successfully imported model!";
     Q_EMIT importedModel();
 }
 
@@ -443,8 +421,8 @@ QList<physis_Material> SingleGearView::getLoadedMaterials() const
     QList<physis_Material> materialPaths;
 
     for (int i = 0; i < gearView->part().numModels(); i++) {
-        auto model = gearView->part().getModel(i);
-        for (auto material : model.materials) {
+        const auto &model = gearView->part().getModel(i);
+        for (const auto &material : model.materials) {
             materialPaths.push_back(material.mat);
         }
     }

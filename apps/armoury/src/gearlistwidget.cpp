@@ -28,9 +28,7 @@ GearListWidget::GearListWidget(GameData *data, QWidget *parent)
     searchEdit->setPlaceholderText(i18nc("@info:placeholder Search through items", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
-    connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
-        searchModel->setFilterRegularExpression(text);
-    });
+    connect(searchEdit, &QLineEdit::textChanged, searchModel, qOverload<const QString &>(&QSortFilterProxyModel::setFilterRegularExpression));
     layout->addWidget(searchEdit);
 
     auto originalModel = new GearListModel(data);

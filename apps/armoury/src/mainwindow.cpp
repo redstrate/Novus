@@ -38,16 +38,11 @@ MainWindow::MainWindow(GameData *in_data)
 
     auto gearListWidget = new GearListWidget(&data);
     gearListWidget->setMaximumWidth(350);
-    connect(gearListWidget, &GearListWidget::gearSelected, this, [this](const GearInfo &gear) {
-        gearView->setGear(gear);
-    });
     dummyWidget->addWidget(gearListWidget);
 
     gearView = new SingleGearView(&data, cache);
-    connect(gearView, &SingleGearView::addToFullModelViewer, this, [this](GearInfo &info) {
-        fullModelViewer->addGear(info);
-    });
     connect(gearView, &SingleGearView::importedModel, m_api, &PenumbraApi::redrawAll);
+    connect(gearListWidget, &GearListWidget::gearSelected, gearView, &SingleGearView::setGear);
 
     materialsView = new QTabWidget();
 
@@ -65,6 +60,7 @@ MainWindow::MainWindow(GameData *in_data)
     connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {
         gearView->setFMVAvailable(!loading);
     });
+    connect(gearView, &SingleGearView::addToFullModelViewer, fullModelViewer, &FullModelViewer::addGear);
 
     connect(gearView, &SingleGearView::doneLoadingModel, this, [this, in_data] {
         materialsView->clear();
@@ -125,15 +121,11 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("cmp_editor"), cmpEditorAction);
 
     auto redrawAction = new QAction(i18nc("@action:inmenu", "Redraw All"));
-    connect(redrawAction, &QAction::triggered, [this] {
-        m_api->redrawAll();
-    });
+    connect(redrawAction, &QAction::triggered, m_api, &PenumbraApi::redrawAll);
     actionCollection()->addAction(QStringLiteral("redraw_all"), redrawAction);
 
     auto openWindowAction = new QAction(i18nc("@action:inmenu", "Open Window"));
-    connect(openWindowAction, &QAction::triggered, [this] {
-        m_api->openWindow();
-    });
+    connect(openWindowAction, &QAction::triggered, m_api, &PenumbraApi::openWindow);
     actionCollection()->addAction(QStringLiteral("open_window"), openWindowAction);
 }
 

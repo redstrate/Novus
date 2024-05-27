@@ -35,7 +35,7 @@ GearListModel::GearListModel(GameData *data, QObject *parent)
     connect(exdFuture, &QFutureWatcher<physis_EXD>::resultReadyAt, this, &GearListModel::exdFinished);
     connect(exdFuture, &QFutureWatcher<physis_EXD>::finished, this, &GearListModel::finished);
 
-    QVector<int> pages;
+    QVector<uint32_t> pages;
     for (uint32_t i = 0; i < exh->page_count; i++) {
         pages.push_back(i);
     }
@@ -65,7 +65,7 @@ int GearListModel::rowCount(const QModelIndex &parent) const
     else
         parentItem = static_cast<TreeInformation *>(parent.internalPointer());
 
-    return parentItem->children.size();
+    return static_cast<int>(parentItem->children.size());
 }
 
 int GearListModel::columnCount(const QModelIndex &parent) const
@@ -134,7 +134,7 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
             if (texFile.data != nullptr) {
                 auto tex = physis_texture_parse(texFile);
                 if (tex.rgba != nullptr) {
-                    QImage image(tex.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
+                    QImage image(tex.rgba, static_cast<int>(tex.width), static_cast<int>(tex.height), QImage::Format_RGBA8888);
 
                     QPixmap pixmap;
                     pixmap.convertFromImage(image);

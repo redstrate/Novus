@@ -3,8 +3,6 @@
 
 #include "fullmodelviewer.h"
 
-#include "boneeditor.h"
-#include "magic_enum.hpp"
 #include <KLocalizedString>
 #include <QCheckBox>
 #include <QCloseEvent>
@@ -14,6 +12,9 @@
 #include <QMenuBar>
 #include <QRadioButton>
 #include <QVBoxLayout>
+
+#include "boneeditor.h"
+#include "magic_enum.hpp"
 
 FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *parent)
     : QMainWindow(parent)
