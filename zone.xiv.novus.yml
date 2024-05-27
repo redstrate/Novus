@@ -1,0 +1,116 @@
+app-id: zone.xiv.novus
+runtime: org.kde.Platform
+runtime-version: '6.6'
+sdk: org.kde.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: novus-launcher
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin
+  build-args:
+    - --share=network
+cleanup:
+  - /include
+  - /lib
+  - "*.cmake"
+  - "*.pc"
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --share=network
+  - --filesystem=home
+  - --socket=pulseaudio
+  - --device=all
+  - --allow=devel
+modules:
+  - name: qt6-qthttpserver
+    buildsystem: cmake-ninja
+    cleanup:
+      - /bin
+      - /metatypes
+      - /mkspecs
+      - /modules
+    sources:
+      - type: archive
+        url: https://download.qt.io/official_releases/qt/6.6/6.6.1/submodules/qthttpserver-everywhere-src-6.6.1.tar.xz
+        sha256: 1bfeb3f52f15002a0197a4ef4f3ada7b43a6d0681e1797a11c1460ecfa83124c
+  - name: glm
+    buildsystem: cmake-ninja
+    sources:
+      - type: archive
+        url: https://github.com/g-truc/glm/archive/efec5db081e3aad807d0731e172ac597f6a39447.zip
+        sha256: e7a1abc208278cc3f0dba59c5170d83863b3375f98136d588b8beb74825e503c
+  - name: json
+    buildsystem: cmake-ninja
+    sources:
+      - type: archive
+        url: "https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.tar.gz"
+        sha256: 0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406
+  - name: stb
+    buildsystem: simple
+    build-commands:
+      - cp -r ./* -t ${FLATPAK_DEST}/include
+    sources:
+      - type: archive
+        url: "https://github.com/nothings/stb/archive/449758bd74ce14b7d0ba9b24a3dbc4386702a0e0.zip"
+        sha256: 971792375e93970eb57c8466ae93b4534dd6ab2952b3882c7260abe24ac9eaa3
+  - name: spirv-headers
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DSPIRV_SKIP_EXECUTABLES=ON
+    cleanup:
+      - /bin
+    sources:
+      - type: git
+        url: https://github.com/KhronosGroup/SPIRV-Headers.git
+        tag: sdk-1.3.261.1
+        commit: 124a9665e464ef98b8b718d572d5f329311061eb
+        x-checker-data:
+          type: git
+          tag-pattern: ^sdk-([\d.]+)$
+  - name: spirv-cross
+    buildsystem: cmake-ninja
+    cleanup:
+      - /bin
+    sources:
+      - type: archive
+        url: "https://github.com/KhronosGroup/SPIRV-Cross/archive/d47a140735cb44e511d0188a6318c365789e4699.zip"
+        sha256: 2484bb6b1afa22817f69e35746f2fe5c980539a5328cd00ea85333728eee96ae
+  - name: glslang
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DGLSLANG_TESTS=OFF
+      - -DENABLE_OPT=OFF
+    cleanup:
+      - /bin
+    sources:
+      - type: git
+        url: https://github.com/KhronosGroup/glslang
+        commit: e8dd0b6903b34f1879520b444634c75ea2deedf5
+        tag: 14.2.0
+  - name: corrosion
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCORROSION_BUILD_TESTS=OFF
+    build-options:
+      env:
+        - CARGO_HOME: /run/build/corrosion/cargo
+    cleanup:
+      - /app
+    sources:
+      - type: "git"
+        url: https://github.com/AndrewGaspar/corrosion
+        commit: v0.4.5
+  - name: novus
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DRust_COMPILER=/usr/lib/sdk/rust-stable/bin/rustc
+      - -DBUILD_FLATPAK=ON
+    build-options:
+      build-args:
+        - --share=network # needed for cargo unfortunately, flatpak has no native support (yet)
+    sources:
+      - type: dir
+        path: .
