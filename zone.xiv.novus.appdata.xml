@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  - SPDX-License-Identifier: CC0-1.0
+  - SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+ -->
+<component type="desktop-application">
+    <id>zone.xiv.novus</id>
+    <metadata_license>CC0-1.0</metadata_license>
+    <name>Novus</name>
+    <summary>Unofficial FFXIV tools</summary>
+    <description>
+        <p>A suite of unofficial FFXIV tools, including a model viewer and data archive explorer.</p>
+    </description>
+    <categories>
+        <category>Game</category>
+    </categories>
+    <keywords>
+        <keyword>modding</keyword>
+        <keyword translate="no">ffxiv</keyword>
+        <keyword translate="no">ff14</keyword>
+    </keywords>
+    <url type="homepage">https://xiv.zone/novus</url>
+    <url type="bugtracker">https://github.com/redstrate/Novus/issues</url>
+    <url type="donation">https://redstrate.com/fund</url>
+    <url type="contact">https://redstrate.com/contact</url>
+    <url type="vcs-browser">https://github.com/redstrate/Novus</url>
+    <launchable type="desktop-id">zone.xiv.novus.desktop</launchable>
+    <releases>
+        <release version="0.1.0"/>
+    </releases>
+    <provides>
+        <binary>novus-argcracker</binary>
+        <binary>novus-armoury</binary>
+        <binary>novus-gamelauncher</binary>
+        <binary>novus-karuku</binary>
+        <binary>novus-launcher</binary>
+        <binary>novus-mapeditor</binary>
+        <binary>novus-mateditor</binary>
+        <binary>novus-mdlviewer</binary>
+        <binary>novus-sagasu</binary>
+    </provides>
+    <recommends>
+        <display_length compare="ge">600</display_length>
+    </recommends>
+    <supports>
+        <control>pointing</control>
+        <control>keyboard</control>
+    </supports>
+    <project_license>GPL-3.0</project_license>
+    <developer_name>redstrate</developer_name>
+    <screenshots>
+        <screenshot type="default">
+            <image width="1033" height="667">https://xiv.zone/novus.png</image>
+        </screenshot>
+    </screenshots>
+</component>

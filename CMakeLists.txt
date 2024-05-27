@@ -62,3 +62,7 @@ file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES src/*.cpp src/*.h)
 kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
 
 kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)
+
+if (NOT WIN32)
+    install(FILES zone.xiv.novus.appdata.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
+endif()
