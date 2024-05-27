@@ -65,10 +65,13 @@ ecm_add_app_icon(novus-launcher
         ${CMAKE_SOURCE_DIR}/resources/256-launcher.png
 )
 
-# We only need to call deploy on one executable
-qt_generate_deploy_app_script(
-        TARGET novus-launcher
-        OUTPUT_SCRIPT deploy_script
-        NO_UNSUPPORTED_PLATFORM_ERROR
-)
-install(SCRIPT ${deploy_script})
+# the current tooling completely breaks in Flatpak, and is unnecessary there anyway
+if (NOT BUILD_FLATPAK)
+    # We only need to call deploy on one executable
+    qt_generate_deploy_app_script(
+            TARGET novus-launcher
+            OUTPUT_SCRIPT deploy_script
+            NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+    install(SCRIPT ${deploy_script})
+endif()
