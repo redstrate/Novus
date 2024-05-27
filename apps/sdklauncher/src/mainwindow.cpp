@@ -66,10 +66,7 @@ MainWindow::MainWindow()
 
     connect(appList, &QListWidget::itemClicked, [this](QListWidgetItem *item) {
         if (applications.contains(item->text())) {
-            const QString exec = QStringLiteral("./") + applications[item->text()].second;
-
-            qDebug() << "Launching" << exec;
-
+            const QString exec = applications[item->text()].second;
             QProcess::startDetached(exec, QStringList());
         } else if (links.contains(item->text())) {
             QDesktopServices::openUrl(QUrl::fromUserInput(links[item->text()]));
