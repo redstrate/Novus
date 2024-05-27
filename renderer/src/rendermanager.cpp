@@ -210,14 +210,20 @@ RenderManager::RenderManager(GameData *data)
     enabledFeatures.shaderCullDistance = VK_TRUE;
     enabledFeatures.fillModeNonSolid = VK_TRUE;
 
+    // TODO: Update the Flatpak Vulkan SDK to support this
+#if defined(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME)
     VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR localReadFeaturesKhr{};
     localReadFeaturesKhr.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR;
     localReadFeaturesKhr.dynamicRenderingLocalRead = VK_TRUE;
+#endif
 
     VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT unusedAttachmentsFeaturesExt{};
     unusedAttachmentsFeaturesExt.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT;
     unusedAttachmentsFeaturesExt.dynamicRenderingUnusedAttachments = VK_TRUE;
+
+#if defined(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME)
     unusedAttachmentsFeaturesExt.pNext = &localReadFeaturesKhr;
+#endif
 
     VkPhysicalDeviceVulkan11Features enabled11Features{};
     enabled11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
