@@ -222,7 +222,8 @@ RenderManager::RenderManager(GameData *data)
     unusedAttachmentsFeaturesExt.dynamicRenderingUnusedAttachments = VK_TRUE;
 
 #if defined(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME)
-    unusedAttachmentsFeaturesExt.pNext = &localReadFeaturesKhr;
+    // TODO: do we really need this?
+    // unusedAttachmentsFeaturesExt.pNext = &localReadFeaturesKhr;
 #endif
 
     VkPhysicalDeviceVulkan11Features enabled11Features{};
