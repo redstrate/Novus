@@ -15,7 +15,6 @@ class NOVUSCOMMON_EXPORT Vector3Edit : public QWidget
 
 public:
     explicit Vector3Edit(glm::vec3 &vec, QWidget *parent = nullptr);
-    ~Vector3Edit() override;
 
     void setVector(glm::vec3 &vec);
 
@@ -28,5 +27,4 @@ private:
     } spinBoxes;
 
     glm::vec3 &vec;
-    QTimer *updateTimer = nullptr;
 };

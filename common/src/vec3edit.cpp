@@ -47,11 +47,6 @@ Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
     });
 }
 
-Vector3Edit::~Vector3Edit()
-{
-    updateTimer->stop();
-}
-
 void Vector3Edit::setVector(glm::vec3 &vec)
 {
     this->vec = vec;
