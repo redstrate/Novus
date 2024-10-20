@@ -348,7 +348,7 @@ RenderMaterial MDLPart::createOrCacheMaterial(const physis_Material &mat)
 uint64_t MDLPart::getMaterialHash(const physis_Material &mat)
 {
     // TODO: this hash is terrible
-    uint64_t hash = strlen(mat.shpk_name);
+    uint64_t hash = mat.shpk_name ? strlen(mat.shpk_name) : 0;
     hash += mat.num_constants;
     hash += mat.num_samplers;
     hash += mat.num_shader_keys;
