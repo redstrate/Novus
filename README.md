@@ -23,7 +23,7 @@ There are no releases at the moment, but experimental builds are currently avail
 
 ### Supported Game Versions
 
-I have only tested Novus on 6.x (Endwalker) so far, and it has limited support for 7.x (Dawntrail) except for the new renderer. If you're using Novus against Dawntrail, make sure to set the `NOVUS_IS_DAWNTRAIL=1` environment variable.
+This works for A Realm Reborn (2.x) thru Endwalker content (6.x) while Dawntrail (7.x) support is still WIP. If you're using something Dawntrail-related doesn't load properly, try using the `NOVUS_IS_DAWNTRAIL=1` environment variable.
 
 ## Building
 
