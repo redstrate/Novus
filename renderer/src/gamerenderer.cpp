@@ -56,7 +56,14 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     , m_data(data)
     , m_shaderManager(device)
 {
-    m_dawntrailMode = qgetenv("NOVUS_IS_DAWNTRAIL") == QByteArrayLiteral("1");
+    auto repositories = physis_gamedata_get_repositories(data);
+    for (int i = 0; i < repositories.repositories_count; i++) {
+        if (strcmp(repositories.repositories[i].name, "ex5") == 0) {
+            qInfo() << "The renderer is switching to Dawntrail mode. Please file a bug if you think this was a mistake.";
+            m_dawntrailMode = true;
+        }
+    }
+    physis_gamedata_free_repositories(repositories);
 
     m_dummyTex = m_device.createDummyTexture();
     m_dummyBuffer = m_device.createDummyBuffer();

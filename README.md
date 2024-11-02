@@ -23,7 +23,7 @@ There are no releases at the moment, but experimental builds are currently avail
 
 ### Supported Game Versions
 
-This works for A Realm Reborn (2.x) thru Endwalker content (6.x) while Dawntrail (7.x) support is still WIP. If you're using something Dawntrail-related doesn't load properly, try using the `NOVUS_IS_DAWNTRAIL=1` environment variable.
+This works for A Realm Reborn (2.x) thru Endwalker content (6.x) while Dawntrail (7.x) support is still WIP.
 
 ## Building
 
