@@ -256,9 +256,9 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             newMaterial.type = MaterialType::Skin;
         }
 
-        if (material.color_table.num_rows > 0) {
+        if (material.legacy_color_table.num_rows > 0) {
             int width = 4;
-            int height = material.color_table.num_rows;
+            int height = material.legacy_color_table.num_rows;
 
             qInfo() << "Creating color table" << width << "X" << height;
 
@@ -266,7 +266,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             int offset = 0;
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
-                    const auto row = material.color_table.rows[y];
+                    const auto row = material.legacy_color_table.rows[y];
 
                     glm::vec4 color;
                     if (x == 0) {
