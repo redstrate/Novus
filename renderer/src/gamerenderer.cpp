@@ -68,11 +68,14 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     m_dummyTex = m_device.createDummyTexture();
     m_dummyBuffer = m_device.createDummyBuffer();
 
-    m_tileNormal =
-        m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_n.tex")));
-    m_device.nameTexture(m_tileNormal, "chara/common/texture/-tile_n.tex");
-    m_tileDiffuse = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_d.tex")));
-    m_device.nameTexture(m_tileDiffuse, "chara/common/texture/-tile_d.tex");
+    if (!m_dawntrailMode) {
+        m_tileNormal =
+            m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_n.tex")));
+        m_device.nameTexture(m_tileNormal, "chara/common/texture/-tile_n.tex");
+        m_tileDiffuse =
+            m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_d.tex")));
+        m_device.nameTexture(m_tileDiffuse, "chara/common/texture/-tile_d.tex");
+    }
 
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
