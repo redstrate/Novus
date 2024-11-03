@@ -35,7 +35,7 @@ struct DrawObject {
 
     physis_MDL model;
     std::vector<RenderPart> parts;
-    std::array<glm::mat4, 128> boneData;
+    std::array<glm::mat4, 768> boneData; // JOINT_MATRIX_SIZE_DAWNTRAIL
     std::vector<RenderMaterial> materials;
     glm::vec3 position;
     bool skinned = false;

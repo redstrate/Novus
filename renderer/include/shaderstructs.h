@@ -16,13 +16,8 @@ struct CameraParameter {
     glm::vec4 m_LookAtVector;
 };
 
-struct JointMatrixArrayARR {
-    glm::mat3x4 g_JointMatrixArray[64];
-};
-
-struct JointMatrixArrayDawntrail {
-    glm::mat3x4 g_JointMatrixArray[768];
-};
+const int JOINT_MATRIX_SIZE_ARR = 64;
+const int JOINT_MATRIX_SIZE_DAWNTRAIL = 768;
 
 struct CameraLight {
     glm::vec4 m_DiffuseSpecular;

@@ -531,7 +531,7 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
         DrawObject.parts.push_back(renderPart);
     }
 
-    const size_t bufferSize = sizeof(glm::mat4) * 128;
+    const size_t bufferSize = sizeof(glm::mat4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
     DrawObject.boneInfoBuffer = m_device->createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 }
 

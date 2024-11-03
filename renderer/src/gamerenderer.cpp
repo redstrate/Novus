@@ -291,12 +291,13 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
                 // copy bone data
                 {
-                    const size_t bufferSize = sizeof(glm::mat3x4) * 64;
+                    const int jointMatrixSize = m_dawntrailMode ? JOINT_MATRIX_SIZE_DAWNTRAIL : JOINT_MATRIX_SIZE_ARR;
+                    const size_t bufferSize = sizeof(glm::mat3x4) * jointMatrixSize;
                     void *mapped_data = nullptr;
                     vkMapMemory(m_device.device, model.boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
 
                     std::vector<glm::mat3x4> newBoneData(model.boneData.size());
-                    for (int i = 0; i < 64; i++) {
+                    for (int i = 0; i < jointMatrixSize; i++) {
                         newBoneData[i] = glm::transpose(model.boneData[i]);
                     }
 
