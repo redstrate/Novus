@@ -327,32 +327,25 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     if (renderMaterial.type == MaterialType::Skin && !m_dawntrailMode) {
                         systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
                     }
+
                     std::vector<uint32_t> sceneKeys;
-                    if (m_dawntrailMode) {
-                        sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
-                        sceneKeys.push_back(physis_shpk_crc("ApplyDissolveColorOff"));
-                        sceneKeys.push_back(physis_shpk_crc("GetCustumizeColorAuraOff"));
+                    for (int j = 0; j < renderMaterial.shaderPackage.num_scene_keys; j++) {
+                        auto id = renderMaterial.shaderPackage.scene_keys[j].id;
 
-                        if (model.skinned) {
-                            sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
-                        } else {
-                            sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
+                        bool found = false;
+                        if (id == physis_shpk_crc("TransformView")) {
+                            if (model.skinned) {
+                                sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
+                            } else {
+                                sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
+                            }
+                            found = true;
                         }
 
-                        sceneKeys.push_back(physis_shpk_crc("ApplyVertexMovementOff"));
-                        sceneKeys.push_back(physis_shpk_crc("CalculateInstancingPosition_Off"));
-
-                    } else {
-                        if (model.skinned) {
-                            sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
-                        } else {
-                            sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
+                        // Fall back to default if needed
+                        if (!found) {
+                            sceneKeys.push_back(renderMaterial.shaderPackage.scene_keys[j].default_value);
                         }
-
-                        sceneKeys.push_back(physis_shpk_crc("GetAmbientLight_SH"));
-                        sceneKeys.push_back(physis_shpk_crc("GetReflectColor_Texture"));
-                        sceneKeys.push_back(physis_shpk_crc("GetAmbientOcclusion_None"));
-                        sceneKeys.push_back(physis_shpk_crc("ApplyDitherClipOff"));
                     }
 
                     std::vector<uint32_t> materialKeys;
