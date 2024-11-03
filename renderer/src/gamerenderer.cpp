@@ -326,6 +326,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
                     if (renderMaterial.shaderPackage.p_ptr == nullptr) {
                         qWarning() << "Invalid shader package!";
+                        continue;
                     }
 
                     std::vector<uint32_t> systemKeys;
@@ -549,6 +550,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
                     if (renderMaterial.shaderPackage.p_ptr == nullptr) {
                         qWarning() << "Invalid shader package!";
+                        continue;
                     }
 
                     std::vector<uint32_t> systemKeys;
