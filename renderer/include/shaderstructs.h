@@ -5,8 +5,8 @@
 
 // Structure definitions from https://github.com/Shaderlayan/Ouroboros
 struct CameraParameter {
-    glm::mat3x4 m_ViewMatrix; // TODO: does it need alignment?
     glm::mat3x4 m_InverseViewMatrix;
+    glm::mat3x4 m_ViewMatrix; // TODO: does it need alignment?
     glm::mat4 m_ViewProjectionMatrix;
     glm::mat4 m_InverseViewProjectionMatrix;
     glm::mat4 m_InverseProjectionMatrix; // used for view position recalc
@@ -14,6 +14,11 @@ struct CameraParameter {
     glm::mat4 m_MainViewToProjectionMatrix;
     glm::vec4 m_EyePosition;
     glm::vec4 m_LookAtVector;
+    glm::vec4 m_unknown1[12];
+    glm::mat4 m_unknownMatrix; // used in a vertex shader in characterlegacy.shpk
+    glm::vec4 m_unknown2[11];
+    // Dawntrail: something accesses the z and w of this
+    glm::vec4 m_unknown3;
 };
 
 const int JOINT_MATRIX_SIZE_ARR = 64;
@@ -29,6 +34,8 @@ struct InstanceParameterStruct {
     glm::vec4 m_EnvParameter;
     CameraLight m_CameraLight;
     glm::vec4 m_Wetness;
+    // New in Dawntrail
+    glm::vec4 unknown[5];
 };
 
 struct InstanceParameter {

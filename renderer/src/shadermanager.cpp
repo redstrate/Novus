@@ -17,12 +17,14 @@
 
 #include "device.h"
 
+#include <ranges>
+
 ShaderManager::ShaderManager(Device &device)
     : m_device(device)
 {
 }
 
-spirv_cross::CompilerGLSL ShaderManager::getShaderModuleResources(const physis_Shader &shader)
+spirv_cross::CompilerGLSL ShaderManager::getShaderModuleTest(const physis_Shader &shader)
 {
     dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
 
@@ -32,6 +34,20 @@ spirv_cross::CompilerGLSL ShaderManager::getShaderModuleResources(const physis_S
     auto result = module.compile(info, "test");
 
     return {result.code.data(), result.code.dwords()};
+}
+
+std::string ShaderManager::getShaderModuleResources(const physis_Shader &shader, int i)
+{
+    dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
+
+    dxvk::DxbcModule module(reader);
+
+    dxvk::DxbcModuleInfo info;
+    auto result = module.compile(info, "test");
+
+    std::ranges::subrange entries(module.isgn()->begin(), module.isgn()->end());
+
+    return module.isgn()->findByRegister(i)->semanticName;
 }
 
 VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
@@ -52,25 +68,12 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
 
     auto resources = glsl.get_shader_resources();
 
+    std::ranges::subrange entries(module.isgn()->begin(), module.isgn()->end());
+
     int i = 0;
     for (auto texture : resources.stage_inputs) {
-        if (texture.name == "v0") {
-            glsl.set_name(texture.id, "Position");
-        } else if (texture.name == "v1") {
-            glsl.set_name(texture.id, "Color");
-        } else if (texture.name == "v2") {
-            glsl.set_name(texture.id, "Normal");
-        } else if (texture.name == "v3") {
-            glsl.set_name(texture.id, "TexCoord");
-        } else if (texture.name == "v4") {
-            glsl.set_name(texture.id, "Tangent");
-        } else if (texture.name == "v5") {
-            glsl.set_name(texture.id, "Bitangent");
-        } else if (texture.name == "v6") {
-            glsl.set_name(texture.id, "BoneWeight");
-        } else if (texture.name == "v7") {
-            glsl.set_name(texture.id, "BoneId");
-        }
+        unsigned binding = glsl.get_decoration(texture.id, spv::DecorationLocation);
+        glsl.set_name(texture.id, module.isgn()->findByRegister(binding)->semanticName);
         i++;
     }
 
@@ -141,14 +144,14 @@ std::vector<uint32_t> ShaderManager::compileGLSL(const std::string_view sourceSt
     shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_3);
     shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
 
-    if (!shader.parse(GetDefaultResources(), 100, false, EShMsgDefault)) {
+    if (!shader.parse(GetDefaultResources(), 100, false, EShMsgDebugInfo)) {
         return {};
     }
 
     glslang::TProgram Program;
     Program.addShader(&shader);
 
-    if (!Program.link(EShMsgDefault)) {
+    if (!Program.link(EShMsgDebugInfo)) {
         return {};
     }
 

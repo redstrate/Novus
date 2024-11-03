@@ -8,9 +8,12 @@
 struct RenderPart {
     size_t numIndices;
 
-    Buffer vertexBuffer, indexBuffer;
+    Buffer vertexBuffer; // Only used in the simple renderer
+    Buffer indexBuffer;
+    std::vector<Buffer> streamBuffer; // Only used in the game renderer
 
     int materialIndex = 0;
+    physis_Part originalPart;
 };
 
 enum class MaterialType { Object, Skin };

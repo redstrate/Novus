@@ -18,6 +18,8 @@
 #include "simplerenderer.h"
 #include "swapchain.h"
 
+#include <magic_enum/include/magic_enum.hpp>
+
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                       const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
                                       const VkAllocationCallbacks *pAllocator,
@@ -516,11 +518,23 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
 
         const physis_Part part = DrawObject.model.lods[lod].parts[i];
 
+        renderPart.originalPart = part;
         renderPart.materialIndex = part.material_index;
 
-        size_t vertexSize = part.num_vertices * sizeof(Vertex);
-        renderPart.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-        m_device->copyToBuffer(renderPart.vertexBuffer, (void *)part.vertices, vertexSize);
+        if (qgetenv("NOVUS_USE_NEW_RENDERER") == QByteArrayLiteral("1")) {
+            renderPart.streamBuffer.resize(DrawObject.model.lods[lod].num_vertex_elements);
+            for (uint32_t j = 0; j < part.num_streams; j++) {
+                size_t size = part.stream_sizes[j];
+                auto buffer = m_device->createBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+                m_device->copyToBuffer(buffer, (void *)part.streams[j], size);
+
+                renderPart.streamBuffer[j] = buffer;
+            }
+        } else {
+            size_t vertexSize = part.num_vertices * sizeof(Vertex);
+            renderPart.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            m_device->copyToBuffer(renderPart.vertexBuffer, (void *)part.vertices, vertexSize);
+        }
 
         size_t indexSize = part.num_indices * sizeof(uint16_t);
         renderPart.indexBuffer = m_device->createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);

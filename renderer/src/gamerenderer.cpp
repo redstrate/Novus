@@ -14,6 +14,8 @@
 #include "rendermanager.h"
 #include "swapchain.h"
 
+#include <magic_enum/include/magic_enum.hpp>
+
 // TODO: maybe need UV?
 // note: SQEX passes the vertice positions as UV coordinates (yes, -1 to 1.) the shaders then transform them back with the g_CommonParameter.m_RenderTarget vec4
 const std::vector<glm::vec4> planeVertices = {
@@ -262,8 +264,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
     const glm::mat4 viewProjectionMatrix = camera.perspective * camera.view;
 
+    // unknown
+    cameraParameter.m_unknownMatrix = glm::transpose(glm::inverse(camera.view));
+
     cameraParameter.m_ViewMatrix = glm::transpose(camera.view);
-    cameraParameter.m_InverseViewMatrix = glm::transpose(glm::inverse(camera.view));
+    cameraParameter.m_InverseViewMatrix = cameraParameter.m_unknownMatrix;
     cameraParameter.m_ViewProjectionMatrix = glm::transpose(viewProjectionMatrix);
     cameraParameter.m_InverseViewProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
 
@@ -394,11 +399,14 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                         physis_Shader vertexShader = renderMaterial.shaderPackage.vertex_shaders[vertexShaderIndice];
                         physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
 
-                        auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader, renderMaterial.mat.shpk_name);
+                        auto &pipeline =
+                            bindPipeline(commandBuffer, pass, vertexShader, pixelShader, renderMaterial.mat.shpk_name, &model.model, &part.originalPart);
                         bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
-                        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer.buffer, offsets);
+                        for (int j = 0; j < part.originalPart.num_streams; j++) {
+                            vkCmdBindVertexBuffers(commandBuffer, j, 1, &part.streamBuffer[j].buffer, offsets);
+                        }
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
                         vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
@@ -451,7 +459,13 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     physis_Shader vertexShader = createViewPositionShpk.vertex_shaders[vertexShaderIndice];
                     physis_Shader pixelShader = createViewPositionShpk.pixel_shaders[pixelShaderIndice];
 
-                    auto &pipeline = bindPipeline(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION", vertexShader, pixelShader, "createviewposition.shpk");
+                    auto &pipeline = bindPipeline(commandBuffer,
+                                                  "PASS_LIGHTING_OPAQUE_VIEWPOSITION",
+                                                  vertexShader,
+                                                  pixelShader,
+                                                  "createviewposition.shpk",
+                                                  nullptr,
+                                                  nullptr);
                     bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr, pass);
 
                     VkDeviceSize offsets[] = {0};
@@ -506,7 +520,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     physis_Shader vertexShader = directionalLightningShpk.vertex_shaders[vertexShaderIndice];
                     physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
 
-                    auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader, "directionallighting.shpk");
+                    auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader, "directionallighting.shpk", nullptr, nullptr);
                     bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr, pass);
 
                     VkDeviceSize offsets[] = {0};
@@ -607,11 +621,14 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                         physis_Shader vertexShader = renderMaterial.shaderPackage.vertex_shaders[vertexShaderIndice];
                         physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
 
-                        auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader, renderMaterial.mat.shpk_name);
+                        auto &pipeline =
+                            bindPipeline(commandBuffer, pass, vertexShader, pixelShader, renderMaterial.mat.shpk_name, &model.model, &part.originalPart);
                         bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
-                        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer.buffer, offsets);
+                        for (int j = 0; j < part.originalPart.num_streams; j++) {
+                            vkCmdBindVertexBuffers(commandBuffer, j, 1, &part.streamBuffer[j].buffer, offsets);
+                        }
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
                         vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
@@ -809,7 +826,9 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                                                          std::string_view passName,
                                                          physis_Shader &vertexShader,
                                                          physis_Shader &pixelShader,
-                                                         std::string_view shaderName)
+                                                         std::string_view shaderName,
+                                                         const physis_MDL *mdl,
+                                                         const physis_Part *part)
 {
     const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data());
     if (!m_cachedPipelines.contains(hash)) {
@@ -833,19 +852,24 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
 
         std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
-        VkVertexInputBindingDescription binding = {};
-
-        // TODO: temporary
-        if (passName == "PASS_G_OPAQUE" || passName == "PASS_Z_OPAQUE" || passName == "PASS_COMPOSITE_SEMITRANSPARENCY") {
-            binding.stride = sizeof(Vertex);
-        } else if (passName == "PASS_LIGHTING_OPAQUE" || passName == "PASS_LIGHTING_OPAQUE_VIEWPOSITION") {
+        std::vector<VkVertexInputBindingDescription> bindings;
+        if (passName == "PASS_LIGHTING_OPAQUE" || passName == "PASS_LIGHTING_OPAQUE_VIEWPOSITION") {
+            VkVertexInputBindingDescription binding = {};
             binding.stride = sizeof(glm::vec4);
+            bindings.push_back(binding);
+        } else {
+            for (int i = 0; i < part->num_streams; i++) {
+                VkVertexInputBindingDescription binding = {};
+                binding.stride = part->stream_strides[i];
+                binding.binding = i;
+                bindings.push_back(binding);
+            }
         }
 
-        auto vertex_glsl = m_shaderManager.getShaderModuleResources(vertexShader);
+        auto vertex_glsl = m_shaderManager.getShaderModuleTest(vertexShader);
         auto vertex_resources = vertex_glsl.get_shader_resources();
 
-        auto fragment_glsl = m_shaderManager.getShaderModuleResources(pixelShader);
+        auto fragment_glsl = m_shaderManager.getShaderModuleTest(pixelShader);
         auto fragment_resources = fragment_glsl.get_shader_resources();
 
         std::vector<RequestedSet> requestedSets;
@@ -924,62 +948,134 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         for (auto texture : vertex_resources.stage_inputs) {
             unsigned binding = vertex_glsl.get_decoration(texture.id, spv::DecorationLocation);
 
-            auto name = vertex_glsl.get_name(texture.id);
-
             VkVertexInputAttributeDescription uv0Attribute = {};
-
-            auto type = vertex_glsl.get_type(texture.type_id);
-            if (type.basetype == spirv_cross::SPIRType::Int) {
-                switch (type.vecsize) {
-                case 1:
-                    uv0Attribute.format = VK_FORMAT_R32_SINT;
-                    break;
-                case 2:
-                    uv0Attribute.format = VK_FORMAT_R32G32_SINT;
-                    break;
-                case 3:
-                    uv0Attribute.format = VK_FORMAT_R32G32B32_SINT;
-                    break;
-                case 4:
-                    uv0Attribute.format = VK_FORMAT_R8G8B8A8_UINT; // supposed to be VK_FORMAT_R32G32B32A32_SINT, but our bone_id is uint8_t currently
-                    break;
-                }
-            } else {
-                switch (type.vecsize) {
-                case 1:
-                    uv0Attribute.format = VK_FORMAT_R32_SFLOAT;
-                    break;
-                case 2:
-                    uv0Attribute.format = VK_FORMAT_R32G32_SFLOAT;
-                    break;
-                case 3:
-                    uv0Attribute.format = VK_FORMAT_R32G32B32_SFLOAT;
-                    break;
-                case 4:
-                    uv0Attribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-                    break;
-                }
-            }
-
             uv0Attribute.location = binding;
 
-            // TODO: temporary
-            if (name == "v0") {
-                uv0Attribute.offset = offsetof(Vertex, position);
-            } else if (name == "v1") {
-                uv0Attribute.offset = offsetof(Vertex, color);
-            } else if (name == "v2") {
-                uv0Attribute.offset = offsetof(Vertex, normal);
-            } else if (name == "v3") {
-                uv0Attribute.offset = offsetof(Vertex, uv0);
-            } else if (name == "v4") {
-                uv0Attribute.offset = offsetof(Vertex, bitangent); // FIXME: should be tangent
-            } else if (name == "v5") {
-                uv0Attribute.offset = offsetof(Vertex, bitangent);
-            } else if (name == "v6") {
-                uv0Attribute.offset = offsetof(Vertex, bone_weight);
-            } else if (name == "v7") {
-                uv0Attribute.offset = offsetof(Vertex, bone_id);
+            if (mdl != nullptr) {
+                std::string semanticName = m_shaderManager.getShaderModuleResources(vertexShader, binding);
+
+                for (int i = 0; i < mdl->lods[0].num_vertex_elements; i++) {
+                    auto element = mdl->lods[0].vertex_elements[i];
+
+                    auto fromVertexType = [](VertexType type) -> VkFormat {
+                        switch (type) {
+                        case VertexType::Single1:
+                            return VK_FORMAT_R32_SFLOAT;
+                        case VertexType::Single2:
+                            return VK_FORMAT_R32G32_SFLOAT;
+                        case VertexType::Single3:
+                            return VK_FORMAT_R32G32B32_SFLOAT;
+                        case VertexType::Single4:
+                            return VK_FORMAT_R32G32B32A32_SFLOAT;
+                        case VertexType::Byte4:
+                            return VK_FORMAT_R8G8B8A8_UINT;
+                        case VertexType::Short2:
+                            break;
+                        case VertexType::Short4:
+                            break;
+                        case VertexType::ByteFloat4:
+                            return VK_FORMAT_R8G8B8A8_UNORM;
+                        case VertexType::Short2n:
+                            break;
+                        case VertexType::Short4n:
+                            break;
+                        case VertexType::Half2:
+                            return VK_FORMAT_R16G16_SFLOAT;
+                        case VertexType::Half4:
+                            return VK_FORMAT_R16G16B16A16_UNORM;
+                        case VertexType::UnsignedShort2:
+                            break;
+                        case VertexType::UnsignedShort4:
+                            break;
+                        }
+
+                        qInfo() << "Unhandled type" << magic_enum::enum_name(type);
+                        return VK_FORMAT_R32G32B32A32_SFLOAT;
+                    };
+
+                    if (semanticName == "POSITION" && mdl->lods[0].vertex_elements[i].vertex_usage == VertexUsage::Position) {
+                        uv0Attribute.binding = element.stream;
+                        uv0Attribute.offset = mdl->lods[0].vertex_elements[i].offset;
+                        uv0Attribute.format = fromVertexType(element.vertex_type);
+                    } else if (semanticName == "COLOR" && mdl->lods[0].vertex_elements[i].vertex_usage == VertexUsage::Color) {
+                        uv0Attribute.binding = element.stream;
+                        uv0Attribute.offset = mdl->lods[0].vertex_elements[i].offset;
+                        uv0Attribute.format = fromVertexType(element.vertex_type);
+                    } else if (semanticName == "TEXCOORD" && mdl->lods[0].vertex_elements[i].vertex_usage == VertexUsage::UV) {
+                        uv0Attribute.binding = element.stream;
+                        uv0Attribute.offset = mdl->lods[0].vertex_elements[i].offset;
+                        uv0Attribute.format = fromVertexType(element.vertex_type);
+                    } else if (semanticName == "NORMAL" && mdl->lods[0].vertex_elements[i].vertex_usage == VertexUsage::Normal) {
+                        uv0Attribute.binding = element.stream;
+                        uv0Attribute.offset = mdl->lods[0].vertex_elements[i].offset;
+                        uv0Attribute.format = fromVertexType(element.vertex_type);
+                    } else if (semanticName == "BINORMAL"
+                               && mdl->lods[0].vertex_elements[i].vertex_usage == VertexUsage::BiTangent) { // TODO: Bitangent is here twice lol
+                        uv0Attribute.binding = element.stream;
+                        uv0Attribute.offset = mdl->lods[0].vertex_elements[i].offset;
+                        uv0Attribute.format = fromVertexType(element.vertex_type);
+                    } else if (semanticName == "BLENDWEIGHT" && mdl->lods[0].vertex_elements[i].vertex_usage == VertexUsage::BlendWeights) {
+                        uv0Attribute.binding = element.stream;
+                        uv0Attribute.offset = mdl->lods[0].vertex_elements[i].offset;
+                        uv0Attribute.format = fromVertexType(element.vertex_type);
+                    } else if (semanticName == "BLENDINDICES" && mdl->lods[0].vertex_elements[i].vertex_usage == VertexUsage::BlendIndices) {
+                        uv0Attribute.binding = element.stream;
+                        uv0Attribute.offset = mdl->lods[0].vertex_elements[i].offset;
+                        uv0Attribute.format = fromVertexType(element.vertex_type);
+                    }
+                }
+
+                if (uv0Attribute.format == VK_FORMAT_UNDEFINED) {
+                    qWarning() << "Unhandled input name:" << semanticName;
+                }
+            } else {
+                auto type = vertex_glsl.get_type(texture.type_id);
+                if (type.basetype == spirv_cross::SPIRType::Int) {
+                    switch (type.vecsize) {
+                    case 1:
+                        uv0Attribute.format = VK_FORMAT_R32_SINT;
+                        break;
+                    case 2:
+                        uv0Attribute.format = VK_FORMAT_R32G32_SINT;
+                        break;
+                    case 3:
+                        uv0Attribute.format = VK_FORMAT_R32G32B32_SINT;
+                        break;
+                    case 4:
+                        uv0Attribute.format = VK_FORMAT_R8G8B8A8_UINT; // supposed to be VK_FORMAT_R32G32B32A32_SINT, but our bone_id is uint8_t currently
+                        break;
+                    }
+                } else if (type.basetype == spirv_cross::SPIRType::Float) {
+                    switch (type.vecsize) {
+                    case 1:
+                        uv0Attribute.format = VK_FORMAT_R32_SFLOAT;
+                        break;
+                    case 2:
+                        uv0Attribute.format = VK_FORMAT_R32G32_SFLOAT;
+                        break;
+                    case 3:
+                        uv0Attribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+                        break;
+                    case 4:
+                        uv0Attribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                        break;
+                    }
+                } else if (type.basetype == spirv_cross::SPIRType::Half) {
+                    switch (type.vecsize) {
+                    case 1:
+                        uv0Attribute.format = VK_FORMAT_R16_SFLOAT;
+                        break;
+                    case 2:
+                        uv0Attribute.format = VK_FORMAT_R16G16_SFLOAT;
+                        break;
+                    case 3:
+                        uv0Attribute.format = VK_FORMAT_R16G16B16_SFLOAT;
+                        break;
+                    case 4:
+                        uv0Attribute.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+                        break;
+                    }
+                }
             }
 
             attributeDescs.push_back(uv0Attribute);
@@ -987,8 +1083,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
 
         VkPipelineVertexInputStateCreateInfo vertexInputState = {};
         vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputState.vertexBindingDescriptionCount = 1;
-        vertexInputState.pVertexBindingDescriptions = &binding;
+        vertexInputState.vertexBindingDescriptionCount = bindings.size();
+        vertexInputState.pVertexBindingDescriptions = bindings.data();
         vertexInputState.vertexAttributeDescriptionCount = attributeDescs.size();
         vertexInputState.pVertexAttributeDescriptions = attributeDescs.data();
 
@@ -1192,7 +1288,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         info->imageView = m_viewPositionBuffer.imageView;
                     } else if (strcmp(name, "g_SamplerDepth") == 0) {
                         info->imageView = m_depthBuffer.imageView;
-                    } else if (strcmp(name, "g_SamplerNormal") == 0 || strcmp(name, "g_SamplerIndex") == 0) {
+                    } else if ((strcmp(name, "g_SamplerNormal") == 0 || strcmp(name, "g_SamplerIndex") == 0) && material->normalTexture.has_value()) {
                         Q_ASSERT(material);
                         info->imageView = material->normalTexture->imageView;
                     } else if (strcmp(name, "g_SamplerLightDiffuse") == 0) {
@@ -1201,13 +1297,13 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                     } else if (strcmp(name, "g_SamplerLightSpecular") == 0) {
                         Q_ASSERT(material);
                         info->imageView = m_lightSpecularBuffer.imageView;
-                    } else if (strcmp(name, "g_SamplerDiffuse") == 0) {
+                    } else if (strcmp(name, "g_SamplerDiffuse") == 0 && material->diffuseTexture.has_value()) {
                         Q_ASSERT(material);
                         info->imageView = material->diffuseTexture->imageView;
-                    } else if (strcmp(name, "g_SamplerSpecular") == 0) {
+                    } else if (strcmp(name, "g_SamplerSpecular") == 0 && material->specularTexture.has_value()) {
                         Q_ASSERT(material);
                         info->imageView = material->specularTexture->imageView;
-                    } else if (strcmp(name, "g_SamplerMask") == 0) {
+                    } else if (strcmp(name, "g_SamplerMask") == 0 && material->multiTexture.has_value()) {
                         Q_ASSERT(material);
                         info->imageView = material->multiTexture->imageView;
                     } else if (strcmp(name, "g_SamplerTileNormal") == 0) {
@@ -1218,6 +1314,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         Q_ASSERT(material);
                         if (!material->tableTexture.has_value()) {
                             qWarning() << "Attempted to use table texture for a non-dyeable material. Something has went wrong!";
+                            info->imageView = m_dummyTex.imageView;
                         } else {
                             info->imageView = material->tableTexture->imageView;
                         }
@@ -1253,7 +1350,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
 
                     if (strcmp(name, "g_CameraParameter") == 0) {
                         useUniformBuffer(g_CameraParameter);
-                    } else if (strcmp(name, "g_JointMatrixArray") == 0) {
+                    } else if (strcmp(name, "g_JointMatrixArray") == 0 || strcmp(name, "g_JointMatrixArrayPrev") == 0) {
                         Q_ASSERT(object != nullptr);
                         useUniformBuffer(object->boneInfoBuffer);
                     } else if (strcmp(name, "g_InstanceParameter") == 0) {

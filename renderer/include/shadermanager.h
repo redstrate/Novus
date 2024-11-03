@@ -18,7 +18,8 @@ class ShaderManager
 public:
     explicit ShaderManager(Device &device);
 
-    spirv_cross::CompilerGLSL getShaderModuleResources(const physis_Shader &shader);
+    spirv_cross::CompilerGLSL getShaderModuleTest(const physis_Shader &shader);
+    std::string getShaderModuleResources(const physis_Shader &shader, int i);
     VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
 
 private:

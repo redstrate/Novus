@@ -63,7 +63,9 @@ private:
                                  std::string_view passName,
                                  physis_Shader &vertexShader,
                                  physis_Shader &pixelShader,
-                                 std::string_view shaderName);
+                                 std::string_view shaderName,
+                                 const physis_MDL *mdl,
+                                 const physis_Part *part);
 
     void createImageResources();
 
