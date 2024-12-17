@@ -17,11 +17,9 @@ cleanup:
 finish-args:
   - --share=ipc
   - --socket=fallback-x11
+  - --socket=wayland
   - --share=network
-  - --filesystem=home
-  - --socket=pulseaudio
-  - --device=all
-  - --allow=devel
+  - --device=dri
 modules:
   - name: qt6-qthttpserver
     buildsystem: cmake-ninja
