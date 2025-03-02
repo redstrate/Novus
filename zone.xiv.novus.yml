@@ -1,6 +1,6 @@
 app-id: zone.xiv.novus
 runtime: org.kde.Platform
-runtime-version: '6.6'
+runtime-version: '6.8'
 sdk: org.kde.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
@@ -30,8 +30,8 @@ modules:
       - /modules
     sources:
       - type: archive
-        url: https://download.qt.io/official_releases/qt/6.6/6.6.1/submodules/qthttpserver-everywhere-src-6.6.1.tar.xz
-        sha256: 1bfeb3f52f15002a0197a4ef4f3ada7b43a6d0681e1797a11c1460ecfa83124c
+        url: https://download.qt.io/official_releases/qt/6.8/6.8.2/submodules/qthttpserver-everywhere-src-6.8.2.tar.xz
+        sha256: 2d9517c1049a5b330831f7adc1de26d8db5357fdebe616c0a29e9ae1d8900692
   - name: glm
     buildsystem: cmake-ninja
     sources:
