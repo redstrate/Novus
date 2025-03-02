@@ -9,6 +9,7 @@
 #include <QHttpServer>
 #include <QJsonObject>
 #include <QJsonParseError>
+#include <QTcpServer>
 
 const std::array known_folders{"common",
                                "common/font",
@@ -229,7 +230,9 @@ int main(int argc, char *argv[])
             return QHttpServerResponse(QHttpServerResponder::StatusCode::Ok);
         });
 
-        server.listen(QHostAddress::Any, 3500);
+        auto tcpserver = new QTcpServer();
+        tcpserver->listen(QHostAddress::Any, 3500);
+        server.bind(tcpserver);
 
         qInfo() << "Now listening on port 3500.";
 
