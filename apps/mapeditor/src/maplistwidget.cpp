@@ -43,21 +43,28 @@ MapListWidget::MapListWidget(GameData *data, QWidget *parent)
     auto nameExd = physis_gamedata_read_excel_sheet(data, "PlaceName", nameExh, Language::English, 0);
     auto territoryExd = physis_gamedata_read_excel_sheet(data, "TerritoryType", territoryExh, Language::None, 0);
 
-    for (uint32_t i = 0; i < exd.row_count; i++) {
-        const char *id = exd.row_data[i].column_data[6].string._0;
+    for (uint32_t i = 0; i < exh->row_count; i++) {
+        auto rows = physis_exd_read_row(&exd, exh, i); // TODO: free, use all rows
 
-        const uint16_t territoryTypeKey = exd.row_data[i].column_data[15].u_int16._0;
-        if (territoryTypeKey > 0 && territoryTypeKey < territoryExd.row_count) {
-            const char *bg = territoryExd.row_data[territoryTypeKey].column_data[1].string._0;
+        const char *id = rows.row_data[0].column_data[6].string._0;
 
-            int placeRegionKey = territoryExd.row_data[territoryTypeKey].column_data[3].u_int16._0;
-            const char *placeRegion = nameExd.row_data[placeRegionKey].column_data[0].string._0;
+        const uint16_t territoryTypeKey = rows.row_data[0].column_data[15].u_int16._0;
+        if (territoryTypeKey > 0 && territoryTypeKey < territoryExh->row_count) {
+            auto territoryExdRow = physis_exd_read_row(&territoryExd, territoryExh, territoryTypeKey); // TODO: free, use all rows
 
-            int placeZoneKey = territoryExd.row_data[territoryTypeKey].column_data[4].u_int16._0;
-            const char *placeZone = nameExd.row_data[placeZoneKey].column_data[0].string._0;
+            const char *bg = territoryExdRow.row_data[0].column_data[1].string._0;
 
-            int placeNameKey = territoryExd.row_data[territoryTypeKey].column_data[5].u_int16._0;
-            const char *placeName = nameExd.row_data[placeNameKey].column_data[0].string._0;
+            int placeRegionKey = territoryExdRow.row_data[0].column_data[3].u_int16._0;
+            auto regionExdRow = physis_exd_read_row(&nameExd, nameExh, placeRegionKey); // TODO: free, use all rows
+            const char *placeRegion = regionExdRow.row_data[0].column_data[0].string._0;
+
+            int placeZoneKey = territoryExdRow.row_data[0].column_data[4].u_int16._0;
+            auto zoneExdRow = physis_exd_read_row(&nameExd, nameExh, placeRegionKey); // TODO: free, use all rows
+            const char *placeZone = zoneExdRow.row_data[0].column_data[0].string._0;
+
+            int placeNameKey = territoryExdRow.row_data[0].column_data[5].u_int16._0;
+            auto nameExdRow = physis_exd_read_row(&nameExd, nameExh, placeRegionKey); // TODO: free, use all rows
+            const char *placeName = nameExdRow.row_data[0].column_data[0].string._0;
 
             QStandardItem *item = new QStandardItem();
             item->setData(QString::fromStdString(bg));

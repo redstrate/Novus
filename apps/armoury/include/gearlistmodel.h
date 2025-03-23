@@ -42,6 +42,7 @@ private:
     void exdFinished(int index);
     void finished();
 
+    physis_EXH *exh;
     QFutureWatcher<physis_EXD> *exdFuture;
 
     std::vector<GearInfo> gears;

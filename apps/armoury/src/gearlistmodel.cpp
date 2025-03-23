@@ -29,7 +29,7 @@ GearListModel::GearListModel(GameData *data, QObject *parent)
         gears.push_back(info);
     }
 
-    auto exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(data, "exd/item.exh"));
+    exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(data, "exd/item.exh"));
 
     exdFuture = new QFutureWatcher<physis_EXD>(this);
     connect(exdFuture, &QFutureWatcher<physis_EXD>::resultReadyAt, this, &GearListModel::exdFinished);
@@ -40,7 +40,7 @@ GearListModel::GearListModel(GameData *data, QObject *parent)
         pages.push_back(i);
     }
 
-    std::function<physis_EXD(int)> loadEXD = [data, exh](const int page) -> physis_EXD {
+    std::function<physis_EXD(int)> loadEXD = [this, data](const int page) -> physis_EXD {
         return physis_gamedata_read_excel_sheet(data, "Item", exh, Language::English, page);
     };
 
@@ -174,18 +174,19 @@ void GearListModel::exdFinished(int index)
 {
     auto exd = exdFuture->resultAt(index);
 
-    for (unsigned int i = 0; i < exd.row_count; i++) {
-        const auto row = exd.row_data[i];
-        auto primaryModel = row.column_data[47].u_int64._0;
+    for (unsigned int i = 0; i < exh->row_count; i++) {
+        const auto row = physis_exd_read_row(&exd, exh, i); // TODO: use all rows, free
+
+        auto primaryModel = row.row_data[0].column_data[47].u_int64._0;
         // auto secondaryModel = row.column_data[48].u_int64._0;
 
         int16_t parts[4];
         memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
 
         GearInfo info = {};
-        info.name = row.column_data[9].string._0;
-        info.icon = row.column_data[10].u_int16._0;
-        info.slot = physis_slot_from_id(row.column_data[17].u_int8._0);
+        info.name = row.row_data[0].column_data[9].string._0;
+        info.icon = row.row_data[0].column_data[10].u_int16._0;
+        info.slot = physis_slot_from_id(row.row_data[0].column_data[17].u_int8._0);
         info.modelInfo.primaryID = parts[0];
 
         gears.push_back(info);

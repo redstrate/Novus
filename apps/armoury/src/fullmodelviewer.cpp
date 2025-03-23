@@ -43,7 +43,8 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
 
         auto buffer = physis_read_file(fileName.toStdString().c_str());
 
-        auto charDat = physis_chardat_parse(buffer);
+        // TODO: Add back
+        /*auto charDat = physis_chardat_parse(buffer);
 
         gearView->setRace(charDat.race);
         gearView->setGender(charDat.gender);
@@ -51,7 +52,7 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
         gearView->setFace(charDat.head);
         gearView->setHair(charDat.hair);
         updateBustScaling((float)charDat.bust / 100.0f);
-        updateHeightScaling((float)charDat.height / 100.0f);
+        updateHeightScaling((float)charDat.height / 100.0f);*/
     });
 
     cmp = physis_cmp_parse(physis_gamedata_extract_file(data, "chara/xls/charamake/human.cmp"));

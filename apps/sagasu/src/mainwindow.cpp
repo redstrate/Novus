@@ -109,8 +109,9 @@ void MainWindow::refreshParts(const QString &path)
     QFileInfo info(path);
     std::string filenameStd = info.fileName().toStdString();
 
-    auto crcHash = physis_calculate_hash(filenameStd.c_str());
-    m_hashLabel->setText(i18n("Hash: 0x%1", QString::number(crcHash, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
+    // FIXME: add back once hashes are f igured out
+    // auto crcHash = physis_calculate_hash(filenameStd.c_str());
+    // m_hashLabel->setText(i18n("Hash: 0x%1", QString::number(crcHash, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
 
     // FIXME: this is terrible, we should not be recalculating this. it isn't a huge deal with the file + index caching, but still
     auto datOffset = physis_gamedata_find_offset(data, pathStd.c_str());

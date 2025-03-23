@@ -88,44 +88,44 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
 
         auto exd = physis_gamedata_read_excel_sheet(data, name.toStdString().c_str(), exh, getSuitableLanguage(exh), i);
 
-        tableWidget->setRowCount(exd.row_count);
+        tableWidget->setRowCount(exh->row_count);
 
         for (unsigned int z = 0; z < exd.column_count; z++) {
-            auto columnData = exd.row_data[0].column_data[z];
+            auto columnData = exh->column_types[z];
 
             QString columnType;
-            switch (columnData.tag) {
-            case physis_ColumnData::Tag::String:
+            switch (columnData) {
+            case ColumnDataType::String:
                 columnType = i18n("String");
                 break;
-            case physis_ColumnData::Tag::Bool:
+            case ColumnDataType::Bool:
                 columnType = i18n("Bool");
                 break;
-            case physis_ColumnData::Tag::Int8:
+            case ColumnDataType::Int8:
                 columnType = i18n("Int8");
                 break;
-            case physis_ColumnData::Tag::UInt8:
+            case ColumnDataType::UInt8:
                 columnType = i18n("UInt8");
                 break;
-            case physis_ColumnData::Tag::Int16:
+            case ColumnDataType::Int16:
                 columnType = i18n("Int16");
                 break;
-            case physis_ColumnData::Tag::UInt16:
+            case ColumnDataType::UInt16:
                 columnType = i18n("UInt16");
                 break;
-            case physis_ColumnData::Tag::Int32:
+            case ColumnDataType::Int32:
                 columnType = i18n("Int32");
                 break;
-            case physis_ColumnData::Tag::UInt32:
+            case ColumnDataType::UInt32:
                 columnType = i18n("UInt32");
                 break;
-            case physis_ColumnData::Tag::Float32:
+            case ColumnDataType::Float32:
                 columnType = i18n("Float32");
                 break;
-            case physis_ColumnData::Tag::Int64:
+            case ColumnDataType::Int64:
                 columnType = i18n("Int64");
                 break;
-            case physis_ColumnData::Tag::UInt64:
+            case ColumnDataType::UInt64:
                 columnType = i18n("UInt64");
                 break;
             }
@@ -141,9 +141,11 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
             tableWidget->setHorizontalHeaderItem(z, headerItem);
         }
 
-        for (unsigned int j = 0; j < exd.row_count; j++) {
+        for (unsigned int j = 0; j < exh->row_count; j++) {
+            auto rows = physis_exd_read_row(&exd, exh, j); // TODO: free, use other rows
+
             for (unsigned int z = 0; z < exd.column_count; z++) {
-                auto columnData = exd.row_data[j].column_data[z];
+                auto columnData = rows.row_data[0].column_data[z];
 
                 auto [columnString, columnRow] = getColumnData(columnData);
 
@@ -155,9 +157,9 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
 
                         if (cachedExcelSheets.contains(linkName)) {
                             auto cachedExcel = cachedExcelSheets[linkName];
-                            if (static_cast<unsigned int>(columnRow) < cachedExcel.exd.row_count) {
-                                auto [colString, _] = getColumnData(*cachedExcel.exd.row_data[columnRow].column_data);
-                                columnString = colString;
+                            if (static_cast<unsigned int>(columnRow) < cachedExcel.exh->row_count) {
+                                // auto [colString, _] = getColumnData(*cachedExcel.exh->row_data[columnRow].column_data);
+                                // columnString = colString;
                             }
                         }
                     }
