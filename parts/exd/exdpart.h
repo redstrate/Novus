@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include <QComboBox>
 #include <QFormLayout>
+#include <QJsonArray>
 #include <QMap>
 #include <QTabWidget>
 #include <QWidget>
@@ -21,11 +23,13 @@ public:
 
 private:
     std::pair<QString, int> getColumnData(physis_ColumnData &columnData);
+    void loadTables();
 
     GameData *data = nullptr;
 
     QTabWidget *pageTabWidget = nullptr;
     QFormLayout *headerFormLayout = nullptr;
+    QComboBox *languageComboBox = nullptr;
 
     struct CachedExcel {
         physis_EXH *exh = nullptr;
@@ -33,4 +37,8 @@ private:
     };
     QMap<QString, CachedExcel> cachedExcelSheets;
     Language getSuitableLanguage(physis_EXH *pExh);
+    Language preferredLanguage = Language::English;
+    physis_EXH *exh = nullptr;
+    QString name;
+    QJsonArray definitionList;
 };

@@ -6,13 +6,14 @@
 #include <KLocalizedString>
 #include <QFile>
 #include <QGroupBox>
-#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <physis.hpp>
+
+#include "magic_enum.hpp"
 
 EXDPart::EXDPart(GameData *data, QWidget *parent)
     : QWidget(parent)
@@ -22,11 +23,14 @@ EXDPart::EXDPart(GameData *data, QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    // TODO: This information should really be somewhere else
-    /*auto headerBox = new QGroupBox(QStringLiteral("Header"));
-    layout->addWidget(headerBox);
-    headerFormLayout = new QFormLayout();
-    headerBox->setLayout(headerFormLayout);*/
+    languageComboBox = new QComboBox();
+    connect(languageComboBox, &QComboBox::activated, this, [this](const int index) {
+        auto selectedLanguage = languageComboBox->itemData(index);
+        preferredLanguage = (Language)selectedLanguage.toInt();
+
+        loadTables();
+    });
+    layout->addWidget(languageComboBox);
 
     pageTabWidget = new QTabWidget();
     pageTabWidget->setTabPosition(QTabWidget::TabPosition::South);
@@ -36,12 +40,9 @@ EXDPart::EXDPart(GameData *data, QWidget *parent)
 
 void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString &definitionPath)
 {
-    pageTabWidget->clear();
-
     QFile definitionFile(definitionPath);
     definitionFile.open(QIODevice::ReadOnly);
 
-    QJsonArray definitionList;
     if (definitionFile.isOpen()) {
         auto document = QJsonDocument::fromJson(definitionFile.readAll());
         definitionList = document.object()[QLatin1String("definitions")].toArray();
@@ -66,19 +67,24 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
         }
     }
 
-    auto exh = physis_parse_excel_sheet_header(buffer);
+    this->name = name;
+    exh = physis_parse_excel_sheet_header(buffer);
 
-    // ditto
-    /*QLayoutItem *child;
-    while ((child = headerFormLayout->takeAt(0)) != nullptr) {
-        delete child->widget();
-        delete child;
+    languageComboBox->clear();
+    for (int i = 0; i < exh->language_count; i++) {
+        const auto itemText = QString::fromUtf8(magic_enum::enum_name(exh->languages[i]));
+        // Don't add duplicates
+        if (languageComboBox->findText(itemText) == -1) {
+            languageComboBox->addItem(itemText, static_cast<int>(exh->languages[i]));
+        }
     }
 
-    headerFormLayout->addRow(QStringLiteral("Num Rows"), new QLabel(QString::number(exh->row_count)));
-    headerFormLayout->addRow(QStringLiteral("Num Columns"), new QLabel(QString::number(exh->column_count)));
-    headerFormLayout->addRow(QStringLiteral("Num Pages"), new QLabel(QString::number(exh->page_count)));
-    headerFormLayout->addRow(QStringLiteral("Num Languages"), new QLabel(QString::number(exh->language_count)));*/
+    loadTables();
+}
+
+void EXDPart::loadTables()
+{
+    pageTabWidget->clear();
 
     for (uint32_t i = 0; i < exh->page_count; i++) {
         auto tableWidget = new QTableWidget();
@@ -185,13 +191,22 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
 
 Language EXDPart::getSuitableLanguage(physis_EXH *pExh)
 {
+    // Find the preferred language first
     for (uint32_t i = 0; i < pExh->language_count; i++) {
-        if (pExh->languages[i] == Language::English) {
-            return Language::English;
+        if (pExh->languages[i] == preferredLanguage) {
+            return preferredLanguage;
         }
     }
 
-    return Language::None;
+    // Fallback to None
+    for (uint32_t i = 0; i < pExh->language_count; i++) {
+        if (pExh->languages[i] == Language::None) {
+            return Language::None;
+        }
+    }
+
+    // Then English
+    return Language::English;
 }
 
 std::pair<QString, int> EXDPart::getColumnData(physis_ColumnData &columnData)
