@@ -158,6 +158,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
                         if (cachedExcelSheets.contains(linkName)) {
                             auto cachedExcel = cachedExcelSheets[linkName];
                             if (static_cast<unsigned int>(columnRow) < cachedExcel.exh->row_count) {
+                                // TODO: add back
                                 // auto [colString, _] = getColumnData(*cachedExcel.exh->row_data[columnRow].column_data);
                                 // columnString = colString;
                             }
