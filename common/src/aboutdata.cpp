@@ -25,7 +25,7 @@ void customizeAboutData(const QString &componentName, const QString &desktopFile
                      QStringLiteral(NOVUS_VERSION_STRING),
                      applicationDescription,
                      KAboutLicense::GPL_V3,
-                     QStringLiteral("© 2022-2024 Joshua Goins"));
+                     QStringLiteral("© 2022-2025 Joshua Goins"));
     about.addAuthor(QStringLiteral("Joshua Goins"),
                     QStringLiteral("Maintainer"),
                     QStringLiteral("josh@redstrate.com"),
