@@ -40,6 +40,7 @@ MainWindow::MainWindow(GameData *data)
     dummyWidget->addWidget(listWidget);
 
     auto exdPart = new EXDPart(data);
+    exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
     dummyWidget->addWidget(exdPart);
 
     connect(listWidget, &SheetListWidget::sheetSelected, this, [this, data, exdPart](const QString &name) {

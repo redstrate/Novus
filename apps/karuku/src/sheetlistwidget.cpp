@@ -23,6 +23,7 @@ SheetListWidget::SheetListWidget(GameData *data, QWidget *parent)
     searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     auto searchEdit = new QLineEdit();
+    searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for Excel sheet names."));
     searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
@@ -44,6 +45,7 @@ SheetListWidget::SheetListWidget(GameData *data, QWidget *parent)
     originalModel->setStringList(list);
 
     listWidget = new QListView();
+    listWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of Excel sheet names. Select one to view it's contents."));
     listWidget->setModel(searchModel);
 
     connect(listWidget, &QListView::clicked, [this, searchModel](const QModelIndex &index) {
