@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include <KActionCollection>
 #include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
@@ -101,8 +102,12 @@ MainWindow::MainWindow()
 
     setCentralWidget(centralWidget);
 
-    // setupGUI(StandardWindowOption::ToolBar | StandardWindowOption::Keys | StandardWindowOption::StatusBar | StandardWindowOption::Save);
-    createGUI();
+    setupGUI(Create);
+
+    // We don't provide help (yet)
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
+    // This isn't KDE software
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 }
 
 #include "moc_mainwindow.cpp"
