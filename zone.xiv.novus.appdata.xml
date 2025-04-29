@@ -21,7 +21,6 @@
     </keywords>
     <url type="homepage">https://xiv.zone/novus</url>
     <url type="bugtracker">https://github.com/redstrate/Novus/issues</url>
-    <url type="donation">https://redstrate.com/fund</url>
     <url type="contact">https://redstrate.com/contact</url>
     <url type="vcs-browser">https://github.com/redstrate/Novus</url>
     <launchable type="desktop-id">zone.xiv.novus.desktop</launchable>
