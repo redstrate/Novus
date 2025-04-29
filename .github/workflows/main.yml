@@ -9,7 +9,7 @@ on:
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   MAKEFLAGS: '-j 2'
-  QT_VERSION: 6.8.1 # Keep in sync with CMakeLists.txt
+  QT_VERSION: 6.8.2 # Keep in sync with CMakeLists.txt
 
 jobs:
   reuse:
