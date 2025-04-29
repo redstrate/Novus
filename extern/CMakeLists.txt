@@ -15,7 +15,6 @@ corrosion_import_crate(MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/Cargo
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libphysis/logger)
 
 target_include_directories(physis INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/target/public)
-target_link_libraries(physis INTERFACE z)
 
 add_library(Physis::Physis ALIAS physis)
 add_library(Physis::Logger ALIAS physis-logger)
