@@ -9,6 +9,7 @@ on:
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   MAKEFLAGS: '-j 2'
+  QT_VERSION: 6.8.1 # Keep in sync with CMakeLists.txt
 
 jobs:
   reuse:
@@ -49,7 +50,7 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: "6.6.*"
+        version: "${{ env.QT_VERSION }}"
         cache: true
         modules: 'qthttpserver qtwebsockets'
 
