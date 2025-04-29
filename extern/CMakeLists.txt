@@ -4,7 +4,12 @@
 set(BUILD_SHARED_LIBS OFF)
 add_compile_options(-w)
 
-find_package(Corrosion REQUIRED)
+FetchContent_Declare(
+        Corrosion
+        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+        GIT_TAG v0.5.2
+)
+FetchContent_MakeAvailable(Corrosion)
 
 corrosion_import_crate(MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/Cargo.toml FEATURES logging)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libphysis/logger)
