@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: REUSE Compliance Check
-      uses: fsfe/reuse-action@v3
+      uses: fsfe/reuse-action@v5
 
   build:
     runs-on: ${{ matrix.os }}
@@ -47,14 +47,14 @@ jobs:
         submodules: true
 
     - name: Install Qt
-      uses: jurplel/install-qt-action@v3
+      uses: jurplel/install-qt-action@v4
       with:
         version: "6.6.*"
         cache: true
         modules: 'qthttpserver qtwebsockets'
 
     - name: Prepare Vulkan SDK
-      uses: humbletim/setup-vulkan-sdk@v1.2.0
+      uses: humbletim/setup-vulkan-sdk@v1.2.1
       with:
         vulkan-query-version: latest
         vulkan-components: Vulkan-Headers, Vulkan-Loader, SPIRV-Cross, SPIRV-Headers
