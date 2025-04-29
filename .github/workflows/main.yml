@@ -308,7 +308,6 @@ jobs:
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/intl-8.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/KF6IconThemes.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/iconv.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
-        Copy-Item -Path $env:Qt6_DIR/bin/Qt6PrintSupport.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
 
     - name: Remove extra files
       if: runner.os == 'Windows'
