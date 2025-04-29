@@ -59,7 +59,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
     subraceCombo = new QComboBox();
     subraceCombo->setWhatsThis(i18n("The subrace used in the gear model preview. Note that this only shows subraces that have unique models for this gear."));
     connect(subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        setSubrace(static_cast<Subrace>(subraceCombo->itemData(index).toInt()));
+        setTribe(static_cast<Tribe>(subraceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(subraceCombo);
 
@@ -226,7 +226,7 @@ SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent
         gearView->setRace(currentRace);
     });
     connect(this, &SingleGearView::subraceChanged, this, [this] {
-        gearView->setSubrace(currentSubrace);
+        gearView->setTribe(currentTribe);
     });
     connect(this, &SingleGearView::genderChanged, this, [this] {
         gearView->setGender(currentGender);
@@ -272,13 +272,13 @@ void SingleGearView::setRace(Race race)
     Q_EMIT raceChanged();
 }
 
-void SingleGearView::setSubrace(Subrace subrace)
+void SingleGearView::setTribe(Tribe subrace)
 {
-    if (currentSubrace == subrace) {
+    if (currentTribe == subrace) {
         return;
     }
 
-    currentSubrace = subrace;
+    currentTribe = subrace;
     Q_EMIT subraceChanged();
 }
 
@@ -321,7 +321,7 @@ void SingleGearView::reloadGear()
         QSignalBlocker lodBlocker(lodCombo);
 
         const auto oldRace = static_cast<Race>(raceCombo->itemData(raceCombo->currentIndex()).toInt());
-        const auto oldSubrace = static_cast<Subrace>(subraceCombo->itemData(subraceCombo->currentIndex()).toInt());
+        const auto oldTribe = static_cast<Tribe>(subraceCombo->itemData(subraceCombo->currentIndex()).toInt());
         const auto oldGender = static_cast<Gender>(genderCombo->itemData(genderCombo->currentIndex()).toInt());
         const auto oldLod = lodCombo->itemData(lodCombo->currentIndex()).toInt();
 
@@ -358,8 +358,8 @@ void SingleGearView::reloadGear()
 
         if (auto it = std::find_if(supportedRaces.begin(),
                                    supportedRaces.end(),
-                                   [oldSubrace](auto p) {
-                                       return std::get<1>(p) == oldSubrace;
+                                   [oldTribe](auto p) {
+                                       return std::get<1>(p) == oldTribe;
                                    });
             it != supportedRaces.end()) {
             subraceCombo->setCurrentIndex(std::distance(supportedRaces.begin(), it));

@@ -14,17 +14,17 @@
 // TODO: move this to physis
 struct RaceTree {
     Race baseRace;
-    std::vector<Subrace> subRaces;
+    std::vector<Tribe> subRaces;
 };
 
-const std::vector<RaceTree> raceTree = {{Race::Hyur, {Subrace::Midlander, Subrace::Highlander}},
-                                        {Race::Elezen, {Subrace::Wildwood, Subrace::Duskwight}},
-                                        {Race::Miqote, {Subrace::Seeker, Subrace::Keeper}},
-                                        {Race::Roegadyn, {Subrace::SeaWolf, Subrace::Hellion}},
-                                        {Race::Lalafell, {Subrace::Plainsfolk, Subrace::Dunesfolk}},
-                                        {Race::AuRa, {Subrace::Raen, Subrace::Xaela}},
-                                        {Race::Hrothgar, {Subrace::Hellion, Subrace::Lost}},
-                                        {Race::Viera, {Subrace::Rava, Subrace::Veena}}};
+const std::vector<RaceTree> raceTree = {{Race::Hyur, {Tribe::Midlander, Tribe::Highlander}},
+                                        {Race::Elezen, {Tribe::Wildwood, Tribe::Duskwight}},
+                                        {Race::Miqote, {Tribe::Seeker, Tribe::Keeper}},
+                                        {Race::Roegadyn, {Tribe::SeaWolf, Tribe::Hellion}},
+                                        {Race::Lalafell, {Tribe::Plainsfolk, Tribe::Dunesfolk}},
+                                        {Race::AuRa, {Tribe::Raen, Tribe::Xaela}},
+                                        {Race::Hrothgar, {Tribe::Hellion, Tribe::Lost}},
+                                        {Race::Viera, {Tribe::Rava, Tribe::Veena}}};
 
 CmpPart::CmpPart(GameData *data, QWidget *parent)
     : QWidget(parent)
@@ -112,10 +112,10 @@ void CmpPart::load(physis_Buffer file)
     bustMaxZ = new QDoubleSpinBox();
     detailBoxLayout->addRow(i18n("Bust Max Z"), bustMaxZ);
 
-    loadRaceData(Race::Hyur, Subrace::Midlander);
+    loadRaceData(Race::Hyur, Tribe::Midlander);
 }
 
-void CmpPart::loadRaceData(Race race, Subrace subrace)
+void CmpPart::loadRaceData(Race race, Tribe subrace)
 {
     auto raceData = physis_cmp_get_racial_scaling_parameters(cmp, race, subrace);
 

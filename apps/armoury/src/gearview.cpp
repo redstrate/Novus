@@ -60,12 +60,12 @@ GearView::GearView(GameData *data, FileCache &cache, QWidget *parent)
     };
 }
 
-std::vector<std::pair<Race, Subrace>> GearView::supportedRaces() const
+std::vector<std::pair<Race, Tribe>> GearView::supportedRaces() const
 {
-    std::vector<std::pair<Race, Subrace>> races;
+    std::vector<std::pair<Race, Tribe>> races;
     for (const auto &gear : loadedGears) {
         for (const auto &[race, race_name] : magic_enum::enum_entries<Race>()) {
-            for (const auto subrace : physis_get_supported_subraces(race).subraces) {
+            for (const auto subrace : physis_get_supported_tribes(race).subraces) {
                 auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, race, subrace, currentGender, gear.info.slot);
 
                 if (cache.fileExists(QLatin1String(equip_path)))
@@ -82,7 +82,7 @@ std::vector<Gender> GearView::supportedGenders() const
     std::vector<Gender> genders;
     for (const auto &gear : loadedGears) {
         for (auto [gender, gender_name] : magic_enum::enum_entries<Gender>()) {
-            auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, currentRace, Subrace::Midlander, currentGender, gear.info.slot);
+            auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, currentRace, Tribe::Midlander, currentGender, gear.info.slot);
 
             if (cache.fileExists(QLatin1String(equip_path)))
                 genders.push_back(gender);
@@ -137,9 +137,9 @@ void GearView::setRace(Race race)
 
     currentRace = race;
 
-    const auto supportedSubraces = physis_get_supported_subraces(race);
-    if (supportedSubraces.subraces[0] != currentSubrace && supportedSubraces.subraces[1] != currentSubrace) {
-        setSubrace(supportedSubraces.subraces[0]);
+    const auto supportedTribes = physis_get_supported_tribes(race);
+    if (supportedTribes.subraces[0] != currentTribe && supportedTribes.subraces[1] != currentTribe) {
+        setTribe(supportedTribes.subraces[0]);
     }
 
     if (race == Race::AuRa || race == Race::Miqote) {
@@ -153,13 +153,13 @@ void GearView::setRace(Race race)
     Q_EMIT raceChanged();
 }
 
-void GearView::setSubrace(Subrace subrace)
+void GearView::setTribe(Tribe subrace)
 {
-    if (currentSubrace == subrace) {
+    if (currentTribe == subrace) {
         return;
     }
 
-    currentSubrace = subrace;
+    currentTribe = subrace;
 
     // Hyur is the only race that has two different subraces
     if (currentRace == Race::Hyur) {
@@ -262,9 +262,9 @@ void GearView::setTail(const int tailCode)
 
 void GearView::reloadRaceDeforms()
 {
-    qDebug() << "Loading race deform matrices for " << magic_enum::enum_name(currentRace).data() << magic_enum::enum_name(currentSubrace).data()
+    qDebug() << "Loading race deform matrices for " << magic_enum::enum_name(currentRace).data() << magic_enum::enum_name(currentTribe).data()
              << magic_enum::enum_name(currentGender).data();
-    const int raceCode = physis_get_race_code(currentRace, currentSubrace, currentGender);
+    const int raceCode = physis_get_race_code(currentRace, currentTribe, currentGender);
 
     QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
     std::string skelNameStd = skelName.toStdString();
@@ -294,27 +294,27 @@ void GearView::updatePart()
     if (gearDirty) {
         for (auto &gearAddition : queuedGearAdditions) {
             auto mdlPath = QLatin1String(
-                physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, currentRace, currentSubrace, currentGender, gearAddition.info.slot));
+                physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, currentRace, currentTribe, currentGender, gearAddition.info.slot));
 
             auto mdl_data = cache.lookupFile(mdlPath);
 
             // attempt to load the next best race
             // currently hardcoded to hyur midlander
             Race fallbackRace = currentRace;
-            Subrace fallbackSubrace = currentSubrace;
+            Tribe fallbackTribe = currentTribe;
             if (mdl_data.size == 0) {
                 mdlPath = QLatin1String(
-                    physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, Race::Hyur, Subrace::Midlander, currentGender, gearAddition.info.slot));
+                    physis_build_equipment_path(gearAddition.info.modelInfo.primaryID, Race::Hyur, Tribe::Midlander, currentGender, gearAddition.info.slot));
                 mdl_data = cache.lookupFile(mdlPath);
                 fallbackRace = Race::Hyur;
-                fallbackSubrace = Subrace::Midlander;
+                fallbackTribe = Tribe::Midlander;
             }
 
             if (fallbackRace != currentRace) {
                 qDebug() << "Fell back to hyur race for" << mdlPath;
             }
 
-            if (fallbackSubrace != currentSubrace) {
+            if (fallbackTribe != currentTribe) {
                 qDebug() << "Fell back to midlander subrace for" << mdlPath;
             }
 
@@ -327,7 +327,7 @@ void GearView::updatePart()
 
                         const std::string mtrl_path = gearAddition.info.getMtrlPath(material_name);
                         const std::string skinmtrl_path =
-                            physis_build_skin_material_path(physis_get_race_code(fallbackRace, fallbackSubrace, currentGender), 1, material_name);
+                            physis_build_skin_material_path(physis_get_race_code(fallbackRace, fallbackTribe, currentGender), 1, material_name);
 
                         if (cache.fileExists(QLatin1String(mtrl_path.c_str()))) {
                             auto mat = physis_material_parse(cache.lookupFile(QLatin1String(mtrl_path.c_str())));
@@ -342,14 +342,14 @@ void GearView::updatePart()
 
                     maxLod = std::max(mdl.num_lod, maxLod);
 
-                    gearAddition.bodyId = physis_get_race_code(fallbackRace, fallbackSubrace, currentGender);
+                    gearAddition.bodyId = physis_get_race_code(fallbackRace, fallbackTribe, currentGender);
                     mdlPart->addModel(mdl,
                                       true,
                                       glm::vec3(),
                                       sanitizeMdlPath(mdlPath),
                                       materials,
                                       currentLod,
-                                      physis_get_race_code(currentRace, currentSubrace, currentGender),
+                                      physis_get_race_code(currentRace, currentTribe, currentGender),
                                       gearAddition.bodyId);
                     gearAddition.mdl = mdl;
                     gearAddition.path = mdlPath;
@@ -379,7 +379,7 @@ void GearView::updatePart()
     }
 
     const auto loadBodyPart = [this, &sanitizeMdlPath](int index, CharacterCategory category, auto build_material_path_func) {
-        const auto mdlPath = QLatin1String(physis_build_character_path(category, index, currentRace, currentSubrace, currentGender));
+        const auto mdlPath = QLatin1String(physis_build_character_path(category, index, currentRace, currentTribe, currentGender));
         auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
@@ -389,7 +389,7 @@ void GearView::updatePart()
                 for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                     const char *material_name = mdl.material_names[i];
                     const std::string skinmtrl_path =
-                        build_material_path_func(physis_get_race_code(currentRace, currentSubrace, currentGender), index, material_name);
+                        build_material_path_func(physis_get_race_code(currentRace, currentTribe, currentGender), index, material_name);
 
                     if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                         auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));

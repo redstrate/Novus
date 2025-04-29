@@ -148,7 +148,7 @@ void EXDPart::loadTables()
         }
 
         for (unsigned int j = 0; j < exh->row_count; j++) {
-            auto rows = physis_exd_read_row(&exd, exh, j); // TODO: free, use other rows
+            auto rows = physis_exd_read_row(&exd, j); // TODO: free, use other rows
 
             for (unsigned int z = 0; z < exd.column_count; z++) {
                 auto columnData = rows.row_data[0].column_data[z];

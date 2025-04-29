@@ -39,7 +39,7 @@ private:
     void updateHeightScaling(float scale);
     void updateBustScaling(float scale);
     void updateCharacterParameters();
-    void updateSupportedSubraces();
+    void updateSupportedTribes();
     void updateRaceData();
 
     QGroupBox *addFaceGroup();

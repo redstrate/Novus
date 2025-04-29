@@ -38,7 +38,7 @@ public Q_SLOTS:
     void setGear(const GearInfo &info);
 
     void setRace(Race race);
-    void setSubrace(Subrace subrace);
+    void setTribe(Tribe subrace);
     void setGender(Gender gender);
     void setLevelOfDetail(int lod);
 
@@ -53,7 +53,7 @@ private:
     std::optional<GearInfo> currentGear;
 
     Race currentRace = Race::Hyur;
-    Subrace currentSubrace = Subrace::Midlander;
+    Tribe currentTribe = Tribe::Midlander;
     Gender currentGender = Gender::Male;
     int currentLod = 0;
 

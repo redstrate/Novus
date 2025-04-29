@@ -33,7 +33,7 @@ void MaterialView::addSphere(physis_Material material)
 {
     mdlPart->clear();
 
-    const int raceCode = physis_get_race_code(Race::Hyur, Subrace::Midlander, Gender::Male);
+    const int raceCode = physis_get_race_code(Race::Hyur, Tribe::Midlander, Gender::Male);
 
     QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
     std::string skelNameStd = skelName.toStdString();

@@ -48,7 +48,7 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
 
         gearView->setRace(charDat.race);
         gearView->setGender(charDat.gender);
-        // gearView->setSubrace(charDat.subrace);
+        // gearView->setTribe(charDat.subrace);
         gearView->setFace(charDat.head);
         gearView->setHair(charDat.hair);
         updateBustScaling((float)charDat.bust / 100.0f);
@@ -128,16 +128,16 @@ FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *pare
 
     subraceCombo = new QComboBox();
     connect(subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        gearView->setSubrace((Subrace)subraceCombo->itemData(index).toInt());
+        gearView->setTribe((Tribe)subraceCombo->itemData(index).toInt());
     });
     controlLayout->addWidget(subraceCombo);
 
     connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
         gearView->setRace((Race)raceCombo->itemData(index).toInt());
 
-        updateSupportedSubraces();
+        updateSupportedTribes();
     });
-    updateSupportedSubraces();
+    updateSupportedTribes();
 
     genderCombo = new QComboBox();
     connect(genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
@@ -259,7 +259,7 @@ void FullModelViewer::updateHeightScaling(float scale)
     for (uint32_t i = 0; i < boneData.num_bones; i++) {
         const std::string_view name{boneData.bones[i].name};
         if (name == "n_root") {
-            auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentSubrace);
+            auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentTribe);
 
             const float minSize = gearView->currentGender == Gender::Male ? racialScaling.male_min_size : racialScaling.female_min_size;
             const float maxSize = gearView->currentGender == Gender::Male ? racialScaling.male_max_size : racialScaling.female_max_size;
@@ -283,7 +283,7 @@ void FullModelViewer::updateBustScaling(float scale)
     for (uint32_t i = 0; i < boneData.num_bones; i++) {
         const std::string_view name{boneData.bones[i].name};
         if (name == "j_mune_l" || name == "j_mune_r") {
-            auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentSubrace);
+            auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentTribe);
 
             const float rangeX = glm::mix(racialScaling.bust_min_x, racialScaling.bust_max_x, scale);
             const float rangeY = glm::mix(racialScaling.bust_min_y, racialScaling.bust_max_y, scale);
@@ -306,10 +306,10 @@ void FullModelViewer::updateCharacterParameters()
     updateBustScaling(bustScale);
 }
 
-void FullModelViewer::updateSupportedSubraces()
+void FullModelViewer::updateSupportedTribes()
 {
     subraceCombo->clear();
-    for (auto subrace : physis_get_supported_subraces(gearView->currentRace).subraces) {
+    for (auto subrace : physis_get_supported_tribes(gearView->currentRace).subraces) {
         subraceCombo->addItem(QLatin1String(magic_enum::enum_name(subrace).data()), (int)subrace);
     }
 }
@@ -317,8 +317,8 @@ void FullModelViewer::updateSupportedSubraces()
 void FullModelViewer::updateRaceData()
 {
     m_boneEditor->load_pbd(gearView->part().pbd,
-                           physis_get_race_code(Race::Hyur, Subrace::Midlander, gearView->currentGender),
-                           physis_get_race_code(gearView->currentRace, gearView->currentSubrace, gearView->currentGender));
+                           physis_get_race_code(Race::Hyur, Tribe::Midlander, gearView->currentGender),
+                           physis_get_race_code(gearView->currentRace, gearView->currentTribe, gearView->currentGender));
 }
 
 QGroupBox *FullModelViewer::addFaceGroup()

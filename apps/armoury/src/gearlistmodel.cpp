@@ -175,7 +175,7 @@ void GearListModel::exdFinished(int index)
     auto exd = exdFuture->resultAt(index);
 
     for (unsigned int i = 0; i < exh->row_count; i++) {
-        const auto row = physis_exd_read_row(&exd, exh, i); // TODO: use all rows, free
+        const auto row = physis_exd_read_row(&exd, i); // TODO: use all rows, free
 
         auto primaryModel = row.row_data[0].column_data[47].u_int64._0;
         // auto secondaryModel = row.column_data[48].u_int64._0;

@@ -41,7 +41,7 @@ public:
     explicit GearView(GameData *data, FileCache &cache, QWidget *parent = nullptr);
 
     /// Returns an inclusive list of races supported by the current gearset.
-    std::vector<std::pair<Race, Subrace>> supportedRaces() const;
+    std::vector<std::pair<Race, Tribe>> supportedRaces() const;
 
     /// Returns an inclusive list of genders supported by the current gearset.
     std::vector<Gender> supportedGenders() const;
@@ -54,7 +54,7 @@ public:
     MDLPart &part() const;
 
     Race currentRace = Race::Hyur;
-    Subrace currentSubrace = Subrace::Midlander;
+    Tribe currentTribe = Tribe::Midlander;
     Gender currentGender = Gender::Male;
 
     QString getLoadedGearPath() const;
@@ -79,7 +79,7 @@ public Q_SLOTS:
     void removeGear(GearInfo &gear);
 
     void setRace(Race race);
-    void setSubrace(Subrace subrace);
+    void setTribe(Tribe subrace);
     void setGender(Gender gender);
     void setLevelOfDetail(int lod);
 

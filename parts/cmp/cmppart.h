@@ -13,14 +13,14 @@ class RaceTreeData : public QObject
     Q_OBJECT
 
 public:
-    RaceTreeData(Race race, Subrace subrace)
+    RaceTreeData(Race race, Tribe subrace)
         : race(race)
         , subrace(subrace)
     {
     }
 
     Race race;
-    Subrace subrace;
+    Tribe subrace;
 };
 
 class CmpPart : public QWidget
@@ -33,7 +33,7 @@ public:
     void load(physis_Buffer file);
 
 private:
-    void loadRaceData(Race race, Subrace subrace);
+    void loadRaceData(Race race, Tribe subrace);
 
     GameData *data = nullptr;
     physis_CMP cmp{};
