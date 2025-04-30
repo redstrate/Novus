@@ -15,7 +15,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("cmp"), FileType::CharaMakeParams},
                                                      {QStringLiteral("sklb"), FileType::Skeleton},
                                                      {QStringLiteral("dic"), FileType::Dictionary},
-                                                     {QStringLiteral("mtrl"), FileType::Material}};
+                                                     {QStringLiteral("mtrl"), FileType::Material},
+                                                     {QStringLiteral("luab"), FileType::LuaBytecode}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -27,7 +28,8 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::CharaMakeParams, i18n("Chara Make Params")},
                                                 {FileType::Skeleton, i18n("Skeleton")},
                                                 {FileType::Dictionary, i18n("Dictionary")},
-                                                {FileType::Material, i18n("Material")}};
+                                                {FileType::Material, i18n("Material")},
+                                                {FileType::LuaBytecode, i18n("Lua Bytecode")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -39,7 +41,8 @@ const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiter
                                                 {FileType::CharaMakeParams, QStringLiteral("step_object_SoftBody-symbolic")},
                                                 {FileType::Skeleton, QStringLiteral("user-symbolic")},
                                                 {FileType::Dictionary, QStringLiteral("accessories-dictionary-symbolic")},
-                                                {FileType::Material, QStringLiteral("map-globe-symbolic")}};
+                                                {FileType::Material, QStringLiteral("map-globe-symbolic")},
+                                                {FileType::LuaBytecode, QStringLiteral("text-x-lua")}};
 
 FileType FileTypes::getFileType(const QString &extension)
 {

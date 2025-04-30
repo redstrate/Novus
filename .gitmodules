@@ -4,3 +4,6 @@
 [submodule "extern/dxbc"]
 	path = extern/dxbc
 	url = ../dxbc
+[submodule "extern/luadec51"]
+	path = extern/luadec51
+	url = ../luadec51

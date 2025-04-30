@@ -25,6 +25,7 @@
 #include "filepropertieswindow.h"
 #include "filetypes.h"
 #include "hexpart.h"
+#include "luabpart.h"
 #include "mdlpart.h"
 #include "mtrlpart.h"
 #include "shpkpart.h"
@@ -172,6 +173,11 @@ void MainWindow::refreshParts(const QString &path)
         auto mtrlWidget = new MtrlPart(data);
         mtrlWidget->load(physis_material_parse(file));
         partHolder->addTab(mtrlWidget, i18nc("@title:tab", "Material"));
+    } break;
+    case FileType::LuaBytecode: {
+        auto luabWidget = new LuabPart();
+        luabWidget->load(file);
+        partHolder->addTab(luabWidget, i18nc("@title:tab", "Lua"));
     } break;
     default:
         break;
