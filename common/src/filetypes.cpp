@@ -11,6 +11,7 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("exd"), FileType::ExcelData},
                                                      {QStringLiteral("mdl"), FileType::Model},
                                                      {QStringLiteral("tex"), FileType::Texture},
+                                                     {QStringLiteral("atex"), FileType::Texture},
                                                      {QStringLiteral("shpk"), FileType::ShaderPackage},
                                                      {QStringLiteral("cmp"), FileType::CharaMakeParams},
                                                      {QStringLiteral("sklb"), FileType::Skeleton},
