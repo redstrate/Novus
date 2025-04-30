@@ -21,19 +21,24 @@ HashDatabase::HashDatabase(QObject *parent)
     QSqlQuery query;
     query.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS folder_hashes (hash INTEGER PRIMARY KEY, name TEXT NOT NULL)"));
     query.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS file_hashes (hash INTEGER PRIMARY KEY, name TEXT NOT NULL)"));
+
+    cacheDatabase();
 }
 
 void HashDatabase::addFolder(const QString &folder)
 {
-    std::string folderStd = folder.toStdString();
+    const std::string folderStd = folder.toStdString();
+    const auto hash = physis_generate_partial_hash(folderStd.c_str());
 
     QSqlQuery query;
     query.prepare(
         QStringLiteral("REPLACE INTO folder_hashes (hash, name) "
                        "VALUES (?, ?)"));
-    query.addBindValue(physis_generate_partial_hash(folderStd.c_str()));
+    query.addBindValue(hash);
     query.addBindValue(folder);
     query.exec();
+
+    m_folderHashes[hash] = folder;
 }
 
 void HashDatabase::addFile(const QString &file)
@@ -46,15 +51,18 @@ void HashDatabase::addFile(const QString &file)
 
     qInfo() << "Adding" << filename;
 
-    std::string folderStd = filename.toStdString();
+    const std::string folderStd = filename.toStdString();
+    const auto hash = physis_generate_partial_hash(folderStd.c_str());
 
     QSqlQuery query;
     query.prepare(
         QStringLiteral("REPLACE INTO file_hashes (hash, name) "
                        "VALUES (?, ?)"));
-    query.addBindValue(physis_generate_partial_hash(folderStd.c_str()));
+    query.addBindValue(hash);
     query.addBindValue(filename);
     query.exec();
+
+    m_fileHashes[hash] = filename;
 }
 
 QVector<QString> HashDatabase::getKnownFolders()
@@ -73,34 +81,18 @@ QVector<QString> HashDatabase::getKnownFolders()
 
 bool HashDatabase::knowsFile(const uint32_t i)
 {
-    QSqlQuery query;
-    query.prepare(QStringLiteral("SELECT COUNT(1) FROM file_hashes WHERE hash = ?;"));
-    query.addBindValue(i);
-    query.exec();
-
-    query.next();
-
-    return query.value(0) == 1;
+    return m_fileHashes.contains(i);
 }
 
 QString HashDatabase::getFilename(const uint32_t i)
 {
-    QSqlQuery query;
-    query.prepare(QStringLiteral("SELECT name FROM file_hashes WHERE hash = ?;"));
-    query.addBindValue(i);
-    query.exec();
-
-    query.next();
-
-    return query.value(0).toString();
+    return m_fileHashes[i];
 }
 
 void HashDatabase::importFileList(const QByteArray &file)
 {
     QVariantList folderNames, folderHashes;
     QVariantList fileNames, fileHashes;
-
-    m_db.transaction();
 
     QSqlQuery folderQuery;
     folderQuery.prepare(
@@ -111,6 +103,14 @@ void HashDatabase::importFileList(const QByteArray &file)
     fileQuery.prepare(
         QStringLiteral("REPLACE INTO file_hashes (hash, name) "
                        "VALUES (?, ?)"));
+
+    struct PreparedRow {
+        uint folderHash;
+        QString folderName;
+        uint fileHash;
+        QString fileName;
+    };
+    std::vector<PreparedRow> preparedRows;
 
     QTextStream stream(file);
     stream.readLine(); // skip header
@@ -131,19 +131,63 @@ void HashDatabase::importFileList(const QByteArray &file)
             filename = path;
         }
 
+        preparedRows.push_back(PreparedRow{
+            .folderHash = folderHash.toUInt(),
+            .folderName = foldername,
+            .fileHash = fileHash.toUInt(),
+            .fileName = filename,
+        });
+    }
+
+    qInfo() << "Finished preparing the rows! Now inserting into the database...";
+
+    m_db.transaction();
+    for (const auto &row : preparedRows) {
         // execBatch is too slow as the QSQLITE doesn't support batch operations
-        if (!foldername.isEmpty()) {
-            folderQuery.bindValue(0, folderHash.toUInt());
-            folderQuery.bindValue(1, foldername);
+        if (!row.folderName.isEmpty()) {
+            folderQuery.bindValue(0, row.folderHash);
+            folderQuery.bindValue(1, row.folderName);
             folderQuery.exec();
         }
 
-        fileQuery.bindValue(0, fileHash.toUInt());
-        fileQuery.bindValue(1, filename);
+        fileQuery.bindValue(0, row.fileHash);
+        fileQuery.bindValue(1, row.fileName);
         fileQuery.exec();
     }
-
     m_db.commit();
+
+    qInfo() << "Finished database import!";
+
+    // reload cache
+    cacheDatabase();
+}
+
+void HashDatabase::cacheDatabase()
+{
+    m_fileHashes.clear();
+    m_folderHashes.clear();
+
+    // file hashes
+    {
+        QSqlQuery query;
+        query.prepare(QStringLiteral("SELECT hash, name FROM file_hashes;"));
+        query.exec();
+
+        while (query.next()) {
+            m_fileHashes[query.value(0).toUInt()] = query.value(1).toString();
+        }
+    }
+
+    // folder hashes
+    {
+        QSqlQuery query;
+        query.prepare(QStringLiteral("SELECT hash, name FROM folder_hashes;"));
+        query.exec();
+
+        while (query.next()) {
+            m_folderHashes[query.value(0).toUInt()] = query.value(1).toString();
+        }
+    }
 }
 
 #include "moc_hashdatabase.cpp"

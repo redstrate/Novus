@@ -25,5 +25,11 @@ public:
     QString getFilename(uint32_t i);
 
 private:
+    void cacheDatabase();
+
     QSqlDatabase m_db;
+
+    // Database transactions are super slow, so we keep a copy in memory
+    QHash<uint32_t, QString> m_fileHashes;
+    QHash<uint32_t, QString> m_folderHashes;
 };
