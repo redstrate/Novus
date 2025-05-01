@@ -97,7 +97,7 @@ void MainWindow::setupActions()
 
             part->clear();
 
-            setWindowTitle(fileName);
+            setWindowFilePath(fileName);
 
             part->addModel(mdl, false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
 
