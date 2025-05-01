@@ -51,30 +51,31 @@ MapListWidget::MapListWidget(GameData *data, QWidget *parent)
         const uint16_t territoryTypeKey = rows.row_data[0].column_data[15].u_int16._0;
         if (territoryTypeKey > 0 && territoryTypeKey < territoryExh->row_count) {
             auto territoryExdRow = physis_exd_read_row(&territoryExd, territoryTypeKey); // TODO: free, use all rows
+            if (territoryExdRow.row_count != 0) {
+                const char *bg = territoryExdRow.row_data[0].column_data[1].string._0;
 
-            const char *bg = territoryExdRow.row_data[0].column_data[1].string._0;
+                int placeRegionKey = territoryExdRow.row_data[0].column_data[3].u_int16._0;
+                auto regionExdRow = physis_exd_read_row(&nameExd, placeRegionKey); // TODO: free, use all rows
+                const char *placeRegion = regionExdRow.row_data[0].column_data[0].string._0;
 
-            int placeRegionKey = territoryExdRow.row_data[0].column_data[3].u_int16._0;
-            auto regionExdRow = physis_exd_read_row(&nameExd, placeRegionKey); // TODO: free, use all rows
-            const char *placeRegion = regionExdRow.row_data[0].column_data[0].string._0;
+                int placeZoneKey = territoryExdRow.row_data[0].column_data[4].u_int16._0;
+                auto zoneExdRow = physis_exd_read_row(&nameExd, placeRegionKey); // TODO: free, use all rows
+                const char *placeZone = zoneExdRow.row_data[0].column_data[0].string._0;
 
-            int placeZoneKey = territoryExdRow.row_data[0].column_data[4].u_int16._0;
-            auto zoneExdRow = physis_exd_read_row(&nameExd, placeRegionKey); // TODO: free, use all rows
-            const char *placeZone = zoneExdRow.row_data[0].column_data[0].string._0;
+                int placeNameKey = territoryExdRow.row_data[0].column_data[5].u_int16._0;
+                auto nameExdRow = physis_exd_read_row(&nameExd, placeRegionKey); // TODO: free, use all rows
+                const char *placeName = nameExdRow.row_data[0].column_data[0].string._0;
 
-            int placeNameKey = territoryExdRow.row_data[0].column_data[5].u_int16._0;
-            auto nameExdRow = physis_exd_read_row(&nameExd, placeRegionKey); // TODO: free, use all rows
-            const char *placeName = nameExdRow.row_data[0].column_data[0].string._0;
+                QStandardItem *item = new QStandardItem();
+                item->setData(QString::fromStdString(bg));
+                item->setText(QStringLiteral("%1 (%2, %3, %4)")
+                                  .arg(QString::fromStdString(id),
+                                       QString::fromStdString(placeRegion),
+                                       QString::fromStdString(placeZone),
+                                       QString::fromStdString(placeName)));
 
-            QStandardItem *item = new QStandardItem();
-            item->setData(QString::fromStdString(bg));
-            item->setText(QStringLiteral("%1 (%2, %3, %4)")
-                              .arg(QString::fromStdString(id),
-                                   QString::fromStdString(placeRegion),
-                                   QString::fromStdString(placeZone),
-                                   QString::fromStdString(placeName)));
-
-            originalModel->insertRow(originalModel->rowCount(), item);
+                originalModel->insertRow(originalModel->rowCount(), item);
+            }
         }
     }
 
