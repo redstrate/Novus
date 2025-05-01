@@ -76,7 +76,8 @@ jobs:
           gettext \
           gperf \
           libwayland-dev \
-          libhunspell-dev
+          libhunspell-dev \
+          libc6-dev-i386
 
     - name: Cache Prefix
       id: cache-prefix-restore
