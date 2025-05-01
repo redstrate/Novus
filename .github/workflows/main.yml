@@ -77,7 +77,8 @@ jobs:
           gperf \
           libwayland-dev \
           libhunspell-dev \
-          libc6-dev-i386
+          libc6-dev-i386 \
+          lib32stdc++6
 
     - name: Cache Prefix
       id: cache-prefix-restore
