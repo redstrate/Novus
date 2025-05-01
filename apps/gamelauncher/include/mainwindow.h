@@ -17,5 +17,7 @@ public:
     explicit MainWindow();
 
 private:
+    void setupActions();
+
     QProcess *process = nullptr;
 };

@@ -25,6 +25,7 @@ target_link_libraries(novus-mapeditor
         Qt6::Widgets)
 
 install(TARGETS novus-mapeditor ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES mapeditor.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)
 
 ecm_add_app_icon(novus-mapeditor
         ICONS

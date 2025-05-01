@@ -21,6 +21,7 @@ target_link_libraries(novus-gamelauncher
         Qt6::Widgets)
 
 install(TARGETS novus-gamelauncher ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES gamelauncher.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)
 
 if (WIN32)
     set_target_properties(novus-gamelauncher PROPERTIES

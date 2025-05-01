@@ -119,6 +119,8 @@ void MainWindow::setupActions()
         }
     });
     actionCollection()->addAction(QStringLiteral("open_mdl"), openMDLFile);
+
+    KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
 
 #include "moc_mainwindow.cpp"

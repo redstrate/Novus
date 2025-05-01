@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gui name="mdlviewer"
-     version="3"
+<gui name="mateditor"
+     version="1"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
@@ -8,8 +8,6 @@
   <MenuBar>
     <Menu name="file" >
       <text>File</text>
-      <Action name="open_mdl" />
-      <Separator/>
       <Action name="quit"/>
     </Menu>
   </MenuBar>

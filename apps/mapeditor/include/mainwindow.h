@@ -17,6 +17,8 @@ public:
     explicit MainWindow(GameData *data);
 
 private:
+    void setupActions();
+
     GameData *data = nullptr;
     FileCache cache;
 };

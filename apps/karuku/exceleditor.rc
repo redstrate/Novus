@@ -10,6 +10,8 @@
       <text>File</text>
       <Action name="import_list" />
       <Action name="download_list" />
+      <Separator/>
+      <Action name="quit"/>
     </Menu>
   </MenuBar>
 </gui>

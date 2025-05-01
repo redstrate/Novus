@@ -271,4 +271,6 @@ void MainWindow::setupActions()
         });
     });
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
+
+    KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }

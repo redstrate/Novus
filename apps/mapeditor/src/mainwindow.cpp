@@ -46,12 +46,18 @@ MainWindow::MainWindow(GameData *data)
         mapView->addTerrain(bgPath, tera);
     });
 
+    setupActions();
     setupGUI(Keys | Save | Create);
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+}
+
+void MainWindow::setupActions()
+{
+    KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
 
 #include "moc_mainwindow.cpp"
