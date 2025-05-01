@@ -221,31 +221,32 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
         auto shpkData = physis_gamedata_extract_file(data, shpkPath.c_str());
         if (shpkData.data != nullptr) {
             newMaterial.shaderPackage = physis_parse_shpk(shpkData);
+            if (newMaterial.shaderPackage.p_ptr) {
+                // create the material parameters for this shader package
+                newMaterial.materialBuffer =
+                    renderer->device().createBuffer(newMaterial.shaderPackage.material_parameters_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+                renderer->device().nameBuffer(newMaterial.materialBuffer, "g_MaterialParameter"); // TODO: add material name
 
-            // create the material parameters for this shader package
-            newMaterial.materialBuffer =
-                renderer->device().createBuffer(newMaterial.shaderPackage.material_parameters_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-            renderer->device().nameBuffer(newMaterial.materialBuffer, "g_MaterialParameter"); // TODO: add material name
+                // assumed to be floats, maybe not always true?
+                std::vector<float> buffer(newMaterial.shaderPackage.material_parameters_size / sizeof(float));
 
-            // assumed to be floats, maybe not always true?
-            std::vector<float> buffer(newMaterial.shaderPackage.material_parameters_size / sizeof(float));
+                // copy the material data
+                for (uint32_t i = 0; i < newMaterial.shaderPackage.num_material_parameters; i++) {
+                    auto param = newMaterial.shaderPackage.material_parameters[i];
 
-            // copy the material data
-            for (uint32_t i = 0; i < newMaterial.shaderPackage.num_material_parameters; i++) {
-                auto param = newMaterial.shaderPackage.material_parameters[i];
+                    for (uint32_t j = 0; j < newMaterial.mat.num_constants; j++) {
+                        auto constant = newMaterial.mat.constants[j];
 
-                for (uint32_t j = 0; j < newMaterial.mat.num_constants; j++) {
-                    auto constant = newMaterial.mat.constants[j];
-
-                    if (constant.id == param.id) {
-                        for (uint32_t z = 0; z < constant.num_values; z++) {
-                            buffer[(param.byte_offset / sizeof(float)) + z] = constant.values[z];
+                        if (constant.id == param.id) {
+                            for (uint32_t z = 0; z < constant.num_values; z++) {
+                                buffer[(param.byte_offset / sizeof(float)) + z] = constant.values[z];
+                            }
                         }
                     }
                 }
-            }
 
-            renderer->device().copyToBuffer(newMaterial.materialBuffer, buffer.data(), buffer.size() * sizeof(float));
+                renderer->device().copyToBuffer(newMaterial.materialBuffer, buffer.data(), buffer.size() * sizeof(float));
+            }
         }
     }
 
