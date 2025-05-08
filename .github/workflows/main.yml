@@ -335,3 +335,19 @@ jobs:
       with:
         name: ${{ runner.os }}-package
         path: ${{ steps.strings.outputs.build-output-dir }}/bin
+
+  flatpak:
+    name: "Flatpak"
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: astra.flatpak
+          manifest-path: zone.xiv.novus.yml
+          cache-key: flatpak-builder-${{ github.sha }}
