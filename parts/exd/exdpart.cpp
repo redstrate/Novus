@@ -93,6 +93,9 @@ void EXDPart::loadTables()
         tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         auto exd = physis_gamedata_read_excel_sheet(data, name.toStdString().c_str(), exh, getSuitableLanguage(exh), i);
+        if (exd.p_ptr == nullptr) {
+            continue;
+        }
 
         tableWidget->setRowCount(exh->row_count);
 
