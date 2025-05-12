@@ -8,6 +8,7 @@
 #include "filecache.h"
 
 struct GameData;
+class MapView;
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -18,7 +19,9 @@ public:
 
 private:
     void setupActions();
+    void openMap(const QString &basePath);
 
     GameData *data = nullptr;
     FileCache cache;
+    MapView *mapView = nullptr;
 };

@@ -6,11 +6,10 @@
 #include <KActionCollection>
 #include <QApplication>
 #include <QDesktopServices>
+#include <QDialog>
 #include <QHBoxLayout>
-#include <QListWidget>
 #include <QMenuBar>
 #include <QSplitter>
-#include <QUrl>
 #include <physis.hpp>
 
 #include "maplistwidget.h"
@@ -27,24 +26,8 @@ MainWindow::MainWindow(GameData *data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    auto listWidget = new MapListWidget(data);
-    listWidget->setMaximumWidth(400);
-    dummyWidget->addWidget(listWidget);
-
-    auto mapView = new MapView(data, cache);
+    mapView = new MapView(data, cache);
     dummyWidget->addWidget(mapView);
-
-    connect(listWidget, &MapListWidget::mapSelected, this, [data, mapView](const QString &basePath) {
-        QString base2Path = basePath.left(basePath.lastIndexOf(QStringLiteral("/level/")));
-        QString bgPath = QStringLiteral("bg/%1/bgplate/").arg(base2Path);
-
-        std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
-
-        auto tera_buffer = physis_gamedata_extract_file(data, bgPathStd.c_str());
-
-        auto tera = physis_parse_tera(tera_buffer);
-        mapView->addTerrain(bgPath, tera);
-    });
 
     setupActions();
     setupGUI(Keys | Save | Create);
@@ -57,7 +40,42 @@ MainWindow::MainWindow(GameData *data)
 
 void MainWindow::setupActions()
 {
+    KStandardAction::open(
+        qApp,
+        [this] {
+            auto dialog = new QDialog();
+
+            auto layout = new QVBoxLayout();
+            layout->setContentsMargins({});
+            dialog->setLayout(layout);
+
+            auto listWidget = new MapListWidget(data);
+            connect(listWidget, &MapListWidget::mapSelected, this, [this, dialog](const QString &basePath) {
+                dialog->close();
+                openMap(basePath);
+            });
+            layout->addWidget(listWidget);
+
+            dialog->exec();
+        },
+        actionCollection());
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
+}
+
+void MainWindow::openMap(const QString &basePath)
+{
+    QString base2Path = basePath.left(basePath.lastIndexOf(QStringLiteral("/level/")));
+    QString bgPath = QStringLiteral("bg/%1/bgplate/").arg(base2Path);
+
+    std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
+
+    auto tera_buffer = physis_gamedata_extract_file(data, bgPathStd.c_str());
+
+    auto tera = physis_parse_tera(tera_buffer);
+    mapView->addTerrain(bgPath, tera);
+
+    setWindowTitle(basePath);
 }
 
 #include "moc_mainwindow.cpp"

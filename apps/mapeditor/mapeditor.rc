@@ -8,6 +8,8 @@
   <MenuBar>
     <Menu name="file" >
       <text>File</text>
+      <Action name="open/>
+      <Separator/>
       <Action name="quit"/>
     </Menu>
   </MenuBar>
