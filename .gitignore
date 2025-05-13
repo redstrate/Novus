@@ -9,3 +9,7 @@ build/*
 # Windows
 local/
 prefix/
+# Flatpak
+*.flatpak
+.flatpak-builder/
+export/
