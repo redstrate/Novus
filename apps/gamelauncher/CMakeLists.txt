@@ -15,7 +15,6 @@ target_link_libraries(novus-gamelauncher
         PRIVATE
         Novus::Common
         Physis::Physis
-        Physis::Logger
         KF6::I18n
         Qt6::Core
         Qt6::Widgets)

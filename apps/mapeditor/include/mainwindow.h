@@ -7,8 +7,10 @@
 
 #include "filecache.h"
 
+class ObjectListWidget;
 struct GameData;
 class MapView;
+class AppState;
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -24,4 +26,6 @@ private:
     GameData *data = nullptr;
     FileCache cache;
     MapView *mapView = nullptr;
+    ObjectListWidget *objectListWidget = nullptr;
+    AppState *m_appState = nullptr;
 };

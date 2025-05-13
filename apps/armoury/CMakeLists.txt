@@ -41,7 +41,6 @@ target_link_libraries(novus-armoury
         Novus::SklbPart
         Novus::MtrlPart
         Physis::Physis
-        Physis::Logger
         imgui
         Qt6::Core
         Qt6::Widgets

@@ -8,12 +8,16 @@ target_sources(novus-mapeditor
         include/maplistwidget.h
         include/mapview.h
         include/objectpass.h
+        include/objectlistwidget.h
+        include/appstate.h
 
         src/main.cpp
         src/mainwindow.cpp
         src/maplistwidget.cpp
         src/mapview.cpp
-        src/objectpass.cpp)
+        src/objectpass.cpp
+        src/objectlistwidget.cpp
+        src/appstate.cpp)
 target_include_directories(novus-mapeditor
         PUBLIC
         include)
@@ -22,7 +26,6 @@ target_link_libraries(novus-mapeditor
         Novus::Common
         Novus::MdlPart
         Physis::Physis
-        Physis::Logger
         Qt6::Core
         Qt6::Widgets)
 

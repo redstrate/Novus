@@ -19,7 +19,6 @@ target_link_libraries(novus-mateditor
         Novus::MdlPart
         Novus::MtrlPart
         Physis::Physis
-        Physis::Logger
         KF6::I18n
         Qt6::Core
         Qt6::Widgets)

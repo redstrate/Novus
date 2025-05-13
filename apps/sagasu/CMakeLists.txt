@@ -46,7 +46,6 @@ target_link_libraries(novus-sagasu
         Novus::DicPart
         Novus::MtrlPart
         Novus::LuabPart
-        Physis::Logger
         Qt6::Concurrent
         Qt6::Network)
 

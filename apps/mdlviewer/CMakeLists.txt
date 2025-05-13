@@ -16,7 +16,6 @@ target_link_libraries(novus-mdlviewer
         Novus::MdlPart
         Novus::Common
         Physis::Physis
-        Physis::Logger
         KF6::XmlGui
         Qt6::Core
         Qt6::Widgets)

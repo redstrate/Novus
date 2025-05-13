@@ -11,13 +11,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Corrosion)
 
-corrosion_import_crate(MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/Cargo.toml FEATURES logging)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libphysis/logger)
-
+corrosion_import_crate(MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/Cargo.toml)
 target_include_directories(physis INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/target/public)
 
 add_library(Physis::Physis ALIAS physis)
-add_library(Physis::Logger ALIAS physis-logger)
 
 add_subdirectory(magic_enum EXCLUDE_FROM_ALL)
 add_subdirectory(tinygltf EXCLUDE_FROM_ALL)

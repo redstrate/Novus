@@ -19,7 +19,6 @@ target_link_libraries(novus-karuku
         Novus::Common
         Novus::ExdPart
         Physis::Physis
-        Physis::Logger
         Qt6::Core
         Qt6::Widgets
         Qt6::Network)

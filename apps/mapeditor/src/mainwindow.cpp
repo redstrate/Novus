@@ -12,8 +12,10 @@
 #include <QSplitter>
 #include <physis.hpp>
 
+#include "appstate.h"
 #include "maplistwidget.h"
 #include "mapview.h"
+#include "objectlistwidget.h"
 
 MainWindow::MainWindow(GameData *data)
     : KXmlGuiWindow()
@@ -22,9 +24,15 @@ MainWindow::MainWindow(GameData *data)
 {
     setMinimumSize(1280, 720);
 
+    m_appState = new AppState(this);
+
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
+
+    objectListWidget = new ObjectListWidget(m_appState);
+    objectListWidget->setMaximumWidth(400);
+    dummyWidget->addWidget(objectListWidget);
 
     mapView = new MapView(data, cache);
     dummyWidget->addWidget(mapView);
@@ -76,6 +84,14 @@ void MainWindow::openMap(const QString &basePath)
     mapView->addTerrain(bgPath, tera);
 
     setWindowTitle(basePath);
+
+    QString lgbPath = QStringLiteral("bg/%1/level/bg.lgb").arg(base2Path);
+    std::string bgLgbPathStd = lgbPath.toStdString();
+
+    auto bg_buffer = physis_gamedata_extract_file(data, bgLgbPathStd.c_str());
+    m_appState->bgGroup = physis_layergroup_read(bg_buffer);
+
+    Q_EMIT m_appState->mapLoaded();
 }
 
 #include "moc_mainwindow.cpp"
