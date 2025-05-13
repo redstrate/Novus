@@ -10,13 +10,14 @@
 #include <physis.hpp>
 
 struct GameData;
+class AppState;
 
 class MapView : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MapView(GameData *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit MapView(GameData *data, FileCache &cache, AppState *appState, QWidget *parent = nullptr);
 
     MDLPart &part() const;
 

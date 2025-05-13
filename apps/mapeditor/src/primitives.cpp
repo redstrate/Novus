@@ -18,8 +18,8 @@ void Primitives::Initialize(RenderManager *renderer)
         std::vector<glm::vec3> vertices;
         std::vector<unsigned int> indices;
 
-        unsigned int xResolution = 64;
-        unsigned int yResolution = 64;
+        unsigned int xResolution = 2;
+        unsigned int yResolution = 2;
         float PI = 3.14159265359f;
 
         for (unsigned int y = 0; y <= yResolution; ++y) {

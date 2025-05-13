@@ -7,20 +7,22 @@
 
 class RenderManager;
 class Device;
+class AppState;
 
 class ObjectPass : public RendererPass
 {
 public:
-    ObjectPass(RenderManager *renderer);
+    ObjectPass(RenderManager *renderer, AppState *appState);
 
     void render(VkCommandBuffer commandBuffer, Camera &camera) override;
 
 private:
     void createPipeline();
 
-    VkPipeline pipeline_ = nullptr;
-    VkPipelineLayout pipelineLayout_ = nullptr;
+    VkPipeline m_pipeline = nullptr;
+    VkPipelineLayout m_pipelineLayout = nullptr;
 
     RenderManager *m_renderer;
     Device &m_device;
+    AppState *m_appState;
 };

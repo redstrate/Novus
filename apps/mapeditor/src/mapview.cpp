@@ -9,15 +9,15 @@
 #include "filecache.h"
 #include "objectpass.h"
 
-MapView::MapView(GameData *data, FileCache &cache, QWidget *parent)
+MapView::MapView(GameData *data, FileCache &cache, AppState *appState, QWidget *parent)
     : QWidget(parent)
     , data(data)
     , cache(cache)
 {
     mdlPart = new MDLPart(data, cache);
     mdlPart->enableFreemode();
-    connect(mdlPart, &MDLPart::initializeRender, this, [this] {
-        mdlPart->manager()->addPass(new ObjectPass(mdlPart->manager()));
+    connect(mdlPart, &MDLPart::initializeRender, this, [this, appState] {
+        mdlPart->manager()->addPass(new ObjectPass(mdlPart->manager(), appState));
     });
 
     auto layout = new QVBoxLayout();

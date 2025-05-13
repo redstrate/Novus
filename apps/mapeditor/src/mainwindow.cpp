@@ -34,7 +34,7 @@ MainWindow::MainWindow(GameData *data)
     objectListWidget->setMaximumWidth(400);
     dummyWidget->addWidget(objectListWidget);
 
-    mapView = new MapView(data, cache);
+    mapView = new MapView(data, cache, m_appState);
     dummyWidget->addWidget(mapView);
 
     setupActions();

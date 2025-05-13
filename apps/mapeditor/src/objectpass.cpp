@@ -10,9 +10,12 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-ObjectPass::ObjectPass(RenderManager *renderer)
+#include "appstate.h"
+
+ObjectPass::ObjectPass(RenderManager *renderer, AppState *appState)
     : m_renderer(renderer)
     , m_device(m_renderer->device())
+    , m_appState(appState)
 {
     createPipeline();
 
@@ -27,60 +30,35 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
         labelExt.pLabelName = "Object Pass";
         m_renderer->device().beginDebugMarker(commandBuffer, labelExt);
 
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
-        Primitives::DrawSphere(commandBuffer);
+        for (const auto &[_, lgb] : m_appState->lgbFiles) {
+            for (int i = 0; i < lgb.num_chunks; i++) {
+                const auto chunk = lgb.chunks[i];
+                for (int j = 0; j < chunk.num_layers; j++) {
+                    const auto layer = chunk.layers[j];
+                    for (int z = 0; z < layer.num_objects; z++) {
+                        const auto object = layer.objects[z];
+
+                        glm::mat4 vp = camera.perspective * camera.view;
+
+                        vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &vp);
+
+                        auto m = glm::mat4(1.0f);
+                        m = glm::translate(m, {object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]});
+
+                        vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(glm::mat4), sizeof(glm::mat4), &m);
+
+                        Primitives::DrawSphere(commandBuffer);
+                    }
+                }
+            }
+        }
 
         m_renderer->device().endDebugMarker(commandBuffer);
     } else {
         qWarning() << "Can't render object pass in non-simple renderer for now!!";
     }
-
-    /*VkClearValue clearValue = {};
-    clearValue.color = {0.0f, 0.0f, 0.0f, 0.0f};
-
-    VkRenderPassBeginInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = m_renderPass;
-    renderPassInfo.framebuffer =  target->sobelFramebuffers[target->currentResource];
-    renderPassInfo.renderArea.extent = target->extent;
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearValue;
-
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
-
-    if(extraInfo != nullptr) {
-        for (auto mesh: collection.meshes) {
-            bool shouldRender = false;
-            for (int i = 0; i < extraInfo->numSelectedEntities; i++) {
-                if (extraInfo->selectedEntities[i] == mesh.entity)
-                    shouldRender = true;
-            }
-
-            if (shouldRender) {
-                glm::mat4 mvp;
-                mvp = glm::perspective(glm::radians(collection.camera.camera->fov),
-                                       (float) target->extent.width / target->extent.height,
-                                       collection.camera.camera->near, collection.camera.camera->far);
-                mvp *= glm::lookAt(collection.camera.transform->position, collection.camera.camera->target,
-                                   glm::vec3(0, -1, 0));
-                mvp = glm::translate(mvp, mesh.transform->position);
-
-                vkCmdPushConstants(commandBuffer, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4),
-                                   &mvp);
-
-                const VkDeviceSize offsets[] = {0};
-                vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mesh.mesh->mesh->vertexBuffer, offsets);
-                vkCmdBindIndexBuffer(commandBuffer, mesh.mesh->mesh->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-                vkCmdDrawIndexed(commandBuffer, mesh.mesh->mesh->indices.size(), 1, 0, 0, 0);
-            }
-        }
-    }
-
-    vkCmdEndRenderPass(commandBuffer);*/
 }
 
 void ObjectPass::createPipeline()
@@ -100,7 +78,7 @@ void ObjectPass::createPipeline()
     const std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
     VkVertexInputBindingDescription vertexBindingDescription = {};
-    vertexBindingDescription.stride = sizeof(Vertex);
+    vertexBindingDescription.stride = sizeof(glm::vec3);
 
     VkVertexInputAttributeDescription positionAttributeDescription = {};
     positionAttributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -156,7 +134,7 @@ void ObjectPass::createPipeline()
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
-    vkCreatePipelineLayout(m_device.device, &pipelineLayoutInfo, nullptr, &pipelineLayout_);
+    vkCreatePipelineLayout(m_device.device, &pipelineLayoutInfo, nullptr, &m_pipelineLayout);
 
     VkPipelineDepthStencilStateCreateInfo depthStencil = {};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -179,8 +157,8 @@ void ObjectPass::createPipeline()
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.pDepthStencilState = &depthStencil;
-    pipelineInfo.layout = pipelineLayout_;
+    pipelineInfo.layout = m_pipelineLayout;
     pipelineInfo.renderPass = renderer->renderPass();
 
-    vkCreateGraphicsPipelines(m_device.device, nullptr, 1, &pipelineInfo, nullptr, &pipeline_);
+    vkCreateGraphicsPipelines(m_device.device, nullptr, 1, &pipelineInfo, nullptr, &m_pipeline);
 }
