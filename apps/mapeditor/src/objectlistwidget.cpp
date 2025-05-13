@@ -10,6 +10,7 @@
 #include <QVBoxLayout>
 
 #include "appstate.h"
+#include "objectlistmodel.h"
 
 ObjectListWidget::ObjectListWidget(AppState *appState, QWidget *parent)
     : QWidget(parent)
@@ -25,7 +26,7 @@ ObjectListWidget::ObjectListWidget(AppState *appState, QWidget *parent)
     searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     auto searchEdit = new QLineEdit();
-    searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for Excel sheet names."));
+    searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for objects."));
     searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
@@ -34,39 +35,14 @@ ObjectListWidget::ObjectListWidget(AppState *appState, QWidget *parent)
     });
     layout->addWidget(searchEdit);
 
-    m_originalModel = new QStringListModel();
-    searchModel->setSourceModel(m_originalModel);
+    m_objectListModel = new ObjectListModel(appState, this);
+    searchModel->setSourceModel(m_objectListModel);
 
-    listWidget = new QListView();
-    listWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of Excel sheet names. Select one to view it's contents."));
-    listWidget->setModel(searchModel);
+    treeWidget = new QTreeView();
+    treeWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of objects on this map."));
+    treeWidget->setModel(searchModel);
 
-    layout->addWidget(listWidget);
-
-    connect(m_appState, &AppState::mapLoaded, this, &ObjectListWidget::refresh);
-}
-
-void ObjectListWidget::refresh()
-{
-    QStringList list;
-
-    for (int i = 0; i < m_appState->bgGroup.num_chunks; i++) {
-        const auto chunk = m_appState->bgGroup.chunks[i];
-        for (int j = 0; j < chunk.num_layers; j++) {
-            const auto layer = chunk.layers[j];
-            for (int z = 0; z < layer.num_objects; z++) {
-                const auto object = layer.objects[z];
-                const QString name = QString::fromLatin1(object.name);
-                if (true) { // TODO: do display names if we have them
-                    list << i18n("Unknown (%1)", object.instance_id);
-                } else {
-                    list << name;
-                }
-            }
-        }
-    }
-
-    m_originalModel->setStringList(list);
+    layout->addWidget(treeWidget);
 }
 
 #include "moc_objectlistwidget.cpp"

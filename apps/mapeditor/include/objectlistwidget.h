@@ -3,10 +3,11 @@
 
 #pragma once
 
-#include <QListView>
+#include <QTreeView>
 #include <QWidget>
 #include <physis.hpp>
 
+class ObjectListModel;
 class QStringListModel;
 class AppState;
 
@@ -18,9 +19,7 @@ public:
     explicit ObjectListWidget(AppState *appState, QWidget *parent = nullptr);
 
 private:
-    void refresh();
-
-    QListView *listWidget = nullptr;
-    AppState *m_appState;
-    QStringListModel *m_originalModel;
+    QTreeView *treeWidget = nullptr;
+    AppState *m_appState = nullptr;
+    ObjectListModel *m_objectListModel = nullptr;
 };
