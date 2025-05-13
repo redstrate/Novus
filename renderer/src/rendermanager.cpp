@@ -84,6 +84,11 @@ RenderManager::RenderManager(GameData *data)
         if (strstr(extension.extensionName, "VK_EXT_debug_utils") != nullptr) {
             instanceExtensions.push_back(extension.extensionName);
         }
+
+        // needed for VK_EXT_display_surface_counter
+        if (strstr(extension.extensionName, "VK_KHR_display") != nullptr) {
+            instanceExtensions.push_back(extension.extensionName);
+        }
     }
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};

@@ -1,5 +1,9 @@
+// SPDX-FileCopyrightText: 2025 Joshua Goins <josh@redstrate.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "objectpass.h"
 #include "device.h"
+#include "primitives.h"
 #include "rendermanager.h"
 #include "simplerenderer.h"
 #include "swapchain.h"
@@ -11,11 +15,23 @@ ObjectPass::ObjectPass(RenderManager *renderer)
     , m_device(m_renderer->device())
 {
     createPipeline();
+
+    Primitives::Initialize(m_renderer);
 }
 
 void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
 {
     if (auto renderer = dynamic_cast<SimpleRenderer *>(m_renderer->renderer())) {
+        VkDebugUtilsLabelEXT labelExt{};
+        labelExt.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+        labelExt.pLabelName = "Object Pass";
+        m_renderer->device().beginDebugMarker(commandBuffer, labelExt);
+
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
+
+        Primitives::DrawSphere(commandBuffer);
+
+        m_renderer->device().endDebugMarker(commandBuffer);
     } else {
         qWarning() << "Can't render object pass in non-simple renderer for now!!";
     }
@@ -77,8 +93,8 @@ void ObjectPass::createPipeline()
 
     VkPipelineShaderStageCreateInfo fragmentShaderStageInfo = {};
     fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragmentShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    fragmentShaderStageInfo.module = m_device.loadShaderFromDisk(":/shaders/debug.vert.spv");
+    fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragmentShaderStageInfo.module = m_device.loadShaderFromDisk(":/shaders/debug.frag.spv");
     fragmentShaderStageInfo.pName = "main";
 
     const std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
@@ -132,7 +148,7 @@ void ObjectPass::createPipeline()
     dynamicState.pDynamicStates = dynamicStates.data();
 
     VkPushConstantRange pushConstant = {};
-    pushConstant.size = sizeof(glm::mat4);
+    pushConstant.size = sizeof(glm::mat4) * 2;
     pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -141,6 +157,13 @@ void ObjectPass::createPipeline()
     pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
     vkCreatePipelineLayout(m_device.device, &pipelineLayoutInfo, nullptr, &pipelineLayout_);
+
+    VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = VK_TRUE;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.maxDepthBounds = 1.0f;
 
     auto renderer = dynamic_cast<SimpleRenderer *>(m_renderer->renderer());
 
@@ -155,6 +178,7 @@ void ObjectPass::createPipeline()
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
+    pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.layout = pipelineLayout_;
     pipelineInfo.renderPass = renderer->renderPass();
 

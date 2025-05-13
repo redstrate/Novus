@@ -11,6 +11,7 @@ target_sources(novus-mapeditor
         include/objectlistwidget.h
         include/appstate.h
         include/objectlistmodel.h
+        include/primitives.h
 
         src/main.cpp
         src/mainwindow.cpp
@@ -19,7 +20,8 @@ target_sources(novus-mapeditor
         src/objectpass.cpp
         src/objectlistwidget.cpp
         src/appstate.cpp
-        src/objectlistmodel.cpp)
+        src/objectlistmodel.cpp
+        src/primitives.cpp)
 target_include_directories(novus-mapeditor
         PUBLIC
         include)

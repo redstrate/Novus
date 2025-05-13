@@ -25,9 +25,9 @@ void VulkanWindow::exposeEvent(QExposeEvent *)
 
         auto surface = m_instance->surfaceForWindow(this);
         if (!m_renderer->initSwapchain(surface, width() * screen()->devicePixelRatio(), height() * screen()->devicePixelRatio())) {
-            Q_EMIT part->initializeRender();
             m_initialized = false;
         } else {
+            Q_EMIT part->initializeRender();
             render();
         }
     }

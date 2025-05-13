@@ -46,6 +46,7 @@ void SimpleRenderer::resize()
     framebufferInfo.layers = 1;
 
     vkCreateFramebuffer(m_device.device, &framebufferInfo, nullptr, &m_framebuffer);
+    m_device.nameObject(VK_OBJECT_TYPE_FRAMEBUFFER, reinterpret_cast<uint64_t>(m_framebuffer), "simple renderer framebuffer");
 }
 
 void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObject> &models)
@@ -166,7 +167,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
 void SimpleRenderer::initRenderPass()
 {
     VkAttachmentDescription colorAttachment = {};
-    colorAttachment.format = m_device.swapChain->surfaceFormat;
+    colorAttachment.format = VK_FORMAT_R8G8B8A8_UNORM;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -220,6 +221,7 @@ void SimpleRenderer::initRenderPass()
     renderPassInfo.pDependencies = &dependency;
 
     vkCreateRenderPass(m_device.device, &renderPassInfo, nullptr, &m_renderPass);
+    m_device.nameObject(VK_OBJECT_TYPE_RENDER_PASS, reinterpret_cast<uint64_t>(m_renderPass), "simple renderer renderpass");
 }
 
 void SimpleRenderer::initPipeline()
