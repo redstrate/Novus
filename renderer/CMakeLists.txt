@@ -22,6 +22,7 @@ target_sources(renderer
         include/simplerenderer.h
         include/swapchain.h
         include/texture.h
+        include/pass.h
 
         src/device.cpp
         src/gamerenderer.cpp
@@ -42,7 +43,9 @@ qt_add_resources(renderer
         shaders/mesh.vert.spv
         shaders/skinned.vert.spv
         shaders/blit.vert.spv
-        shaders/blit.frag.spv)
+        shaders/blit.frag.spv
+        shaders/debug.vert.spv
+        shaders/debug.frag.spv)
 target_include_directories(renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(renderer
         PUBLIC

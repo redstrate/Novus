@@ -20,6 +20,7 @@
 class ImGuiPass;
 struct ImGuiContext;
 class BaseRenderer;
+class RendererPass;
 
 /// Render 3D scenes made up of FFXIV game objects
 class RenderManager
@@ -49,6 +50,10 @@ public:
 
     VkSampler defaultSampler();
 
+    void addPass(RendererPass *pass);
+
+    BaseRenderer *renderer();
+
 private:
     void updateCamera(Camera &camera);
     void initBlitPipeline();
@@ -68,4 +73,5 @@ private:
     Device *m_device = nullptr;
     BaseRenderer *m_renderer = nullptr;
     GameData *m_data = nullptr;
+    std::vector<RendererPass *> m_passes;
 };

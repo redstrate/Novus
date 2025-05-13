@@ -18,6 +18,8 @@ struct DrawObject;
 struct Camera;
 struct Texture;
 struct Scene;
+class Pass;
+class Device;
 
 /// Base class for all rendering implementations
 class BaseRenderer
@@ -33,4 +35,6 @@ public:
 
     /// The final composite texture that is drawn into with render()
     virtual Texture &getCompositeTexture() = 0;
+
+    virtual Device &device() = 0;
 };

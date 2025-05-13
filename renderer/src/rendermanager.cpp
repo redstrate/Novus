@@ -15,6 +15,7 @@
 #include "gamerenderer.h"
 #include "imgui.h"
 #include "imguipass.h"
+#include "pass.h"
 #include "simplerenderer.h"
 #include "swapchain.h"
 
@@ -423,6 +424,13 @@ void RenderManager::render(const std::vector<DrawObject> &models)
 
     m_renderer->render(commandBuffer, camera, scene, models);
 
+    // render extra passes
+    for (const auto &pass : m_passes) {
+        pass->render(commandBuffer, camera);
+    }
+
+    vkCmdEndRenderPass(commandBuffer);
+
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = m_renderPass;
@@ -707,4 +715,14 @@ void RenderManager::initBlitPipeline()
     multiDescriptorWrite2.dstBinding = 0;
 
     vkUpdateDescriptorSets(m_device->device, 1, &multiDescriptorWrite2, 0, nullptr);
+}
+
+void RenderManager::addPass(RendererPass *pass)
+{
+    m_passes.push_back(pass);
+}
+
+BaseRenderer *RenderManager::renderer()
+{
+    return m_renderer;
 }

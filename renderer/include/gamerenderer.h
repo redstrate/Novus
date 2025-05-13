@@ -35,6 +35,8 @@ public:
 
     Texture &getCompositeTexture() override;
 
+    Device &device() override;
+
 private:
     struct RequestedBinding {
         VkDescriptorType type;

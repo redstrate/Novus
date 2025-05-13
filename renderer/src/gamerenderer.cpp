@@ -1498,3 +1498,8 @@ void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer,
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, i, 1, &pipeline.cachedDescriptors[i], 0, nullptr);
     }
 }
+
+Device &GameRenderer::device()
+{
+    return m_device;
+}

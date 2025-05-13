@@ -34,6 +34,11 @@ public:
 
     Texture &getCompositeTexture() override;
 
+    Device &device() override;
+
+    VkFramebuffer framebuffer();
+    VkRenderPass renderPass();
+
 private:
     void initRenderPass();
     void initPipeline();

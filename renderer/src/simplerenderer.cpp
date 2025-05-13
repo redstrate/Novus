@@ -161,8 +161,6 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
         }
     }
-
-    vkCmdEndRenderPass(commandBuffer);
 }
 
 void SimpleRenderer::initRenderPass()
@@ -568,4 +566,19 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
 Texture &SimpleRenderer::getCompositeTexture()
 {
     return m_compositeTexture;
+}
+
+Device &SimpleRenderer::device()
+{
+    return m_device;
+}
+
+VkFramebuffer SimpleRenderer::framebuffer()
+{
+    return m_framebuffer;
+}
+
+VkRenderPass SimpleRenderer::renderPass()
+{
+    return m_renderPass;
 }

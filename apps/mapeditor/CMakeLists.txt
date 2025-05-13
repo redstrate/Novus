@@ -7,11 +7,13 @@ target_sources(novus-mapeditor
         include/mainwindow.h
         include/maplistwidget.h
         include/mapview.h
+        include/objectpass.h
 
         src/main.cpp
         src/mainwindow.cpp
         src/maplistwidget.cpp
-        src/mapview.cpp)
+        src/mapview.cpp
+        src/objectpass.cpp)
 target_include_directories(novus-mapeditor
         PUBLIC
         include)

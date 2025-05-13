@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 
 #include "filecache.h"
+#include "objectpass.h"
 
 MapView::MapView(GameData *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)
@@ -15,6 +16,9 @@ MapView::MapView(GameData *data, FileCache &cache, QWidget *parent)
 {
     mdlPart = new MDLPart(data, cache);
     mdlPart->enableFreemode();
+    connect(mdlPart, &MDLPart::initializeRender, this, [this] {
+        mdlPart->manager()->addPass(new ObjectPass(mdlPart->manager()));
+    });
 
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);

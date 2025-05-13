@@ -423,4 +423,9 @@ int MDLPart::numModels() const
     return models.size();
 }
 
+RenderManager *MDLPart::manager() const
+{
+    return renderer;
+}
+
 #include "moc_mdlpart.cpp"

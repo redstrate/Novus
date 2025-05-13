@@ -49,6 +49,8 @@ public:
 
     int numModels() const;
 
+    RenderManager *manager() const;
+
     physis_PBD pbd{};
 
     bool enableRacialDeform = true;
@@ -56,6 +58,8 @@ public:
 Q_SIGNALS:
     void modelChanged();
     void skeletonChanged();
+    // Called when a Vulkan context is available, and you can safely access RenderManager
+    void initializeRender();
 
 public Q_SLOTS:
     /// Clears all stored MDLs.
