@@ -12,7 +12,7 @@ class AppState : public QObject
 public:
     explicit AppState(QObject *parent = nullptr);
 
-    physis_LayerGroup bgGroup;
+    std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
 
 Q_SIGNALS:
     void mapLoaded();

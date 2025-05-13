@@ -103,26 +103,30 @@ void ObjectListModel::refresh()
 {
     beginResetModel();
 
-    auto fileItem = new TreeInformation();
-    fileItem->type = TreeType::File;
-    fileItem->parent = m_rootItem;
-    fileItem->name = QStringLiteral("bg");
-    m_rootItem->children.push_back(fileItem);
+    for (int y = 0; y < m_appState->lgbFiles.size(); y++) {
+        const auto &[name, lgb] = m_appState->lgbFiles[y];
 
-    for (int i = 0; i < m_appState->bgGroup.num_chunks; i++) {
-        const auto chunk = m_appState->bgGroup.chunks[i];
-        for (int j = 0; j < chunk.num_layers; j++) {
-            const auto layer = chunk.layers[j];
-            for (int z = 0; z < layer.num_objects; z++) {
-                const auto object = layer.objects[z];
-                const QString name = QString::fromLatin1(object.name);
+        auto fileItem = new TreeInformation();
+        fileItem->type = TreeType::File;
+        fileItem->parent = m_rootItem;
+        fileItem->name = name;
+        fileItem->row = y;
+        m_rootItem->children.push_back(fileItem);
 
-                auto objectItem = new TreeInformation();
-                objectItem->type = TreeType::Object;
-                objectItem->parent = fileItem;
-                objectItem->name = i18n("Unknown (%1)", object.instance_id); // TODO: do display names if we have them
-                objectItem->row = z;
-                fileItem->children.push_back(objectItem);
+        for (int i = 0; i < lgb.num_chunks; i++) {
+            const auto chunk = lgb.chunks[i];
+            for (int j = 0; j < chunk.num_layers; j++) {
+                const auto layer = chunk.layers[j];
+                for (int z = 0; z < layer.num_objects; z++) {
+                    const auto object = layer.objects[z];
+
+                    auto objectItem = new TreeInformation();
+                    objectItem->type = TreeType::Object;
+                    objectItem->parent = fileItem;
+                    objectItem->name = i18n("Unknown (%1)", object.instance_id); // TODO: do display names if we have them
+                    objectItem->row = z;
+                    fileItem->children.push_back(objectItem);
+                }
             }
         }
     }

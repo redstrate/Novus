@@ -85,11 +85,24 @@ void MainWindow::openMap(const QString &basePath)
 
     setWindowTitle(basePath);
 
-    QString lgbPath = QStringLiteral("bg/%1/level/bg.lgb").arg(base2Path);
-    std::string bgLgbPathStd = lgbPath.toStdString();
+    const auto loadLgb = [this, base2Path](const QString &name) {
+        QString lgbPath = QStringLiteral("bg/%1/level/%2.lgb").arg(base2Path, name);
+        std::string bgLgbPathStd = lgbPath.toStdString();
 
-    auto bg_buffer = physis_gamedata_extract_file(data, bgLgbPathStd.c_str());
-    m_appState->bgGroup = physis_layergroup_read(bg_buffer);
+        auto bg_buffer = physis_gamedata_extract_file(data, bgLgbPathStd.c_str());
+        auto lgb = physis_layergroup_read(bg_buffer);
+        if (lgb.num_chunks > 0) {
+            m_appState->lgbFiles.push_back({name, lgb});
+        }
+    };
+
+    loadLgb(QStringLiteral("planevent"));
+    loadLgb(QStringLiteral("vfx"));
+    loadLgb(QStringLiteral("planmap"));
+    loadLgb(QStringLiteral("planner"));
+    loadLgb(QStringLiteral("bg"));
+    loadLgb(QStringLiteral("sound"));
+    loadLgb(QStringLiteral("planlive"));
 
     Q_EMIT m_appState->mapLoaded();
 }
