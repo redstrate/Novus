@@ -80,8 +80,6 @@ MapView::MapView(GameData *data, FileCache &cache, AppState *appState, QWidget *
                                         QString::fromStdString(assetPath),
                                         materials,
                                         0);
-
-                                    numLoadedBgModels++;
                                 }
                             }
                         } break;
