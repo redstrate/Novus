@@ -27,6 +27,7 @@ public Q_SLOTS:
 private:
     MDLPart *mdlPart = nullptr;
 
-    GameData *data;
-    FileCache &cache;
+    GameData *m_data;
+    FileCache &m_cache;
+    AppState *m_appState;
 };

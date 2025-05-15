@@ -397,7 +397,7 @@ void RenderManager::destroySwapchain()
     }
 }
 
-void RenderManager::render(const std::vector<DrawObject> &models)
+void RenderManager::render(const std::vector<DrawObjectInstance> &models)
 {
     vkWaitForFences(m_device->device,
                     1,
@@ -509,12 +509,12 @@ VkRenderPass RenderManager::presentationRenderPass() const
     return m_renderPass;
 }
 
-DrawObject RenderManager::addDrawObject(const physis_MDL &model, int lod)
+DrawObject *RenderManager::addDrawObject(const physis_MDL &model, int lod)
 {
-    DrawObject DrawObject;
-    DrawObject.model = model;
+    auto DrawObject = new ::DrawObject();
+    DrawObject->model = model;
 
-    reloadDrawObject(DrawObject, lod);
+    reloadDrawObject(*DrawObject, lod);
 
     return DrawObject;
 }

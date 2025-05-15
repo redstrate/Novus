@@ -50,25 +50,25 @@ MDLPart::MDLPart(GameData *data, FileCache &cache, QWidget *parent)
 
 void MDLPart::exportModel(const QString &fileName)
 {
-    auto &model = models[0];
-    ::exportModel(model.name, model.model, *skeleton, boneData, fileName);
+    auto &model = vkWindow->models[0];
+    ::exportModel(model.name, model.sourceObject->model, *skeleton, boneData, fileName);
 }
 
 DrawObject &MDLPart::getModel(const int index)
 {
-    return models[index];
+    return *vkWindow->models[index].sourceObject;
 }
 
 void MDLPart::reloadModel(const int index)
 {
-    renderer->reloadDrawObject(models[index], 0);
+    renderer->reloadDrawObject(*vkWindow->models[index].sourceObject, 0);
 
     Q_EMIT modelChanged();
 }
 
 void MDLPart::clear()
 {
-    models.clear();
+    vkWindow->models.clear();
 
     Q_EMIT modelChanged();
 }
@@ -82,24 +82,27 @@ void MDLPart::addModel(physis_MDL mdl,
                        uint16_t fromBodyId,
                        uint16_t toBodyId)
 {
-    qDebug() << "Adding model to MDLPart";
+    DrawObject *model;
+    if (vkWindow->sourceModels.contains(name)) {
+        model = vkWindow->sourceModels[name];
+    } else {
+        model = renderer->addDrawObject(mdl, lod);
+        model->from_body_id = fromBodyId;
+        model->to_body_id = toBodyId;
+        model->skinned = skinned;
 
-    auto model = renderer->addDrawObject(mdl, lod);
-    model.name = name;
-    model.from_body_id = fromBodyId;
-    model.to_body_id = toBodyId;
-    model.position = position;
-    model.skinned = skinned;
+        std::transform(materials.begin(), materials.end(), std::back_inserter(model->materials), [this](const physis_Material &mat) {
+            return createOrCacheMaterial(mat);
+        });
 
-    std::transform(materials.begin(), materials.end(), std::back_inserter(model.materials), [this](const physis_Material &mat) {
-        return createOrCacheMaterial(mat);
-    });
+        if (materials.empty()) {
+            model->materials.push_back(createOrCacheMaterial(physis_Material{}));
+        }
 
-    if (materials.empty()) {
-        model.materials.push_back(createOrCacheMaterial(physis_Material{}));
+        vkWindow->sourceModels[name] = model;
     }
 
-    models.push_back(model);
+    vkWindow->models.push_back(DrawObjectInstance{name, model, position});
 
     Q_EMIT modelChanged();
 }
@@ -125,8 +128,6 @@ void MDLPart::clearSkeleton()
 void MDLPart::reloadRenderer()
 {
     reloadBoneData();
-
-    vkWindow->models = models;
 }
 
 void MDLPart::enableFreemode()
@@ -166,31 +167,32 @@ void MDLPart::reloadBoneData()
         // update data
         calculateBone(*skeleton, *skeleton->root_bone, nullptr);
 
-        for (auto &model : models) {
+        // TODO: this applies to all instances
+        for (auto &[_, model] : vkWindow->sourceModels) {
             // we want to map the actual affected bones to bone ids
             std::map<int, int> boneMapping;
-            for (uint32_t i = 0; i < model.model.num_affected_bones; i++) {
+            for (uint32_t i = 0; i < model->model.num_affected_bones; i++) {
                 for (uint32_t k = 0; k < skeleton->num_bones; k++) {
-                    if (std::string_view{skeleton->bones[k].name} == std::string_view{model.model.affected_bone_names[i]}) {
+                    if (std::string_view{skeleton->bones[k].name} == std::string_view{model->model.affected_bone_names[i]}) {
                         boneMapping[i] = k;
                     }
                 }
             }
 
-            std::vector<glm::mat4> deformBones(model.model.num_affected_bones);
-            for (uint32_t i = 0; i < model.model.num_affected_bones; i++) {
+            std::vector<glm::mat4> deformBones(model->model.num_affected_bones);
+            for (uint32_t i = 0; i < model->model.num_affected_bones; i++) {
                 deformBones[i] = glm::mat4(1.0f);
             }
 
             // get deform matrices
             if (enableRacialDeform) {
-                auto deform = physis_pbd_get_deform_matrix(pbd, model.from_body_id, model.to_body_id);
+                auto deform = physis_pbd_get_deform_matrix(pbd, model->from_body_id, model->to_body_id);
                 if (deform.num_bones != 0) {
                     for (int i = 0; i < deform.num_bones; i++) {
                         auto deformBone = deform.bones[i];
 
-                        for (uint32_t k = 0; k < model.model.num_affected_bones; k++) {
-                            if (std::string_view{model.model.affected_bone_names[k]} == std::string_view{deformBone.name}) {
+                        for (uint32_t k = 0; k < model->model.num_affected_bones; k++) {
+                            if (std::string_view{model->model.affected_bone_names[k]} == std::string_view{deformBone.name}) {
                                 deformBones[k] =
                                     glm::rowMajor4(glm::vec4{deformBone.deform[0], deformBone.deform[1], deformBone.deform[2], deformBone.deform[3]},
                                                    glm::vec4{deformBone.deform[4], deformBone.deform[5], deformBone.deform[6], deformBone.deform[7]},
@@ -202,9 +204,9 @@ void MDLPart::reloadBoneData()
                 }
             }
 
-            for (uint32_t i = 0; i < model.model.num_affected_bones; i++) {
+            for (uint32_t i = 0; i < model->model.num_affected_bones; i++) {
                 const int originalBoneId = boneMapping[i];
-                model.boneData[i] = deformBones[i] * boneData[originalBoneId].localTransform * boneData[originalBoneId].inversePose;
+                model->boneData[i] = deformBones[i] * boneData[originalBoneId].localTransform * boneData[originalBoneId].inversePose;
             }
         }
     }
@@ -397,12 +399,14 @@ void MDLPart::calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const 
 
 void MDLPart::removeModel(const physis_MDL &mdl)
 {
-    models.erase(std::remove_if(models.begin(),
-                                models.end(),
+    // TODO: restore this functionality
+    qWarning() << "MDLPart::removeModel needs to be reimplemented!";
+    /*vkWindow->models.erase(std::remove_if(vkWindow->models.begin(),
+                                vkWindow->models.end(),
                                 [mdl](const DrawObject &other) {
                                     return mdl.p_ptr == other.model.p_ptr;
                                 }),
-                 models.end());
+                 vkWindow->models.end());*/
     Q_EMIT modelChanged();
 }
 
@@ -420,7 +424,7 @@ bool MDLPart::wireframe() const
 
 int MDLPart::numModels() const
 {
-    return models.size();
+    return vkWindow->models.size();
 }
 
 RenderManager *MDLPart::manager() const

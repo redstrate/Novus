@@ -255,7 +255,7 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
     createImageResources();
 }
 
-void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObject> &models)
+void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObjectInstance> &models)
 {
     Q_UNUSED(scene)
 
@@ -299,29 +299,29 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     const int jointMatrixSize = m_dawntrailMode ? JOINT_MATRIX_SIZE_DAWNTRAIL : JOINT_MATRIX_SIZE_ARR;
                     const size_t bufferSize = sizeof(glm::mat3x4) * jointMatrixSize;
                     void *mapped_data = nullptr;
-                    vkMapMemory(m_device.device, model.boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
+                    vkMapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
 
-                    std::vector<glm::mat3x4> newBoneData(model.boneData.size());
+                    std::vector<glm::mat3x4> newBoneData(model.sourceObject->boneData.size());
                     for (int i = 0; i < jointMatrixSize; i++) {
-                        newBoneData[i] = glm::transpose(model.boneData[i]);
+                        newBoneData[i] = glm::transpose(model.sourceObject->boneData[i]);
                     }
 
                     memcpy(mapped_data, newBoneData.data(), bufferSize);
 
                     VkMappedMemoryRange range = {};
                     range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-                    range.memory = model.boneInfoBuffer.memory;
+                    range.memory = model.sourceObject->boneInfoBuffer.memory;
                     range.size = bufferSize;
                     vkFlushMappedMemoryRanges(m_device.device, 1, &range);
 
-                    vkUnmapMemory(m_device.device, model.boneInfoBuffer.memory);
+                    vkUnmapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory);
                 }
 
-                for (const auto &part : model.parts) {
-                    RenderMaterial renderMaterial = model.materials[part.materialIndex];
+                for (const auto &part : model.sourceObject->parts) {
+                    RenderMaterial renderMaterial = model.sourceObject->materials[part.materialIndex];
 
-                    if (static_cast<size_t>(part.materialIndex + 1) > model.materials.size()) {
-                        renderMaterial = model.materials[0]; // TODO: better fallback
+                    if (static_cast<size_t>(part.materialIndex + 1) > model.sourceObject->materials.size()) {
+                        renderMaterial = model.sourceObject->materials[0]; // TODO: better fallback
                     }
 
                     if (renderMaterial.shaderPackage.p_ptr == nullptr) {
@@ -341,7 +341,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
                         bool found = false;
                         if (id == physis_shpk_crc("TransformView")) {
-                            if (model.skinned) {
+                            if (model.sourceObject->skinned) {
                                 sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
                             } else {
                                 sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
@@ -400,9 +400,14 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                         physis_Shader vertexShader = renderMaterial.shaderPackage.vertex_shaders[vertexShaderIndice];
                         physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
 
-                        auto &pipeline =
-                            bindPipeline(commandBuffer, pass, vertexShader, pixelShader, renderMaterial.mat.shpk_name, &model.model, &part.originalPart);
-                        bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial, pass);
+                        auto &pipeline = bindPipeline(commandBuffer,
+                                                      pass,
+                                                      vertexShader,
+                                                      pixelShader,
+                                                      renderMaterial.mat.shpk_name,
+                                                      &model.sourceObject->model,
+                                                      &part.originalPart);
+                        bindDescriptorSets(commandBuffer, pipeline, model.sourceObject, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
                         for (int j = 0; j < part.originalPart.num_streams; j++) {
@@ -541,11 +546,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
             beginPass(commandBuffer, pass);
 
             for (auto &model : models) {
-                for (const auto &part : model.parts) {
-                    RenderMaterial renderMaterial = model.materials[part.materialIndex];
+                for (const auto &part : model.sourceObject->parts) {
+                    RenderMaterial renderMaterial = model.sourceObject->materials[part.materialIndex];
 
-                    if (static_cast<size_t>(part.materialIndex + 1) > model.materials.size()) {
-                        renderMaterial = model.materials[0]; // TODO: better fallback
+                    if (static_cast<size_t>(part.materialIndex + 1) > model.sourceObject->materials.size()) {
+                        renderMaterial = model.sourceObject->materials[0]; // TODO: better fallback
                     }
 
                     if (renderMaterial.shaderPackage.p_ptr == nullptr) {
@@ -564,7 +569,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
                         bool found = false;
                         if (id == physis_shpk_crc("TransformView")) {
-                            if (model.skinned) {
+                            if (model.sourceObject->skinned) {
                                 sceneKeys.push_back(physis_shpk_crc("TransformViewSkin"));
                             } else {
                                 sceneKeys.push_back(physis_shpk_crc("TransformViewRigid"));
@@ -623,9 +628,14 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                         physis_Shader vertexShader = renderMaterial.shaderPackage.vertex_shaders[vertexShaderIndice];
                         physis_Shader pixelShader = renderMaterial.shaderPackage.pixel_shaders[pixelShaderIndice];
 
-                        auto &pipeline =
-                            bindPipeline(commandBuffer, pass, vertexShader, pixelShader, renderMaterial.mat.shpk_name, &model.model, &part.originalPart);
-                        bindDescriptorSets(commandBuffer, pipeline, &model, &renderMaterial, pass);
+                        auto &pipeline = bindPipeline(commandBuffer,
+                                                      pass,
+                                                      vertexShader,
+                                                      pixelShader,
+                                                      renderMaterial.mat.shpk_name,
+                                                      &model.sourceObject->model,
+                                                      &part.originalPart);
+                        bindDescriptorSets(commandBuffer, pipeline, model.sourceObject, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
                         for (int j = 0; j < part.originalPart.num_streams; j++) {

@@ -14,7 +14,7 @@
 #include <vulkan/vulkan.h>
 
 class Renderer;
-struct DrawObject;
+struct DrawObjectInstance;
 struct Camera;
 struct Texture;
 struct Scene;
@@ -31,7 +31,7 @@ public:
     virtual void resize() = 0;
 
     /// Render a frame into @p commandBuffer. @p currentFrame is the same value as SwapChain::currentFrame for convenience.
-    virtual void render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObject> &models) = 0;
+    virtual void render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObjectInstance> &models) = 0;
 
     /// The final composite texture that is drawn into with render()
     virtual Texture &getCompositeTexture() = 0;

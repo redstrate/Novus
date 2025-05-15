@@ -12,6 +12,7 @@ class AppState : public QObject
 public:
     explicit AppState(QObject *parent = nullptr);
 
+    QString basePath;
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
 
 Q_SIGNALS:

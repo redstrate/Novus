@@ -20,7 +20,8 @@ public:
 
     void render();
 
-    std::vector<DrawObject> models;
+    std::vector<DrawObjectInstance> models;
+    std::unordered_map<QString, DrawObject *> sourceModels;
     bool freeMode = false;
 
 private:

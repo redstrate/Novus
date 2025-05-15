@@ -33,11 +33,11 @@ public:
 
     void destroySwapchain();
 
-    DrawObject addDrawObject(const physis_MDL &model, int lod);
+    DrawObject *addDrawObject(const physis_MDL &model, int lod);
     void reloadDrawObject(DrawObject &model, uint32_t lod);
     Texture addGameTexture(VkFormat format, physis_Texture gameTexture);
 
-    void render(const std::vector<DrawObject> &models);
+    void render(const std::vector<DrawObjectInstance> &models);
 
     VkRenderPass presentationRenderPass() const;
 

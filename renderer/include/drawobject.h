@@ -34,17 +34,20 @@ struct RenderMaterial {
 };
 
 struct DrawObject {
-    QString name;
-
     physis_MDL model;
     std::vector<RenderPart> parts;
     std::array<glm::mat4, 768> boneData; // JOINT_MATRIX_SIZE_DAWNTRAIL
     std::vector<RenderMaterial> materials;
-    glm::vec3 position;
     bool skinned = false;
 
     uint16_t from_body_id = 101;
     uint16_t to_body_id = 101;
 
     Buffer boneInfoBuffer;
+};
+
+struct DrawObjectInstance {
+    QString name;
+    DrawObject *sourceObject = nullptr;
+    glm::vec3 position;
 };

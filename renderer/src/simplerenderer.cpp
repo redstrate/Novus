@@ -49,7 +49,7 @@ void SimpleRenderer::resize()
     m_device.nameObject(VK_OBJECT_TYPE_FRAMEBUFFER, reinterpret_cast<uint64_t>(m_framebuffer), "simple renderer framebuffer");
 }
 
-void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObject> &models)
+void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObjectInstance> &models)
 {
     Q_UNUSED(scene)
 
@@ -72,7 +72,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     for (const auto &model : models) {
-        if (model.skinned) {
+        if (model.sourceObject->skinned) {
             if (m_wireframe) {
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skinnedPipelineWireframe);
             } else {
@@ -90,33 +90,33 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
         {
             const size_t bufferSize = sizeof(glm::mat4) * 128;
             void *mapped_data = nullptr;
-            vkMapMemory(m_device.device, model.boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
+            vkMapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
 
-            memcpy(mapped_data, model.boneData.data(), bufferSize);
+            memcpy(mapped_data, model.sourceObject->boneData.data(), bufferSize);
 
             VkMappedMemoryRange range = {};
             range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-            range.memory = model.boneInfoBuffer.memory;
+            range.memory = model.sourceObject->boneInfoBuffer.memory;
             range.size = bufferSize;
             vkFlushMappedMemoryRanges(m_device.device, 1, &range);
 
-            vkUnmapMemory(m_device.device, model.boneInfoBuffer.memory);
+            vkUnmapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory);
         }
 
-        for (const auto &part : model.parts) {
+        for (const auto &part : model.sourceObject->parts) {
             RenderMaterial defaultMaterial = {};
 
             RenderMaterial *material = nullptr;
 
-            if (static_cast<size_t>(part.materialIndex) >= model.materials.size()) {
+            if (static_cast<size_t>(part.materialIndex) >= model.sourceObject->materials.size()) {
                 material = &defaultMaterial;
             } else {
-                material = const_cast<RenderMaterial *>(&model.materials[part.materialIndex]);
+                material = const_cast<RenderMaterial *>(&model.sourceObject->materials[part.materialIndex]);
             }
 
-            const auto h = hash(model, *material);
+            const auto h = hash(*model.sourceObject, *material);
             if (!cachedDescriptors.count(h)) {
-                if (auto descriptor = createDescriptorFor(model, *material); descriptor != VK_NULL_HANDLE) {
+                if (auto descriptor = createDescriptorFor(*model.sourceObject, *material); descriptor != VK_NULL_HANDLE) {
                     cachedDescriptors[h] = descriptor;
                 } else {
                     continue;

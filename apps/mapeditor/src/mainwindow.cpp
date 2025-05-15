@@ -74,14 +74,8 @@ void MainWindow::setupActions()
 void MainWindow::openMap(const QString &basePath)
 {
     QString base2Path = basePath.left(basePath.lastIndexOf(QStringLiteral("/level/")));
-    QString bgPath = QStringLiteral("bg/%1/bgplate/").arg(base2Path);
 
-    std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
-
-    auto tera_buffer = physis_gamedata_extract_file(data, bgPathStd.c_str());
-
-    auto tera = physis_parse_tera(tera_buffer);
-    mapView->addTerrain(bgPath, tera);
+    m_appState->basePath = basePath;
 
     setWindowTitle(basePath);
 

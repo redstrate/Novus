@@ -102,7 +102,6 @@ private:
     GameData *data = nullptr;
     FileCache &cache;
 
-    std::vector<DrawObject> models;
     std::unordered_map<uint64_t, RenderMaterial> renderMaterialCache;
 
     RenderManager *renderer = nullptr;
