@@ -143,7 +143,7 @@ void ObjectListModel::refresh()
                 auto layerItem = new TreeInformation();
                 layerItem->type = TreeType::Layer;
                 layerItem->parent = fileItem;
-                layerItem->name = i18n("Layer %1", j); // TODO: do display names if we have them
+                layerItem->name = QString::fromLatin1(layer.name);
                 layerItem->row = j;
                 layerItem->id = layer.id;
                 fileItem->children.push_back(layerItem);
