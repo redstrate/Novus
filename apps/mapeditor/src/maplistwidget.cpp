@@ -59,11 +59,11 @@ MapListWidget::MapListWidget(GameData *data, QWidget *parent)
                 const char *placeRegion = regionExdRow.row_data[0].column_data[0].string._0;
 
                 int placeZoneKey = territoryExdRow.row_data[0].column_data[4].u_int16._0;
-                auto zoneExdRow = physis_exd_read_row(&nameExd, placeRegionKey); // TODO: free, use all rows
+                auto zoneExdRow = physis_exd_read_row(&nameExd, placeZoneKey); // TODO: free, use all rows
                 const char *placeZone = zoneExdRow.row_data[0].column_data[0].string._0;
 
                 int placeNameKey = territoryExdRow.row_data[0].column_data[5].u_int16._0;
-                auto nameExdRow = physis_exd_read_row(&nameExd, placeRegionKey); // TODO: free, use all rows
+                auto nameExdRow = physis_exd_read_row(&nameExd, placeNameKey); // TODO: free, use all rows
                 const char *placeName = nameExdRow.row_data[0].column_data[0].string._0;
 
                 QStandardItem *item = new QStandardItem();

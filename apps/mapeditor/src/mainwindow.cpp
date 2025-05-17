@@ -84,9 +84,11 @@ void MainWindow::openMap(const QString &basePath)
         std::string bgLgbPathStd = lgbPath.toStdString();
 
         auto bg_buffer = physis_gamedata_extract_file(data, bgLgbPathStd.c_str());
-        auto lgb = physis_layergroup_read(bg_buffer);
-        if (lgb.num_chunks > 0) {
-            m_appState->lgbFiles.push_back({name, lgb});
+        if (bg_buffer.size > 0) {
+            auto lgb = physis_layergroup_read(bg_buffer);
+            if (lgb.num_chunks > 0) {
+                m_appState->lgbFiles.push_back({name, lgb});
+            }
         }
     };
 

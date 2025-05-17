@@ -84,11 +84,6 @@ void MapView::reloadMap()
 
     // add bg models
     for (const auto &[name, lgb] : m_appState->lgbFiles) {
-        // only load the bg models for now
-        if (name != QStringLiteral("bg")) {
-            continue;
-        }
-
         for (int i = 0; i < lgb.num_chunks; i++) {
             const auto chunk = lgb.chunks[i];
             for (int j = 0; j < chunk.num_layers; j++) {
@@ -130,6 +125,8 @@ void MapView::reloadMap()
 
                                     // We don't need this, and it will just take up memory
                                     physis_mdl_free(&plateMdl);
+                                } else {
+                                    qWarning() << "Failed to load" << assetPath;
                                 }
 
                                 physis_free_file(&plateMdlFile);
