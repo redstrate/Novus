@@ -80,7 +80,12 @@ MapView::MapView(GameData *data, FileCache &cache, AppState *appState, QWidget *
                                         QString::fromStdString(assetPath),
                                         materials,
                                         0);
+
+                                    // We don't need this, and it will just take up memory
+                                    physis_mdl_free(&plateMdl);
                                 }
+
+                                physis_free_file(&plateMdlFile);
                             }
                         } break;
                         }
@@ -119,6 +124,11 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
                               QStringLiteral("terapart%1").arg(i),
                               materials,
                               0);
+
+            // We don't need this, and it will just take up memory
+            physis_mdl_free(&plateMdl);
+
+            physis_free_file(&plateMdlFile);
         }
     }
 }
