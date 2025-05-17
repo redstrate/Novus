@@ -49,8 +49,11 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
             for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
                 const char *material_name = plateMdl.material_names[j];
 
-                auto mat = physis_material_parse(m_cache.lookupFile(QLatin1String(material_name)));
-                materials.push_back(mat);
+                const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
+                if (matFile.size > 0) {
+                    auto mat = physis_material_parse(matFile);
+                    materials.push_back(mat);
+                }
             }
 
             mdlPart->addModel(plateMdl,
@@ -78,9 +81,12 @@ void MapView::reloadMap()
     std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
 
     auto tera_buffer = physis_gamedata_extract_file(m_data, bgPathStd.c_str());
-
-    auto tera = physis_parse_tera(tera_buffer);
-    addTerrain(bgPath, tera);
+    if (tera_buffer.size > 0) {
+        auto tera = physis_parse_tera(tera_buffer);
+        addTerrain(bgPath, tera);
+    } else {
+        qWarning() << "Failed to load" << bgPathStd;
+    }
 
     // add bg models
     for (const auto &[name, lgb] : m_appState->lgbFiles) {
@@ -111,8 +117,11 @@ void MapView::reloadMap()
                                     for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
                                         const char *material_name = plateMdl.material_names[j];
 
-                                        auto mat = physis_material_parse(m_cache.lookupFile(QLatin1String(material_name)));
-                                        materials.push_back(mat);
+                                        const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
+                                        if (matFile.size > 0) {
+                                            auto mat = physis_material_parse(matFile);
+                                            materials.push_back(mat);
+                                        }
                                     }
 
                                     mdlPart->addModel(
