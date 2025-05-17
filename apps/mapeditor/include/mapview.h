@@ -25,6 +25,8 @@ public Q_SLOTS:
     void addTerrain(QString basePath, physis_Terrain terrain);
 
 private:
+    void reloadMap();
+
     MDLPart *mdlPart = nullptr;
 
     GameData *m_data;

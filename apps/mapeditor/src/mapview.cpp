@@ -27,79 +27,8 @@ MapView::MapView(GameData *data, FileCache &cache, AppState *appState, QWidget *
     layout->addWidget(mdlPart);
     setLayout(layout);
 
-    connect(appState, &AppState::mapLoaded, this, [this] {
-        mdlPart->clear();
-
-        QString base2Path = m_appState->basePath.left(m_appState->basePath.lastIndexOf(QStringLiteral("/level/")));
-        QString bgPath = QStringLiteral("bg/%1/bgplate/").arg(base2Path);
-
-        std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
-
-        auto tera_buffer = physis_gamedata_extract_file(m_data, bgPathStd.c_str());
-
-        auto tera = physis_parse_tera(tera_buffer);
-        addTerrain(bgPath, tera);
-
-        // add bg models
-        for (const auto &[name, lgb] : m_appState->lgbFiles) {
-            // only load the bg models for now
-            if (name != QStringLiteral("bg")) {
-                continue;
-            }
-
-            for (int i = 0; i < lgb.num_chunks; i++) {
-                const auto chunk = lgb.chunks[i];
-                for (int j = 0; j < chunk.num_layers; j++) {
-                    const auto layer = chunk.layers[j];
-                    for (int z = 0; z < layer.num_objects; z++) {
-                        const auto object = layer.objects[z];
-
-                        switch (object.data.tag) {
-                        case physis_LayerEntry::Tag::BG: {
-                            std::string assetPath = object.data.bg._0.asset_path;
-                            if (!assetPath.empty()) {
-                                if (!mdlPart->modelExists(QString::fromStdString(assetPath))) {
-                                    auto plateMdlFile = physis_gamedata_extract_file(m_data, assetPath.c_str());
-                                    if (plateMdlFile.size == 0) {
-                                        continue;
-                                    }
-
-                                    auto plateMdl = physis_mdl_parse(plateMdlFile);
-                                    if (plateMdl.p_ptr != nullptr) {
-                                        std::vector<physis_Material> materials;
-                                        for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
-                                            const char *material_name = plateMdl.material_names[j];
-
-                                            auto mat = physis_material_parse(m_cache.lookupFile(QLatin1String(material_name)));
-                                            materials.push_back(mat);
-                                        }
-
-                                        mdlPart->addModel(
-                                            plateMdl,
-                                            false,
-                                            glm::vec3(object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]),
-                                            QString::fromStdString(assetPath),
-                                            materials,
-                                            0);
-
-                                        // We don't need this, and it will just take up memory
-                                        physis_mdl_free(&plateMdl);
-                                    }
-
-                                    physis_free_file(&plateMdlFile);
-                                } else {
-                                    mdlPart->addExistingModel(
-                                        QString::fromStdString(assetPath),
-                                        glm::vec3(object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]));
-                                }
-                            }
-                        } break;
-                        }
-                    }
-                }
-            }
-        }
-    });
+    connect(appState, &AppState::mapLoaded, this, &MapView::reloadMap);
+    connect(appState, &AppState::visibleLayerIdsChanged, this, &MapView::reloadMap);
 }
 
 MDLPart &MapView::part() const
@@ -135,6 +64,85 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
             physis_mdl_free(&plateMdl);
 
             physis_free_file(&plateMdlFile);
+        }
+    }
+}
+
+void MapView::reloadMap()
+{
+    mdlPart->clear();
+
+    QString base2Path = m_appState->basePath.left(m_appState->basePath.lastIndexOf(QStringLiteral("/level/")));
+    QString bgPath = QStringLiteral("bg/%1/bgplate/").arg(base2Path);
+
+    std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
+
+    auto tera_buffer = physis_gamedata_extract_file(m_data, bgPathStd.c_str());
+
+    auto tera = physis_parse_tera(tera_buffer);
+    addTerrain(bgPath, tera);
+
+    // add bg models
+    for (const auto &[name, lgb] : m_appState->lgbFiles) {
+        // only load the bg models for now
+        if (name != QStringLiteral("bg")) {
+            continue;
+        }
+
+        for (int i = 0; i < lgb.num_chunks; i++) {
+            const auto chunk = lgb.chunks[i];
+            for (int j = 0; j < chunk.num_layers; j++) {
+                const auto layer = chunk.layers[j];
+                if (!m_appState->visibleLayerIds.contains(layer.id)) {
+                    continue;
+                }
+
+                for (int z = 0; z < layer.num_objects; z++) {
+                    const auto object = layer.objects[z];
+
+                    switch (object.data.tag) {
+                    case physis_LayerEntry::Tag::BG: {
+                        std::string assetPath = object.data.bg._0.asset_path;
+                        if (!assetPath.empty()) {
+                            if (!mdlPart->modelExists(QString::fromStdString(assetPath))) {
+                                auto plateMdlFile = physis_gamedata_extract_file(m_data, assetPath.c_str());
+                                if (plateMdlFile.size == 0) {
+                                    continue;
+                                }
+
+                                auto plateMdl = physis_mdl_parse(plateMdlFile);
+                                if (plateMdl.p_ptr != nullptr) {
+                                    std::vector<physis_Material> materials;
+                                    for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
+                                        const char *material_name = plateMdl.material_names[j];
+
+                                        auto mat = physis_material_parse(m_cache.lookupFile(QLatin1String(material_name)));
+                                        materials.push_back(mat);
+                                    }
+
+                                    mdlPart->addModel(
+                                        plateMdl,
+                                        false,
+                                        glm::vec3(object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]),
+                                        QString::fromStdString(assetPath),
+                                        materials,
+                                        0);
+
+                                    // We don't need this, and it will just take up memory
+                                    physis_mdl_free(&plateMdl);
+                                }
+
+                                physis_free_file(&plateMdlFile);
+                            } else {
+                                mdlPart->addExistingModel(
+                                    QString::fromStdString(assetPath),
+                                    glm::vec3(object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]));
+                            }
+                        }
+                    } break;
+                    }
+                }
+            }
         }
     }
 }

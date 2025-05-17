@@ -37,6 +37,10 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
                 const auto chunk = lgb.chunks[i];
                 for (int j = 0; j < chunk.num_layers; j++) {
                     const auto layer = chunk.layers[j];
+                    if (!m_appState->visibleLayerIds.contains(layer.id)) {
+                        continue;
+                    }
+
                     for (int z = 0; z < layer.num_objects; z++) {
                         const auto object = layer.objects[z];
 

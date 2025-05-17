@@ -14,7 +14,9 @@ public:
 
     QString basePath;
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
+    QList<uint32_t> visibleLayerIds;
 
 Q_SIGNALS:
     void mapLoaded();
+    void visibleLayerIdsChanged();
 };

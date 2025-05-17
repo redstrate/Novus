@@ -19,8 +19,6 @@ ObjectListModel::ObjectListModel(AppState *appState, QObject *parent)
 int ObjectListModel::rowCount(const QModelIndex &parent) const
 {
     TreeInformation *parentItem;
-    if (parent.column() > 0)
-        return 0;
 
     if (!parent.isValid())
         parentItem = m_rootItem;
@@ -33,7 +31,7 @@ int ObjectListModel::rowCount(const QModelIndex &parent) const
 int ObjectListModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return 1;
+    return 2;
 }
 
 QModelIndex ObjectListModel::index(int row, int column, const QModelIndex &parent) const
@@ -74,8 +72,14 @@ QVariant ObjectListModel::data(const QModelIndex &index, int role) const
         return {};
 
     auto item = static_cast<TreeInformation *>(index.internalPointer());
-    if (role == Qt::DisplayRole) {
-        return item->name;
+    if (index.column() == 0) {
+        if (role == Qt::DisplayRole) {
+            return item->name;
+        }
+    } else if (index.column() == 1) {
+        if (role == Qt::CheckStateRole && item->type == TreeType::Layer) {
+            return m_appState->visibleLayerIds.contains(item->id) ? Qt::Checked : Qt::Unchecked;
+        }
     }
 
     return {};
@@ -86,10 +90,35 @@ QVariant ObjectListModel::headerData(int section, Qt::Orientation orientation, i
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
             return i18nc("@title:column Object id", "Id");
+        } else if (section == 1) {
+            return i18nc("@title:column If the layer is visible", "Visible");
         }
     }
 
     return QAbstractItemModel::headerData(section, orientation, role);
+}
+
+Qt::ItemFlags ObjectListModel::flags(const QModelIndex &index) const
+{
+    auto item = static_cast<TreeInformation *>(index.internalPointer());
+    if (index.column() == 1 && item->type == TreeType::Layer)
+        return QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
+
+    return QAbstractItemModel::flags(index);
+}
+
+bool ObjectListModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    auto item = static_cast<TreeInformation *>(index.internalPointer());
+    if (index.column() == 1 && item->type == TreeType::Layer) {
+        if (value.value<Qt::CheckState>() == Qt::Checked) {
+            m_appState->visibleLayerIds.push_back(item->id);
+        } else {
+            m_appState->visibleLayerIds.removeAll(item->id);
+        }
+        Q_EMIT m_appState->visibleLayerIdsChanged();
+    }
+    return QAbstractItemModel::setData(index, value, role);
 }
 
 void ObjectListModel::refresh()
@@ -116,6 +145,7 @@ void ObjectListModel::refresh()
                 layerItem->parent = fileItem;
                 layerItem->name = i18n("Layer %1", j); // TODO: do display names if we have them
                 layerItem->row = j;
+                layerItem->id = layer.id;
                 fileItem->children.push_back(layerItem);
 
                 for (int z = 0; z < layer.num_objects; z++) {
