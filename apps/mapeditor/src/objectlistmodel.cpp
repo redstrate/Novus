@@ -74,15 +74,8 @@ QVariant ObjectListModel::data(const QModelIndex &index, int role) const
         return {};
 
     auto item = static_cast<TreeInformation *>(index.internalPointer());
-
-    if (item->type == TreeType::File) {
-        if (role == Qt::DisplayRole) {
-            return item->name;
-        }
-    } else if (item->type == TreeType::Object) {
-        if (role == Qt::DisplayRole) {
-            return item->name;
-        }
+    if (role == Qt::DisplayRole) {
+        return item->name;
     }
 
     return {};
@@ -117,15 +110,23 @@ void ObjectListModel::refresh()
             const auto chunk = lgb.chunks[i];
             for (int j = 0; j < chunk.num_layers; j++) {
                 const auto layer = chunk.layers[j];
+
+                auto layerItem = new TreeInformation();
+                layerItem->type = TreeType::Layer;
+                layerItem->parent = fileItem;
+                layerItem->name = i18n("Layer %1", j); // TODO: do display names if we have them
+                layerItem->row = j;
+                fileItem->children.push_back(layerItem);
+
                 for (int z = 0; z < layer.num_objects; z++) {
                     const auto object = layer.objects[z];
 
                     auto objectItem = new TreeInformation();
                     objectItem->type = TreeType::Object;
-                    objectItem->parent = fileItem;
+                    objectItem->parent = layerItem;
                     objectItem->name = i18n("Unknown (%1)", object.instance_id); // TODO: do display names if we have them
                     objectItem->row = z;
-                    fileItem->children.push_back(objectItem);
+                    layerItem->children.push_back(objectItem);
                 }
             }
         }

@@ -12,6 +12,8 @@ enum class TreeType {
     Root,
     /// LGB file
     File,
+    /// A layer.
+    Layer,
     /// A single object
     Object,
 };
