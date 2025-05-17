@@ -21,10 +21,6 @@ Here is an exhaustive list of tooling available here:
 
 There are no releases at the moment, but experimental builds are currently available for Windows and Linux via [GitHub Actions](https://github.com/redstrate/Novus/actions). Note that the Linux binaries may not be completely portable.
 
-### Supported Game Versions
-
-This works for A Realm Reborn (2.x) thru Endwalker content (6.x) while Dawntrail (7.x) support is still WIP.
-
 ## Building
 
 Please refer to the [building document](BUILDING.md) for instructions on how to build Novus.
