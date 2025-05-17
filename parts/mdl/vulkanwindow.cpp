@@ -185,6 +185,9 @@ void VulkanWindow::render()
         return;
     }
 
+    const float deltaTime = timer.nsecsElapsed() / 1000000000.0f;
+    timer.restart();
+
     ImGui::SetCurrentContext(m_renderer->ctx);
 
     auto &io = ImGui::GetIO();
@@ -221,8 +224,8 @@ void VulkanWindow::render()
         forward = normalize(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(part->pitch, glm::vec3(1, 0, 0)) * glm::vec3(0, 0, 1));
         right = normalize(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::vec3(1, 0, 0));
 
-        part->position += right * movX * 2.0f;
-        part->position += forward * movY * 2.0f;
+        part->position += right * movX * 50.0f * deltaTime;
+        part->position += forward * movY * 50.0f * deltaTime;
 
         m_renderer->camera.view = glm::mat4(1.0f);
         m_renderer->camera.view = glm::translate(m_renderer->camera.view, part->position);

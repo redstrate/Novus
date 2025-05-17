@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <QElapsedTimer>
 #include <QWindow>
 
 #include "imgui.h"
@@ -30,4 +31,5 @@ private:
     QVulkanInstance *m_instance;
     MDLPart *part;
     bool pressed_keys[4] = {};
+    QElapsedTimer timer;
 };
