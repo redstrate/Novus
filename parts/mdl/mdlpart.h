@@ -65,7 +65,9 @@ public Q_SLOTS:
     /// Clears all stored MDLs.
     void clear();
 
-    /// Adds a new MDL with a list of materials used.
+    // TODO: all of this API is terrible and should be redone
+    bool modelExists(const QString &name);
+
     void addModel(physis_MDL mdl,
                   bool skinned,
                   glm::vec3 position,
@@ -74,6 +76,8 @@ public Q_SLOTS:
                   int lod,
                   uint16_t fromBodyId = 101,
                   uint16_t toBodyId = 101);
+
+    void addExistingModel(const QString &name, glm::vec3 position);
 
     void removeModel(const physis_MDL &mdl);
 

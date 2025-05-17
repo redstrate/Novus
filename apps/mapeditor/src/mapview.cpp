@@ -58,34 +58,40 @@ MapView::MapView(GameData *data, FileCache &cache, AppState *appState, QWidget *
                         case physis_LayerEntry::Tag::BG: {
                             std::string assetPath = object.data.bg._0.asset_path;
                             if (!assetPath.empty()) {
-                                auto plateMdlFile = physis_gamedata_extract_file(m_data, assetPath.c_str());
-                                if (plateMdlFile.size == 0) {
-                                    continue;
-                                }
-
-                                auto plateMdl = physis_mdl_parse(plateMdlFile);
-                                if (plateMdl.p_ptr != nullptr) {
-                                    std::vector<physis_Material> materials;
-                                    for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
-                                        const char *material_name = plateMdl.material_names[j];
-
-                                        auto mat = physis_material_parse(m_cache.lookupFile(QLatin1String(material_name)));
-                                        materials.push_back(mat);
+                                if (!mdlPart->modelExists(QString::fromStdString(assetPath))) {
+                                    auto plateMdlFile = physis_gamedata_extract_file(m_data, assetPath.c_str());
+                                    if (plateMdlFile.size == 0) {
+                                        continue;
                                     }
 
-                                    mdlPart->addModel(
-                                        plateMdl,
-                                        false,
-                                        glm::vec3(object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]),
+                                    auto plateMdl = physis_mdl_parse(plateMdlFile);
+                                    if (plateMdl.p_ptr != nullptr) {
+                                        std::vector<physis_Material> materials;
+                                        for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
+                                            const char *material_name = plateMdl.material_names[j];
+
+                                            auto mat = physis_material_parse(m_cache.lookupFile(QLatin1String(material_name)));
+                                            materials.push_back(mat);
+                                        }
+
+                                        mdlPart->addModel(
+                                            plateMdl,
+                                            false,
+                                            glm::vec3(object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]),
+                                            QString::fromStdString(assetPath),
+                                            materials,
+                                            0);
+
+                                        // We don't need this, and it will just take up memory
+                                        physis_mdl_free(&plateMdl);
+                                    }
+
+                                    physis_free_file(&plateMdlFile);
+                                } else {
+                                    mdlPart->addExistingModel(
                                         QString::fromStdString(assetPath),
-                                        materials,
-                                        0);
-
-                                    // We don't need this, and it will just take up memory
-                                    physis_mdl_free(&plateMdl);
+                                        glm::vec3(object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]));
                                 }
-
-                                physis_free_file(&plateMdlFile);
                             }
                         } break;
                         }

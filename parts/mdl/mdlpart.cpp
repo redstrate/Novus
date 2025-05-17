@@ -82,7 +82,7 @@ void MDLPart::addModel(physis_MDL mdl,
                        uint16_t fromBodyId,
                        uint16_t toBodyId)
 {
-    DrawObject *model;
+    DrawObject *model = nullptr;
     if (vkWindow->sourceModels.contains(name)) {
         model = vkWindow->sourceModels[name];
     } else {
@@ -102,6 +102,7 @@ void MDLPart::addModel(physis_MDL mdl,
         vkWindow->sourceModels[name] = model;
     }
 
+    Q_ASSERT(model != nullptr);
     vkWindow->models.push_back(DrawObjectInstance{name, model, position});
 
     Q_EMIT modelChanged();
@@ -430,6 +431,17 @@ int MDLPart::numModels() const
 RenderManager *MDLPart::manager() const
 {
     return renderer;
+}
+
+bool MDLPart::modelExists(const QString &name)
+{
+    return vkWindow->sourceModels.contains(name);
+}
+
+void MDLPart::addExistingModel(const QString &name, glm::vec3 position)
+{
+    auto model = vkWindow->sourceModels[name];
+    vkWindow->models.push_back(DrawObjectInstance{name, model, position});
 }
 
 #include "moc_mdlpart.cpp"
