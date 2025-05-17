@@ -21,7 +21,7 @@ layout(std430, push_constant) uniform PushConstant {
 };
 
 void main() {
-    const vec3 lightPos = vec3(3);
+    const vec3 lightPos = vec3(5);
 
     vec3 diffuse;
     if (textureSize(diffuseTexture, 0).x == 1) {
@@ -41,5 +41,5 @@ void main() {
 
     float diff = max(dot(norm, lightDir), 0.0);
 
-    outColor = vec4(diffuse * (diff + 0.1), 1.0);
+    outColor = vec4(diffuse * (diff + 0.5), 1.0);
 }
