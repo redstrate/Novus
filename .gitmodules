@@ -1,9 +1,9 @@
 [submodule "extern/libphysis"]
 	path = extern/libphysis
-	url = ../libphysis
+	url = https://github.com/redstrate/libphysis.git
 [submodule "extern/dxbc"]
 	path = extern/dxbc
-	url = ../dxbc
+	url = https://codeberg.org/redstrate/dxbc.git
 [submodule "extern/luadec51"]
 	path = extern/luadec51
-	url = ../luadec51
+	url = https://github.com/redstrate/luadec51.git
