@@ -127,67 +127,9 @@ void MtrlPart::rebuild()
     for (uint32_t i = 0; i < m_material.num_samplers; i++) {
         const auto sampler = m_material.samplers[i];
 
-        QString name;
-        switch (sampler.texture_usage) {
-        case TextureUsage::Sampler:
-        case TextureUsage::Sampler0:
-        case TextureUsage::Sampler1:
-            name = i18n("Generic");
-            break;
-        case TextureUsage::SamplerCatchlight:
-            name = i18n("Catchlight");
-            break;
-        case TextureUsage::SamplerColorMap0:
-            name = i18n("Color Map 0");
-            break;
-        case TextureUsage::SamplerColorMap1:
-            name = i18n("Color Map 1");
-            break;
-        case TextureUsage::SamplerDiffuse:
-            name = i18n("Diffuse");
-            break;
-        case TextureUsage::SamplerEnvMap:
-            name = i18n("Environment Map");
-            break;
-        case TextureUsage::SamplerMask:
-            name = i18n("Mask");
-            break;
-        case TextureUsage::SamplerNormal:
-            name = i18n("Normal");
-            break;
-        case TextureUsage::SamplerNormalMap0:
-            name = i18n("Normal Map 0");
-            break;
-        case TextureUsage::SamplerNormalMap1:
-            name = i18n("Normal Map 1");
-            break;
-        case TextureUsage::SamplerReflection:
-            name = i18n("Reflection");
-            break;
-        case TextureUsage::SamplerSpecular:
-            name = i18n("Specular");
-            break;
-        case TextureUsage::SamplerSpecularMap0:
-            name = i18n("Specular Map 0");
-            break;
-        case TextureUsage::SamplerSpecularMap1:
-            name = i18n("Specular Map 1");
-            break;
-        case TextureUsage::SamplerWaveMap:
-            name = i18n("Wave Map");
-            break;
-        case TextureUsage::SamplerWaveletMap0:
-            name = i18n("Wavelet Map 0");
-            break;
-        case TextureUsage::SamplerWaveletMap1:
-            name = i18n("Wavelet Map 1");
-            break;
-        case TextureUsage::SamplerWhitecapMap:
-            name = i18n("Whitecap Map");
-            break;
-        default:
-            name = i18n("Unknown");
-            break;
+        QString name = i18n("Unknown");
+        if (keys.contains(sampler.texture_usage)) {
+            name = QString::fromLatin1(keys[sampler.texture_usage]);
         }
 
         auto groupBox = new QGroupBox(name);
