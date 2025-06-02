@@ -440,6 +440,7 @@ const QHash<uint, const char *> keys = {
     {physis_shpk_crc("g_SubSurfaceWidth"), "g_SubSurfaceWidth"},
     {physis_shpk_crc("g_Transparency"), "g_Transparency"},
     {physis_shpk_crc("g_UseSubSurfaceRate"), "g_UseSubSurfaceRate"},
+    {physis_shpk_crc("g_VertexMovementScale"), "g_VertexMovementScale"},
 
     // Samplers
     {physis_shpk_crc("g_SamplerViewPosition"), "g_SamplerViewPosition"},
