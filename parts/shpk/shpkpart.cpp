@@ -51,8 +51,7 @@ void SHPKPart::load(physis_Buffer buffer)
 
             pageTabWidget->addTab(shaderTextEdit, name);
         } catch (const std::exception &exception) {
-            // TODO: display the error
-            Q_UNUSED(exception)
+            qWarning() << "Failed to load shader:" << exception.what();
         }
     };
 
