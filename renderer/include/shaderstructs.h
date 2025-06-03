@@ -114,3 +114,11 @@ struct ShaderTypeParameter {
 struct PbrParameterCommon {
     glm::vec4 unk;
 };
+
+// Dawntrail
+// Only found in static models, not skinned ones?
+struct WorldViewMatrix {
+    glm::mat4 m_WorldViewMatrix;
+    glm::vec4 m_EyePosition;
+    glm::vec4 m_Unk;
+};

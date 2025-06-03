@@ -242,6 +242,12 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         m_device.copyToBuffer(g_PbrParameterCommon, &pbrParameterCommon, sizeof(PbrParameterCommon));
     }
 
+    // worldViewMatrix
+    if (m_dawntrailMode) {
+        g_WorldViewMatrix = m_device.createBuffer(sizeof(WorldViewMatrix), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_WorldViewMatrix, "g_WorldViewMatrix");
+    }
+
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = VK_FILTER_NEAREST;
@@ -276,7 +282,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
     const glm::mat4 viewProjectionMatrix = camera.perspective * camera.view;
 
     // unknown
-    cameraParameter.m_unknownMatrix = glm::transpose(glm::inverse(camera.view));
+    cameraParameter.m_unknownMatrix = glm::transpose(camera.perspective);
 
     cameraParameter.m_ViewMatrix = glm::transpose(camera.view);
     cameraParameter.m_InverseViewMatrix = cameraParameter.m_unknownMatrix;
@@ -287,11 +293,17 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
     cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
     cameraParameter.m_ProjectionMatrix = glm::transpose(viewProjectionMatrix);
 
-    cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(glm::inverse(camera.perspective));
+    cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(camera.perspective);
     cameraParameter.m_EyePosition = glm::vec4(camera.position, 0.0f);
     cameraParameter.m_LookAtVector = glm::vec4(0.0f); // placeholder
 
     m_device.copyToBuffer(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
+
+    WorldViewMatrix worldViewMatrix;
+    worldViewMatrix.m_WorldViewMatrix = cameraParameter.m_ViewMatrix;
+    worldViewMatrix.m_EyePosition = glm::vec4(camera.position, 0.0f);
+
+    m_device.copyToBuffer(g_WorldViewMatrix, &worldViewMatrix, sizeof(WorldViewMatrix));
 
     int i = 0;
     for (const auto &pass : passes) {
@@ -1412,6 +1424,8 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         useUniformBuffer(g_ShaderTypeParameter);
                     } else if (strcmp(name, "g_PbrParameterCommon") == 0) {
                         useUniformBuffer(g_PbrParameterCommon);
+                    } else if (strcmp(name, "g_WorldViewMatrix") == 0) {
+                        useUniformBuffer(g_WorldViewMatrix);
                     } else {
                         qInfo() << "Unknown resource:" << name;
                         info->buffer = m_dummyBuffer.buffer;

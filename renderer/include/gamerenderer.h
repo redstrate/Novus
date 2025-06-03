@@ -103,6 +103,7 @@ private:
     Buffer g_AmbientParam;
     Buffer g_ShaderTypeParameter;
     Buffer g_PbrParameterCommon;
+    Buffer g_WorldViewMatrix;
 
     Buffer m_planeVertexBuffer;
 
