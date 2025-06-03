@@ -322,6 +322,7 @@ jobs:
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/zlib1.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/z.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/KF6XmlGui.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
+        Copy-Item -Path ../Qt/${{ env.QT_VERSION }}/msvc2022_64/bin/Qt6PrintSupport.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
 
     - name: Remove extra files
       if: runner.os == 'Windows'
