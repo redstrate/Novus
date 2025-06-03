@@ -318,10 +318,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                 }
 
                 for (const auto &part : model.sourceObject->parts) {
-                    RenderMaterial renderMaterial = model.sourceObject->materials[part.materialIndex];
-
+                    RenderMaterial renderMaterial;
                     if (static_cast<size_t>(part.materialIndex + 1) > model.sourceObject->materials.size()) {
                         renderMaterial = model.sourceObject->materials[0]; // TODO: better fallback
+                    } else {
+                        renderMaterial = model.sourceObject->materials[part.materialIndex];
                     }
 
                     if (renderMaterial.shaderPackage.p_ptr == nullptr) {
@@ -547,10 +548,11 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
             for (auto &model : models) {
                 for (const auto &part : model.sourceObject->parts) {
-                    RenderMaterial renderMaterial = model.sourceObject->materials[part.materialIndex];
-
+                    RenderMaterial renderMaterial;
                     if (static_cast<size_t>(part.materialIndex + 1) > model.sourceObject->materials.size()) {
                         renderMaterial = model.sourceObject->materials[0]; // TODO: better fallback
+                    } else {
+                        renderMaterial = model.sourceObject->materials[part.materialIndex];
                     }
 
                     if (renderMaterial.shaderPackage.p_ptr == nullptr) {
