@@ -282,7 +282,19 @@ RenderManager::RenderManager(GameData *data)
     poolSize2.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSize2.descriptorCount = 150;
 
-    const std::array poolSizes = {poolSize, poolSize2};
+    VkDescriptorPoolSize poolSize3 = {};
+    poolSize3.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    poolSize3.descriptorCount = 150;
+
+    VkDescriptorPoolSize poolSize4 = {};
+    poolSize4.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize4.descriptorCount = 150;
+
+    VkDescriptorPoolSize poolSize5 = {};
+    poolSize5.type = VK_DESCRIPTOR_TYPE_SAMPLER;
+    poolSize5.descriptorCount = 150;
+
+    const std::array poolSizes = {poolSize, poolSize2, poolSize3, poolSize4, poolSize5};
 
     VkDescriptorPoolCreateInfo poolCreateInfo = {};
     poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
