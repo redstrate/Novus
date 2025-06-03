@@ -282,7 +282,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
     const glm::mat4 viewProjectionMatrix = camera.perspective * camera.view;
 
     // unknown
-    cameraParameter.m_unknownMatrix = glm::transpose(camera.perspective);
+    cameraParameter.m_unknownMatrix = glm::mat4(1.0f);
+    cameraParameter.m_unknown4 = glm::mat4(1.0f);
 
     cameraParameter.m_ViewMatrix = glm::transpose(camera.view);
     cameraParameter.m_InverseViewMatrix = cameraParameter.m_unknownMatrix;
@@ -293,14 +294,14 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
     cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
     cameraParameter.m_ProjectionMatrix = glm::transpose(viewProjectionMatrix);
 
-    cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(camera.perspective);
+    cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(viewProjectionMatrix);
     cameraParameter.m_EyePosition = glm::vec4(camera.position, 0.0f);
     cameraParameter.m_LookAtVector = glm::vec4(0.0f); // placeholder
 
     m_device.copyToBuffer(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
 
     WorldViewMatrix worldViewMatrix;
-    worldViewMatrix.m_WorldViewMatrix = cameraParameter.m_ViewMatrix;
+    worldViewMatrix.m_WorldViewMatrix = glm::mat4(1.0f);
     worldViewMatrix.m_EyePosition = glm::vec4(camera.position, 0.0f);
 
     m_device.copyToBuffer(g_WorldViewMatrix, &worldViewMatrix, sizeof(WorldViewMatrix));

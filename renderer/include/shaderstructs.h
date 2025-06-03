@@ -4,6 +4,7 @@
 #pragma once
 
 // Structure definitions from https://github.com/Shaderlayan/Ouroboros
+// TODO: I really need to update these names, they're all wrong for DT?
 struct CameraParameter {
     glm::mat3x4 m_InverseViewMatrix;
     glm::mat3x4 m_ViewMatrix; // TODO: does it need alignment?
@@ -18,7 +19,7 @@ struct CameraParameter {
     glm::mat4 m_unknownMatrix; // used in a vertex shader in characterlegacy.shpk
     glm::vec4 m_unknown2[11];
     // Dawntrail: something accesses the z and w of this
-    glm::vec4 m_unknown3;
+    glm::mat4 m_unknown4; // noooo idea
 };
 
 const int JOINT_MATRIX_SIZE_ARR = 64;
