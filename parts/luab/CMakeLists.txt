@@ -11,6 +11,8 @@ target_link_libraries(luabpart
         Qt6::Widgets)
 target_include_directories(luabpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(luabpart PRIVATE TRANSLATION_DOMAIN="novus")
-add_dependencies(luabpart luadec)
+if (NOT BUILD_FLATPAK)
+    add_dependencies(luabpart luadec)
+endif()
 
 add_library(Novus::LuabPart ALIAS luabpart)
