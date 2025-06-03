@@ -40,6 +40,7 @@ void SHPKPart::load(physis_Buffer buffer)
 
             spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
 
+            glsl.build_dummy_sampler_for_combined_images();
             glsl.build_combined_image_samplers();
 
             spirv_cross::CompilerGLSL::Options options;
