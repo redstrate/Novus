@@ -141,14 +141,14 @@ jobs:
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone https://invent.kde.org/frameworks/kcoreaddons.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kca -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcoreaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kca -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcoreaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF -DBUILD_PYTHON_BINDINGS=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kca --config ${{ matrix.build_type }} --target install
 
     - name: Build KConfig
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone https://invent.kde.org/frameworks/kconfig.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kconfig -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kconfig -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kconfig -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kconfig -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF -DBUILD_PYTHON_BINDINGS=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kconfig --config ${{ matrix.build_type }} --target install
 
     - name: Build KArchive
@@ -183,14 +183,14 @@ jobs:
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone https://invent.kde.org/frameworks/kguiaddons.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kguiaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kguiaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF -DWITH_WAYLAND=OFF -DWITH_X11=OFF
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kguiaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kguiaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF -DWITH_WAYLAND=OFF -DWITH_X11=OFF -DBUILD_PYTHON_BINDINGS=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kguiaddons --config ${{ matrix.build_type }} --target install
 
     - name: Build KWidgetsAddons
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone https://invent.kde.org/frameworks/kwidgetsaddons.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kwidgetsaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kwidgetsaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DBUILD_TESTING=OFF -DBUILD_PYTHON_BINDINGS=OFF
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons --config ${{ matrix.build_type }} --target install
 
     - name: Configure KColorScheme
