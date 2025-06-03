@@ -430,11 +430,14 @@ void RenderManager::render(const std::vector<DrawObjectInstance> &models)
     m_renderer->render(commandBuffer, camera, scene, models);
 
     // render extra passes
-    for (const auto &pass : m_passes) {
-        pass->render(commandBuffer, camera);
-    }
+    // TODO: support the new renderer
+    if (qgetenv("NOVUS_USE_NEW_RENDERER") != QByteArrayLiteral("1")) {
+        for (const auto &pass : m_passes) {
+            pass->render(commandBuffer, camera);
+        }
 
-    vkCmdEndRenderPass(commandBuffer);
+        vkCmdEndRenderPass(commandBuffer);
+    }
 
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
