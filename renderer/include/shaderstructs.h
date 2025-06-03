@@ -109,3 +109,8 @@ struct AmbientParameters {
 struct ShaderTypeParameter {
     glm::vec4 m[2044];
 };
+
+// Dawntrail
+struct PbrParameterCommon {
+    glm::vec4 unk;
+};

@@ -231,6 +231,17 @@ GameRenderer::GameRenderer(Device &device, GameData *data)
         m_device.copyToBuffer(g_ShaderTypeParameter, &shaderTypeParameter, sizeof(ShaderTypeParameter));
     }
 
+    // pbr common parameter
+    if (m_dawntrailMode) {
+        g_PbrParameterCommon = m_device.createBuffer(sizeof(PbrParameterCommon), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_PbrParameterCommon, "g_PbrParameterCommon");
+
+        PbrParameterCommon pbrParameterCommon{};
+        pbrParameterCommon.unk = {31.01465, 30.99805, 1.00, 0.00};
+
+        m_device.copyToBuffer(g_PbrParameterCommon, &pbrParameterCommon, sizeof(PbrParameterCommon));
+    }
+
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = VK_FILTER_NEAREST;
@@ -1399,6 +1410,8 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         useUniformBuffer(g_AmbientParam);
                     } else if (strcmp(name, "g_ShaderTypeParameter") == 0) {
                         useUniformBuffer(g_ShaderTypeParameter);
+                    } else if (strcmp(name, "g_PbrParameterCommon") == 0) {
+                        useUniformBuffer(g_PbrParameterCommon);
                     } else {
                         qInfo() << "Unknown resource:" << name;
                         info->buffer = m_dummyBuffer.buffer;

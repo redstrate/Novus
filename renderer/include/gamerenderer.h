@@ -102,6 +102,7 @@ private:
     Buffer g_DecalColor;
     Buffer g_AmbientParam;
     Buffer g_ShaderTypeParameter;
+    Buffer g_PbrParameterCommon;
 
     Buffer m_planeVertexBuffer;
 
