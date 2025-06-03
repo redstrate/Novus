@@ -1338,7 +1338,8 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                     } else if (strcmp(name, "g_SamplerLightSpecular") == 0) {
                         Q_ASSERT(material);
                         info->imageView = m_lightSpecularBuffer.imageView;
-                    } else if (strcmp(name, "g_SamplerDiffuse") == 0 && material->diffuseTexture.has_value()) {
+                    } else if ((strcmp(name, "g_SamplerDiffuse") == 0 || strcmp(name, "g_SamplerDecal") == 0) && material->diffuseTexture.has_value()) {
+                        // NOTE: the g_SamplerDecal is 100% a guess, i'm almost certain it's another texture
                         Q_ASSERT(material);
                         info->imageView = material->diffuseTexture->imageView;
                     } else if (strcmp(name, "g_SamplerSpecular") == 0 && material->specularTexture.has_value()) {
