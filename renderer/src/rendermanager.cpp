@@ -217,6 +217,7 @@ RenderManager::RenderManager(GameData *data)
     enabledFeatures.shaderClipDistance = VK_TRUE;
     enabledFeatures.shaderCullDistance = VK_TRUE;
     enabledFeatures.fillModeNonSolid = VK_TRUE;
+    enabledFeatures.imageCubeArray = VK_TRUE;
 
     // TODO: Update the Flatpak Vulkan SDK to support this
 #if defined(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME)
