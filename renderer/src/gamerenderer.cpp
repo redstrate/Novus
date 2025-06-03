@@ -1302,9 +1302,12 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                         info->imageView = m_viewPositionBuffer.imageView;
                     } else if (strcmp(name, "g_SamplerDepth") == 0) {
                         info->imageView = m_depthBuffer.imageView;
-                    } else if ((strcmp(name, "g_SamplerNormal") == 0 || strcmp(name, "g_SamplerIndex") == 0) && material->normalTexture.has_value()) {
+                    } else if (strcmp(name, "g_SamplerNormal") == 0 && material->normalTexture.has_value()) {
                         Q_ASSERT(material);
                         info->imageView = material->normalTexture->imageView;
+                    } else if (strcmp(name, "g_SamplerIndex") == 0 && material->indexTexture.has_value()) {
+                        Q_ASSERT(material);
+                        info->imageView = material->indexTexture->imageView;
                     } else if (strcmp(name, "g_SamplerLightDiffuse") == 0) {
                         Q_ASSERT(material);
                         info->imageView = m_lightBuffer.imageView;

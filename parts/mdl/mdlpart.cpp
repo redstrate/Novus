@@ -307,29 +307,24 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
 
         qInfo() << "Loading" << t;
 
-        char type = t[t.length() - 5];
+        const auto type = t.substr(t.find_last_of('_') + 1, t.find_last_of('.') - t.find_last_of('_') - 1);
         auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
         if (texture.rgba != nullptr) {
-            switch (type) {
-            case 'm': {
-                newMaterial.multiTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
-                renderer->device().nameTexture(*newMaterial.multiTexture, material.textures[i]);
-            } break;
-            case 'd': {
-                newMaterial.diffuseTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
-                renderer->device().nameTexture(*newMaterial.diffuseTexture, material.textures[i]);
-            } break;
-            case 'n': {
-                newMaterial.normalTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
-                renderer->device().nameTexture(*newMaterial.normalTexture, material.textures[i]);
-            } break;
-            case 's': {
-                newMaterial.specularTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
-                renderer->device().nameTexture(*newMaterial.specularTexture, material.textures[i]);
-            } break;
-            default:
-                qDebug() << "unhandled type" << type;
-                break;
+            auto gameTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
+            renderer->device().nameTexture(gameTexture, material.textures[i]);
+
+            if (type == "m") {
+                newMaterial.multiTexture = gameTexture;
+            } else if (type == "d") {
+                newMaterial.diffuseTexture = gameTexture;
+            } else if (type == "n") {
+                newMaterial.normalTexture = gameTexture;
+            } else if (type == "s") {
+                newMaterial.specularTexture = gameTexture;
+            } else if (type == "id") {
+                newMaterial.indexTexture = gameTexture;
+            } else {
+                qWarning() << "Unknown texture type" << type;
             }
         } else {
             qInfo() << "Failed to load" << t;
