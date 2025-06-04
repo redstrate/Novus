@@ -120,6 +120,10 @@ private:
     Buffer m_dummyBuffer;
     Texture m_tileNormal;
     Texture m_tileDiffuse;
+    Texture m_diffuseGBuffer;
+    Texture m_motionGBuffer;
+    Texture m_motionGBuffer2;
+    Texture m_unkGBuffer;
 
     // Dawntrail changes part of the rendering system
     bool m_dawntrailMode = false;

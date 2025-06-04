@@ -727,6 +727,74 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
             colorAttachments.push_back(attachmentInfo);
         }
 
+        // test for another
+        {
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+            attachmentInfo.imageView = m_motionGBuffer.imageView;
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            attachmentInfo.clearValue.color.float32[0] = 0.24;
+            attachmentInfo.clearValue.color.float32[1] = 0.24;
+            attachmentInfo.clearValue.color.float32[2] = 0.24;
+            attachmentInfo.clearValue.color.float32[3] = 1.0;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
+
+        // test for another
+        {
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+            attachmentInfo.imageView = m_diffuseGBuffer.imageView;
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            attachmentInfo.clearValue.color.float32[0] = 0.24;
+            attachmentInfo.clearValue.color.float32[1] = 0.24;
+            attachmentInfo.clearValue.color.float32[2] = 0.24;
+            attachmentInfo.clearValue.color.float32[3] = 1.0;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
+
+        // test for another
+        {
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+            attachmentInfo.imageView = m_unkGBuffer.imageView;
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            attachmentInfo.clearValue.color.float32[0] = 0.24;
+            attachmentInfo.clearValue.color.float32[1] = 0.24;
+            attachmentInfo.clearValue.color.float32[2] = 0.24;
+            attachmentInfo.clearValue.color.float32[3] = 1.0;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
+
+        // test for another
+        {
+            VkRenderingAttachmentInfo attachmentInfo{};
+            attachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+            attachmentInfo.imageView = m_motionGBuffer2.imageView;
+            attachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+            attachmentInfo.clearValue.color.float32[0] = 0.24;
+            attachmentInfo.clearValue.color.float32[1] = 0.24;
+            attachmentInfo.clearValue.color.float32[2] = 0.24;
+            attachmentInfo.clearValue.color.float32[3] = 1.0;
+
+            colorAttachments.push_back(attachmentInfo);
+        }
+
         m_device.transitionTexture(commandBuffer, m_depthBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
         // depth
@@ -1161,6 +1229,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         // TODO: hardcoded, should be a reusable function to get the color attachments
         if (passName == "PASS_LIGHTING_OPAQUE") {
             colorAttachmentCount = 2;
+        } else if (passName == "PASS_G_OPAQUE") {
+            colorAttachmentCount = 5;
         }
 
         for (int i = 0; i < colorAttachmentCount; i++) {
@@ -1208,15 +1278,15 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
         depthStencil.maxDepthBounds = 1.0f;
 
-        std::array<VkFormat, 3> colorAttachmentFormats = {VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM};
+        const std::array colorAttachmentFormats = {VK_FORMAT_R8G8B8A8_UNORM,
+                                                   VK_FORMAT_R8G8B8A8_UNORM,
+                                                   VK_FORMAT_R8G8B8A8_UNORM,
+                                                   VK_FORMAT_R8G8B8A8_UNORM,
+                                                   VK_FORMAT_R8G8B8A8_UNORM};
 
         VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = {};
         pipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-        if (passName == "PASS_LIGHTING_OPAQUE") {
-            pipelineRenderingCreateInfo.colorAttachmentCount = 2; // TODO: hardcoded
-        } else {
-            pipelineRenderingCreateInfo.colorAttachmentCount = 1;
-        }
+        pipelineRenderingCreateInfo.colorAttachmentCount = colorAttachmentCount;
         pipelineRenderingCreateInfo.pColorAttachmentFormats = colorAttachmentFormats.data();
         pipelineRenderingCreateInfo.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT; // TODO: hardcoded
 
@@ -1506,6 +1576,30 @@ void GameRenderer::createImageResources()
                                            VK_FORMAT_D32_SFLOAT,
                                            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     m_device.nameTexture(m_depthBuffer, "Depth");
+
+    m_motionGBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                             m_device.swapChain->extent.height,
+                                             VK_FORMAT_R8G8B8A8_UNORM,
+                                             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_motionGBuffer, "Motion GBuffer");
+
+    m_diffuseGBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                              m_device.swapChain->extent.height,
+                                              VK_FORMAT_R8G8B8A8_UNORM,
+                                              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_diffuseGBuffer, "Diffuse GBuffer");
+
+    m_motionGBuffer2 = m_device.createTexture(m_device.swapChain->extent.width,
+                                              m_device.swapChain->extent.height,
+                                              VK_FORMAT_R8G8B8A8_UNORM,
+                                              VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_motionGBuffer2, "Motion 2 GBuffer");
+
+    m_unkGBuffer = m_device.createTexture(m_device.swapChain->extent.width,
+                                          m_device.swapChain->extent.height,
+                                          VK_FORMAT_R8G8B8A8_UNORM,
+                                          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_unkGBuffer, "Unk GBuffer");
 
     CommonParameter commonParam{};
     commonParam.m_RenderTarget = {1.0f / m_device.swapChain->extent.width,
