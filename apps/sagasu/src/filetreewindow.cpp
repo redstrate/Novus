@@ -9,6 +9,7 @@
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QMenu>
+#include <QTimer>
 #include <QTreeWidget>
 
 FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, GameData *data, QWidget *parent)
@@ -30,10 +31,19 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     layout->addLayout(searchLayout);*/
 
     auto searchEdit = new QLineEdit();
+
+    auto searchTimer = new QTimer();
+    searchTimer->setSingleShot(true);
+    connect(searchTimer, &QTimer::timeout, m_searchModel, [this, searchEdit] {
+        m_searchModel->setFilterFixedString(searchEdit->text());
+    });
+
     searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
-    connect(searchEdit, &QLineEdit::textChanged, m_searchModel, &QSortFilterProxyModel::setFilterFixedString);
+    connect(searchEdit, &QLineEdit::textChanged, searchTimer, [searchTimer] {
+        searchTimer->start();
+    });
     layout->addWidget(searchEdit);
 
     // TODO Restore as an action, later. it's currently pretty useless as-is as it's a "please slow down and crash" checkbox
