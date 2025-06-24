@@ -80,6 +80,7 @@ QModelIndex FileTreeModel::index(int row, int column, const QModelIndex &parent)
     if (childItem)
         return createIndex(row, column, childItem);
 
+    Q_UNREACHABLE();
     return {};
 }
 
@@ -94,7 +95,7 @@ QModelIndex FileTreeModel::parent(const QModelIndex &index) const
     if (parentItem == rootItem)
         return {};
 
-    return createIndex(parentItem->row, 0, parentItem);
+    return createIndex(parentItem->row, index.column(), parentItem);
 }
 
 QVariant FileTreeModel::data(const QModelIndex &index, int role) const
@@ -180,7 +181,7 @@ void FileTreeModel::addKnownFolder(const QString &string)
             folderItem->name = children[i];
             folderItem->type = TreeType::Folder;
             folderItem->parent = parentItem;
-            folderItem->row = i + 1;
+            folderItem->row = parentItem->children.size();
             folderItem->hash = hash;
             parentItem->children.push_back(folderItem);
             parentItem = folderItem;
@@ -200,6 +201,7 @@ void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, const QS
     fileItem->name = realName;
     fileItem->type = TreeType::File;
     fileItem->parent = parentItem;
+    fileItem->row = parentItem->children.size();
 
     parentItem->children.push_back(fileItem);
 }
@@ -214,6 +216,7 @@ void FileTreeModel::addFolder(TreeInformation *parentItem, uint32_t name)
     fileItem->hash = name;
     fileItem->type = TreeType::Folder;
     fileItem->parent = parentItem;
+    fileItem->row = fileItem->parent->children.size();
 
     parentItem->children.push_back(fileItem);
 }

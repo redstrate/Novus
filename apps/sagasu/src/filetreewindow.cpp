@@ -33,9 +33,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
-    connect(searchEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
-        m_searchModel->setFilterRegularExpression(text);
-    });
+    connect(searchEdit, &QLineEdit::textChanged, m_searchModel, &QSortFilterProxyModel::setFilterFixedString);
     layout->addWidget(searchEdit);
 
     // TODO Restore as an action, later. it's currently pretty useless as-is as it's a "please slow down and crash" checkbox
