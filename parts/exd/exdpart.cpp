@@ -150,34 +150,36 @@ void EXDPart::loadTables()
             tableWidget->setHorizontalHeaderItem(z, headerItem);
         }
 
-        for (unsigned int j = 0; j < exh->row_count; j++) {
-            auto rows = physis_exd_get_row(&exd, j); // TODO: free, use other rows
+        for (unsigned int j = 0; j < exd.row_count; j++) {
+            auto rows = exd.rows[j];
+            for (unsigned int subrow = 0; subrow < rows.row_count; subrow++) {
+                auto row = rows.row_data[subrow];
+                for (unsigned int z = 0; z < exd.column_count; z++) {
+                    auto columnData = row.column_data[z];
 
-            for (unsigned int z = 0; z < exd.column_count; z++) {
-                auto columnData = rows->column_data[z];
+                    auto [columnString, columnRow] = getColumnData(columnData);
 
-                auto [columnString, columnRow] = getColumnData(columnData);
+                    if (z < definitionList.size()) {
+                        auto definition = definitionList[z].toObject();
+                        if (definition.contains(QLatin1String("converter"))
+                            && definition[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QLatin1String("link")) {
+                            auto linkName = definition[QLatin1String("converter")].toObject()[QLatin1String("target")].toString();
 
-                if (z < definitionList.size()) {
-                    auto definition = definitionList[z].toObject();
-                    if (definition.contains(QLatin1String("converter"))
-                        && definition[QLatin1String("converter")].toObject()[QLatin1String("type")].toString() == QLatin1String("link")) {
-                        auto linkName = definition[QLatin1String("converter")].toObject()[QLatin1String("target")].toString();
-
-                        if (cachedExcelSheets.contains(linkName)) {
-                            auto cachedExcel = cachedExcelSheets[linkName];
-                            if (static_cast<unsigned int>(columnRow) < cachedExcel.exh->row_count) {
-                                // TODO: add back
-                                // auto [colString, _] = getColumnData(*cachedExcel.exh->row_data[columnRow].column_data);
-                                // columnString = colString;
+                            if (cachedExcelSheets.contains(linkName)) {
+                                auto cachedExcel = cachedExcelSheets[linkName];
+                                if (static_cast<unsigned int>(columnRow) < cachedExcel.exh->row_count) {
+                                    // TODO: add back
+                                    // auto [colString, _] = getColumnData(*cachedExcel.exh->row_data[columnRow].column_data);
+                                    // columnString = colString;
+                                }
                             }
                         }
                     }
+
+                    auto newItem = new QTableWidgetItem(columnString);
+
+                    tableWidget->setItem(j, z, newItem);
                 }
-
-                auto newItem = new QTableWidgetItem(columnString);
-
-                tableWidget->setItem(j, z, newItem);
             }
         }
 
