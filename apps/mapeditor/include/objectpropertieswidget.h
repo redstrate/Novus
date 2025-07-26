@@ -5,6 +5,7 @@
 
 #include <QWidget>
 
+struct physis_PopRangeInstanceObject;
 struct physis_EventInstanceObject;
 class QVBoxLayout;
 struct physis_InstanceObject;
@@ -26,6 +27,7 @@ private:
     void addCommonSection(const physis_InstanceObject &object);
     void addBGSection(const physis_BGInstanceObject &bg);
     void addEventSection(const physis_EventInstanceObject &eobj);
+    void addPopRangeSection(const physis_PopRangeInstanceObject &pop);
 
     AppState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;

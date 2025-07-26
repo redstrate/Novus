@@ -50,6 +50,9 @@ void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &obje
     case physis_LayerEntry::Tag::EventObject:
         addEventSection(object.data.event_object._0);
         break;
+    case physis_LayerEntry::Tag::PopRange:
+        addPopRangeSection(object.data.pop_range._0);
+        break;
     default:
         break;
     }
@@ -113,6 +116,36 @@ void ObjectPropertiesWidget::addEventSection(const physis_EventInstanceObject &e
     instanceIdEdit->setText(QString::number(eobj.linked_instance_id));
     instanceIdEdit->setReadOnly(true);
     layout->addRow(i18n("Linked ID"), instanceIdEdit);
+}
+
+void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObject &pop)
+{
+    auto section = new CollapseSection(i18n("Pop Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto typeEdit = new QLineEdit();
+    switch (pop.pop_type) {
+    case PopType::PC:
+        typeEdit->setText(i18n("PC"));
+        break;
+    case PopType::Npc:
+        typeEdit->setText(i18n("NPC"));
+        break;
+    case PopType::Content:
+        typeEdit->setText(i18n("Content"));
+        break;
+    }
+    typeEdit->setReadOnly(true);
+    layout->addRow(i18n("Type"), typeEdit);
+
+    auto indexEdit = new QLineEdit();
+    indexEdit->setText(QString::number(pop.index));
+    indexEdit->setReadOnly(true);
+    layout->addRow(i18n("Index"), indexEdit);
 }
 
 #include "moc_objectpropertieswidget.cpp"
