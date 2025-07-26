@@ -28,17 +28,6 @@ add-extensions:
     directory: lib/i386-linux-gnu
     version: '24.08'
 modules:
-  - name: qt6-qthttpserver
-    buildsystem: cmake-ninja
-    cleanup:
-      - /bin
-      - /metatypes
-      - /mkspecs
-      - /modules
-    sources:
-      - type: archive
-        url: https://download.qt.io/official_releases/qt/6.8/6.8.2/submodules/qthttpserver-everywhere-src-6.8.2.tar.xz
-        sha256: 2d9517c1049a5b330831f7adc1de26d8db5357fdebe616c0a29e9ae1d8900692
   - name: glm
     buildsystem: cmake-ninja
     config-opts:

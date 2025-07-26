@@ -14,14 +14,6 @@ target_link_libraries(novus-sagasu-static
         Qt6::Sql)
 target_include_directories(novus-sagasu-static PRIVATE include)
 
-add_executable(novus-sagasu-indexer)
-target_sources(novus-sagasu-indexer PRIVATE src/indexer.cpp)
-target_link_libraries(novus-sagasu-indexer
-        PRIVATE
-        novus-sagasu-static
-        Qt6::HttpServer)
-target_include_directories(novus-sagasu-indexer PRIVATE include)
-
 add_executable(novus-sagasu)
 target_sources(novus-sagasu
         PRIVATE
