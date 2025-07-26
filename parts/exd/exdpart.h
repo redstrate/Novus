@@ -20,6 +20,7 @@ public:
     explicit EXDPart(SqPackResource *data, QWidget *parent = nullptr);
 
     void loadSheet(const QString &name, physis_Buffer buffer, const QString &definitionPath = {});
+    void goToRow(const QString &query);
 
 private:
     std::pair<QString, int> getColumnData(physis_ColumnData &columnData);

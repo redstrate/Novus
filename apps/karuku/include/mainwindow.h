@@ -6,6 +6,7 @@
 #include <KXmlGuiWindow>
 #include <QNetworkAccessManager>
 
+class EXDPart;
 struct SqPackResource;
 
 class MainWindow : public KXmlGuiWindow
@@ -20,4 +21,5 @@ private:
 
     SqPackResource *data = nullptr;
     QNetworkAccessManager *mgr = nullptr;
+    EXDPart *m_exdPart = nullptr;
 };

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="exceleditor"
-     version="1"
+     version="2"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
@@ -12,6 +12,10 @@
       <Action name="download_list" />
       <Separator/>
       <Action name="quit"/>
+    </Menu>
+    <Menu name="navigate" >
+      <text>Navigate</text>
+      <Action name="goto_row" />
     </Menu>
   </MenuBar>
 </gui>

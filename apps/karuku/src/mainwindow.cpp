@@ -10,6 +10,7 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QListWidget>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -22,6 +23,8 @@
 
 #include "exdpart.h"
 #include "sheetlistwidget.h"
+
+#include <QLineEdit>
 
 MainWindow::MainWindow(SqPackResource *data)
     : KXmlGuiWindow()
@@ -39,11 +42,11 @@ MainWindow::MainWindow(SqPackResource *data)
     listWidget->setMaximumWidth(200);
     dummyWidget->addWidget(listWidget);
 
-    auto exdPart = new EXDPart(data);
-    exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
-    dummyWidget->addWidget(exdPart);
+    m_exdPart = new EXDPart(data);
+    m_exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
+    dummyWidget->addWidget(m_exdPart);
 
-    connect(listWidget, &SheetListWidget::sheetSelected, this, [this, data, exdPart](const QString &name) {
+    connect(listWidget, &SheetListWidget::sheetSelected, this, [this, data](const QString &name) {
         QString definitionPath;
 
         const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
@@ -54,7 +57,7 @@ MainWindow::MainWindow(SqPackResource *data)
 
         auto file = physis_gamedata_extract_file(data, pathStd.c_str());
 
-        exdPart->loadSheet(name, file, definitionsDir.absoluteFilePath(QStringLiteral("%1.json").arg(name)));
+        m_exdPart->loadSheet(name, file, definitionsDir.absoluteFilePath(QStringLiteral("%1.json").arg(name)));
 
         setWindowTitle(name);
     });
@@ -172,6 +175,16 @@ void MainWindow::setupActions()
         });
     });
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
+
+    auto goToRow = new QAction(i18nc("@action:inmenu", "To Row…"));
+    connect(goToRow, &QAction::triggered, [this] {
+        bool ok = false;
+        const QString text = QInputDialog::getText(this, i18n("Go To…"), i18n("Row or Subrow ID:"), QLineEdit::Normal, QString{}, &ok);
+        if (ok && !text.isEmpty()) {
+            m_exdPart->goToRow(text);
+        }
+    });
+    actionCollection()->addAction(QStringLiteral("goto_row"), goToRow);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }

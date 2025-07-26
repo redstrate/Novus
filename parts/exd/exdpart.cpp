@@ -82,6 +82,24 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer, const QString
     loadTables();
 }
 
+void EXDPart::goToRow(const QString &query)
+{
+    for (uint32_t i = 0; i < exh->page_count; i++) {
+        auto tableWidget = qobject_cast<QTableWidget *>(pageTabWidget->widget(i));
+        Q_ASSERT(tableWidget);
+
+        for (int row = 0; row < tableWidget->rowCount(); row++) {
+            auto headerItem = tableWidget->verticalHeaderItem(row);
+            Q_ASSERT(headerItem);
+
+            if (headerItem->text() == query) {
+                tableWidget->selectRow(row);
+                return;
+            }
+        }
+    }
+}
+
 void EXDPart::loadTables()
 {
     pageTabWidget->clear();
