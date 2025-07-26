@@ -177,8 +177,16 @@ void EXDPart::loadTables()
                     }
 
                     auto newItem = new QTableWidgetItem(columnString);
-
                     tableWidget->setItem(j, z, newItem);
+
+                    auto rowIdItem = new QTableWidgetItem();
+                    if (rows.row_count > 1) {
+                        // has subrows
+                        rowIdItem->setText(QStringLiteral("%1.%2").arg(QString::number(rows.row_id), QString::number(row.subrow_id)));
+                    } else {
+                        rowIdItem->setText(QString::number(rows.row_id));
+                    }
+                    tableWidget->setVerticalHeaderItem(j, rowIdItem);
                 }
             }
         }
