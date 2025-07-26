@@ -139,6 +139,8 @@ RenderManager::RenderManager(SqPackResource *data)
         deviceIndex++;
     }
 
+    qInfo() << "Selecting GPU" << preferredDevice;
+
     m_device->physicalDevice = devices[preferredDevice];
 
     extensionCount = 0;
