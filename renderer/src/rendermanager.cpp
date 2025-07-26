@@ -560,16 +560,24 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
                 renderPart.streamBuffer[j] = buffer;
             }
         } else {
-            size_t vertexSize = part.num_vertices * sizeof(Vertex);
-            renderPart.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-            m_device->copyToBuffer(renderPart.vertexBuffer, (void *)part.vertices, vertexSize);
+            if (part.num_vertices > 0) {
+                size_t vertexSize = part.num_vertices * sizeof(Vertex);
+                renderPart.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+                m_device->copyToBuffer(renderPart.vertexBuffer, (void *)part.vertices, vertexSize);
+            } else {
+                qWarning() << "Got a model part with zero vertices, is that supposed to happen?";
+            }
         }
 
-        size_t indexSize = part.num_indices * sizeof(uint16_t);
-        renderPart.indexBuffer = m_device->createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-        m_device->copyToBuffer(renderPart.indexBuffer, (void *)part.indices, indexSize);
+        if (part.num_indices > 0) {
+            size_t indexSize = part.num_indices * sizeof(uint16_t);
+            renderPart.indexBuffer = m_device->createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+            m_device->copyToBuffer(renderPart.indexBuffer, (void *)part.indices, indexSize);
 
-        renderPart.numIndices = part.num_indices;
+            renderPart.numIndices = part.num_indices;
+        } else {
+            qWarning() << "Got a model part with zero indices, is that supposed to happen?";
+        }
 
         DrawObject.parts.push_back(renderPart);
     }
