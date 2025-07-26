@@ -93,6 +93,7 @@ void EXDPart::goToRow(const QString &query)
             Q_ASSERT(headerItem);
 
             if (headerItem->text() == query) {
+                pageTabWidget->setCurrentIndex(i);
                 tableWidget->selectRow(row);
                 return;
             }
