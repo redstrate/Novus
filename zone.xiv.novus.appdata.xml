@@ -28,9 +28,7 @@
         <release version="0.1.0"/>
     </releases>
     <provides>
-        <binary>novus-argcracker</binary>
         <binary>novus-armoury</binary>
-        <binary>novus-gamelauncher</binary>
         <binary>novus-karuku</binary>
         <binary>novus-launcher</binary>
         <binary>novus-mapeditor</binary>

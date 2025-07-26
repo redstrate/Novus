@@ -3,10 +3,8 @@
 
 add_subdirectory(karuku)
 add_subdirectory(armoury)
-add_subdirectory(argcracker)
 add_subdirectory(sagasu)
 add_subdirectory(mapeditor)
 add_subdirectory(mdlviewer)
 add_subdirectory(sdklauncher)
 add_subdirectory(mateditor)
-add_subdirectory(gamelauncher)

@@ -4,13 +4,13 @@ SPDX-PackageSupplier = "Joshua Goins <josh@redstrate.com>"
 SPDX-PackageDownloadLocation = "https://git.sr.ht/~redstrate/novus"
 
 [[annotations]]
-path = ["apps/armoury/geareditor.rc", "apps/karuku/exceleditor.rc", "apps/mdlviewer/mdlviewer.rc", "apps/sagasu/dataexplorer.rc", "apps/gamelauncher/gamelauncher.rc", "apps/mapeditor/mapeditor.rc", "apps/mateditor/mateditor.rc"]
+path = ["apps/armoury/geareditor.rc", "apps/karuku/exceleditor.rc", "apps/mdlviewer/mdlviewer.rc", "apps/sagasu/dataexplorer.rc", "apps/mapeditor/mapeditor.rc", "apps/mateditor/mateditor.rc"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "Joshua Goins <josh@redstrate.com>"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
 [[annotations]]
-path = [".gitmodules", "scripts/**", "README.md", "BUILDING.md", "CONTRIBUTING.md", "apps/argcracker/README.md", "apps/armoury/README.md", "apps/gamelauncher/README.md", "apps/karuku/README.md", "apps/sagasu/README.md", "apps/mdlviewer/README.md", "renderer/README.md", "apps/sdklauncher/README.md", ".clang-format", ".build.yml", "misc/**", "renderer/shaders/**.spv", "apps/mapeditor/README.md", ".github/**", "apps/mateditor/README.md", "zone.xiv.novus.yml", "zone.xiv.novus.appdata.xml", "REUSE.toml"]
+path = [".gitmodules", "scripts/**", "README.md", "BUILDING.md", "CONTRIBUTING.md", "apps/armoury/README.md", "apps/karuku/README.md", "apps/sagasu/README.md", "apps/mdlviewer/README.md", "renderer/README.md", "apps/sdklauncher/README.md", ".clang-format", ".build.yml", "misc/**", "renderer/shaders/**.spv", "apps/mapeditor/README.md", ".github/**", "apps/mateditor/README.md", "zone.xiv.novus.yml", "zone.xiv.novus.appdata.xml", "REUSE.toml"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "Joshua Goins <josh@redstrate.com>"
 SPDX-License-Identifier = "CC0-1.0"
