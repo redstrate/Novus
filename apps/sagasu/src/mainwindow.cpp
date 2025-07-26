@@ -32,6 +32,8 @@
 #include "sklbpart.h"
 #include "texpart.h"
 
+#include <QInputDialog>
+
 MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
     : KXmlGuiWindow()
     , data(data)
@@ -271,6 +273,31 @@ void MainWindow::setupActions()
         });
     });
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
+
+    auto manualAdd = new QAction(i18nc("@action:inmenu", "Manually Add Path…"));
+    connect(manualAdd, &QAction::triggered, [this] {
+        bool ok = false;
+        const QString path = QInputDialog::getText(this, i18n("Manually Add Path…"), i18n("Path:"), QLineEdit::Normal, QString{}, &ok);
+        if (ok && !path.isEmpty()) {
+            // TODO: move into an addPath or something in HashDatabase
+            QString filename;
+            QString foldername;
+            if (path.contains(QStringLiteral("/"))) {
+                int lastSlash = path.lastIndexOf(QStringLiteral("/"));
+                filename = path.sliced(lastSlash + 1, path.length() - lastSlash - 1);
+                foldername = path.left(lastSlash);
+            } else {
+                filename = path;
+            }
+
+            if (!foldername.isEmpty()) {
+                m_database.addFolder(foldername);
+            }
+            m_database.addFile(filename);
+            m_tree->refreshModel();
+        }
+    });
+    actionCollection()->addAction(QStringLiteral("manual_add"), manualAdd);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
