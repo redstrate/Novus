@@ -53,6 +53,9 @@ MapListWidget::MapListWidget(SqPackResource *data, QWidget *parent)
             auto territoryExdRow = physis_exd_read_row(&territoryExd, territoryTypeKey); // TODO: free, use all rows
             if (territoryExdRow.row_count != 0) {
                 const char *bg = territoryExdRow.row_data[0].column_data[1].string._0;
+                if (strlen(bg) == 0) {
+                    continue;
+                }
 
                 int placeRegionKey = territoryExdRow.row_data[0].column_data[3].u_int16._0;
                 auto regionExdRow = physis_exd_read_row(&nameExd, placeRegionKey); // TODO: free, use all rows
