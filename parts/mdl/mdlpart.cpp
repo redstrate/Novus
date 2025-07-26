@@ -133,6 +133,7 @@ void MDLPart::reloadRenderer()
 
 void MDLPart::enableFreemode()
 {
+    pitch = glm::radians(180.0f); // rotate the camera to face forward by default
     vkWindow->freeMode = true;
 }
 
