@@ -41,6 +41,11 @@ ObjectListWidget::ObjectListWidget(AppState *appState, QWidget *parent)
     treeWidget = new QTreeView();
     treeWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of objects on this map."));
     treeWidget->setModel(searchModel);
+    connect(treeWidget, &QTreeView::clicked, this, [this, searchModel](const QModelIndex &index) {
+        auto originalIndex = searchModel->mapToSource(index);
+        m_appState->selectedObject = m_objectListModel->objectId(originalIndex);
+        Q_EMIT m_appState->selectedObjectChanged();
+    });
 
     layout->addWidget(treeWidget);
 }

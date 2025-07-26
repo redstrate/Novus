@@ -7,6 +7,7 @@
 
 #include "filecache.h"
 
+class ObjectPropertiesWidget;
 class ObjectListWidget;
 struct SqPackResource;
 class MapView;
@@ -28,4 +29,5 @@ private:
     MapView *mapView = nullptr;
     ObjectListWidget *objectListWidget = nullptr;
     AppState *m_appState = nullptr;
+    ObjectPropertiesWidget *objectPropertiesWidget = nullptr;
 };

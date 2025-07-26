@@ -16,6 +16,7 @@
 #include "maplistwidget.h"
 #include "mapview.h"
 #include "objectlistwidget.h"
+#include "objectpropertieswidget.h"
 
 MainWindow::MainWindow(SqPackResource *data)
     : KXmlGuiWindow()
@@ -36,6 +37,10 @@ MainWindow::MainWindow(SqPackResource *data)
 
     mapView = new MapView(data, cache, m_appState);
     dummyWidget->addWidget(mapView);
+
+    objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
+    objectPropertiesWidget->setMaximumWidth(400);
+    dummyWidget->addWidget(objectPropertiesWidget);
 
     setupActions();
     setupGUI(Keys | Save | Create);

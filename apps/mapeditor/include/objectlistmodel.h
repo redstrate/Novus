@@ -5,6 +5,7 @@
 
 #include <QAbstractItemModel>
 
+struct physis_InstanceObject;
 class AppState;
 
 enum class TreeType {
@@ -24,6 +25,7 @@ struct TreeInformation {
     int row = 0;
     QString name;
     uint32_t id;
+    void const *data = nullptr;
 
     std::vector<TreeInformation *> children;
 };
@@ -45,6 +47,8 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+
+    std::optional<physis_InstanceObject const *> objectId(const QModelIndex &index) const;
 
 private:
     void refresh();

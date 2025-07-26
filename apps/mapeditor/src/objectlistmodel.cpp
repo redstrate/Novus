@@ -121,6 +121,15 @@ bool ObjectListModel::setData(const QModelIndex &index, const QVariant &value, i
     return QAbstractItemModel::setData(index, value, role);
 }
 
+std::optional<physis_InstanceObject const *> ObjectListModel::objectId(const QModelIndex &index) const
+{
+    const auto item = static_cast<TreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::Object) {
+        return static_cast<physis_InstanceObject const *>(item->data);
+    }
+    return std::nullopt;
+}
+
 void ObjectListModel::refresh()
 {
     beginResetModel();
@@ -136,9 +145,9 @@ void ObjectListModel::refresh()
         m_rootItem->children.push_back(fileItem);
 
         for (int i = 0; i < lgb.num_chunks; i++) {
-            const auto chunk = lgb.chunks[i];
+            const auto &chunk = lgb.chunks[i];
             for (int j = 0; j < chunk.num_layers; j++) {
-                const auto layer = chunk.layers[j];
+                const auto &layer = chunk.layers[j];
 
                 auto layerItem = new TreeInformation();
                 layerItem->type = TreeType::Layer;
@@ -149,13 +158,14 @@ void ObjectListModel::refresh()
                 fileItem->children.push_back(layerItem);
 
                 for (int z = 0; z < layer.num_objects; z++) {
-                    const auto object = layer.objects[z];
+                    const auto &object = layer.objects[z];
 
                     auto objectItem = new TreeInformation();
                     objectItem->type = TreeType::Object;
                     objectItem->parent = layerItem;
                     objectItem->name = i18n("Unknown (%1)", object.instance_id); // TODO: do display names if we have them
                     objectItem->row = z;
+                    objectItem->data = &object;
                     layerItem->children.push_back(objectItem);
                 }
             }
