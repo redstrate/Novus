@@ -4,6 +4,7 @@
 #include "objectlistwidget.h"
 
 #include <KLocalizedString>
+#include <QHeaderView>
 #include <QLineEdit>
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
@@ -41,6 +42,8 @@ ObjectListWidget::ObjectListWidget(AppState *appState, QWidget *parent)
     treeWidget = new QTreeView();
     treeWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of objects on this map."));
     treeWidget->setModel(searchModel);
+    treeWidget->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    treeWidget->header()->setSectionResizeMode(1, QHeaderView::Fixed);
     connect(treeWidget, &QTreeView::clicked, this, [this, searchModel](const QModelIndex &index) {
         auto originalIndex = searchModel->mapToSource(index);
         m_appState->selectedObject = m_objectListModel->objectId(originalIndex);
