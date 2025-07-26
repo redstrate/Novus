@@ -5,6 +5,7 @@
 
 #include <QWidget>
 
+struct physis_EventInstanceObject;
 class QVBoxLayout;
 struct physis_InstanceObject;
 struct physis_BGInstanceObject;
@@ -24,6 +25,7 @@ private:
 
     void addCommonSection(const physis_InstanceObject &object);
     void addBGSection(const physis_BGInstanceObject &bg);
+    void addEventSection(const physis_EventInstanceObject &eobj);
 
     AppState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;
