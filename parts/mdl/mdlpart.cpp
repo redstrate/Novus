@@ -306,47 +306,48 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
         } else {
             int width = 4;
             int height = material.dawntrail_color_table.num_rows;
+            if (height > 0) {
+                qInfo() << "Creating DT color table" << width << "X" << height;
 
-            qInfo() << "Creating DT color table" << width << "X" << height;
+                // NOTE: this is just a copy of the legacy color table gen, it's probably all wrong!
+                std::vector<float> rgbaData(width * height * 4);
+                int offset = 0;
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        const auto row = material.dawntrail_color_table.rows[y];
 
-            // NOTE: this is just a copy of the legacy color table gen, it's probably all wrong!
-            std::vector<float> rgbaData(width * height * 4);
-            int offset = 0;
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    const auto row = material.dawntrail_color_table.rows[y];
+                        glm::vec4 color;
+                        if (x == 0) {
+                            color = glm::vec4{row.diffuse_color[0], row.diffuse_color[1], row.diffuse_color[2], 0.0f};
+                        } else if (x == 1) {
+                            color = glm::vec4{row.specular_color[0], row.specular_color[1], row.specular_color[2], 0.0f};
+                        } else if (x == 2) {
+                            color = glm::vec4{row.emissive_color[0], row.emissive_color[1], row.emissive_color[2], row.tile_set};
+                        } else if (x == 3) {
+                            color = glm::vec4{row.material_repeat[0], row.material_repeat[1], row.material_skew[0], row.material_skew[1]};
+                        }
 
-                    glm::vec4 color;
-                    if (x == 0) {
-                        color = glm::vec4{row.diffuse_color[0], row.diffuse_color[1], row.diffuse_color[2], 0.0f};
-                    } else if (x == 1) {
-                        color = glm::vec4{row.specular_color[0], row.specular_color[1], row.specular_color[2], 0.0f};
-                    } else if (x == 2) {
-                        color = glm::vec4{row.emissive_color[0], row.emissive_color[1], row.emissive_color[2], row.tile_set};
-                    } else if (x == 3) {
-                        color = glm::vec4{row.material_repeat[0], row.material_repeat[1], row.material_skew[0], row.material_skew[1]};
+                        rgbaData[offset] = color.x;
+                        rgbaData[offset + 1] = color.y;
+                        rgbaData[offset + 2] = color.z;
+                        rgbaData[offset + 3] = color.a;
+
+                        offset += 4;
                     }
-
-                    rgbaData[offset] = color.x;
-                    rgbaData[offset + 1] = color.y;
-                    rgbaData[offset + 2] = color.z;
-                    rgbaData[offset + 3] = color.a;
-
-                    offset += 4;
                 }
+
+                physis_Texture textureConfig;
+                textureConfig.texture_type = TextureType::TwoDimensional;
+                textureConfig.width = width;
+                textureConfig.height = height;
+                textureConfig.depth = 1;
+                textureConfig.rgba = reinterpret_cast<uint8_t *>(rgbaData.data());
+                textureConfig.rgba_size = rgbaData.size() * sizeof(float);
+
+                // TODO: use 16-bit floating points like the game
+                newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
+                renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
             }
-
-            physis_Texture textureConfig;
-            textureConfig.texture_type = TextureType::TwoDimensional;
-            textureConfig.width = width;
-            textureConfig.height = height;
-            textureConfig.depth = 1;
-            textureConfig.rgba = reinterpret_cast<uint8_t *>(rgbaData.data());
-            textureConfig.rgba_size = rgbaData.size() * sizeof(float);
-
-            // TODO: use 16-bit floating points like the game
-            newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
-            renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
         }
 
         qInfo() << "Loading" << t;
