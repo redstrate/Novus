@@ -1,22 +1,12 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
-add_library(novus-sagasu-static STATIC)
-target_sources(novus-sagasu-static
-        PRIVATE
-        include/hashdatabase.h
-        src/hashdatabase.cpp)
-target_link_libraries(novus-sagasu-static
-        PUBLIC
-        Novus::Common
-        Physis::Physis
-        Qt6::Core
-        Qt6::Sql)
-target_include_directories(novus-sagasu-static PRIVATE include)
-
 add_executable(novus-sagasu)
 target_sources(novus-sagasu
         PRIVATE
+        include/hashdatabase.h
+
+        src/hashdatabase.cpp
         src/main.cpp
         src/mainwindow.cpp
         src/filetreewindow.cpp
@@ -26,7 +16,10 @@ target_include_directories(novus-sagasu PRIVATE include)
 target_link_libraries(novus-sagasu
         PRIVATE
         KF6::Archive
-        novus-sagasu-static
+        Novus::Common
+        Physis::Physis
+        Qt6::Core
+        Qt6::Sql
         Novus::SklbPart
         Novus::CmpPart
         Novus::ShpkPart
