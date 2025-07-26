@@ -24,6 +24,7 @@ void CollapseSection::paintEvent(QPaintEvent *event)
     painter.setBrush(QColor(50, 50, 55));
 
     QRect r = event->rect().adjusted(1, 2, -1, 0);
+    r.setY(2);
     r.setHeight(25);
 
     painter.drawRect(r);
