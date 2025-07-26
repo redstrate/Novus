@@ -7,6 +7,7 @@ layout(location = 0) in vec3 inPosition;
 
 layout(std430, push_constant) uniform PushConstant {
 	mat4 vp, model;
+	vec4 color;
 };
 
 void main() {

@@ -5,6 +5,11 @@
 
 layout(location = 0) out vec4 outColor;
 
+layout(std430, push_constant) uniform PushConstant {
+	mat4 vp, model;
+	vec4 color;
+};
+
 void main() {
-    outColor = vec4(1, 0, 0, 1);
+    outColor = color;
 }

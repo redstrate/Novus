@@ -34,24 +34,46 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
 
         for (const auto &[_, lgb] : m_appState->lgbFiles) {
             for (int i = 0; i < lgb.num_chunks; i++) {
-                const auto chunk = lgb.chunks[i];
+                const auto &chunk = lgb.chunks[i];
                 for (int j = 0; j < chunk.num_layers; j++) {
-                    const auto layer = chunk.layers[j];
+                    const auto &layer = chunk.layers[j];
                     if (!m_appState->visibleLayerIds.contains(layer.id)) {
                         continue;
                     }
 
                     for (int z = 0; z < layer.num_objects; z++) {
-                        const auto object = layer.objects[z];
+                        const auto &object = layer.objects[z];
 
                         glm::mat4 vp = camera.perspective * camera.view;
 
-                        vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &vp);
+                        vkCmdPushConstants(commandBuffer,
+                                           m_pipelineLayout,
+                                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                           0,
+                                           sizeof(glm::mat4),
+                                           &vp);
 
                         auto m = glm::mat4(1.0f);
                         m = glm::translate(m, {object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]});
 
-                        vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(glm::mat4), sizeof(glm::mat4), &m);
+                        vkCmdPushConstants(commandBuffer,
+                                           m_pipelineLayout,
+                                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                           sizeof(glm::mat4),
+                                           sizeof(glm::mat4),
+                                           &m);
+
+                        glm::vec4 color = glm::vec4(1, 0, 0, 1);
+                        if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
+                            color = glm::vec4(0, 1, 0, 1);
+                        }
+
+                        vkCmdPushConstants(commandBuffer,
+                                           m_pipelineLayout,
+                                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                           sizeof(glm::mat4) * 2,
+                                           sizeof(glm::vec4),
+                                           &color);
 
                         Primitives::DrawSphere(commandBuffer);
                     }
@@ -130,8 +152,8 @@ void ObjectPass::createPipeline()
     dynamicState.pDynamicStates = dynamicStates.data();
 
     VkPushConstantRange pushConstant = {};
-    pushConstant.size = sizeof(glm::mat4) * 2;
-    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    pushConstant.size = sizeof(glm::mat4) * 2 + sizeof(glm::vec4);
+    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
