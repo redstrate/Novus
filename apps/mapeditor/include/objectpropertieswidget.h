@@ -5,7 +5,9 @@
 
 #include <QWidget>
 
+class QVBoxLayout;
 struct physis_InstanceObject;
+struct physis_BGInstanceObject;
 class AppState;
 class QLineEdit;
 
@@ -20,6 +22,10 @@ private:
     void resetObjectData();
     void refreshObjectData(const physis_InstanceObject &object);
 
+    void addCommonSection(const physis_InstanceObject &object);
+    void addBGSection(const physis_BGInstanceObject &bg);
+
     AppState *m_appState = nullptr;
-    QLineEdit *m_idField = nullptr;
+    QVBoxLayout *m_layout = nullptr;
+    QList<QWidget *> m_sections;
 };

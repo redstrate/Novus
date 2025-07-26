@@ -13,6 +13,7 @@ target_sources(novus-mapeditor
         include/objectlistmodel.h
         include/primitives.h
         include/objectpropertieswidget.h
+        include/collapsesection.h
 
         src/main.cpp
         src/mainwindow.cpp
@@ -23,7 +24,8 @@ target_sources(novus-mapeditor
         src/appstate.cpp
         src/objectlistmodel.cpp
         src/primitives.cpp
-        src/objectpropertieswidget.cpp)
+        src/objectpropertieswidget.cpp
+        src/collapsesection.cpp)
 target_include_directories(novus-mapeditor
         PUBLIC
         include)
