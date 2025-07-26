@@ -8,14 +8,14 @@
 #include <QPushButton>
 #include <QWidget>
 
-struct GameData;
+struct SqPackResource;
 
 class SingleGearView : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SingleGearView(GameData *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit SingleGearView(SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
 
     QList<physis_Material> getLoadedMaterials() const;
 
@@ -63,5 +63,5 @@ private:
 
     bool fmvAvailable = false;
 
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
 };

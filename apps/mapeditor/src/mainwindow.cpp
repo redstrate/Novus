@@ -17,7 +17,7 @@
 #include "mapview.h"
 #include "objectlistwidget.h"
 
-MainWindow::MainWindow(GameData *data)
+MainWindow::MainWindow(SqPackResource *data)
     : KXmlGuiWindow()
     , data(data)
     , cache(*data)

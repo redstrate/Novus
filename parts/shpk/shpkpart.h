@@ -7,18 +7,15 @@
 #include <QWidget>
 #include <physis.hpp>
 
-struct GameData;
-
 class SHPKPart : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SHPKPart(GameData *data, QWidget *parent = nullptr);
+    explicit SHPKPart(QWidget *parent = nullptr);
 
     void load(physis_Buffer buffer);
 
 private:
     QTabWidget *pageTabWidget = nullptr;
-    GameData *data = nullptr;
 };

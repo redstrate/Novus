@@ -8,7 +8,7 @@
 #include <KXmlGuiWindow>
 #include <QFormLayout>
 
-struct GameData;
+struct SqPackResource;
 class MDLPart;
 
 class MainWindow : public KXmlGuiWindow
@@ -16,12 +16,12 @@ class MainWindow : public KXmlGuiWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(GameData *data);
+    explicit MainWindow(SqPackResource *data);
 
 private:
     void setupActions();
 
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
     MDLPart *part = nullptr;
     FileCache cache;
     QFormLayout *m_detailsLayout = nullptr;

@@ -17,7 +17,7 @@
 #include "magic_enum.hpp"
 #include "mdlimport.h"
 
-SingleGearView::SingleGearView(GameData *data, FileCache &cache, QWidget *parent)
+SingleGearView::SingleGearView(SqPackResource *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)
     , gearView(new GearView(data, cache))
     , data(data)

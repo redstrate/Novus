@@ -9,9 +9,8 @@
 #include <QVBoxLayout>
 #include <spirv_glsl.hpp>
 
-SHPKPart::SHPKPart(GameData *data, QWidget *parent)
+SHPKPart::SHPKPart(QWidget *parent)
     : QWidget(parent)
-    , data(data)
 {
     auto layout = new QVBoxLayout();
     setLayout(layout);

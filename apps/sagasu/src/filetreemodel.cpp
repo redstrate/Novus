@@ -9,7 +9,7 @@
 #include <QIcon>
 #include <QtConcurrent>
 
-FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, GameData *data, QObject *parent)
+FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, SqPackResource *data, QObject *parent)
     : QAbstractItemModel(parent)
     , gameData(data)
     , m_database(database)

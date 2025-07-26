@@ -26,7 +26,7 @@ const std::vector<RaceTree> raceTree = {{Race::Hyur, {Tribe::Midlander, Tribe::H
                                         {Race::Hrothgar, {Tribe::Hellion, Tribe::Lost}},
                                         {Race::Viera, {Tribe::Rava, Tribe::Veena}}};
 
-CmpPart::CmpPart(GameData *data, QWidget *parent)
+CmpPart::CmpPart(SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {

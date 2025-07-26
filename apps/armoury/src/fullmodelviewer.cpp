@@ -16,7 +16,7 @@
 #include "boneeditor.h"
 #include "magic_enum.hpp"
 
-FullModelViewer::FullModelViewer(GameData *data, FileCache &cache, QWidget *parent)
+FullModelViewer::FullModelViewer(SqPackResource *data, FileCache &cache, QWidget *parent)
     : QMainWindow(parent)
     , data(data)
 {

@@ -13,7 +13,7 @@
 #include "materialview.h"
 #include "mtrlpart.h"
 
-MainWindow::MainWindow(GameData *data)
+MainWindow::MainWindow(SqPackResource *data)
     : KXmlGuiWindow()
     , data(data)
     , cache(*data)

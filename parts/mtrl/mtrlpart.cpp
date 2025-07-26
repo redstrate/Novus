@@ -13,7 +13,7 @@
 #include "knownvalues.h"
 #include "texpart.h"
 
-MtrlPart::MtrlPart(GameData *data, QWidget *parent)
+MtrlPart::MtrlPart(SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , m_data(data)
 {

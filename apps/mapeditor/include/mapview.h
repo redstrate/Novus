@@ -17,7 +17,7 @@ class MapView : public QWidget
     Q_OBJECT
 
 public:
-    explicit MapView(GameData *data, FileCache &cache, AppState *appState, QWidget *parent = nullptr);
+    explicit MapView(SqPackResource *data, FileCache &cache, AppState *appState, QWidget *parent = nullptr);
 
     MDLPart &part() const;
 
@@ -29,7 +29,7 @@ private:
 
     MDLPart *mdlPart = nullptr;
 
-    GameData *m_data;
+    SqPackResource *m_data;
     FileCache &m_cache;
     AppState *m_appState;
 };

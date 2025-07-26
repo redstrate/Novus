@@ -10,7 +10,7 @@
 #include "mdlexport.h"
 #include "rendermanager.h"
 
-struct GameData;
+struct SqPackResource;
 
 class VulkanWindow;
 class FileCache;
@@ -20,7 +20,7 @@ class MDLPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit MDLPart(GameData *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit MDLPart(SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
 
     void exportModel(const QString &fileName);
     DrawObject &getModel(int index);
@@ -103,7 +103,7 @@ private:
     void calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone);
     void calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone);
 
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
     FileCache &cache;
 
     std::unordered_map<uint64_t, RenderMaterial> renderMaterialCache;

@@ -15,17 +15,17 @@
 
 #include <QLabel>
 
-struct GameData;
+struct SqPackResource;
 
 class MainWindow : public KXmlGuiWindow
 {
 public:
-    MainWindow(const QString &gamePath, GameData *data);
+    MainWindow(const QString &gamePath, SqPackResource *data);
 
 private:
     void setupActions();
 
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
     QTabWidget *partHolder = nullptr;
     FileCache fileCache;
     HashDatabase m_database;

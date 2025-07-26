@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-TexPart::TexPart(GameData *data, QWidget *parent)
+TexPart::TexPart(SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {

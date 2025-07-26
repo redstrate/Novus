@@ -24,7 +24,7 @@
 #include "penumbraapi.h"
 #include "settingswindow.h"
 
-MainWindow::MainWindow(GameData *in_data)
+MainWindow::MainWindow(SqPackResource *in_data)
     : KXmlGuiWindow()
     , data(*in_data)
     , cache(FileCache{*in_data})
@@ -46,7 +46,7 @@ MainWindow::MainWindow(GameData *in_data)
 
     materialsView = new QTabWidget();
 
-    metadataView = new MetadataView(&data);
+    metadataView = new MetadataView();
 
     auto tabWidget = new QTabWidget();
     tabWidget->addTab(gearView, i18nc("@title:tab", "Models"));

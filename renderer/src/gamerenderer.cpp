@@ -53,7 +53,7 @@ const std::array<std::string, 14> passes = {
 
 const int INVALID_PASS = 255;
 
-GameRenderer::GameRenderer(Device &device, GameData *data)
+GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     : m_device(device)
     , m_data(data)
     , m_shaderManager(device)

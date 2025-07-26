@@ -50,7 +50,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBits
     return VK_FALSE;
 }
 
-RenderManager::RenderManager(GameData *data)
+RenderManager::RenderManager(SqPackResource *data)
     : m_data(data)
 {
     Q_INIT_RESOURCE(shaders);

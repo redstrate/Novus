@@ -15,7 +15,7 @@
 
 #include "magic_enum.hpp"
 
-EXDPart::EXDPart(GameData *data, QWidget *parent)
+EXDPart::EXDPart(SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {

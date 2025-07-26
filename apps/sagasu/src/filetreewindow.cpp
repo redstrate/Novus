@@ -12,7 +12,7 @@
 #include <QTimer>
 #include <QTreeWidget>
 
-FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, GameData *data, QWidget *parent)
+FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
     , m_gamePath(gamePath)

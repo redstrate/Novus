@@ -5,9 +5,8 @@
 
 #include <QVBoxLayout>
 
-MetadataView::MetadataView(GameData *data, QWidget *parent)
+MetadataView::MetadataView(QWidget *parent)
     : QWidget(parent)
-    , data(data)
 {
     auto layout = new QVBoxLayout();
     setLayout(layout);

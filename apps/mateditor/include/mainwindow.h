@@ -7,19 +7,19 @@
 
 #include "filecache.h"
 
-struct GameData;
+struct SqPackResource;
 
 class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(GameData *data);
+    explicit MainWindow(SqPackResource *data);
 
 private:
     void setupActions();
 
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
     FileCache cache;
     physis_Material m_material;
 };

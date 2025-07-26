@@ -12,7 +12,4 @@ class FilePropertiesWindow : public QWidget
 
 public:
     explicit FilePropertiesWindow(const QString &path, physis_Buffer buffer, QWidget *parent = nullptr);
-
-private:
-    GameData *data = nullptr;
 };

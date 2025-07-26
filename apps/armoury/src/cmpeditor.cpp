@@ -4,7 +4,7 @@
 #include "cmpeditor.h"
 #include <KLocalizedString>
 
-CmpEditor::CmpEditor(GameData *data, QWidget *parent)
+CmpEditor::CmpEditor(SqPackResource *data, QWidget *parent)
     : CmpPart(data, parent)
 {
     setWindowTitle(i18nc("@title:window CMP is an abbreviation", "CMP Editor"));

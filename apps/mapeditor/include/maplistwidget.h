@@ -12,7 +12,7 @@ class MapListWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit MapListWidget(GameData *data, QWidget *parent = nullptr);
+    explicit MapListWidget(SqPackResource *data, QWidget *parent = nullptr);
 
 Q_SIGNALS:
     void mapSelected(const QString &name);
@@ -20,5 +20,5 @@ Q_SIGNALS:
 private:
     QListView *listWidget = nullptr;
 
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
 };

@@ -9,7 +9,7 @@
 #include <QStringListModel>
 #include <QVBoxLayout>
 
-SheetListWidget::SheetListWidget(GameData *data, QWidget *parent)
+SheetListWidget::SheetListWidget(SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {

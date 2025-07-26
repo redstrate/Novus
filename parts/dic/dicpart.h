@@ -17,7 +17,5 @@ public:
     void load(physis_Buffer file);
 
 private:
-    GameData *data = nullptr;
-
     QTableWidget *m_tableWidget = nullptr;
 };

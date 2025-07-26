@@ -7,7 +7,7 @@
 #include <QtConcurrent>
 #include <magic_enum.hpp>
 
-GearListModel::GearListModel(GameData *data, QObject *parent)
+GearListModel::GearListModel(SqPackResource *data, QObject *parent)
     : QAbstractItemModel(parent)
     , gameData(data)
 {

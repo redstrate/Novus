@@ -8,7 +8,7 @@
 #include "filecache.h"
 
 class ObjectListWidget;
-struct GameData;
+struct SqPackResource;
 class MapView;
 class AppState;
 
@@ -17,13 +17,13 @@ class MainWindow : public KXmlGuiWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(GameData *data);
+    explicit MainWindow(SqPackResource *data);
 
 private:
     void setupActions();
     void openMap(const QString &basePath);
 
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
     FileCache cache;
     MapView *mapView = nullptr;
     ObjectListWidget *objectListWidget = nullptr;

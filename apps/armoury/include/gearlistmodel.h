@@ -25,7 +25,7 @@ class GearListModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit GearListModel(GameData *data, QObject *parent = nullptr);
+    explicit GearListModel(SqPackResource *data, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
@@ -48,6 +48,6 @@ private:
     std::vector<GearInfo> gears;
     QStringList slotNames;
 
-    GameData *gameData = nullptr;
+    SqPackResource *gameData = nullptr;
     TreeInformation *rootItem = nullptr;
 };

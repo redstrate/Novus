@@ -12,7 +12,7 @@ class SheetListWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit SheetListWidget(GameData *data, QWidget *parent = nullptr);
+    explicit SheetListWidget(SqPackResource *data, QWidget *parent = nullptr);
 
 Q_SIGNALS:
     void sheetSelected(const QString &name);
@@ -20,5 +20,5 @@ Q_SIGNALS:
 private:
     QListView *listWidget = nullptr;
 
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
 };

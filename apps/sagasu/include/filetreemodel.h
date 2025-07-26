@@ -7,7 +7,7 @@
 #include <QAbstractItemModel>
 #include <QFutureWatcher>
 
-struct GameData;
+struct SqPackResource;
 
 enum class TreeType { Root, Folder, File };
 
@@ -26,7 +26,7 @@ class FileTreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, GameData *data, QObject *parent = nullptr);
+    explicit FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, SqPackResource *data, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -38,7 +38,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 private:
-    GameData *gameData = nullptr;
+    SqPackResource *gameData = nullptr;
     TreeInformation *rootItem = nullptr;
 
     void addKnownFolder(const QString &string);

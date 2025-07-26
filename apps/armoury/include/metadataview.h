@@ -15,8 +15,5 @@ class MetadataView : public QWidget
     Q_OBJECT
 
 public:
-    explicit MetadataView(GameData *data, QWidget *parent = nullptr);
-
-private:
-    GameData *data = nullptr;
+    explicit MetadataView(QWidget *parent = nullptr);
 };

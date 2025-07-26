@@ -7,7 +7,7 @@
 
 #include "gearview.h"
 
-struct GameData;
+struct SqPackResource;
 class FileCache;
 class QGroupBox;
 class BoneEditor;
@@ -17,7 +17,7 @@ class FullModelViewer : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit FullModelViewer(GameData *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit FullModelViewer(SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
 
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
@@ -53,7 +53,7 @@ private:
     GearView *gearView = nullptr;
     QComboBox *raceCombo = nullptr, *subraceCombo = nullptr, *genderCombo = nullptr;
 
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
     physis_CMP cmp{};
 
     BoneEditor *m_boneEditor;

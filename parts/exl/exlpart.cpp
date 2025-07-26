@@ -11,7 +11,7 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-EXLPart::EXLPart(GameData *data, QWidget *parent)
+EXLPart::EXLPart(SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {

@@ -19,6 +19,5 @@ public:
     void load(physis_Buffer file);
 
 private:
-    GameData *data = nullptr;
     QTextEdit *m_codeEdit = nullptr;
 };

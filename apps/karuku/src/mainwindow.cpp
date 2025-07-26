@@ -23,7 +23,7 @@
 #include "exdpart.h"
 #include "sheetlistwidget.h"
 
-MainWindow::MainWindow(GameData *data)
+MainWindow::MainWindow(SqPackResource *data)
     : KXmlGuiWindow()
     , data(data)
 {

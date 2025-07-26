@@ -9,7 +9,7 @@
 #include <QStandardItemModel>
 #include <QVBoxLayout>
 
-MapListWidget::MapListWidget(GameData *data, QWidget *parent)
+MapListWidget::MapListWidget(SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {

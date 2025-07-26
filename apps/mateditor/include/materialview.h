@@ -9,14 +9,14 @@
 #include <QWidget>
 #include <physis.hpp>
 
-struct GameData;
+struct SqPackResource;
 
 class MaterialView : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MaterialView(GameData *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit MaterialView(SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
 
     MDLPart &part() const;
 
@@ -26,7 +26,7 @@ public Q_SLOTS:
 private:
     MDLPart *mdlPart = nullptr;
 
-    GameData *data;
+    SqPackResource *data;
     FileCache &cache;
 
     physis_MDL m_mdl;

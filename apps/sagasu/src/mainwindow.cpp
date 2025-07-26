@@ -32,7 +32,7 @@
 #include "sklbpart.h"
 #include "texpart.h"
 
-MainWindow::MainWindow(const QString &gamePath, GameData *data)
+MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
     : KXmlGuiWindow()
     , data(data)
     , fileCache(*data)
@@ -150,7 +150,7 @@ void MainWindow::refreshParts(const QString &path)
         partHolder->addTab(texWidget, i18nc("@title:tab", "Texture"));
     } break;
     case FileType::ShaderPackage: {
-        auto shpkWidget = new SHPKPart(data);
+        auto shpkWidget = new SHPKPart();
         shpkWidget->load(file);
         partHolder->addTab(shpkWidget, i18nc("@title:tab", "Shader Package"));
     } break;

@@ -8,7 +8,7 @@
 
 #include "filecache.h"
 
-MaterialView::MaterialView(GameData *data, FileCache &cache, QWidget *parent)
+MaterialView::MaterialView(SqPackResource *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)
     , data(data)
     , cache(cache)

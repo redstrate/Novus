@@ -10,7 +10,7 @@
 #include "filecache.h"
 #include "objectpass.h"
 
-MapView::MapView(GameData *data, FileCache &cache, AppState *appState, QWidget *parent)
+MapView::MapView(SqPackResource *data, FileCache &cache, AppState *appState, QWidget *parent)
     : QWidget(parent)
     , m_data(data)
     , m_cache(cache)

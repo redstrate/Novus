@@ -11,7 +11,7 @@
 #include "filecache.h"
 #include "magic_enum.hpp"
 
-GearView::GearView(GameData *data, FileCache &cache, QWidget *parent)
+GearView::GearView(SqPackResource *data, FileCache &cache, QWidget *parent)
     : QFrame(parent)
     , data(data)
     , cache(cache)

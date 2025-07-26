@@ -5,7 +5,7 @@
 
 #include <physis.hpp>
 
-FileCache::FileCache(GameData &data)
+FileCache::FileCache(SqPackResource &data)
     : data(data)
 {
 }

@@ -14,7 +14,7 @@
 #include "mtrlpart.h"
 #include "singlegearview.h"
 
-struct GameData;
+struct SqPackResource;
 class FileCache;
 class PenumbraApi;
 
@@ -23,7 +23,7 @@ class MainWindow : public KXmlGuiWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(GameData *data);
+    explicit MainWindow(SqPackResource *data);
 
 public Q_SLOTS:
     void configure();
@@ -36,7 +36,7 @@ private:
     QTabWidget *materialsView = nullptr;
     MetadataView *metadataView = nullptr;
 
-    GameData &data;
+    SqPackResource &data;
     FileCache cache;
     PenumbraApi *m_api = nullptr;
 };

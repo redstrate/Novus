@@ -13,12 +13,12 @@ class TexPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit TexPart(GameData *data, QWidget *parent = nullptr);
+    explicit TexPart(SqPackResource *data, QWidget *parent = nullptr);
 
     void load(physis_Buffer file);
 
 private:
-    GameData *data = nullptr;
+    SqPackResource *data = nullptr;
 
     ImageLabel *m_label = nullptr;
 };

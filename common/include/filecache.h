@@ -11,12 +11,12 @@
 
 #include "novuscommon_export.h"
 
-struct GameData;
+struct SqPackResource;
 
 class NOVUSCOMMON_EXPORT FileCache
 {
 public:
-    explicit FileCache(GameData &data);
+    explicit FileCache(SqPackResource &data);
 
     bool fileExists(const QString &path);
     physis_Buffer &lookupFile(const QString &path);
@@ -24,6 +24,6 @@ public:
 private:
     QMap<QString, physis_Buffer> cachedBuffers;
     QHash<QString, bool> cachedExist;
-    GameData &data;
+    SqPackResource &data;
     QMutex bufferMutex, existMutex;
 };

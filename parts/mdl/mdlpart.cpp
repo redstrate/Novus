@@ -18,7 +18,7 @@
 #include "filecache.h"
 #include "vulkanwindow.h"
 
-MDLPart::MDLPart(GameData *data, FileCache &cache, QWidget *parent)
+MDLPart::MDLPart(SqPackResource *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)
     , data(data)
     , cache(cache)
