@@ -52,7 +52,6 @@ jobs:
       with:
         version: "${{ env.QT_VERSION }}"
         cache: true
-        modules: 'qtwebsockets'
 
     - name: Prepare Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.2.1
