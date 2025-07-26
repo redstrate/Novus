@@ -175,24 +175,21 @@ void GearListModel::exdFinished(int index)
     auto exd = exdFuture->resultAt(index);
 
     for (unsigned int i = 0; i < exh->row_count; i++) {
-        const auto rows = physis_exd_read_row(&exd, i); // TODO: use all rows, free
-        for (int j = 0; j < rows.row_count; j++) {
-            auto row = rows.row_data[j];
-            if (row.column_data != nullptr) {
-                auto primaryModel = row.column_data[47].u_int64._0;
-                // auto secondaryModel = row.column_data[48].u_int64._0;
+        const auto row = physis_exd_get_row(&exd, i); // TODO: use all rows, free
+        if (row != nullptr) {
+            auto primaryModel = row->column_data[47].u_int64._0;
+            // auto secondaryModel = row.column_data[48].u_int64._0;
 
-                int16_t parts[4];
-                memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
+            int16_t parts[4];
+            memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
 
-                GearInfo info = {};
-                info.name = row.column_data[9].string._0;
-                info.icon = row.column_data[10].u_int16._0;
-                info.slot = physis_slot_from_id(row.column_data[17].u_int8._0);
-                info.modelInfo.primaryID = parts[0];
+            GearInfo info = {};
+            info.name = row->column_data[9].string._0;
+            info.icon = row->column_data[10].u_int16._0;
+            info.slot = physis_slot_from_id(row->column_data[17].u_int8._0);
+            info.modelInfo.primaryID = parts[0];
 
-                gears.push_back(info);
-            }
+            gears.push_back(info);
         }
     }
 }
