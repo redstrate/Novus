@@ -224,7 +224,7 @@ void MainWindow::setupActions()
             QMessageBox::information(this,
                                      i18nc("@title:window", "Download Confirmation"),
                                      i18n("Novus will download the path list from <a "
-                                          "href=\"https://rl2.perchbird.dev/\">ResLogger</a>.this process usually takes a few minutes. The program "
+                                          "href=\"https://rl2.perchbird.dev/\">ResLogger</a>, this process usually takes a few minutes. The program "
                                           "may freeze. Please keep it open until the operation is finished.<br><br>Would you still like to continue?"),
                                      QMessageBox::Ok | QMessageBox::Cancel,
                                      QMessageBox::Ok);
