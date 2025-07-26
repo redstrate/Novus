@@ -13,7 +13,7 @@ Here is an exhaustive list of tooling available here:
 * [Map Editor](apps/mapeditor), a graphical map viewer.
 * [Excel Editor](apps/karuku), a graphical program to view Excel data sheets.
 * [Model Viewer](apps/mdlviewer), a graphical model viewer for MDL files.
-* [Data Viewer](apps/sagasu), a graphical interface to explore FFXIV data archive files.
+* [Data Explorer](apps/sagasu), a graphical interface to explore FFXIV data archive files.
 * [Material Editor](apps/mateditor), a program to view material files.
 * [Game Launcher](apps/gamelauncher), a program to quickly launch the game for testing.
 
