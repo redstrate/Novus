@@ -63,7 +63,8 @@ MapListWidget::MapListWidget(SqPackResource *data, QWidget *parent)
 
             QStandardItem *item = new QStandardItem();
             item->setData(QString::fromStdString(bg));
-            item->setText(QStringLiteral("%1 (%2, %3, %4)")
+            item->setText(QStringLiteral("%1 %2 (%3, %4, %5)")
+                              .arg(QString::number(i))
                               .arg(QString::fromStdString(bg),
                                    QString::fromStdString(placeRegion),
                                    QString::fromStdString(placeZone),
