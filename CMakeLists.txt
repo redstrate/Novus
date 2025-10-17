@@ -59,6 +59,7 @@ add_subdirectory(apps)
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
 file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES src/*.cpp src/*.h)
+list(FILTER ALL_CLANG_FORMAT_SOURCE_FILES EXCLUDE REGEX "extern/.*")
 kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
 
 kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)

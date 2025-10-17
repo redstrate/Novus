@@ -19,11 +19,10 @@ class EXDPart : public QWidget
 public:
     explicit EXDPart(SqPackResource *data, QWidget *parent = nullptr);
 
-    void loadSheet(const QString &name, physis_Buffer buffer, const QString &definitionPath = {});
+    void loadSheet(const QString &name, physis_Buffer buffer);
     void goToRow(const QString &query);
 
 private:
-    std::pair<QString, int> getColumnData(physis_ColumnData &columnData);
     void loadTables();
 
     SqPackResource *data = nullptr;
@@ -41,5 +40,4 @@ private:
     Language preferredLanguage = Language::English;
     physis_EXH *exh = nullptr;
     QString name;
-    QJsonArray definitionList;
 };

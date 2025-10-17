@@ -20,6 +20,7 @@ add_subdirectory(magic_enum EXCLUDE_FROM_ALL)
 add_subdirectory(tinygltf EXCLUDE_FROM_ALL)
 add_subdirectory(imgui EXCLUDE_FROM_ALL)
 add_subdirectory(dxbc EXCLUDE_FROM_ALL)
+add_subdirectory(rapidyaml EXCLUDE_FROM_ALL)
 
 # TODO: Enable in the Flatpak, it's a bit annoying though as we would have to build it separately
 if (NOT BUILD_FLATPAK)

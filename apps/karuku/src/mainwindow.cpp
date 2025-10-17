@@ -47,17 +47,12 @@ MainWindow::MainWindow(SqPackResource *data)
     dummyWidget->addWidget(m_exdPart);
 
     connect(listWidget, &SheetListWidget::sheetSelected, this, [this, data](const QString &name) {
-        QString definitionPath;
-
-        const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-        const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("definitions"));
-
         auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
         auto pathStd = path.toStdString();
 
         auto file = physis_gamedata_extract_file(data, pathStd.c_str());
 
-        m_exdPart->loadSheet(name, file, definitionsDir.absoluteFilePath(QStringLiteral("%1.json").arg(name)));
+        m_exdPart->loadSheet(name, file);
 
         setWindowTitle(name);
     });
@@ -95,13 +90,13 @@ static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath
 
 void MainWindow::setupActions()
 {
-    auto openList = new QAction(i18nc("@action:inmenu", "Import Definitions…"));
+    auto openList = new QAction(i18nc("@action:inmenu", "Import Schema…"));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getExistingDirectory(nullptr, i18nc("@title:window", "Open Defintions Directory"), QStringLiteral("~"));
+        auto fileName = QFileDialog::getExistingDirectory(nullptr, i18nc("@title:window", "Open Schema Directory"), QStringLiteral("~"));
 
         const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-        const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("definitions"));
+        const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
 
         // delete old directory
         if (definitionsDir.exists()) {
@@ -112,18 +107,18 @@ void MainWindow::setupActions()
 
         copyDirectory(fileName, definitionsDir.absolutePath());
 
-        QMessageBox::information(this, i18nc("@title:window", "Definitions"), i18n("Successfully imported definitions!"));
+        QMessageBox::information(this, i18nc("@title:window", "Schema"), i18n("Successfully imported schema!"));
     });
     actionCollection()->addAction(QStringLiteral("import_list"), openList);
 
-    auto downloadList = new QAction(i18nc("@action:inmenu", "Download Definitions…"));
+    auto downloadList = new QAction(i18nc("@action:inmenu", "Download Schema…"));
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
         const int ret = QMessageBox::information(
             this,
             i18nc("@title:window", "Download Confirmation"),
-            i18n("Novus will download the definitions from the <a "
-                 "href=\"https://github.com/xivapi/SaintCoinach\">SaintCoinach repository on GitHub</a>.<br><br>Would you still like to continue?"),
+            i18n("Novus will download the schema from the <a "
+                 "href=\"https://github.com/xivdev/EXDSchema\">EXDSchema repository on GitHub</a>.<br><br>Would you still like to continue?"),
             QMessageBox::Ok | QMessageBox::Cancel,
             QMessageBox::Ok);
 
@@ -134,7 +129,7 @@ void MainWindow::setupActions()
         QUrl url;
         url.setScheme(QStringLiteral("https"));
         url.setHost(QStringLiteral("github.com"));
-        url.setPath(QStringLiteral("/xivapi/SaintCoinach/releases/latest/download/Godbert.zip"));
+        url.setPath(QStringLiteral("/xivdev/EXDSchema/releases/latest/download/latest.zip"));
 
         // TODO: Use Qcoro?
         auto reply = mgr->get(QNetworkRequest(url));
@@ -143,22 +138,22 @@ void MainWindow::setupActions()
 
             QTemporaryDir tempDir;
 
-            QFile file(tempDir.filePath(QStringLiteral("Godbert.zip")));
+            QFile file(tempDir.filePath(QStringLiteral("latest.zip")));
             file.open(QIODevice::WriteOnly);
             file.write(reply->readAll());
             file.close();
 
-            KZip archive(tempDir.filePath(QStringLiteral("Godbert.zip")));
+            KZip archive(tempDir.filePath(QStringLiteral("latest.zip")));
             if (!archive.open(QIODevice::ReadOnly)) {
                 // TODO: these should show as message boxes
                 qFatal() << "Failed to open Godbert zip!";
                 return;
             }
 
-            const KArchiveDirectory *root = dynamic_cast<const KArchiveDirectory *>(archive.directory()->entry(QStringLiteral("Definitions")));
+            const KArchiveDirectory *root = dynamic_cast<const KArchiveDirectory *>(archive.directory());
 
             const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-            const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("definitions"));
+            const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
 
             // delete old directory
             if (definitionsDir.exists()) {
@@ -171,7 +166,7 @@ void MainWindow::setupActions()
 
             archive.close();
 
-            QMessageBox::information(this, i18nc("@title:window", "Definitions"), i18n("Successfully downloaded and imported definitions!"));
+            QMessageBox::information(this, i18nc("@title:window", "Schema"), i18n("Successfully downloaded and imported schema!"));
         });
     });
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
