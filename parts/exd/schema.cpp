@@ -15,6 +15,9 @@ Schema::Schema(const QString &path)
     QFile file(path);
     file.open(QIODevice::ReadOnly);
     auto bytes = file.readAll();
+    if (bytes.isEmpty()) {
+        return;
+    }
 
     const auto tree = ryml::parse_in_place(bytes.data());
     if (tree.has_child(tree.root_id(), "fields")) {
