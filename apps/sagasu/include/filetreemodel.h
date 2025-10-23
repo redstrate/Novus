@@ -4,6 +4,8 @@
 #pragma once
 
 #include "hashdatabase.h"
+#include "physis.hpp"
+
 #include <QAbstractItemModel>
 #include <QFutureWatcher>
 
@@ -17,6 +19,8 @@ struct TreeInformation {
     QString name;
     int row = 0;
     uint32_t hash = 0;
+    Hash originalHash;
+    QString indexPath;
 
     std::vector<TreeInformation *> children;
 };
@@ -30,8 +34,10 @@ public:
 
     enum CustomRoles {
         PathRole = Qt::UserRole,
-        IsUnknown,
-        IsFolder,
+        IsUnknownRole,
+        IsFolderRole,
+        HashRole,
+        IndexPathRole,
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -48,7 +54,7 @@ private:
     TreeInformation *rootItem = nullptr;
 
     void addKnownFolder(const QString &string);
-    void addFile(TreeInformation *parentItem, uint32_t filenameHash, const QString &name);
+    void addFile(TreeInformation *parentItem, uint32_t filenameHash, const QString &name, Hash originalHash, const QString &indexPath);
     void addFolder(TreeInformation *parentItem, uint32_t filenameHash);
 
     QHash<uint32_t, TreeInformation *> knownDirHashes;

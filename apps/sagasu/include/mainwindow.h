@@ -35,5 +35,5 @@ private:
     QLabel *m_hashLabel = nullptr;
     QLabel *m_fileTypeLabel = nullptr;
 
-    void refreshParts(const QString &path);
+    void refreshParts(const QString &indexPath, Hash hash, const QString &path);
 };

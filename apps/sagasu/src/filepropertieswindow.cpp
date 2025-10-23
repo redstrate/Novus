@@ -18,15 +18,17 @@ FilePropertiesWindow::FilePropertiesWindow(const QString &path, physis_Buffer bu
     auto layout = new QFormLayout();
     setLayout(layout);
 
-    auto pathLabel = new QLabel(path);
-    layout->addRow(i18nc("@label", "Path:"), pathLabel);
+    if (!path.isEmpty()) {
+        auto pathLabel = new QLabel(path);
+        layout->addRow(i18nc("@label", "Path:"), pathLabel);
 
-    QFileInfo info(path);
+        QFileInfo info(path);
 
-    const FileType type = FileTypes::getFileType(info.completeSuffix());
+        const FileType type = FileTypes::getFileType(info.completeSuffix());
 
-    auto typeLabel = new QLabel(FileTypes::getFiletypeName(type));
-    layout->addRow(i18nc("@label", "Type:"), typeLabel);
+        auto typeLabel = new QLabel(FileTypes::getFiletypeName(type));
+        layout->addRow(i18nc("@label", "Type:"), typeLabel);
+    }
 
     auto sizeLabel = new QLabel(QString::number(buffer.size));
     layout->addRow(i18nc("@label", "Size (in bytes):"), sizeLabel);

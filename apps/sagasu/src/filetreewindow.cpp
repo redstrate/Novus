@@ -46,14 +46,6 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     });
     layout->addWidget(searchEdit);
 
-    // TODO Restore as an action, later. it's currently pretty useless as-is as it's a "please slow down and crash" checkbox
-    /*m_unknownCheckbox = new QCheckBox();
-    m_unknownCheckbox->setToolTip(QStringLiteral("Show unknown files and folders."));
-    connect(m_unknownCheckbox, &QCheckBox::clicked, this, [this] {
-        refreshModel();
-    });
-    searchLayout->addWidget(m_unknownCheckbox);*/
-
     auto treeWidget = new QTreeView();
     treeWidget->setModel(m_searchModel);
     layout->addWidget(treeWidget);
@@ -64,8 +56,8 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 
         if (index.isValid()) {
             const auto path = m_searchModel->data(index, FileTreeModel::CustomRoles::PathRole).toString();
-            const auto isUnknown = m_searchModel->data(index, FileTreeModel::CustomRoles::IsUnknown).toBool();
-            const auto isFolder = m_searchModel->data(index, FileTreeModel::CustomRoles::IsFolder).toBool();
+            const auto isUnknown = m_searchModel->data(index, FileTreeModel::CustomRoles::IsUnknownRole).toBool();
+            const auto isFolder = m_searchModel->data(index, FileTreeModel::CustomRoles::IsFolderRole).toBool();
 
             auto menu = new QMenu();
 
@@ -94,8 +86,16 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 
     connect(treeWidget, &QTreeView::clicked, [this, treeWidget](const QModelIndex &item) {
         if (item.isValid()) {
-            auto path = m_searchModel->data(item, FileTreeModel::CustomRoles::PathRole).toString();
-            Q_EMIT pathSelected(path);
+            const auto isFolder = m_searchModel->data(item, FileTreeModel::CustomRoles::IsFolderRole).toBool();
+            if (isFolder) {
+                return;
+            }
+
+            const auto path = m_searchModel->data(item, FileTreeModel::CustomRoles::PathRole).toString();
+            const auto indexPath = m_searchModel->data(item, FileTreeModel::CustomRoles::IndexPathRole).toString();
+            const auto hash = m_searchModel->data(item, FileTreeModel::CustomRoles::HashRole).value<Hash>();
+
+            Q_EMIT pathSelected(indexPath, hash, path);
         }
     });
 

@@ -21,7 +21,7 @@ public:
 
 Q_SIGNALS:
     void extractFile(const QString &path);
-    void pathSelected(const QString &path);
+    void pathSelected(const QString &indexPath, Hash hash, const QString &path);
 
 private:
     SqPackResource *data = nullptr;

@@ -78,8 +78,8 @@ MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
             file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);
         }
     });
-    connect(m_tree, &FileTreeWindow::pathSelected, this, [this](const QString &path) {
-        refreshParts(path);
+    connect(m_tree, &FileTreeWindow::pathSelected, this, [this](const QString &indexPath, Hash hash, const QString &path) {
+        refreshParts(indexPath, hash, path);
     });
     m_tree->setMaximumWidth(300);
     dummyWidget->addWidget(m_tree);
@@ -89,7 +89,7 @@ MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
     partHolder->setMinimumHeight(720);
     dummyWidget->addWidget(partHolder);
 
-    refreshParts({});
+    refreshParts({}, {}, {});
 
     setupActions();
     setupGUI(Keys | Save | Create, QStringLiteral("dataexplorer.rc"));
@@ -100,27 +100,35 @@ MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 }
 
-void MainWindow::refreshParts(const QString &path)
+void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString &path)
 {
     partHolder->clear();
 
     std::string pathStd = path.toStdString();
-    if (path.isEmpty() || !physis_gamedata_exists(data, pathStd.c_str())) {
+    if (indexPath.isEmpty()) {
         return;
     }
 
     QFileInfo info(path);
     std::string filenameStd = info.fileName().toStdString();
 
-    // FIXME: add back once hashes are f igured out
+    // FIXME: add back once hashes are figured out
     // auto crcHash = physis_calculate_hash(filenameStd.c_str());
     // m_hashLabel->setText(i18n("Hash: 0x%1", QString::number(crcHash, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
 
     // FIXME: this is terrible, we should not be recalculating this. it isn't a huge deal with the file + index caching, but still
-    auto datOffset = physis_gamedata_find_offset(data, pathStd.c_str());
-    m_offsetLabel->setText(i18n("Offset: 0x%1", QString::number(datOffset, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
+    // TODO: support for unknown files
+    if (!path.isEmpty()) {
+        auto datOffset = physis_gamedata_find_offset(data, pathStd.c_str());
+        m_offsetLabel->setText(i18n("Offset: 0x%1", QString::number(datOffset, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
+    } else {
+        m_offsetLabel->setText(i18n("Offset: Unknown"));
+    }
 
-    auto file = physis_gamedata_extract_file(data, path.toStdString().c_str());
+    auto file = physis_gamedata_extract_file_from_hash(data, indexPath.toStdString().c_str(), hash);
+    if (file.size == 0) {
+        return;
+    }
 
     const FileType type = FileTypes::getFileType(info.completeSuffix());
 
