@@ -104,7 +104,7 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
         return {};
 
     auto item = static_cast<TreeInformation *>(index.internalPointer());
-    if (role == Qt::UserRole) {
+    if (role == PathRole) {
         if (item->type != TreeType::File || item->name.isEmpty()) {
             return {};
         }
@@ -122,6 +122,10 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
         }
 
         return path;
+    } else if (role == IsUnknown) {
+        return item->name.isEmpty(); // unknown files/folders have no name (obviously, we don't know what its named!)
+    } else if (role == IsFolder) {
+        return item->type == TreeType::Folder;
     } else if (role == Qt::DisplayRole) {
         if (item->type == TreeType::Folder) {
             if (item->name.isEmpty()) {

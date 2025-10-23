@@ -63,22 +63,30 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
         auto index = treeWidget->indexAt(pos);
 
         if (index.isValid()) {
-            auto path = m_searchModel->data(index, Qt::UserRole).toString();
+            const auto path = m_searchModel->data(index, FileTreeModel::CustomRoles::PathRole).toString();
+            const auto isUnknown = m_searchModel->data(index, FileTreeModel::CustomRoles::IsUnknown).toBool();
+            const auto isFolder = m_searchModel->data(index, FileTreeModel::CustomRoles::IsFolder).toBool();
 
             auto menu = new QMenu();
 
-            auto extractAction = menu->addAction(i18nc("@action:inmenu", "Extract…"));
-            extractAction->setIcon(QIcon::fromTheme(QStringLiteral("archive-extract-symbolic")));
-            connect(extractAction, &QAction::triggered, this, [this, path] {
-                Q_EMIT extractFile(path);
-            });
+            // It doesn't make sense to extract folders
+            if (!isFolder) {
+                auto extractAction = menu->addAction(i18nc("@action:inmenu", "Extract…"));
+                extractAction->setIcon(QIcon::fromTheme(QStringLiteral("archive-extract-symbolic")));
+                connect(extractAction, &QAction::triggered, this, [this, path] {
+                    Q_EMIT extractFile(path);
+                });
+            }
 
-            auto copyFilePathAction = menu->addAction(i18nc("@action:inmenu", "Copy file path"));
-            copyFilePathAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-copy-symbolic")));
-            connect(copyFilePathAction, &QAction::triggered, this, [this, path] {
-                QClipboard *clipboard = QGuiApplication::clipboard();
-                clipboard->setText(path);
-            });
+            // It doesn't make sense to copy file paths for... a file or folder that doesn't have a path.
+            if (!isUnknown) {
+                auto copyFilePathAction = menu->addAction(i18nc("@action:inmenu", "Copy file path"));
+                copyFilePathAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-copy-symbolic")));
+                connect(copyFilePathAction, &QAction::triggered, this, [this, path] {
+                    QClipboard *clipboard = QGuiApplication::clipboard();
+                    clipboard->setText(path);
+                });
+            }
 
             menu->exec(treeWidget->mapToGlobal(pos));
         }
@@ -86,7 +94,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 
     connect(treeWidget, &QTreeView::clicked, [this, treeWidget](const QModelIndex &item) {
         if (item.isValid()) {
-            auto path = m_searchModel->data(item, Qt::UserRole).toString();
+            auto path = m_searchModel->data(item, FileTreeModel::CustomRoles::PathRole).toString();
             Q_EMIT pathSelected(path);
         }
     });

@@ -28,6 +28,12 @@ class FileTreeModel : public QAbstractItemModel
 public:
     explicit FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, SqPackResource *data, QObject *parent = nullptr);
 
+    enum CustomRoles {
+        PathRole = Qt::UserRole,
+        IsUnknown,
+        IsFolder,
+    };
+
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
