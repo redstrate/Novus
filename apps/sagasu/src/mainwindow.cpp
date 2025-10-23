@@ -299,5 +299,12 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("manual_add"), manualAdd);
 
+    auto showUnknown = new QAction(i18nc("@action:inmenu", "Show Unknown Files/Folders"));
+    showUnknown->setCheckable(true);
+    connect(showUnknown, &QAction::triggered, [this](const bool checked) {
+        m_tree->setShowUnknown(checked);
+    });
+    actionCollection()->addAction(QStringLiteral("show_unknown"), showUnknown);
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }

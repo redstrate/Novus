@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="exceleditor"
-     version="3"
+     version="4"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
@@ -14,6 +14,10 @@
       <Action name="manual_add" />
       <Separator/>
       <Action name="file_quit"/>
+    </Menu>
+    <Menu name="view" >
+      <text>View</text>
+      <Action name="show_unknown" />
     </Menu>
   </MenuBar>
 </gui>

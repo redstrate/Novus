@@ -97,8 +97,14 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 void FileTreeWindow::refreshModel()
 {
     // TODO: this should really be handled by the proxy
-    m_fileModel = new FileTreeModel(m_database, false, m_gamePath, data);
+    m_fileModel = new FileTreeModel(m_database, m_showUnknown, m_gamePath, data);
     m_searchModel->setSourceModel(m_fileModel);
+}
+
+void FileTreeWindow::setShowUnknown(bool show)
+{
+    m_showUnknown = show;
+    refreshModel();
 }
 
 #include "moc_filetreewindow.cpp"

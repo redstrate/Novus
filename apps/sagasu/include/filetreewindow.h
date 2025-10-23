@@ -17,6 +17,7 @@ public:
     explicit FileTreeWindow(HashDatabase &database, const QString &gamePath, SqPackResource *data, QWidget *parent = nullptr);
 
     void refreshModel();
+    void setShowUnknown(bool show);
 
 Q_SIGNALS:
     void extractFile(const QString &path);
@@ -29,4 +30,5 @@ private:
     QCheckBox *m_unknownCheckbox = nullptr;
     QString m_gamePath;
     HashDatabase &m_database;
+    bool m_showUnknown = false;
 };
