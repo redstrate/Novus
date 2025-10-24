@@ -391,7 +391,7 @@ void SimpleRenderer::initPipeline()
 void SimpleRenderer::initDescriptors()
 {
     VkDescriptorSetLayoutBinding boneInfoBufferBinding = {};
-    boneInfoBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    boneInfoBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     boneInfoBufferBinding.descriptorCount = 1;
     boneInfoBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     boneInfoBufferBinding.binding = 2;
@@ -478,7 +478,7 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     VkWriteDescriptorSet descriptorWrite = {};
     descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrite.dstSet = set;
-    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptorWrite.descriptorCount = 1;
     descriptorWrite.pBufferInfo = &bufferInfo;
     descriptorWrite.dstBinding = 2;
