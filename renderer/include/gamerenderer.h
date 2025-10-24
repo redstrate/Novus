@@ -124,7 +124,4 @@ private:
     Texture m_motionGBuffer;
     Texture m_motionGBuffer2;
     Texture m_unkGBuffer;
-
-    // Dawntrail changes part of the rendering system
-    bool m_dawntrailMode = false;
 };

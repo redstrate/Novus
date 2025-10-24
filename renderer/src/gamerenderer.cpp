@@ -58,26 +58,8 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     , m_data(data)
     , m_shaderManager(device)
 {
-    auto repositories = physis_gamedata_get_repositories(data);
-    for (uint32_t i = 0; i < repositories.repositories_count; i++) {
-        if (strcmp(repositories.repositories[i].name, "ex5") == 0) {
-            qInfo() << "The renderer is switching to Dawntrail mode. Please file a bug if you think this was a mistake.";
-            m_dawntrailMode = true;
-        }
-    }
-    physis_gamedata_free_repositories(repositories);
-
     m_dummyTex = m_device.createDummyTexture();
     m_dummyBuffer = m_device.createDummyBuffer();
-
-    if (!m_dawntrailMode) {
-        m_tileNormal =
-            m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_n.tex")));
-        m_device.nameTexture(m_tileNormal, "chara/common/texture/-tile_n.tex");
-        m_tileDiffuse =
-            m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/-tile_d.tex")));
-        m_device.nameTexture(m_tileDiffuse, "chara/common/texture/-tile_d.tex");
-    }
 
     size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -222,7 +204,7 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     }
 
     // shader type parameter
-    if (m_dawntrailMode) {
+    {
         g_ShaderTypeParameter = m_device.createBuffer(sizeof(ShaderTypeParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         m_device.nameBuffer(g_ShaderTypeParameter, "g_ShaderTypeParameter");
 
@@ -232,7 +214,7 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     }
 
     // pbr common parameter
-    if (m_dawntrailMode) {
+    {
         g_PbrParameterCommon = m_device.createBuffer(sizeof(PbrParameterCommon), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         m_device.nameBuffer(g_PbrParameterCommon, "g_PbrParameterCommon");
 
@@ -243,7 +225,7 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     }
 
     // worldViewMatrix
-    if (m_dawntrailMode) {
+    {
         g_WorldViewMatrix = m_device.createBuffer(sizeof(WorldViewMatrix), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         m_device.nameBuffer(g_WorldViewMatrix, "g_WorldViewMatrix");
     }
@@ -320,7 +302,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
                 // copy bone data
                 {
-                    const int jointMatrixSize = m_dawntrailMode ? JOINT_MATRIX_SIZE_DAWNTRAIL : JOINT_MATRIX_SIZE_ARR;
+                    const int jointMatrixSize = JOINT_MATRIX_SIZE_DAWNTRAIL;
                     const size_t bufferSize = sizeof(glm::mat3x4) * jointMatrixSize;
                     void *mapped_data = nullptr;
                     vkMapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
@@ -355,10 +337,6 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     }
 
                     std::vector<uint32_t> systemKeys;
-                    // Dawntrail has no more decode depth buffers it seems
-                    if (renderMaterial.type == MaterialType::Skin && !m_dawntrailMode) {
-                        systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
-                    }
 
                     std::vector<uint32_t> sceneKeys;
                     for (int j = 0; j < renderMaterial.shaderPackage.num_scene_keys; j++) {
@@ -457,9 +435,6 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
             beginPass(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION");
             {
                 std::vector<uint32_t> systemKeys = {};
-                if (!m_dawntrailMode) {
-                    systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
-                }
                 std::vector<uint32_t> subviewKeys = {
                     physis_shpk_crc("Default"),
                     physis_shpk_crc("SUB_VIEW_MAIN"),
@@ -513,9 +488,6 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
             // then run the directionallighting shader
             {
                 std::vector<uint32_t> systemKeys = {};
-                if (!m_dawntrailMode) {
-                    systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
-                }
                 std::vector<uint32_t> sceneKeys = {
                     physis_shpk_crc("GetDirectionalLight_Enable"),
                     physis_shpk_crc("GetFakeSpecular_Disable"),
@@ -585,9 +557,6 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     }
 
                     std::vector<uint32_t> systemKeys;
-                    if (renderMaterial.type == MaterialType::Skin && !m_dawntrailMode) {
-                        systemKeys.push_back(physis_shpk_crc("DecodeDepthBuffer_RAWZ"));
-                    }
 
                     std::vector<uint32_t> sceneKeys;
                     for (int j = 0; j < renderMaterial.shaderPackage.num_scene_keys; j++) {
