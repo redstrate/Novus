@@ -88,7 +88,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
 
         // copy bone data
         {
-            const size_t bufferSize = sizeof(glm::mat4) * 128;
+            const size_t bufferSize = sizeof(glm::mat4) * 768;
             void *mapped_data = nullptr;
             vkMapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
 
@@ -467,7 +467,7 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
         return VK_NULL_HANDLE;
     }
 
-    const size_t bufferSize = sizeof(glm::mat4) * 128;
+    const size_t bufferSize = sizeof(glm::mat4) * 768;
 
     std::vector<VkWriteDescriptorSet> writes;
 
