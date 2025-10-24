@@ -512,17 +512,20 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     if (material.normalTexture) {
         normalImageInfo.imageView = material.normalTexture->imageView;
         normalImageInfo.sampler = m_sampler;
-
-        VkWriteDescriptorSet normalDescriptorWrite2 = {};
-        normalDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        normalDescriptorWrite2.dstSet = set;
-        normalDescriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        normalDescriptorWrite2.descriptorCount = 1;
-        normalDescriptorWrite2.pImageInfo = &normalImageInfo;
-        normalDescriptorWrite2.dstBinding = 4;
-
-        writes.push_back(normalDescriptorWrite2);
+    } else {
+        normalImageInfo.imageView = m_dummyTex.imageView;
+        normalImageInfo.sampler = m_sampler;
     }
+
+    VkWriteDescriptorSet normalDescriptorWrite2 = {};
+    normalDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    normalDescriptorWrite2.dstSet = set;
+    normalDescriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    normalDescriptorWrite2.descriptorCount = 1;
+    normalDescriptorWrite2.pImageInfo = &normalImageInfo;
+    normalDescriptorWrite2.dstBinding = 4;
+
+    writes.push_back(normalDescriptorWrite2);
 
     VkDescriptorImageInfo specularImageInfo = {};
     specularImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -530,17 +533,20 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     if (material.specularTexture) {
         specularImageInfo.imageView = material.specularTexture->imageView;
         specularImageInfo.sampler = m_sampler;
-
-        VkWriteDescriptorSet specularDescriptorWrite2 = {};
-        specularDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        specularDescriptorWrite2.dstSet = set;
-        specularDescriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        specularDescriptorWrite2.descriptorCount = 1;
-        specularDescriptorWrite2.pImageInfo = &specularImageInfo;
-        specularDescriptorWrite2.dstBinding = 5;
-
-        writes.push_back(specularDescriptorWrite2);
+    } else {
+        specularImageInfo.imageView = m_dummyTex.imageView;
+        specularImageInfo.sampler = m_sampler;
     }
+
+    VkWriteDescriptorSet specularDescriptorWrite2 = {};
+    specularDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    specularDescriptorWrite2.dstSet = set;
+    specularDescriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    specularDescriptorWrite2.descriptorCount = 1;
+    specularDescriptorWrite2.pImageInfo = &specularImageInfo;
+    specularDescriptorWrite2.dstBinding = 5;
+
+    writes.push_back(specularDescriptorWrite2);
 
     VkDescriptorImageInfo multiImageInfo = {};
     multiImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -548,17 +554,20 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     if (material.multiTexture) {
         multiImageInfo.imageView = material.multiTexture->imageView;
         multiImageInfo.sampler = m_sampler;
-
-        VkWriteDescriptorSet multiDescriptorWrite2 = {};
-        multiDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        multiDescriptorWrite2.dstSet = set;
-        multiDescriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        multiDescriptorWrite2.descriptorCount = 1;
-        multiDescriptorWrite2.pImageInfo = &multiImageInfo;
-        multiDescriptorWrite2.dstBinding = 6;
-
-        writes.push_back(multiDescriptorWrite2);
+    } else {
+        multiImageInfo.imageView = m_dummyTex.imageView;
+        multiImageInfo.sampler = m_sampler;
     }
+
+    VkWriteDescriptorSet multiDescriptorWrite2 = {};
+    multiDescriptorWrite2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    multiDescriptorWrite2.dstSet = set;
+    multiDescriptorWrite2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    multiDescriptorWrite2.descriptorCount = 1;
+    multiDescriptorWrite2.pImageInfo = &multiImageInfo;
+    multiDescriptorWrite2.dstBinding = 6;
+
+    writes.push_back(multiDescriptorWrite2);
 
     vkUpdateDescriptorSets(m_device.device, writes.size(), writes.data(), 0, nullptr);
 
