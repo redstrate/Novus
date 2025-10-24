@@ -907,6 +907,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
 {
     const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data());
     if (!m_cachedPipelines.contains(hash)) {
+        qInfo() << "Creating pipeline for" << passName << "in" << shaderName;
+
         auto vertexShaderModule = m_shaderManager.convertShaderModule(vertexShader, spv::ExecutionModelVertex);
         auto fragmentShaderModule = m_shaderManager.convertShaderModule(pixelShader, spv::ExecutionModelFragment);
 
@@ -1043,7 +1045,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                         case VertexType::Single4:
                             return VK_FORMAT_R32G32B32A32_SFLOAT;
                         case VertexType::Byte4:
-                            return VK_FORMAT_R8G8B8A8_SINT;
+                            return VK_FORMAT_R8G8B8A8_UINT;
                         case VertexType::Short2:
                             break;
                         case VertexType::Short4:
