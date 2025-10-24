@@ -206,6 +206,10 @@ void MDLPart::reloadBoneData()
                 }
             }
 
+            for (uint32_t i = 0; i < model->boneData.size(); i++) {
+                model->boneData[i] = glm::mat4(1.0f);
+            }
+
             for (uint32_t i = 0; i < model->model.num_affected_bones; i++) {
                 const int originalBoneId = boneMapping[i];
                 model->boneData[i] = deformBones[i] * boneData[originalBoneId].localTransform * boneData[originalBoneId].inversePose;
