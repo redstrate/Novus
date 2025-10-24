@@ -90,15 +90,15 @@ void MapView::reloadMap()
 
     // add bg models
     for (const auto &[name, lgb] : m_appState->lgbFiles) {
-        for (int i = 0; i < lgb.num_chunks; i++) {
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             const auto chunk = lgb.chunks[i];
-            for (int j = 0; j < chunk.num_layers; j++) {
+            for (uint32_t j = 0; j < chunk.num_layers; j++) {
                 const auto layer = chunk.layers[j];
                 if (!m_appState->visibleLayerIds.contains(layer.id)) {
                     continue;
                 }
 
-                for (int z = 0; z < layer.num_objects; z++) {
+                for (uint32_t z = 0; z < layer.num_objects; z++) {
                     const auto object = layer.objects[z];
 
                     switch (object.data.tag) {
@@ -146,6 +146,8 @@ void MapView::reloadMap()
                             }
                         }
                     } break;
+                    default:
+                        break;
                     }
                 }
             }

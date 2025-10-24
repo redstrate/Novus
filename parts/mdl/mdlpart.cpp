@@ -443,6 +443,7 @@ void MDLPart::removeModel(const physis_MDL &mdl)
 {
     // TODO: restore this functionality
     qWarning() << "MDLPart::removeModel needs to be reimplemented!";
+    Q_UNUSED(mdl)
     /*vkWindow->models.erase(std::remove_if(vkWindow->models.begin(),
                                 vkWindow->models.end(),
                                 [mdl](const DrawObject &other) {

@@ -59,7 +59,7 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     , m_shaderManager(device)
 {
     auto repositories = physis_gamedata_get_repositories(data);
-    for (int i = 0; i < repositories.repositories_count; i++) {
+    for (uint32_t i = 0; i < repositories.repositories_count; i++) {
         if (strcmp(repositories.repositories[i].name, "ex5") == 0) {
             qInfo() << "The renderer is switching to Dawntrail mode. Please file a bug if you think this was a mistake.";
             m_dawntrailMode = true;
@@ -435,7 +435,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                         bindDescriptorSets(commandBuffer, pipeline, model.sourceObject, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
-                        for (int j = 0; j < part.originalPart.num_streams; j++) {
+                        for (uintptr_t j = 0; j < part.originalPart.num_streams; j++) {
                             vkCmdBindVertexBuffers(commandBuffer, j, 1, &part.streamBuffer[j].buffer, offsets);
                         }
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
@@ -664,7 +664,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                         bindDescriptorSets(commandBuffer, pipeline, model.sourceObject, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
-                        for (int j = 0; j < part.originalPart.num_streams; j++) {
+                        for (uintptr_t j = 0; j < part.originalPart.num_streams; j++) {
                             vkCmdBindVertexBuffers(commandBuffer, j, 1, &part.streamBuffer[j].buffer, offsets);
                         }
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
@@ -964,7 +964,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
             binding.stride = sizeof(glm::vec4);
             bindings.push_back(binding);
         } else {
-            for (int i = 0; i < part->num_streams; i++) {
+            for (uintptr_t i = 0; i < part->num_streams; i++) {
                 VkVertexInputBindingDescription binding = {};
                 binding.stride = part->stream_strides[i];
                 binding.binding = i;
@@ -1060,7 +1060,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
             if (mdl != nullptr) {
                 std::string semanticName = m_shaderManager.getShaderModuleResources(vertexShader, binding);
 
-                for (int i = 0; i < mdl->lods[0].num_vertex_elements; i++) {
+                for (uintptr_t i = 0; i < mdl->lods[0].num_vertex_elements; i++) {
                     auto element = mdl->lods[0].vertex_elements[i];
 
                     auto fromVertexType = [](VertexType type) -> VkFormat {

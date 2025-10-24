@@ -134,7 +134,7 @@ void ObjectListModel::refresh()
 {
     beginResetModel();
 
-    for (int y = 0; y < m_appState->lgbFiles.size(); y++) {
+    for (size_t y = 0; y < m_appState->lgbFiles.size(); y++) {
         const auto &[name, lgb] = m_appState->lgbFiles[y];
 
         auto fileItem = new TreeInformation();
@@ -144,9 +144,9 @@ void ObjectListModel::refresh()
         fileItem->row = y;
         m_rootItem->children.push_back(fileItem);
 
-        for (int i = 0; i < lgb.num_chunks; i++) {
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             const auto &chunk = lgb.chunks[i];
-            for (int j = 0; j < chunk.num_layers; j++) {
+            for (uint32_t j = 0; j < chunk.num_layers; j++) {
                 const auto &layer = chunk.layers[j];
 
                 auto layerItem = new TreeInformation();
@@ -157,7 +157,7 @@ void ObjectListModel::refresh()
                 layerItem->id = layer.id;
                 fileItem->children.push_back(layerItem);
 
-                for (int z = 0; z < layer.num_objects; z++) {
+                for (uint32_t z = 0; z < layer.num_objects; z++) {
                     const auto &object = layer.objects[z];
 
                     auto objectItem = new TreeInformation();

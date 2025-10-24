@@ -214,7 +214,7 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             if (!shapeTargets.empty()) {
                 const auto &shapeTargetNames = mesh.extras.Get("targetNames").Get<tinygltf::Value::Array>();
 
-                for (int i = 0; i < shapeTargets.size(); i++) {
+                for (size_t i = 0; i < shapeTargets.size(); i++) {
                     const auto shapeTargetName = shapeTargetNames[i].Get<std::string>();
                     qInfo() << "- Importing shape" << shapeTargetName << "for" << partNumber << submeshNumber;
 
@@ -227,7 +227,7 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                         it != shapes.end()) {
                         targetShape = &*it;
                     } else {
-                        targetShape = &shapes.emplace_back(Shape{.name = shapeTargetName});
+                        targetShape = &shapes.emplace_back(Shape{.name = shapeTargetName, .meshes = {}});
                     }
 
                     ShapeMesh *targetShapeMesh;
@@ -239,10 +239,10 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                         it != targetShape->meshes.end()) {
                         targetShapeMesh = &*it;
                     } else {
-                        targetShapeMesh = &targetShape->meshes.emplace_back(ShapeMesh{.affected_part = partNumber});
+                        targetShapeMesh = &targetShape->meshes.emplace_back(ShapeMesh{.affected_part = partNumber, .submeshes = {}});
                     }
 
-                    ShapeSubmesh *targetShapeSubMesh = &targetShapeMesh->submeshes.emplace_back(ShapeSubmesh{.affected_submesh = submeshNumber});
+                    ShapeSubmesh *targetShapeSubMesh = &targetShapeMesh->submeshes.emplace_back(ShapeSubmesh{.affected_submesh = submeshNumber, .values = {}});
 
                     const auto &positionMorphAccessor = model.accessors[shapeTargets[i].at("POSITION")];
                     const auto &positionMorphView = model.bufferViews[positionMorphAccessor.bufferView];
@@ -266,8 +266,12 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                             std::ranges::for_each(processedSubMesh.indices, [&j, i, combined, &morphedVertices](auto index) {
                                 if (index == i) {
                                     // TODO: this is wrong, we can use the same vertex for multiple replacements
-                                    morphedVertices.push_back(
-                                        {.base_index = static_cast<uint32_t>(j), .replacing_vertex = Vertex{.position = {combined.x, combined.y, combined.z}}});
+                                    NewShapeValue value{};
+                                    value.base_index = static_cast<uint32_t>(j);
+                                    value.replacing_vertex.position[0] = combined.x;
+                                    value.replacing_vertex.position[1] = combined.y;
+                                    value.replacing_vertex.position[2] = combined.z;
+                                    morphedVertices.push_back(value);
                                 }
                                 j++;
                             });

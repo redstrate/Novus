@@ -300,7 +300,7 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
 
                 std::vector<tinygltf::Value> morphNames;
 
-                for (int s = 0; s < part.num_shapes; s++) {
+                for (uint32_t s = 0; s < part.num_shapes; s++) {
                     auto &shape = part.shapes[s];
 
                     morphNames.push_back(tinygltf::Value(shape.name));

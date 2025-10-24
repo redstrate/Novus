@@ -67,6 +67,7 @@ void Primitives::Initialize(RenderManager *renderer)
 void Primitives::Cleanup(RenderManager *renderer)
 {
     // TODO: stub
+    Q_UNUSED(renderer)
 }
 
 void Primitives::DrawSphere(VkCommandBuffer commandBuffer)

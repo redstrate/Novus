@@ -24,7 +24,7 @@ ObjectPass::ObjectPass(RenderManager *renderer, AppState *appState)
 
 void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
 {
-    if (auto renderer = dynamic_cast<SimpleRenderer *>(m_renderer->renderer())) {
+    if (dynamic_cast<SimpleRenderer *>(m_renderer->renderer())) {
         VkDebugUtilsLabelEXT labelExt{};
         labelExt.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
         labelExt.pLabelName = "Object Pass";
@@ -33,15 +33,15 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
         for (const auto &[_, lgb] : m_appState->lgbFiles) {
-            for (int i = 0; i < lgb.num_chunks; i++) {
+            for (uint32_t i = 0; i < lgb.num_chunks; i++) {
                 const auto &chunk = lgb.chunks[i];
-                for (int j = 0; j < chunk.num_layers; j++) {
+                for (uint32_t j = 0; j < chunk.num_layers; j++) {
                     const auto &layer = chunk.layers[j];
                     if (!m_appState->visibleLayerIds.contains(layer.id)) {
                         continue;
                     }
 
-                    for (int z = 0; z < layer.num_objects; z++) {
+                    for (uint32_t z = 0; z < layer.num_objects; z++) {
                         const auto &object = layer.objects[z];
 
                         glm::mat4 vp = camera.perspective * camera.view;

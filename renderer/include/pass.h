@@ -10,5 +10,7 @@ class Camera;
 class RendererPass
 {
 public:
+    virtual ~RendererPass() = default;
+
     virtual void render(VkCommandBuffer commandBuffer, Camera &camera) = 0;
 };

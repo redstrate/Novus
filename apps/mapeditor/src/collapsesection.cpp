@@ -48,6 +48,8 @@ void CollapseSection::paintEvent(QPaintEvent *event)
 
 void CollapseSection::mouseMoveEvent(QMouseEvent *event)
 {
+    Q_UNUSED(event)
+
     if (closable) {
         QRect r(width() - 20, 0, width(), 25); // close button
 
@@ -62,6 +64,8 @@ void CollapseSection::mouseMoveEvent(QMouseEvent *event)
 
 void CollapseSection::mousePressEvent(QMouseEvent *event)
 {
+    Q_UNUSED(event)
+
     QRect r(0, 0, width() - 20, 30); // header
 
     if (r.contains(mapFromGlobal(QCursor::pos()))) {
