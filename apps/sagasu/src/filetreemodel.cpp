@@ -24,36 +24,58 @@ FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QSt
         addKnownFolder(knownFolder);
     }
 
+    qInfo() << "Reading index files...";
+
     QDirIterator it(QStringLiteral("%1/sqpack").arg(gamePath), QDirIterator::Subdirectories);
     while (it.hasNext()) {
         it.next();
         QFileInfo info = it.fileInfo();
-        if (info.exists() && (info.completeSuffix() == QStringLiteral("win32.index"))) {
+        if (info.exists() && info.completeSuffix().contains(QStringLiteral(".index"))) {
             std::string pathStd = info.filePath().toStdString();
             const auto indexEntries = physis_index_parse(pathStd.c_str());
             for (uint32_t i = 0; i < indexEntries.num_hashes; i++) {
                 const auto hash = indexEntries.hashes[i];
                 switch (hash.tag) {
                 case Hash::Tag::SplitPath: {
+                    if (!knownDirHashes.contains(hash.split_path.path)) {
+                        addUnknownFolder(rootItem, hash.split_path.path);
+                    }
+
                     const auto completeHash =
                         static_cast<uint32_t>(static_cast<uint64_t>(hash.split_path.path) << 32 | static_cast<uint64_t>(hash.split_path.name));
-                    if (knownDirHashes.contains(hash.split_path.path)) {
-                        QString name;
-                        if (m_database.knowsFile(completeHash)) {
-                            name = m_database.getFilename(completeHash);
-                        }
-                        addFile(knownDirHashes[hash.split_path.path], completeHash, name, hash, info.filePath());
-                    } else {
-                        addFolder(rootItem, hash.split_path.path);
+
+                    QString name;
+                    if (m_database.knowsFile(completeHash)) {
+                        name = m_database.getFilename(completeHash);
                     }
+                    addFile(knownDirHashes.value(hash.split_path.path), completeHash, name, hash.split_path.name, hash, info.filePath());
                 } break;
                 case Hash::Tag::FullPath:
-                    Q_UNREACHABLE(); // shouldn't be in basic index files
-                    break;
+                    if (m_database.knowsPath(hash.full_path._0)) {
+                        const QString path = m_database.getPath(hash.full_path._0);
+
+                        if (path.contains(QStringLiteral("/"))) {
+                            const int lastSlash = path.lastIndexOf(QStringLiteral("/"));
+                            const QString filename = path.sliced(lastSlash + 1, path.length() - lastSlash - 1);
+                            const QString foldername = path.left(lastSlash);
+                            const auto folderHash = physis_generate_partial_hash(foldername.toStdString().c_str());
+
+                            addFile(knownDirHashes.value(folderHash),
+                                    hash.full_path._0,
+                                    filename,
+                                    physis_generate_partial_hash(filename.toStdString().c_str()),
+                                    hash,
+                                    info.filePath());
+                        } else {
+                            Q_UNREACHABLE(); // root files don't exist in FFXIV
+                        }
+                    }
                 }
             }
         }
     }
+
+    qInfo() << "Finished reading!";
 }
 
 int FileTreeModel::rowCount(const QModelIndex &parent) const
@@ -183,19 +205,20 @@ QVariant FileTreeModel::headerData(int section, Qt::Orientation orientation, int
 
 void FileTreeModel::addKnownFolder(const QString &string)
 {
-    auto children = string.split(QStringLiteral("/"));
+    const QStringList children = string.split(QLatin1Char('/'));
 
     QString conct = children[0];
+    conct.reserve(string.length());
     TreeInformation *parentItem = rootItem;
     for (int i = 0; i < children.size(); i++) {
         if (i > 0) {
-            conct += QStringLiteral("/") + children[i];
+            conct += QStringLiteral("/%1").arg(children[i]);
         }
         std::string conctStd = conct.toStdString();
-        auto hash = physis_generate_partial_hash(conctStd.c_str());
+        const auto hash = physis_generate_partial_hash(conctStd.c_str());
 
         if (knownDirHashes.contains(hash)) {
-            parentItem = knownDirHashes[hash];
+            parentItem = knownDirHashes.value(hash);
         } else {
             auto folderItem = new TreeInformation();
             folderItem->name = children[i];
@@ -205,14 +228,23 @@ void FileTreeModel::addKnownFolder(const QString &string)
             folderItem->hash = hash;
             parentItem->children.push_back(folderItem);
             parentItem = folderItem;
-            knownDirHashes[folderItem->hash] = folderItem;
+            knownDirHashes.insert(folderItem->hash, folderItem);
         }
     }
 }
 
-void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, const QString &realName, Hash originalHash, const QString &indexPath)
+void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, const QString &realName, uint32_t nameHash, Hash originalHash, const QString &indexPath)
 {
     if (realName.isEmpty() && !m_showUnknown) {
+        return;
+    }
+
+    if (!parentItem) {
+        return;
+    }
+
+    // Skip files we already found
+    if (parentItem->contains(nameHash)) {
         return;
     }
 
@@ -224,23 +256,26 @@ void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, const QS
     fileItem->row = parentItem->children.size();
     fileItem->originalHash = originalHash;
     fileItem->indexPath = indexPath;
+    fileItem->nameHash = nameHash;
 
     parentItem->children.push_back(fileItem);
 }
 
-void FileTreeModel::addFolder(TreeInformation *parentItem, uint32_t name)
+void FileTreeModel::addUnknownFolder(TreeInformation *parentItem, uint32_t name)
 {
     if (!m_showUnknown) {
         return;
     }
 
-    auto fileItem = new TreeInformation();
-    fileItem->hash = name;
-    fileItem->type = TreeType::Folder;
-    fileItem->parent = parentItem;
-    fileItem->row = fileItem->parent->children.size();
+    auto folderItem = new TreeInformation();
+    folderItem->hash = name;
+    folderItem->type = TreeType::Folder;
+    folderItem->parent = parentItem;
+    folderItem->row = folderItem->parent->children.size();
 
-    parentItem->children.push_back(fileItem);
+    parentItem->children.push_back(folderItem);
+
+    knownDirHashes.insert(name, folderItem);
 }
 
 #include "moc_filetreemodel.cpp"

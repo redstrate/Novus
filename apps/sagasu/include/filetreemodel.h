@@ -17,12 +17,24 @@ struct TreeInformation {
     TreeType type;
     TreeInformation *parent = nullptr;
     QString name;
+    uint32_t nameHash = 0;
     int row = 0;
     uint32_t hash = 0;
     Hash originalHash;
     QString indexPath;
 
     std::vector<TreeInformation *> children;
+
+    bool contains(const uint32_t &nameHash) const
+    {
+        for (const auto child : children) {
+            if (child->nameHash == nameHash) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 };
 
 class FileTreeModel : public QAbstractItemModel
@@ -54,8 +66,8 @@ private:
     TreeInformation *rootItem = nullptr;
 
     void addKnownFolder(const QString &string);
-    void addFile(TreeInformation *parentItem, uint32_t filenameHash, const QString &name, Hash originalHash, const QString &indexPath);
-    void addFolder(TreeInformation *parentItem, uint32_t filenameHash);
+    void addFile(TreeInformation *parentItem, uint32_t filenameHash, const QString &name, uint32_t nameHash, Hash originalHash, const QString &indexPath);
+    void addUnknownFolder(TreeInformation *parentItem, uint32_t filenameHash);
 
     QHash<uint32_t, TreeInformation *> knownDirHashes;
 

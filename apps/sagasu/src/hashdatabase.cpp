@@ -21,6 +21,7 @@ HashDatabase::HashDatabase(QObject *parent)
     QSqlQuery query;
     query.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS folder_hashes (hash INTEGER PRIMARY KEY, name TEXT NOT NULL)"));
     query.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS file_hashes (hash INTEGER PRIMARY KEY, name TEXT NOT NULL)"));
+    query.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS path_hashes (hash INTEGER PRIMARY KEY, path TEXT NOT NULL)"));
 
     cacheDatabase();
 }
@@ -68,6 +69,7 @@ void HashDatabase::addFile(const QString &file)
 QVector<QString> HashDatabase::getKnownFolders()
 {
     QSqlQuery query;
+    query.setForwardOnly(true);
     query.exec(QStringLiteral("SELECT name FROM folder_hashes"));
 
     QVector<QString> folders;
@@ -79,14 +81,24 @@ QVector<QString> HashDatabase::getKnownFolders()
     return folders;
 }
 
-bool HashDatabase::knowsFile(const uint32_t i)
+bool HashDatabase::knowsFile(const uint32_t i) const
 {
     return m_fileHashes.contains(i);
 }
 
-QString HashDatabase::getFilename(const uint32_t i)
+bool HashDatabase::knowsPath(const uint32_t i) const
 {
-    return m_fileHashes[i];
+    return m_pathHashes.contains(i);
+}
+
+QString HashDatabase::getFilename(const uint32_t i) const
+{
+    return m_fileHashes.value(i);
+}
+
+QString HashDatabase::getPath(const uint32_t i) const
+{
+    return m_pathHashes.value(i);
 }
 
 void HashDatabase::importFileList(const QByteArray &file)
@@ -104,11 +116,18 @@ void HashDatabase::importFileList(const QByteArray &file)
         QStringLiteral("REPLACE INTO file_hashes (hash, name) "
                        "VALUES (?, ?)"));
 
+    QSqlQuery pathQuery;
+    pathQuery.prepare(
+        QStringLiteral("REPLACE INTO path_hashes (hash, path) "
+                       "VALUES (?, ?)"));
+
     struct PreparedRow {
         uint folderHash;
         QString folderName;
         uint fileHash;
         QString fileName;
+        uint pathHash;
+        QString path;
     };
     std::vector<PreparedRow> preparedRows;
 
@@ -119,6 +138,7 @@ void HashDatabase::importFileList(const QByteArray &file)
 
         const QString &folderHash = parts[1];
         const QString &fileHash = parts[2];
+        const QString &fullHash = parts[3];
         const QString &path = parts[4];
 
         QString filename;
@@ -128,7 +148,7 @@ void HashDatabase::importFileList(const QByteArray &file)
             filename = path.sliced(lastSlash + 1, path.length() - lastSlash - 1);
             foldername = path.left(lastSlash);
         } else {
-            filename = path;
+            Q_UNREACHABLE(); // root files don't exist in FFXIV
         }
 
         preparedRows.push_back(PreparedRow{
@@ -136,6 +156,8 @@ void HashDatabase::importFileList(const QByteArray &file)
             .folderName = foldername,
             .fileHash = fileHash.toUInt(),
             .fileName = filename,
+            .pathHash = fullHash.toUInt(),
+            .path = path,
         });
     }
 
@@ -153,6 +175,10 @@ void HashDatabase::importFileList(const QByteArray &file)
         fileQuery.bindValue(0, row.fileHash);
         fileQuery.bindValue(1, row.fileName);
         fileQuery.exec();
+
+        pathQuery.bindValue(0, row.pathHash);
+        pathQuery.bindValue(1, row.path);
+        pathQuery.exec();
     }
     m_db.commit();
 
@@ -164,30 +190,48 @@ void HashDatabase::importFileList(const QByteArray &file)
 
 void HashDatabase::cacheDatabase()
 {
+    qInfo() << "Caching database...";
+
     m_fileHashes.clear();
     m_folderHashes.clear();
 
     // file hashes
     {
         QSqlQuery query;
+        query.setForwardOnly(true);
         query.prepare(QStringLiteral("SELECT hash, name FROM file_hashes;"));
         query.exec();
 
         while (query.next()) {
-            m_fileHashes[query.value(0).toUInt()] = query.value(1).toString();
+            m_fileHashes.insert(query.value(0).toUInt(), query.value(1).toString());
         }
     }
 
     // folder hashes
     {
         QSqlQuery query;
+        query.setForwardOnly(true);
         query.prepare(QStringLiteral("SELECT hash, name FROM folder_hashes;"));
         query.exec();
 
         while (query.next()) {
-            m_folderHashes[query.value(0).toUInt()] = query.value(1).toString();
+            m_folderHashes.insert(query.value(0).toUInt(), query.value(1).toString());
         }
     }
+
+    // path hashes
+    {
+        QSqlQuery query;
+        query.setForwardOnly(true);
+        query.prepare(QStringLiteral("SELECT hash, path FROM path_hashes;"));
+        query.exec();
+
+        while (query.next()) {
+            m_pathHashes.insert(query.value(0).toUInt(), query.value(1).toString());
+        }
+    }
+
+    qInfo() << "Finished caching!";
 }
 
 #include "moc_hashdatabase.cpp"

@@ -27,13 +27,11 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     m_searchModel->setRecursiveFilteringEnabled(true);
     m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
-    /*auto searchLayout = new QHBoxLayout();
-    layout->addLayout(searchLayout);*/
-
     auto searchEdit = new QLineEdit();
 
     auto searchTimer = new QTimer();
     searchTimer->setSingleShot(true);
+    searchTimer->setInterval(1500);
     connect(searchTimer, &QTimer::timeout, m_searchModel, [this, searchEdit] {
         m_searchModel->setFilterFixedString(searchEdit->text());
     });
@@ -84,7 +82,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
         }
     });
 
-    connect(treeWidget, &QTreeView::clicked, [this, treeWidget](const QModelIndex &item) {
+    connect(treeWidget, &QTreeView::activated, [this, treeWidget](const QModelIndex &item) {
         if (item.isValid()) {
             const auto isFolder = m_searchModel->data(item, FileTreeModel::CustomRoles::IsFolderRole).toBool();
             if (isFolder) {

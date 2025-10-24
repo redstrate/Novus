@@ -20,9 +20,11 @@ public:
 
     QVector<QString> getKnownFolders();
 
-    bool knowsFile(uint32_t i);
+    bool knowsFile(uint32_t i) const;
+    bool knowsPath(uint32_t i) const;
 
-    QString getFilename(uint32_t i);
+    QString getFilename(uint32_t i) const;
+    QString getPath(uint32_t i) const;
 
 private:
     void cacheDatabase();
@@ -32,4 +34,5 @@ private:
     // Database transactions are super slow, so we keep a copy in memory
     QHash<uint32_t, QString> m_fileHashes;
     QHash<uint32_t, QString> m_folderHashes;
+    QHash<uint32_t, QString> m_pathHashes;
 };
