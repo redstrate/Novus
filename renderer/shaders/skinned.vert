@@ -28,14 +28,14 @@ layout(std430, push_constant) uniform PushConstant {
 };
 
 layout(binding = 2) uniform BoneInformation {
-    mat4 bones[768];
+    mat3x4 bones[256];
 };
 
 void main() {
-    mat4 BoneTransform = bones[boneOffset + inBoneIds[0]] * inBoneWeights[0];
-    BoneTransform += bones[boneOffset + inBoneIds[1]] * inBoneWeights[1];
-    BoneTransform += bones[boneOffset + inBoneIds[2]] * inBoneWeights[2];
-    BoneTransform += bones[boneOffset + inBoneIds[3]] * inBoneWeights[3];
+    mat4 BoneTransform = mat4(bones[boneOffset + inBoneIds[0]]) * inBoneWeights[0];
+    BoneTransform += mat4(bones[boneOffset + inBoneIds[1]]) * inBoneWeights[1];
+    BoneTransform += mat4(bones[boneOffset + inBoneIds[2]]) * inBoneWeights[2];
+    BoneTransform += mat4(bones[boneOffset + inBoneIds[3]]) * inBoneWeights[3];
 
     BoneTransform = model * BoneTransform;
 

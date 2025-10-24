@@ -22,8 +22,7 @@ struct CameraParameter {
     glm::mat4 m_unknown4; // noooo idea
 };
 
-const int JOINT_MATRIX_SIZE_ARR = 64;
-const int JOINT_MATRIX_SIZE_DAWNTRAIL = 768;
+const int JOINT_MATRIX_SIZE_DAWNTRAIL = 256;
 
 struct CameraLight {
     glm::vec4 m_DiffuseSpecular;

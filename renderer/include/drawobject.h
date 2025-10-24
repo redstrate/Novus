@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "shaderstructs.h"
 #include "texture.h"
 
 struct RenderPart {
@@ -37,7 +38,7 @@ struct RenderMaterial {
 struct DrawObject {
     physis_MDL model;
     std::vector<RenderPart> parts;
-    std::array<glm::mat4, 768> boneData; // JOINT_MATRIX_SIZE_DAWNTRAIL
+    std::array<glm::mat3x4, JOINT_MATRIX_SIZE_DAWNTRAIL> boneData; // JOINT_MATRIX_SIZE_DAWNTRAIL
     std::vector<RenderMaterial> materials;
     bool skinned = false;
 

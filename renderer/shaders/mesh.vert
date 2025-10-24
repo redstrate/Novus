@@ -28,7 +28,7 @@ layout(std430, push_constant) uniform PushConstant {
 };
 
 layout(std430, binding = 2) buffer readonly BoneInformation {
-    mat4 bones[768];
+    mat3x4 bones[256];
 };
 
 void main() {

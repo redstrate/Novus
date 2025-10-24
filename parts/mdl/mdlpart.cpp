@@ -207,7 +207,7 @@ void MDLPart::reloadBoneData()
             }
 
             for (uint32_t i = 0; i < model->boneData.size(); i++) {
-                model->boneData[i] = glm::mat4(1.0f);
+                model->boneData[i] = glm::mat3x4(1.0f);
             }
 
             for (uint32_t i = 0; i < model->model.num_affected_bones; i++) {

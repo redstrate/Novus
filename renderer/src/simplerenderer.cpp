@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "device.h"
 #include "drawobject.h"
+#include "shaderstructs.h"
 #include "swapchain.h"
 
 SimpleRenderer::SimpleRenderer(Device &device)
@@ -88,7 +89,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
 
         // copy bone data
         {
-            const size_t bufferSize = sizeof(glm::mat4) * 768;
+            const size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
             void *mapped_data = nullptr;
             vkMapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
 
@@ -467,7 +468,7 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
         return VK_NULL_HANDLE;
     }
 
-    const size_t bufferSize = sizeof(glm::mat4) * 768;
+    const size_t bufferSize = sizeof(glm::mat4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
 
     std::vector<VkWriteDescriptorSet> writes;
 
