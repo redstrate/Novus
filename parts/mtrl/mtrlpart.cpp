@@ -7,6 +7,7 @@
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QVBoxLayout>
 #include <physis.hpp>
 
@@ -157,14 +158,32 @@ void MtrlPart::rebuild()
             name = QString::fromLatin1(keys[constant.id]);
         }
 
-        auto groupBox = new QGroupBox(name);
-        m_constantsLayout->addWidget(groupBox);
+        auto valueLayout = new QHBoxLayout();
+        m_constantsLayout->addLayout(valueLayout);
 
-        auto layout = new QFormLayout();
-        groupBox->setLayout(layout);
+        auto label = new QLabel();
+        label->setText(name);
+        valueLayout->addWidget(label);
 
-        auto label = new QLabel(QStringLiteral("%1 %2 %3 %4").arg(constant.values[0]).arg(constant.values[1]).arg(constant.values[2]).arg(constant.values[3]));
-        layout->addRow(i18n("Value:"), label);
+        auto firstElemSpinBox = new QDoubleSpinBox();
+        firstElemSpinBox->setValue(constant.values[0]);
+        firstElemSpinBox->setReadOnly(true);
+        valueLayout->addWidget(firstElemSpinBox);
+
+        auto secondElemSpinBox = new QDoubleSpinBox();
+        secondElemSpinBox->setValue(constant.values[1]);
+        secondElemSpinBox->setReadOnly(true);
+        valueLayout->addWidget(secondElemSpinBox);
+
+        auto thirdElemSpinBox = new QDoubleSpinBox();
+        thirdElemSpinBox->setValue(constant.values[2]);
+        thirdElemSpinBox->setReadOnly(true);
+        valueLayout->addWidget(thirdElemSpinBox);
+
+        auto fourthElemSpinBox = new QDoubleSpinBox();
+        fourthElemSpinBox->setValue(constant.values[3]);
+        fourthElemSpinBox->setReadOnly(true);
+        valueLayout->addWidget(fourthElemSpinBox);
     }
 }
 
