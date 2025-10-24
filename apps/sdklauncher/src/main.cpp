@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    MainWindow window;
-    window.show();
+    auto window = new MainWindow();
+    window->show();
 
-    return app.exec();
+    return QApplication::exec();
 }

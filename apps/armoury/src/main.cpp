@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
 
     const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};
-    MainWindow w(physis_gamedata_initialize(gameDirStd.c_str()));
-    w.show();
+    auto w = new MainWindow(physis_gamedata_initialize(gameDirStd.c_str()));
+    w->show();
 
     return QApplication::exec();
 }

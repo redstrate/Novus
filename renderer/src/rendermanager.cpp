@@ -394,6 +394,10 @@ void RenderManager::resize(VkSurfaceKHR surface, int width, int height)
 
 void RenderManager::destroySwapchain()
 {
+    if (!m_device || !m_device->swapChain) {
+        return;
+    }
+
     if (m_device->swapChain->swapchain != VK_NULL_HANDLE) {
         vkDestroySwapchainKHR(m_device->device, m_device->swapChain->swapchain, nullptr);
         m_device->swapChain->swapchain = VK_NULL_HANDLE;
