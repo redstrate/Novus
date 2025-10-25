@@ -305,7 +305,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
     for (const auto &pass : passes) {
         // hardcoded to the known pass for now
         if (pass == "PASS_G_OPAQUE" || pass == "PASS_Z_OPAQUE") {
-            beginPass(commandBuffer, pass);
+            const auto [colorAttachmentFormats, depthAttachmentFormat] = beginPass(commandBuffer, pass);
 
             for (auto &model : models) {
                 VkDebugUtilsLabelEXT labelExt{};
@@ -422,7 +422,9 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                                                       pixelShader,
                                                       renderMaterial.mat.shpk_name,
                                                       &model.sourceObject->model,
-                                                      &part.originalPart);
+                                                      &part.originalPart,
+                                                      colorAttachmentFormats,
+                                                      depthAttachmentFormat);
                         bindDescriptorSets(commandBuffer, pipeline, model.sourceObject, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
@@ -445,8 +447,9 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
             m_device.transitionTexture(commandBuffer, m_normalGBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
             // first we need to generate the view positions with createviewpositions
-            beginPass(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION");
             {
+                const auto [colorAttachmentFormats, depthAttachmentFormat] = beginPass(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION");
+
                 std::vector<uint32_t> systemKeys = {};
                 std::vector<uint32_t> subviewKeys = {
                     physis_shpk_crc("Default"),
@@ -484,7 +487,9 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                                                   pixelShader,
                                                   "createviewposition.shpk",
                                                   nullptr,
-                                                  nullptr);
+                                                  nullptr,
+                                                  colorAttachmentFormats,
+                                                  depthAttachmentFormat);
                     bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr, pass);
 
                     VkDeviceSize offsets[] = {0};
@@ -497,9 +502,10 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
             m_device.transitionTexture(commandBuffer, m_viewPositionBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-            beginPass(commandBuffer, pass);
             // then run the directionallighting shader
             {
+                const auto [colorAttachmentFormats, depthAttachmentFormat] = beginPass(commandBuffer, pass);
+
                 std::vector<uint32_t> systemKeys = {};
                 std::vector<uint32_t> sceneKeys = {
                     physis_shpk_crc("GetDirectionalLight_Enable"),
@@ -536,7 +542,15 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     physis_Shader vertexShader = directionalLightningShpk.vertex_shaders[vertexShaderIndice];
                     physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
 
-                    auto &pipeline = bindPipeline(commandBuffer, pass, vertexShader, pixelShader, "directionallighting.shpk", nullptr, nullptr);
+                    auto &pipeline = bindPipeline(commandBuffer,
+                                                  pass,
+                                                  vertexShader,
+                                                  pixelShader,
+                                                  "directionallighting.shpk",
+                                                  nullptr,
+                                                  nullptr,
+                                                  colorAttachmentFormats,
+                                                  depthAttachmentFormat);
                     bindDescriptorSets(commandBuffer, pipeline, nullptr, nullptr, pass);
 
                     VkDeviceSize offsets[] = {0};
@@ -553,7 +567,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         } else if (pass == "PASS_COMPOSITE_SEMITRANSPARENCY") {
-            beginPass(commandBuffer, pass);
+            const auto [colorAttachmentFormats, depthAttachmentFormat] = beginPass(commandBuffer, pass);
 
             for (auto &model : models) {
                 for (const auto &part : model.sourceObject->parts) {
@@ -642,7 +656,9 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                                                       pixelShader,
                                                       renderMaterial.mat.shpk_name,
                                                       &model.sourceObject->model,
-                                                      &part.originalPart);
+                                                      &part.originalPart,
+                                                      colorAttachmentFormats,
+                                                      depthAttachmentFormat);
                         bindDescriptorSets(commandBuffer, pipeline, model.sourceObject, &renderMaterial, pass);
 
                         VkDeviceSize offsets[] = {0};
@@ -675,7 +691,7 @@ void GameRenderer::resize()
     createImageResources();
 }
 
-void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_view passName)
+std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_view passName)
 {
     VkDebugUtilsLabelEXT labelExt{};
     labelExt.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
@@ -689,8 +705,12 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
     std::vector<VkRenderingAttachmentInfo> colorAttachments;
     VkRenderingAttachmentInfo depthStencilAttachment{};
 
+    std::vector<VkFormat> colorAttachmentFormats;
+    VkFormat depthAttachmentFormat = VK_FORMAT_UNDEFINED;
+
     if (passName == "PASS_G_OPAQUE") {
         m_device.transitionTexture(commandBuffer, m_normalGBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_normalGBuffer.format);
 
         // normals, it seems like
         {
@@ -710,6 +730,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
 
         m_device.transitionTexture(commandBuffer, m_motionGBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_motionGBuffer.format);
 
         // test for another
         {
@@ -729,6 +750,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
 
         m_device.transitionTexture(commandBuffer, m_diffuseGBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_diffuseGBuffer.format);
 
         // test for another
         {
@@ -748,6 +770,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
 
         m_device.transitionTexture(commandBuffer, m_unkGBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_unkGBuffer.format);
 
         // test for another
         {
@@ -767,6 +790,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
 
         m_device.transitionTexture(commandBuffer, m_motionGBuffer2, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_motionGBuffer2.format);
 
         // test for another
         {
@@ -786,6 +810,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
 
         m_device.transitionTexture(commandBuffer, m_depthBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+        depthAttachmentFormat = m_depthBuffer.format;
 
         // depth
         {
@@ -801,6 +826,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
     } else if (passName == "PASS_LIGHTING_OPAQUE") {
         m_device.transitionTexture(commandBuffer, m_lightBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_lightBuffer.format);
 
         // diffuse
         {
@@ -816,6 +842,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
 
         m_device.transitionTexture(commandBuffer, m_lightSpecularBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_lightSpecularBuffer.format);
 
         // specular?
         {
@@ -831,6 +858,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
     } else if (passName == "PASS_LIGHTING_OPAQUE_VIEWPOSITION") {
         m_device.transitionTexture(commandBuffer, m_viewPositionBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_viewPositionBuffer.format);
 
         // TODO: Hack we should not be using a special pass for this, we should just design our API better
         {
@@ -848,6 +876,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
     } else if (passName == "PASS_Z_OPAQUE") {
         m_device.transitionTexture(commandBuffer, m_ZBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         m_device.transitionTexture(commandBuffer, m_depthBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_ZBuffer.format);
 
         // normals, it seems like
         {
@@ -867,6 +896,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
     } else if (passName == "PASS_COMPOSITE_SEMITRANSPARENCY") {
         m_device.transitionTexture(commandBuffer, m_compositeBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        colorAttachmentFormats.push_back(m_compositeBuffer.format);
 
         // composite
         {
@@ -886,6 +916,7 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
         }
 
         m_device.transitionTexture(commandBuffer, m_depthBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+        depthAttachmentFormat = m_depthBuffer.format;
 
         // depth buffer for depth testing
         {
@@ -909,6 +940,8 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
     }
 
     vkCmdBeginRendering(commandBuffer, &renderingInfo);
+
+    return {colorAttachmentFormats, depthAttachmentFormat};
 }
 
 void GameRenderer::endPass(VkCommandBuffer commandBuffer)
@@ -924,7 +957,9 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                                                          physis_Shader &pixelShader,
                                                          std::string_view shaderName,
                                                          const physis_MDL *mdl,
-                                                         const physis_Part *part)
+                                                         const physis_Part *part,
+                                                         std::vector<VkFormat> colorAttachmentFormats,
+                                                         VkFormat depthAttachmentFormat)
 {
     const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data());
     if (!m_cachedPipelines.contains(hash)) {
@@ -1216,16 +1251,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
         std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
-
-        int colorAttachmentCount = 1;
-        // TODO: hardcoded, should be a reusable function to get the color attachments
-        if (passName == "PASS_LIGHTING_OPAQUE") {
-            colorAttachmentCount = 2;
-        } else if (passName == "PASS_G_OPAQUE") {
-            colorAttachmentCount = 5;
-        }
-
-        for (int i = 0; i < colorAttachmentCount; i++) {
+        for (size_t i = 0; i < colorAttachmentFormats.size(); i++) {
             colorBlendAttachments.push_back(colorBlendAttachment);
         }
 
@@ -1270,17 +1296,11 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
         depthStencil.maxDepthBounds = 1.0f;
 
-        const std::array colorAttachmentFormats = {VK_FORMAT_R8G8B8A8_UNORM,
-                                                   VK_FORMAT_R8G8B8A8_UNORM,
-                                                   VK_FORMAT_R8G8B8A8_UNORM,
-                                                   VK_FORMAT_R8G8B8A8_UNORM,
-                                                   VK_FORMAT_R8G8B8A8_UNORM};
-
         VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = {};
         pipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-        pipelineRenderingCreateInfo.colorAttachmentCount = colorAttachmentCount;
+        pipelineRenderingCreateInfo.colorAttachmentCount = colorAttachmentFormats.size();
         pipelineRenderingCreateInfo.pColorAttachmentFormats = colorAttachmentFormats.data();
-        pipelineRenderingCreateInfo.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT; // TODO: hardcoded
+        pipelineRenderingCreateInfo.depthAttachmentFormat = depthAttachmentFormat;
 
         VkGraphicsPipelineCreateInfo createInfo = {};
         createInfo.pNext = &pipelineRenderingCreateInfo;
@@ -1296,7 +1316,6 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         createInfo.pDynamicState = &dynamicState;
         createInfo.pDepthStencilState = &depthStencil;
         createInfo.layout = pipelineLayout;
-        // createInfo.renderPass = m_renderer.renderPass;
 
         VkPipeline pipeline = VK_NULL_HANDLE;
         vkCreateGraphicsPipelines(m_device.device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline);

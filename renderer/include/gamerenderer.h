@@ -59,7 +59,7 @@ private:
         physis_Shader vertexShader, pixelShader;
     };
 
-    void beginPass(VkCommandBuffer commandBuffer, std::string_view passName);
+    std::pair<std::vector<VkFormat>, VkFormat> beginPass(VkCommandBuffer commandBuffer, std::string_view passName);
     void endPass(VkCommandBuffer commandBuffer);
     CachedPipeline &bindPipeline(VkCommandBuffer commandBuffer,
                                  std::string_view passName,
@@ -67,7 +67,9 @@ private:
                                  physis_Shader &pixelShader,
                                  std::string_view shaderName,
                                  const physis_MDL *mdl,
-                                 const physis_Part *part);
+                                 const physis_Part *part,
+                                 std::vector<VkFormat> colorAttachmentFormats,
+                                 VkFormat depthAttachmentFormat);
 
     void createImageResources();
 
