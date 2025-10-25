@@ -5,6 +5,7 @@
 
 #include <QFormLayout>
 #include <QListWidget>
+#include <QPushButton>
 #include <QTabWidget>
 #include <QTextEdit>
 #include <QVBoxLayout>
@@ -24,6 +25,8 @@ private:
     void loadShader(const QModelIndex &index);
     void loadNode(const QModelIndex &index);
     void loadPass(const QModelIndex &index);
+    void goToVertexShader(int index);
+    void goToPixelShader(int index);
     void clearLayout(QLayout *layout);
 
     QTabWidget *pageTabWidget = nullptr;
@@ -64,6 +67,8 @@ private:
     QWidget *nodesPassesTab = nullptr;
     QListWidget *nodesPassesListWidget = nullptr;
     QFormLayout *nodesPassesFormLayout = nullptr;
+    QPushButton *vertexShaderButton = nullptr;
+    QPushButton *pixelShaderButton = nullptr;
 
     QListWidget *scalarsListWidget;
     QListWidget *texturesListWidget;

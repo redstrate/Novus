@@ -86,6 +86,15 @@ SHPKPart::SHPKPart(QWidget *parent)
     nodesPassesTabLayout->addWidget(nodesPassesListWidget);
 
     nodesPassesFormLayout = new QFormLayout();
+
+    vertexShaderButton = new QPushButton(i18n("Go To Vertex Shader"));
+    vertexShaderButton->setEnabled(false);
+    nodesPassesFormLayout->addWidget(vertexShaderButton);
+
+    pixelShaderButton = new QPushButton(i18n("Go To Pixel Shader"));
+    pixelShaderButton->setEnabled(false);
+    nodesPassesFormLayout->addWidget(pixelShaderButton);
+
     nodesPassesTabLayout->addLayout(nodesPassesFormLayout);
 
     nodesSystemTab = new QWidget();
@@ -276,6 +285,7 @@ void SHPKPart::loadNode(const QModelIndex &index)
             auto item = new QListWidgetItem();
             item->setText(i18nc("@title:tab", "%1: %2", i, QString::fromStdString(nameFromCrc(node->passes[realPass].id))));
             item->setData(Qt::UserRole, nodeIndex); // node index
+            item->setData(Qt::UserRole + 1, realPass); // pass index
             nodesPassesListWidget->addItem(item);
         } else {
             auto item = new QListWidgetItem();
@@ -315,13 +325,46 @@ void SHPKPart::loadNode(const QModelIndex &index)
 
 void SHPKPart::loadPass(const QModelIndex &index)
 {
+    if (index.data(Qt::DisplayRole).toString().contains(i18n("(No Pass)"))) {
+        vertexShaderButton->setEnabled(false);
+        pixelShaderButton->setEnabled(false);
+
+        return;
+    }
+
     const auto nodeIndex = index.data(Qt::UserRole).toInt();
-    const auto passIndex = index.row();
+    const auto passIndex = index.data(Qt::UserRole + 1).toInt();
     const physis_SHPKNode *node = &m_shpk.nodes[nodeIndex];
     const Pass *pass = &node->passes[passIndex];
-    Q_UNUSED(pass)
 
-    // TODO: implement this pane
+    vertexShaderButton->setEnabled(true);
+    connect(vertexShaderButton, &QPushButton::clicked, this, [this, pass] {
+        goToVertexShader(pass->vertex_shader);
+    });
+
+    pixelShaderButton->setEnabled(true);
+    connect(pixelShaderButton, &QPushButton::clicked, this, [this, pass] {
+        goToPixelShader(pass->pixel_shader);
+    });
+}
+
+void SHPKPart::goToVertexShader(const int index)
+{
+    pageTabWidget->setCurrentIndex(0); // shaders tab
+    shadersListWidget->setCurrentRow(index);
+    Q_EMIT shadersListWidget->activated(shadersListWidget->currentIndex()); // manually activate
+}
+
+void SHPKPart::goToPixelShader(const int index)
+{
+    pageTabWidget->setCurrentIndex(0); // shaders tab
+
+    // Since vertex and pixel shaders share the same list widget currently
+    const int numVertexShaders = m_shpk.num_vertex_shaders;
+    const int realIndex = numVertexShaders + index;
+
+    shadersListWidget->setCurrentRow(realIndex);
+    Q_EMIT shadersListWidget->activated(shadersListWidget->currentIndex()); // manually activate
 }
 
 void SHPKPart::clearLayout(QLayout *layout)
