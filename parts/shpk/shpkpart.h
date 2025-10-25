@@ -32,7 +32,7 @@ private:
     QListWidget *shadersListWidget = nullptr;
     QTextEdit *shadersTextEdit = nullptr;
     QListWidget *shadersScalarListWidget = nullptr;
-    QListWidget *shadersResourceListWidget = nullptr;
+    QListWidget *shadersTextureListWidget = nullptr;
 
     QTabWidget *keysTab = nullptr;
     QWidget *systemTab = nullptr;
@@ -64,6 +64,9 @@ private:
     QWidget *nodesPassesTab = nullptr;
     QListWidget *nodesPassesListWidget = nullptr;
     QFormLayout *nodesPassesFormLayout = nullptr;
+
+    QListWidget *scalarsListWidget;
+    QListWidget *texturesListWidget;
 
     physis_SHPK m_shpk;
 };

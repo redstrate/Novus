@@ -32,12 +32,12 @@ SHPKPart::SHPKPart(QWidget *parent)
     shadersTextEdit->setReadOnly(true);
 
     shadersScalarListWidget = new QListWidget();
-    shadersResourceListWidget = new QListWidget();
+    shadersTextureListWidget = new QListWidget();
 
     auto shadersTabWidget = new QTabWidget();
     shadersTabWidget->addTab(shadersTextEdit, i18n("Code"));
     shadersTabWidget->addTab(shadersScalarListWidget, i18n("Scalars"));
-    shadersTabWidget->addTab(shadersResourceListWidget, i18n("Resources"));
+    shadersTabWidget->addTab(shadersTextureListWidget, i18n("Textures"));
     shadersLayout->addWidget(shadersTabWidget);
 
     systemTab = new QWidget();
@@ -115,10 +115,15 @@ SHPKPart::SHPKPart(QWidget *parent)
     nodesTabWidget->addTab(nodesKeysTabWidget, i18n("Keys"));
     nodeSidebarLayout->addWidget(nodesTabWidget);
 
+    scalarsListWidget = new QListWidget();
+    texturesListWidget = new QListWidget();
+
     pageTabWidget = new QTabWidget();
     pageTabWidget->addTab(shadersTab, i18n("Shaders"));
     pageTabWidget->addTab(keysTab, i18n("Keys"));
     pageTabWidget->addTab(nodesTab, i18n("Nodes"));
+    pageTabWidget->addTab(scalarsListWidget, i18n("Scalars"));
+    pageTabWidget->addTab(texturesListWidget, i18n("Textures"));
     layout->addWidget(pageTabWidget);
 }
 
@@ -175,6 +180,17 @@ void SHPKPart::load(physis_Buffer buffer)
     for (uint32_t i = 0; i < m_shpk.num_nodes; i++) {
         nodesListWidget->addItem(i18nc("@title:tab", "Node %1", i));
     }
+
+    // resources
+    scalarsListWidget->clear();
+    for (uint32_t i = 0; i < m_shpk.num_scalar_parameters; i++) {
+        scalarsListWidget->addItem(QStringLiteral("%1: %2").arg(i).arg(m_shpk.scalar_parameters[i].name));
+    }
+
+    texturesListWidget->clear();
+    for (uint32_t i = 0; i < m_shpk.num_texture_parameters; i++) {
+        texturesListWidget->addItem(QStringLiteral("%1: %2").arg(i).arg(m_shpk.texture_parameters[i].name));
+    }
 }
 
 void SHPKPart::loadShader(const QModelIndex &index)
@@ -222,9 +238,9 @@ void SHPKPart::loadShader(const QModelIndex &index)
         shadersScalarListWidget->addItem(QStringLiteral("%1: %2").arg(shader->scalar_parameters[i].slot).arg(shader->scalar_parameters[i].name));
     }
 
-    shadersResourceListWidget->clear();
+    shadersTextureListWidget->clear();
     for (uint32_t i = 0; i < shader->num_resource_parameters; i++) {
-        shadersResourceListWidget->addItem(QStringLiteral("%1: %2").arg(shader->resource_parameters[i].slot).arg(shader->resource_parameters[i].name));
+        shadersTextureListWidget->addItem(QStringLiteral("%1: %2").arg(shader->resource_parameters[i].slot).arg(shader->resource_parameters[i].name));
     }
 }
 
