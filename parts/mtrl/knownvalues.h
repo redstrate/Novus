@@ -350,6 +350,9 @@ constexpr std::array names = {
     "CalculateInstancingPosition",
     "CalculateInstancingPosition_Off",
     "CalculateInstancingPosition_On",
+    "DrawOffscreen",
+    "DrawOffscreenOff",
+    "DrawOffscreenOn",
 
     // Sub views
     "SUB_VIEW_MAIN",
