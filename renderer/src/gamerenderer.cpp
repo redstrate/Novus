@@ -65,6 +65,14 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     m_device.copyToBuffer(m_planeVertexBuffer, (void *)planeVertices.data(), vertexSize);
 
+    // TODO: they switched from 3D images from ARR to 2D arrays here, not yet supported
+    m_tileNormal = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM,
+                                           physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/tile_norm_array.tex")));
+    m_device.nameTexture(m_tileNormal, "chara/common/texture/tile_norm_array.tex");
+    m_tileOrb = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM,
+                                        physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/tile_orb_array.tex")));
+    m_device.nameTexture(m_tileOrb, "chara/common/texture/tile_orb_array.tex");
+
     directionalLightningShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/directionallighting.shpk"));
     createViewPositionShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/createviewposition.shpk"));
     backgroundShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/bg.shpk"));
@@ -182,7 +190,7 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
         g_DecalColor = m_device.createBuffer(sizeof(glm::vec4), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         m_device.nameBuffer(g_DecalColor, "g_DecalColor");
 
-        glm::vec4 color{};
+        glm::vec4 color{1.0, 1.0, 1.0, 1.0};
 
         m_device.copyToBuffer(g_DecalColor, &color, sizeof(glm::vec4));
     }
@@ -263,22 +271,27 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
     const glm::mat4 viewProjectionMatrix = camera.perspective * camera.view;
 
-    // unknown
-    cameraParameter.m_unknownMatrix = glm::mat4(1.0f);
-    cameraParameter.m_unknown4 = glm::mat4(1.0f);
-
+    cameraParameter.m_InverseViewMatrix = glm::inverse(glm::mat4(camera.view));
     cameraParameter.m_ViewMatrix = glm::transpose(camera.view);
-    cameraParameter.m_InverseViewMatrix = cameraParameter.m_unknownMatrix;
+
     cameraParameter.m_ViewProjectionMatrix = glm::transpose(viewProjectionMatrix);
     cameraParameter.m_InverseViewProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
+    cameraParameter.m_InverseViewProjectionMatrix1 = cameraParameter.m_InverseViewProjectionMatrix;
 
-    // known params
-    cameraParameter.m_InverseProjectionMatrix = glm::transpose(glm::inverse(viewProjectionMatrix));
-    cameraParameter.m_ProjectionMatrix = glm::transpose(viewProjectionMatrix);
+    cameraParameter.m_ViewProjectionMatrix1 = cameraParameter.m_ViewProjectionMatrix;
+    cameraParameter.m_ViewProjectionMatrix2 = cameraParameter.m_ViewProjectionMatrix;
 
-    cameraParameter.m_MainViewToProjectionMatrix = glm::transpose(viewProjectionMatrix);
+    cameraParameter.m_InverseViewMatrix1 = cameraParameter.m_InverseViewMatrix;
+    cameraParameter.m_ViewMatrix1 = cameraParameter.m_ViewMatrix;
+    cameraParameter.m_ViewProjectionMatrix3 = cameraParameter.m_ViewProjectionMatrix;
+    cameraParameter.m_InverseViewProjectionMatrix3 = cameraParameter.m_InverseViewProjectionMatrix;
     cameraParameter.m_EyePosition = glm::vec4(camera.position, 0.0f);
-    cameraParameter.m_LookAtVector = glm::vec4(0.0f); // placeholder
+    cameraParameter.m_ViewProjectionMatrix4 = cameraParameter.m_ViewProjectionMatrix;
+    cameraParameter.m_InverseViewProjectionMatrix4 = cameraParameter.m_InverseViewProjectionMatrix;
+    cameraParameter.m_EyePosition1 = cameraParameter.m_EyePosition;
+    cameraParameter.IdentityMat4 = glm::mat4(1.0f);
+    cameraParameter.IdentityMat3 = glm::mat3x4(1.0f);
+    cameraParameter.m_ViewMatrix2 = cameraParameter.m_ViewMatrix;
 
     m_device.copyToBuffer(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
 
@@ -696,6 +709,8 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
             colorAttachments.push_back(attachmentInfo);
         }
 
+        m_device.transitionTexture(commandBuffer, m_motionGBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
         // test for another
         {
             VkRenderingAttachmentInfo attachmentInfo{};
@@ -712,6 +727,8 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
 
             colorAttachments.push_back(attachmentInfo);
         }
+
+        m_device.transitionTexture(commandBuffer, m_diffuseGBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         // test for another
         {
@@ -730,6 +747,8 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
             colorAttachments.push_back(attachmentInfo);
         }
 
+        m_device.transitionTexture(commandBuffer, m_unkGBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
         // test for another
         {
             VkRenderingAttachmentInfo attachmentInfo{};
@@ -746,6 +765,8 @@ void GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_vi
 
             colorAttachments.push_back(attachmentInfo);
         }
+
+        m_device.transitionTexture(commandBuffer, m_motionGBuffer2, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         // test for another
         {
@@ -1059,7 +1080,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                         case VertexType::Half2:
                             return VK_FORMAT_R16G16_SFLOAT;
                         case VertexType::Half4:
-                            return VK_FORMAT_R16G16B16A16_UNORM;
+                            return VK_FORMAT_R16G16B16A16_SFLOAT;
                         case VertexType::UnsignedShort2:
                             break;
                         case VertexType::UnsignedShort4:
@@ -1336,7 +1357,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
     int j = 0;
     int z = 0;
     int p = 0;
-    VkShaderStageFlags currentStageFlags;
+    VkShaderStageFlags currentStageFlags{};
     for (auto binding : pipeline.requestedSets[i].bindings) {
         if (binding.used) {
             // a giant hack
@@ -1359,51 +1380,64 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                 descriptorWrite.pImageInfo = info;
 
                 if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < pipeline.pixelShader.num_resource_parameters) {
-                    auto name = pipeline.pixelShader.resource_parameters[p].name;
-                    qInfo() << "Requesting image" << name << "at" << j;
-                    if (strcmp(name, "g_SamplerGBuffer") == 0) {
-                        info->imageView = m_normalGBuffer.imageView;
-                    } else if (strcmp(name, "g_SamplerViewPosition") == 0) {
-                        info->imageView = m_viewPositionBuffer.imageView;
-                    } else if (strcmp(name, "g_SamplerDepth") == 0) {
-                        info->imageView = m_depthBuffer.imageView;
-                    } else if (strcmp(name, "g_SamplerNormal") == 0 && material->normalTexture.has_value()) {
-                        Q_ASSERT(material);
-                        info->imageView = material->normalTexture->imageView;
-                    } else if (strcmp(name, "g_SamplerIndex") == 0 && material->indexTexture.has_value()) {
-                        Q_ASSERT(material);
-                        info->imageView = material->indexTexture->imageView;
-                    } else if (strcmp(name, "g_SamplerLightDiffuse") == 0) {
-                        Q_ASSERT(material);
-                        info->imageView = m_lightBuffer.imageView;
-                    } else if (strcmp(name, "g_SamplerLightSpecular") == 0) {
-                        Q_ASSERT(material);
-                        info->imageView = m_lightSpecularBuffer.imageView;
-                    } else if ((strcmp(name, "g_SamplerDiffuse") == 0 || strcmp(name, "g_SamplerDecal") == 0) && material->diffuseTexture.has_value()) {
-                        // NOTE: the g_SamplerDecal is 100% a guess, i'm almost certain it's another texture
-                        Q_ASSERT(material);
-                        info->imageView = material->diffuseTexture->imageView;
-                    } else if (strcmp(name, "g_SamplerSpecular") == 0 && material->specularTexture.has_value()) {
-                        Q_ASSERT(material);
-                        info->imageView = material->specularTexture->imageView;
-                    } else if (strcmp(name, "g_SamplerMask") == 0 && material->multiTexture.has_value()) {
-                        Q_ASSERT(material);
-                        info->imageView = material->multiTexture->imageView;
-                    } else if (strcmp(name, "g_SamplerTileNormal") == 0) {
-                        info->imageView = m_tileNormal.imageView;
-                    } else if (strcmp(name, "g_SamplerTileDiffuse") == 0) {
-                        info->imageView = m_tileDiffuse.imageView;
-                    } else if (strcmp(name, "g_SamplerTable") == 0) {
-                        Q_ASSERT(material);
-                        if (!material->tableTexture.has_value()) {
-                            qWarning() << "Attempted to use table texture for a non-dyeable material. Something has went wrong!";
-                            info->imageView = m_dummyTex.imageView;
-                        } else {
-                            info->imageView = material->tableTexture->imageView;
+                    const char *name = nullptr;
+                    for (int y = 0; y < pipeline.pixelShader.num_resource_parameters; y++) {
+                        if (pipeline.pixelShader.resource_parameters[y].slot == p) {
+                            name = pipeline.pixelShader.resource_parameters[y].name;
+                            break;
                         }
-                    } else {
+                    }
+
+                    // TODO: this may not be needed with the parent if's check, double-check please
+                    if (name == nullptr) {
                         info->imageView = m_dummyTex.imageView;
-                        qInfo() << "Unknown image" << name;
+                        qInfo() << "Unspecified image at" << j;
+                    } else {
+                        qInfo() << "Requesting image" << name << "at" << j;
+                        if (strcmp(name, "g_SamplerGBuffer") == 0) {
+                            info->imageView = m_normalGBuffer.imageView;
+                        } else if (strcmp(name, "g_SamplerViewPosition") == 0) {
+                            info->imageView = m_viewPositionBuffer.imageView;
+                        } else if (strcmp(name, "g_SamplerDepth") == 0) {
+                            info->imageView = m_depthBuffer.imageView;
+                        } else if (strcmp(name, "g_SamplerNormal") == 0 && material->normalTexture.has_value()) {
+                            Q_ASSERT(material);
+                            info->imageView = material->normalTexture->imageView;
+                        } else if (strcmp(name, "g_SamplerIndex") == 0 && material->indexTexture.has_value()) {
+                            Q_ASSERT(material);
+                            info->imageView = material->indexTexture->imageView;
+                        } else if (strcmp(name, "g_SamplerLightDiffuse") == 0) {
+                            Q_ASSERT(material);
+                            info->imageView = m_lightBuffer.imageView;
+                        } else if (strcmp(name, "g_SamplerLightSpecular") == 0) {
+                            Q_ASSERT(material);
+                            info->imageView = m_lightSpecularBuffer.imageView;
+                        } else if ((strcmp(name, "g_SamplerDiffuse") == 0 || strcmp(name, "g_SamplerDecal") == 0) && material->diffuseTexture.has_value()) {
+                            // NOTE: the g_SamplerDecal is 100% a guess, i'm almost certain it's another texture
+                            Q_ASSERT(material);
+                            info->imageView = material->diffuseTexture->imageView;
+                        } else if (strcmp(name, "g_SamplerSpecular") == 0 && material->specularTexture.has_value()) {
+                            Q_ASSERT(material);
+                            info->imageView = material->specularTexture->imageView;
+                        } else if (strcmp(name, "g_SamplerMask") == 0 && material->multiTexture.has_value()) {
+                            Q_ASSERT(material);
+                            info->imageView = material->multiTexture->imageView;
+                        } else if (strcmp(name, "g_SamplerTileNormal") == 0) {
+                            info->imageView = m_tileNormal.imageView;
+                        } else if (strcmp(name, "g_SamplerTileOrb") == 0) {
+                            info->imageView = m_tileOrb.imageView;
+                        } else if (strcmp(name, "g_SamplerTable") == 0) {
+                            Q_ASSERT(material);
+                            if (!material->tableTexture.has_value()) {
+                                qWarning() << "Attempted to use table texture for a non-dyeable material. Something has went wrong!";
+                                info->imageView = m_dummyTex.imageView;
+                            } else {
+                                info->imageView = material->tableTexture->imageView;
+                            }
+                        } else {
+                            info->imageView = m_dummyTex.imageView;
+                            qInfo() << "Unknown image" << name;
+                        }
                     }
 
                     p++;

@@ -4,22 +4,30 @@
 #pragma once
 
 // Structure definitions from https://github.com/Shaderlayan/Ouroboros
-// TODO: I really need to update these names, they're all wrong for DT?
+// TODO: i think this is too small :-(
 struct CameraParameter {
-    glm::mat3x4 m_InverseViewMatrix;
-    glm::mat3x4 m_ViewMatrix; // TODO: does it need alignment?
+    glm::mat3x4 m_InverseViewMatrix; // Inverse of m_ViewMatrix
+    glm::mat3x4 m_ViewMatrix;
+
     glm::mat4 m_ViewProjectionMatrix;
-    glm::mat4 m_InverseViewProjectionMatrix;
-    glm::mat4 m_InverseProjectionMatrix; // used for view position recalc
-    glm::mat4 m_ProjectionMatrix; // FIXME: ourburos is wrong, this is actually viewProjection
-    glm::mat4 m_MainViewToProjectionMatrix;
+    glm::mat4 m_InverseViewProjectionMatrix; // Inverse of m_ViewProjectionMatrix
+    glm::mat4 m_InverseViewProjectionMatrix1; // The same value as m_InverseViewProjectionMatrix
+
+    glm::mat4 m_ViewProjectionMatrix1; // This is actually viewProjection
+    glm::mat4 m_ViewProjectionMatrix2; // Same as m_ProjectionMatrix
+
+    glm::mat3x4 m_InverseViewMatrix1;
+    glm::mat3x4 m_ViewMatrix1;
+    glm::mat4 m_ViewProjectionMatrix3;
+    glm::mat3x4 m_InverseViewProjectionMatrix3;
     glm::vec4 m_EyePosition;
-    glm::vec4 m_LookAtVector;
-    glm::vec4 m_unknown1[12];
-    glm::mat4 m_unknownMatrix; // used in a vertex shader in characterlegacy.shpk
-    glm::vec4 m_unknown2[11];
-    // Dawntrail: something accesses the z and w of this
-    glm::mat4 m_unknown4; // noooo idea
+    glm::mat4 m_ViewProjectionMatrix4;
+    glm::mat3x4 m_InverseViewProjectionMatrix4;
+    glm::vec4 m_EyePosition1;
+    glm::mat4 IdentityMat4;
+    glm::mat3x4 IdentityMat3;
+    glm::mat3x4 m_ViewMatrix2;
+    glm::vec4 m_unknown3; // zeroes i saw!
 };
 
 const int JOINT_MATRIX_SIZE_DAWNTRAIL = 256;

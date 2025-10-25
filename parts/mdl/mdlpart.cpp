@@ -238,6 +238,11 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
                 // assumed to be floats, maybe not always true?
                 std::vector<float> buffer(newMaterial.shaderPackage.material_parameters_size / sizeof(float));
 
+                // we need to fill it with the defaults from the shader package. These are then either filled in/overwritten by the material
+                for (uint32_t i = 0; i < newMaterial.shaderPackage.material_default_parameters_size; i++) {
+                    buffer[i] = newMaterial.shaderPackage.material_default_parameters[i];
+                }
+
                 // copy the material data
                 for (uint32_t i = 0; i < newMaterial.shaderPackage.num_material_parameters; i++) {
                     auto param = newMaterial.shaderPackage.material_parameters[i];
@@ -309,7 +314,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
             renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
         } else {
-            int width = 4;
+            int width = 8;
             int height = material.dawntrail_color_table.num_rows;
             if (height > 0) {
                 qInfo() << "Creating DT color table" << width << "X" << height;
@@ -331,6 +336,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
                         } else if (x == 3) {
                             color = glm::vec4{row.material_repeat[0], row.material_repeat[1], row.material_skew[0], row.material_skew[1]};
                         }
+                        // TOOD: fill out with other DT values
 
                         rgbaData[offset] = color.x;
                         rgbaData[offset + 1] = color.y;

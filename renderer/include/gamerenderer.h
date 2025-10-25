@@ -119,7 +119,7 @@ private:
     VkSampler m_normalSampler;
     Buffer m_dummyBuffer;
     Texture m_tileNormal;
-    Texture m_tileDiffuse;
+    Texture m_tileOrb;
     Texture m_diffuseGBuffer;
     Texture m_motionGBuffer;
     Texture m_motionGBuffer2;
