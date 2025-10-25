@@ -175,6 +175,22 @@ void SHPKPart::load(physis_Buffer buffer)
 
     clearLayout(subViewLayout);
 
+    // first
+    {
+        auto label = new QLabel();
+        label->setText(QString::fromStdString(nameFromCrc(m_shpk.sub_view_key1_default)));
+        label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
+        subViewLayout->addWidget(label);
+    }
+
+    // second
+    {
+        auto label = new QLabel();
+        label->setText(QString::fromStdString(nameFromCrc(m_shpk.sub_view_key2_default)));
+        label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
+        subViewLayout->addWidget(label);
+    }
+
     // nodes
     nodesListWidget->clear();
     for (uint32_t i = 0; i < m_shpk.num_nodes; i++) {
