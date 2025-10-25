@@ -350,6 +350,9 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     }
 
                     std::vector<uint32_t> systemKeys;
+                    for (int j = 0; j < renderMaterial.shaderPackage.num_system_keys; j++) {
+                        systemKeys.push_back(renderMaterial.shaderPackage.system_keys[j].default_value);
+                    }
 
                     std::vector<uint32_t> sceneKeys;
                     for (int j = 0; j < renderMaterial.shaderPackage.num_scene_keys; j++) {
@@ -402,6 +405,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
                     // check if invalid
                     if (node.pass_count == 0) {
+                        qWarning() << "Invalid pass, that's not intended!";
                         continue;
                     }
 
@@ -434,6 +438,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                         vkCmdBindIndexBuffer(commandBuffer, part.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
                         vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
+                    } else {
+                        qWarning() << "No pass for" << pass << ", that's not intended!";
                     }
                 }
 
@@ -1408,13 +1414,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                 descriptorWrite.pImageInfo = info;
 
                 if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < cachedPipeline.pixelShader.num_resource_parameters) {
-                    const char *name = nullptr;
-                    for (int y = 0; y < cachedPipeline.pixelShader.num_resource_parameters; y++) {
-                        if (cachedPipeline.pixelShader.resource_parameters[y].slot == p) {
-                            name = cachedPipeline.pixelShader.resource_parameters[y].name;
-                            break;
-                        }
-                    }
+                    const char *name = cachedPipeline.pixelShader.resource_parameters[p].name;
 
                     // TODO: this may not be needed with the parent if's check, double-check please
                     if (name == nullptr) {
