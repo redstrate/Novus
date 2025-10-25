@@ -391,7 +391,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                             materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
                         }
                     }
-                    std::vector<uint32_t> subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
+                    std::vector subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
 
                     const uint32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
                                                                                        systemKeys.size(),

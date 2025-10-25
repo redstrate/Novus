@@ -83,11 +83,7 @@ void MtrlPart::rebuild()
         auto groupBox = new QGroupBox();
         m_propertiesLayout->addWidget(groupBox);
 
-        if (keys.contains(materialKey.id)) {
-            groupBox->setTitle(QString::fromLatin1(keys[materialKey.id]));
-        } else {
-            groupBox->setTitle(i18n("Unknown Property %1", QStringLiteral("%1").arg(materialKey.id, 1, 16)));
-        }
+        groupBox->setTitle(QString::fromLatin1(nameFromCrc(materialKey.id)));
 
         uint32_t value = 0;
 
@@ -110,11 +106,7 @@ void MtrlPart::rebuild()
         groupBox->setLayout(layout);
 
         auto label = new QLabel();
-        if (keys.contains(value)) {
-            label->setText(QString::fromLatin1(keys[value]));
-        } else {
-            label->setText(i18n("Unknown value %1", QStringLiteral("%1").arg(value, 1, 16)));
-        }
+        label->setText(QString::fromLatin1(nameFromCrc(value)));
 
         layout->addRow(i18n("Value:"), label);
     }
@@ -128,10 +120,7 @@ void MtrlPart::rebuild()
     for (uint32_t i = 0; i < m_material.num_samplers; i++) {
         const auto sampler = m_material.samplers[i];
 
-        QString name = i18n("Unknown");
-        if (keys.contains(sampler.texture_usage)) {
-            name = QString::fromLatin1(keys[sampler.texture_usage]);
-        }
+        QString name = QString::fromLatin1(nameFromCrc(sampler.texture_usage));
 
         auto groupBox = new QGroupBox(name);
         m_texturesLayout->addWidget(groupBox);
@@ -153,10 +142,7 @@ void MtrlPart::rebuild()
     for (uint32_t i = 0; i < m_material.num_constants; i++) {
         const auto constant = m_material.constants[i];
 
-        QString name = i18n("Unknown %1", QString::number(constant.id));
-        if (keys.contains(constant.id)) {
-            name = QString::fromLatin1(keys[constant.id]);
-        }
+        QString name = QString::fromLatin1(nameFromCrc(constant.id));
 
         auto valueLayout = new QHBoxLayout();
         m_constantsLayout->addLayout(valueLayout);
