@@ -66,7 +66,7 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
 
     auto resources = glsl.get_shader_resources();
 
-    int i = 0;
+    uint32_t i = 0;
     for (const auto &texture : resources.stage_inputs) {
         unsigned binding = glsl.get_decoration(texture.id, spv::DecorationLocation);
         glsl.set_name(texture.id, module.isgn()->findByRegister(binding)->semanticName);

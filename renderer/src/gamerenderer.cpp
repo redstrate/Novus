@@ -31,6 +31,7 @@ const std::vector<glm::vec4> planeVertices = {
 
 dxvk::Logger dxvk::Logger::s_instance("dxbc.log");
 
+// TODO: this is wrong, in principle. the ID is totally separate from its index.
 const std::array<std::string, 14> passes = {
     // Shadows?
     /* 0 */ "PASS_0",
@@ -361,12 +362,12 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     }
 
                     std::vector<uint32_t> systemKeys;
-                    for (int j = 0; j < renderMaterial.shaderPackage.num_system_keys; j++) {
+                    for (uint32_t j = 0; j < renderMaterial.shaderPackage.num_system_keys; j++) {
                         systemKeys.push_back(renderMaterial.shaderPackage.system_keys[j].default_value);
                     }
 
                     std::vector<uint32_t> sceneKeys;
-                    for (int j = 0; j < renderMaterial.shaderPackage.num_scene_keys; j++) {
+                    for (uint32_t j = 0; j < renderMaterial.shaderPackage.num_scene_keys; j++) {
                         auto id = renderMaterial.shaderPackage.scene_keys[j].id;
 
                         bool found = false;
@@ -386,7 +387,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     }
 
                     std::vector<uint32_t> materialKeys;
-                    for (int j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
+                    for (uint32_t j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
                         auto id = renderMaterial.shaderPackage.material_keys[j].id;
 
                         bool found = false;
@@ -424,6 +425,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     const int passIndice = node.pass_indices[i];
                     if (passIndice != INVALID_PASS) {
                         const Pass currentPass = node.passes[passIndice];
+                        Q_ASSERT(currentPass.id == physis_shpk_crc(pass.c_str()));
 
                         const uint32_t vertexShaderIndice = currentPass.vertex_shader;
                         const uint32_t pixelShaderIndice = currentPass.pixel_shader;
@@ -491,6 +493,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                 const int passIndice = node.pass_indices[i];
                 if (passIndice != INVALID_PASS) {
                     const Pass currentPass = node.passes[passIndice];
+                    Q_ASSERT(currentPass.id == physis_shpk_crc(pass.c_str()));
 
                     const uint32_t vertexShaderIndice = currentPass.vertex_shader;
                     const uint32_t pixelShaderIndice = currentPass.pixel_shader;
@@ -552,6 +555,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                 const int passIndice = node.pass_indices[i];
                 if (passIndice != INVALID_PASS) {
                     const Pass currentPass = node.passes[passIndice];
+                    Q_ASSERT(currentPass.id == physis_shpk_crc(pass.c_str()));
 
                     const uint32_t vertexShaderIndice = currentPass.vertex_shader;
                     const uint32_t pixelShaderIndice = currentPass.pixel_shader;
@@ -603,7 +607,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     std::vector<uint32_t> systemKeys;
 
                     std::vector<uint32_t> sceneKeys;
-                    for (int j = 0; j < renderMaterial.shaderPackage.num_scene_keys; j++) {
+                    for (uint32_t j = 0; j < renderMaterial.shaderPackage.num_scene_keys; j++) {
                         auto id = renderMaterial.shaderPackage.scene_keys[j].id;
 
                         bool found = false;
@@ -623,7 +627,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     }
 
                     std::vector<uint32_t> materialKeys;
-                    for (int j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
+                    for (uint32_t j = 0; j < renderMaterial.shaderPackage.num_material_keys; j++) {
                         auto id = renderMaterial.shaderPackage.material_keys[j].id;
 
                         bool found = false;
@@ -660,6 +664,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     const int passIndice = node.pass_indices[i];
                     if (passIndice != INVALID_PASS) {
                         const Pass currentPass = node.passes[passIndice];
+                        Q_ASSERT(currentPass.id == physis_shpk_crc(pass.c_str()));
 
                         const uint32_t vertexShaderIndice = currentPass.vertex_shader;
                         const uint32_t pixelShaderIndice = currentPass.pixel_shader;
@@ -1387,7 +1392,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
 
     int j = 0;
     int z = 0;
-    int p = 0;
+    uint32_t p = 0;
     VkShaderStageFlags currentStageFlags{};
     for (auto binding : cachedPipeline.requestedSets[i].bindings) {
         if (binding.used) {

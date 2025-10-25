@@ -546,6 +546,26 @@ constexpr std::array names = {
     "g_SamplerWaveletNoise",
     "g_SamplerRefractionMap",
     "g_VertexMovementMaxLength",
+
+    // Passes
+    "PASS_Z_OPAQUE",
+    "PASS_G_OPAQUE",
+    "PASS_LIGHTING_OPAQUE",
+    "PASS_G_SEMITRANSPARENCY",
+    "PASS_COMPOSITE_OPAQUE",
+    "PASS_WATER",
+    "PASS_WATER_Z",
+    "PASS_SEMITRANSPARENCY",
+    "PASS_COMPOSITE_SEMITRANSPARENCY",
+    "PASS_WIREFRAME",
+    "PASS_COMPOSITE_SEMITRANSPARENCY_UNDER_WATER",
+    "PASS_LIGHTING_SEMITRANSPARENCY",
+    "PASS_0",
+    "PASS_14",
+    "PASS_7",
+    "PASS_1",
+    "PASS_2",
+    "PASS_12",
 };
 
 static std::string nameFromCrc(const uint32_t crc)
@@ -582,5 +602,5 @@ static std::string nameFromCrc(const uint32_t crc)
     if (hash.contains(crc)) {
         return hash.value(crc);
     }
-    return std::string("Unknown ") + std::to_string(crc);
+    return QStringLiteral("%1").arg(crc, 1, 16).toStdString();
 }

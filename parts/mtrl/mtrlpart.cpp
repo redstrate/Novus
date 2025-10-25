@@ -77,7 +77,7 @@ void MtrlPart::rebuild()
         child->widget()->deleteLater();
     }
 
-    for (int i = 0; i < m_shpk.num_material_keys; i++) {
+    for (uint32_t i = 0; i < m_shpk.num_material_keys; i++) {
         const auto materialKey = m_shpk.material_keys[i];
 
         auto groupBox = new QGroupBox();
