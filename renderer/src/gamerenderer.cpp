@@ -182,7 +182,7 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
 
         MaterialParameterDynamic materialParameterDynamic{};
 
-        m_device.copyToBuffer(g_MaterialParameterDynamic, &materialParameterDynamic, sizeof(CustomizeParameter));
+        m_device.copyToBuffer(g_MaterialParameterDynamic, &materialParameterDynamic, sizeof(MaterialParameterDynamic));
     }
 
     // decal color
