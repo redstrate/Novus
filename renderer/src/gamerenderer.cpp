@@ -968,7 +968,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                                                          std::vector<VkFormat> colorAttachmentFormats,
                                                          VkFormat depthAttachmentFormat)
 {
-    const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data());
+    const uint32_t hash = vertexShader.len + pixelShader.len + physis_shpk_crc(passName.data()) + physis_shpk_crc(shaderName.data());
     if (!m_cachedPipelines.contains(hash)) {
         qInfo() << "Creating pipeline for" << passName << "in" << shaderName;
 
@@ -1017,7 +1017,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         const auto &collectResources = [&requestedSets](const spirv_cross::CompilerGLSL &glsl,
                                                         const spirv_cross::SmallVector<spirv_cross::Resource> &resources,
                                                         const VkShaderStageFlagBits stageFlagBit) {
-            for (auto resource : resources) {
+            for (const auto &resource : resources) {
                 unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
                 unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
 
@@ -1032,7 +1032,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                     requestSet.bindings.resize(binding + 1);
                 }
 
-                auto type = glsl.get_type(resource.type_id);
+                const auto type = glsl.get_type(resource.type_id);
 
                 if (type.basetype == spirv_cross::SPIRType::Image) {
                     requestSet.bindings[binding].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
@@ -1045,8 +1045,6 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                 requestSet.bindings[binding].used = true;
                 requestSet.bindings[binding].stageFlags |= stageFlagBit;
                 requestSet.bindings[binding].originalName = resource.name;
-
-                qInfo() << "Requesting set" << set << "at" << binding;
             }
         };
 
@@ -1363,7 +1361,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
 
 VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                                                   const CachedPipeline &cachedPipeline,
-                                                  const int i,
+                                                  const size_t i,
                                                   const RenderMaterial *material,
                                                   std::string_view pass)
 {
@@ -1394,7 +1392,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
     int z = 0;
     uint32_t p = 0;
     VkShaderStageFlags currentStageFlags{};
-    for (auto binding : cachedPipeline.requestedSets[i].bindings) {
+    for (const auto &binding : cachedPipeline.requestedSets[i].bindings) {
         if (binding.used) {
             // a giant hack
             if (currentStageFlags != binding.stageFlags) {

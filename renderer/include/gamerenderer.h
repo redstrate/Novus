@@ -96,7 +96,7 @@ private:
     ShaderManager m_shaderManager;
 
     VkDescriptorSet
-    createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, int i, const RenderMaterial *material, std::string_view pass);
+    createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, size_t i, const RenderMaterial *material, std::string_view pass);
     void bindDescriptorSets(VkCommandBuffer commandBuffer,
                             CachedPipeline &pipeline,
                             const DrawObject *object,

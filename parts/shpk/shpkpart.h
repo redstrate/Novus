@@ -31,6 +31,8 @@ private:
     QWidget *shadersTab = nullptr;
     QListWidget *shadersListWidget = nullptr;
     QTextEdit *shadersTextEdit = nullptr;
+    QListWidget *shadersScalarListWidget = nullptr;
+    QListWidget *shadersResourceListWidget = nullptr;
 
     QTabWidget *keysTab = nullptr;
     QWidget *systemTab = nullptr;

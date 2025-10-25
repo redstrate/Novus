@@ -30,7 +30,15 @@ SHPKPart::SHPKPart(QWidget *parent)
 
     shadersTextEdit = new QTextEdit();
     shadersTextEdit->setReadOnly(true);
-    shadersLayout->addWidget(shadersTextEdit);
+
+    shadersScalarListWidget = new QListWidget();
+    shadersResourceListWidget = new QListWidget();
+
+    auto shadersTabWidget = new QTabWidget();
+    shadersTabWidget->addTab(shadersTextEdit, i18n("Code"));
+    shadersTabWidget->addTab(shadersScalarListWidget, i18n("Scalars"));
+    shadersTabWidget->addTab(shadersResourceListWidget, i18n("Resources"));
+    shadersLayout->addWidget(shadersTabWidget);
 
     systemTab = new QWidget();
     systemLayout = new QVBoxLayout();
@@ -206,6 +214,17 @@ void SHPKPart::loadShader(const QModelIndex &index)
         shadersTextEdit->setText(QLatin1String(glsl.compile().c_str()));
     } catch (const std::exception &exception) {
         qWarning() << "Failed to load shader:" << exception.what();
+    }
+
+    // resources
+    shadersScalarListWidget->clear();
+    for (uint32_t i = 0; i < shader->num_scalar_parameters; i++) {
+        shadersScalarListWidget->addItem(QStringLiteral("%1: %2").arg(shader->scalar_parameters[i].slot).arg(shader->scalar_parameters[i].name));
+    }
+
+    shadersResourceListWidget->clear();
+    for (uint32_t i = 0; i < shader->num_resource_parameters; i++) {
+        shadersResourceListWidget->addItem(QStringLiteral("%1: %2").arg(shader->resource_parameters[i].slot).arg(shader->resource_parameters[i].name));
     }
 }
 

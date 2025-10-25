@@ -78,6 +78,8 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
     for (const auto &texture : resources.separate_images) {
         if (i < shader.num_resource_parameters) {
             glsl.set_name(texture.id, shader.resource_parameters[i].name);
+        } else {
+            glsl.set_name(texture.id, texture.name);
         }
         i++;
     }
