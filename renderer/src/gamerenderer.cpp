@@ -4,6 +4,7 @@
 #include "gamerenderer.h"
 
 #include <array>
+#include <ranges>
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <physis.hpp>
@@ -51,7 +52,7 @@ const std::array<std::string, 14> passes = {
     /* 12 */ "PASS_12",
     /* 13 */ "PASS_14"};
 
-const int INVALID_PASS = 255;
+constexpr int INVALID_PASS = 255;
 
 GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     : m_device(device)
@@ -61,7 +62,7 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     m_dummyTex = m_device.createDummyTexture();
     m_dummyBuffer = m_device.createDummyBuffer();
 
-    size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
+    const size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     m_device.copyToBuffer(m_planeVertexBuffer, (void *)planeVertices.data(), vertexSize);
 
@@ -92,13 +93,13 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
         instanceParameter.g_InstanceParameter.m_MulColor = glm::vec4(1.0f);
         instanceParameter.g_InstanceParameter.m_EnvParameter = glm::vec4(1.0f);
 
-        /*const float wetnessMin = 0.0f;
-        const float wetnessMax = 1.0f;
-        const float maybeWetness = 0.0f;
+        constexpr float wetnessMin = 0.0f;
+        constexpr float wetnessMax = 1.0f;
+        constexpr float maybeWetness = 0.0f;
 
         instanceParameter.g_InstanceParameter.m_Wetness = {maybeWetness, 2.0f, wetnessMin, wetnessMax};
         instanceParameter.g_InstanceParameter.m_CameraLight.m_DiffuseSpecular = glm::vec4(1.0f);
-        instanceParameter.g_InstanceParameter.m_CameraLight.m_Rim = glm::vec4(1.0f);*/
+        instanceParameter.g_InstanceParameter.m_CameraLight.m_Rim = glm::vec4(1.0f);
 
         m_device.copyToBuffer(g_InstanceParameter, &instanceParameter, sizeof(InstanceParameter));
     }
@@ -135,8 +136,6 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
         lightParam.m_DiffuseColor = glm::vec4(1);
         lightParam.m_SpecularColor = glm::vec4(1);
         lightParam.m_Attenuation = glm::vec4(5.0f);
-        /*lightParam.m_ClipMin = glm::vec4(0.0f);
-        lightParam.m_ClipMax = glm::vec4(5.0f);*/
 
         m_device.copyToBuffer(g_LightParam, &lightParam, sizeof(LightParam));
     }
@@ -308,21 +307,22 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
             const auto [colorAttachmentFormats, depthAttachmentFormat] = beginPass(commandBuffer, pass);
 
             for (auto &model : models) {
+                const auto modelNameStdString = model.name.toStdString();
                 VkDebugUtilsLabelEXT labelExt{};
                 labelExt.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-                labelExt.pLabelName = model.name.toStdString().c_str();
+                labelExt.pLabelName = modelNameStdString.c_str();
                 m_device.beginDebugMarker(commandBuffer, labelExt);
 
                 // copy bone data
                 {
-                    const int jointMatrixSize = JOINT_MATRIX_SIZE_DAWNTRAIL;
-                    const size_t bufferSize = sizeof(glm::mat3x4) * jointMatrixSize;
+                    constexpr int jointMatrixSize = JOINT_MATRIX_SIZE_DAWNTRAIL;
+                    constexpr size_t bufferSize = sizeof(glm::mat3x4) * jointMatrixSize;
                     void *mapped_data = nullptr;
                     vkMapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
 
                     std::vector<glm::mat3x4> newBoneData(model.sourceObject->boneData.size());
-                    for (int i = 0; i < jointMatrixSize; i++) {
-                        newBoneData[i] = glm::transpose(model.sourceObject->boneData[i]);
+                    for (int j = 0; j < jointMatrixSize; j++) {
+                        newBoneData[j] = glm::transpose(model.sourceObject->boneData[j]);
                     }
 
                     memcpy(mapped_data, newBoneData.data(), bufferSize);
@@ -507,12 +507,12 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                 const auto [colorAttachmentFormats, depthAttachmentFormat] = beginPass(commandBuffer, pass);
 
                 std::vector<uint32_t> systemKeys = {};
-                std::vector<uint32_t> sceneKeys = {
+                std::vector sceneKeys = {
                     physis_shpk_crc("GetDirectionalLight_Enable"),
                     physis_shpk_crc("GetFakeSpecular_Disable"),
                     physis_shpk_crc("GetUnderWaterLighting_Disable"),
                 };
-                std::vector<uint32_t> subviewKeys = {
+                std::vector subviewKeys = {
                     physis_shpk_crc("Default"),
                     physis_shpk_crc("SUB_VIEW_MAIN"),
                 };
@@ -684,7 +684,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 void GameRenderer::resize()
 {
     // TODO: this is because of our terrible resource handling. an image referenced in these may be gone due to resizing, for example
-    for (auto &[hash, cachedPipeline] : m_cachedPipelines) {
+    for (auto &cachedPipeline : m_cachedPipelines | std::views::values) {
         cachedPipeline.cachedDescriptors.clear();
     }
 
@@ -944,7 +944,7 @@ std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuff
     return {colorAttachmentFormats, depthAttachmentFormat};
 }
 
-void GameRenderer::endPass(VkCommandBuffer commandBuffer)
+void GameRenderer::endPass(const VkCommandBuffer commandBuffer)
 {
     vkCmdEndRendering(commandBuffer);
 
@@ -1053,8 +1053,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         for (auto &set : requestedSets) {
             if (set.used) {
                 int j = 0;
-                std::vector<VkDescriptorSetLayoutBinding> bindings;
-                for (auto &binding : set.bindings) {
+                std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+                for (const auto &binding : set.bindings) {
                     if (binding.used) {
                         VkDescriptorSetLayoutBinding boneInfoBufferBinding = {};
                         boneInfoBufferBinding.descriptorType = binding.type;
@@ -1062,15 +1062,15 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                         boneInfoBufferBinding.stageFlags = binding.stageFlags;
                         boneInfoBufferBinding.binding = j;
 
-                        bindings.push_back(boneInfoBufferBinding);
+                        layoutBindings.push_back(boneInfoBufferBinding);
                     }
                     j++;
                 }
 
                 VkDescriptorSetLayoutCreateInfo layoutInfo = {};
                 layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                layoutInfo.bindingCount = bindings.size();
-                layoutInfo.pBindings = bindings.data();
+                layoutInfo.bindingCount = layoutBindings.size();
+                layoutInfo.pBindings = layoutBindings.data();
 
                 vkCreateDescriptorSetLayout(m_device.device, &layoutInfo, nullptr, &set.layout);
             }
@@ -1078,8 +1078,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
 
         std::vector<VkVertexInputAttributeDescription> attributeDescs;
 
-        for (auto texture : vertex_resources.stage_inputs) {
-            unsigned binding = vertex_glsl.get_decoration(texture.id, spv::DecorationLocation);
+        for (const auto &texture : vertex_resources.stage_inputs) {
+            const unsigned binding = vertex_glsl.get_decoration(texture.id, spv::DecorationLocation);
 
             VkVertexInputAttributeDescription uv0Attribute = {};
             uv0Attribute.location = binding;
@@ -1177,6 +1177,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                     case 4:
                         uv0Attribute.format = VK_FORMAT_R8G8B8A8_UINT; // supposed to be VK_FORMAT_R32G32B32A32_SINT, but our bone_id is uint8_t currently
                         break;
+                    default:
+                        Q_UNREACHABLE();
                     }
                 } else if (type.basetype == spirv_cross::SPIRType::Float) {
                     switch (type.vecsize) {
@@ -1192,6 +1194,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                     case 4:
                         uv0Attribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                         break;
+                    default:
+                        Q_UNREACHABLE();
                     }
                 } else if (type.basetype == spirv_cross::SPIRType::Half) {
                     switch (type.vecsize) {
@@ -1207,6 +1211,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                     case 4:
                         uv0Attribute.format = VK_FORMAT_R16G16B16A16_SFLOAT;
                         break;
+                    default:
+                        Q_UNREACHABLE();
                     }
                 }
             }
@@ -1347,8 +1353,11 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
     return pipeline;
 }
 
-VkDescriptorSet
-GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline &pipeline, int i, const RenderMaterial *material, std::string_view pass)
+VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
+                                                  const CachedPipeline &cachedPipeline,
+                                                  const int i,
+                                                  const RenderMaterial *material,
+                                                  std::string_view pass)
 {
     VkDescriptorSet set;
 
@@ -1356,7 +1365,7 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
     allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocateInfo.descriptorPool = m_device.descriptorPool;
     allocateInfo.descriptorSetCount = 1;
-    allocateInfo.pSetLayouts = &pipeline.setLayouts[i];
+    allocateInfo.pSetLayouts = &cachedPipeline.setLayouts[i];
 
     vkAllocateDescriptorSets(m_device.device, &allocateInfo, &set);
     if (set == VK_NULL_HANDLE) {
@@ -1369,15 +1378,15 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
     std::vector<VkDescriptorBufferInfo> bufferInfo;
     std::vector<VkDescriptorImageInfo> imageInfo;
 
-    writes.reserve(pipeline.requestedSets[i].bindings.size());
-    bufferInfo.reserve(pipeline.requestedSets[i].bindings.size());
-    imageInfo.reserve(pipeline.requestedSets[i].bindings.size());
+    writes.reserve(cachedPipeline.requestedSets[i].bindings.size());
+    bufferInfo.reserve(cachedPipeline.requestedSets[i].bindings.size());
+    imageInfo.reserve(cachedPipeline.requestedSets[i].bindings.size());
 
     int j = 0;
     int z = 0;
     int p = 0;
     VkShaderStageFlags currentStageFlags{};
-    for (auto binding : pipeline.requestedSets[i].bindings) {
+    for (auto binding : cachedPipeline.requestedSets[i].bindings) {
         if (binding.used) {
             // a giant hack
             if (currentStageFlags != binding.stageFlags) {
@@ -1398,11 +1407,11 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                 auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
-                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < pipeline.pixelShader.num_resource_parameters) {
+                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < cachedPipeline.pixelShader.num_resource_parameters) {
                     const char *name = nullptr;
-                    for (int y = 0; y < pipeline.pixelShader.num_resource_parameters; y++) {
-                        if (pipeline.pixelShader.resource_parameters[y].slot == p) {
-                            name = pipeline.pixelShader.resource_parameters[y].name;
+                    for (int y = 0; y < cachedPipeline.pixelShader.num_resource_parameters; y++) {
+                        if (cachedPipeline.pixelShader.resource_parameters[y].slot == p) {
+                            name = cachedPipeline.pixelShader.resource_parameters[y].name;
                             break;
                         }
                     }
@@ -1530,12 +1539,12 @@ GameRenderer::createDescriptorFor(const DrawObject *object, const CachedPipeline
                 };
 
                 if (binding.stageFlags == VK_SHADER_STAGE_VERTEX_BIT) {
-                    auto name = pipeline.vertexShader.scalar_parameters[z].name;
+                    auto name = cachedPipeline.vertexShader.scalar_parameters[z].name;
 
                     bindBuffer(name);
                     z++;
                 } else if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT) {
-                    auto name = pipeline.pixelShader.scalar_parameters[z].name;
+                    auto name = cachedPipeline.pixelShader.scalar_parameters[z].name;
 
                     bindBuffer(name);
                     z++;
@@ -1642,14 +1651,14 @@ Texture &GameRenderer::getCompositeTexture()
 }
 
 void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer,
-                                      GameRenderer::CachedPipeline &pipeline,
+                                      CachedPipeline &pipeline,
                                       const DrawObject *object,
                                       const RenderMaterial *material,
-                                      std::string_view pass)
+                                      const std::string_view pass)
 {
     for (size_t i = 0; i < pipeline.setLayouts.size(); i++) {
-        if (!pipeline.cachedDescriptors.count(i)) {
-            if (auto descriptor = createDescriptorFor(object, pipeline, i, material, pass); descriptor != VK_NULL_HANDLE) {
+        if (!pipeline.cachedDescriptors.contains(i)) {
+            if (const auto descriptor = createDescriptorFor(object, pipeline, i, material, pass); descriptor != VK_NULL_HANDLE) {
                 pipeline.cachedDescriptors[i] = descriptor;
             } else {
                 continue;
