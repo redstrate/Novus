@@ -314,19 +314,19 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
             renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
         } else {
-            int width = 8;
-            int height = material.dawntrail_color_table.num_rows;
+            constexpr int width = 8;
+            const uint32_t height = material.dawntrail_color_table.num_rows;
             if (height > 0) {
                 qInfo() << "Creating DT color table" << width << "X" << height;
 
                 // NOTE: this is just a copy of the legacy color table gen, it's probably all wrong!
                 std::vector<float> rgbaData(width * height * 4);
                 int offset = 0;
-                for (int y = 0; y < height; y++) {
+                for (uint32_t y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         const auto row = material.dawntrail_color_table.rows[y];
 
-                        glm::vec4 color;
+                        glm::vec4 color{};
                         if (x == 0) {
                             color = glm::vec4{row.diffuse_color[0], row.diffuse_color[1], row.diffuse_color[2], 0.0f};
                         } else if (x == 1) {
@@ -347,7 +347,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
                     }
                 }
 
-                physis_Texture textureConfig;
+                physis_Texture textureConfig{};
                 textureConfig.texture_type = TextureType::TwoDimensional;
                 textureConfig.width = width;
                 textureConfig.height = height;
@@ -370,7 +370,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             renderer->device().nameTexture(gameTexture, material.textures[i]);
 
             if (type == "m") {
-                newMaterial.multiTexture = gameTexture;
+                newMaterial.maskTexture = gameTexture;
             } else if (type == "d") {
                 newMaterial.diffuseTexture = gameTexture;
             } else if (type == "n") {

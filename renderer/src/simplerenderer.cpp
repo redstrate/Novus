@@ -447,8 +447,8 @@ uint64_t SimpleRenderer::hash(const DrawObject &model, const RenderMaterial &mat
         hash += reinterpret_cast<intptr_t>(material.normalTexture->image);
     if (material.specularTexture)
         hash += reinterpret_cast<intptr_t>(material.specularTexture->image);
-    if (material.multiTexture)
-        hash += reinterpret_cast<intptr_t>(material.multiTexture->image);
+    if (material.maskTexture)
+        hash += reinterpret_cast<intptr_t>(material.maskTexture->image);
     return hash;
 }
 
@@ -552,8 +552,8 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     VkDescriptorImageInfo multiImageInfo = {};
     multiImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    if (material.multiTexture) {
-        multiImageInfo.imageView = material.multiTexture->imageView;
+    if (material.maskTexture) {
+        multiImageInfo.imageView = material.maskTexture->imageView;
         multiImageInfo.sampler = m_sampler;
     } else {
         multiImageInfo.imageView = m_dummyTex.imageView;

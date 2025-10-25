@@ -59,7 +59,7 @@ struct ModelParameter {
 };
 
 struct MaterialParameters {
-    glm::vec4 parameters[6] = {}; // TODO: this is actually different depending on the shpk
+    glm::vec4 parameters[18] = {}; // TODO: this is actually different depending on the shpk
 };
 
 struct CommonParameter {
@@ -129,4 +129,8 @@ struct WorldViewMatrix {
     glm::mat4 m_WorldViewMatrix;
     glm::vec4 m_EyePosition;
     glm::vec4 m_Unk;
+};
+
+struct FogParameter {
+    glm::vec4 parameters[10] = {};
 };

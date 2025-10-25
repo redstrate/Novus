@@ -45,8 +45,6 @@ std::string ShaderManager::getShaderModuleResources(const physis_Shader &shader,
     dxvk::DxbcModuleInfo info;
     auto result = module.compile(info, "test");
 
-    std::ranges::subrange entries(module.isgn()->begin(), module.isgn()->end());
-
     return module.isgn()->findByRegister(i)->semanticName;
 }
 
@@ -68,10 +66,8 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
 
     auto resources = glsl.get_shader_resources();
 
-    std::ranges::subrange entries(module.isgn()->begin(), module.isgn()->end());
-
     int i = 0;
-    for (auto texture : resources.stage_inputs) {
+    for (const auto &texture : resources.stage_inputs) {
         unsigned binding = glsl.get_decoration(texture.id, spv::DecorationLocation);
         glsl.set_name(texture.id, module.isgn()->findByRegister(binding)->semanticName);
         i++;
@@ -79,7 +75,7 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
 
     // Here you can also set up decorations if you want (binding = #N).
     i = 0;
-    for (auto texture : resources.separate_images) {
+    for (const auto &texture : resources.separate_images) {
         if (i < shader.num_resource_parameters) {
             glsl.set_name(texture.id, shader.resource_parameters[i].name);
         }
@@ -87,7 +83,7 @@ VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, s
     }
 
     i = 0;
-    for (auto buffer : resources.uniform_buffers) {
+    for (const auto &buffer : resources.uniform_buffers) {
         glsl.set_name(buffer.id, shader.scalar_parameters[i].name);
         i++;
     }

@@ -60,6 +60,7 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     , m_shaderManager(device)
 {
     m_dummyTex = m_device.createDummyTexture();
+    m_blackTex = m_device.createDummyTexture({0, 0, 0, 0});
     m_dummyBuffer = m_device.createDummyBuffer();
 
     const size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
@@ -235,6 +236,16 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
     {
         g_WorldViewMatrix = m_device.createBuffer(sizeof(WorldViewMatrix), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         m_device.nameBuffer(g_WorldViewMatrix, "g_WorldViewMatrix");
+    }
+
+    // fog parameter
+    {
+        g_FogParameter = m_device.createBuffer(sizeof(FogParameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        m_device.nameBuffer(g_FogParameter, "g_FogParameter");
+
+        FogParameter fogParameter{};
+
+        m_device.copyToBuffer(g_FogParameter, &fogParameter, sizeof(FogParameter));
     }
 
     VkSamplerCreateInfo samplerInfo = {};
@@ -727,9 +738,6 @@ std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuff
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-            attachmentInfo.clearValue.color.float32[0] = 0.24;
-            attachmentInfo.clearValue.color.float32[1] = 0.24;
-            attachmentInfo.clearValue.color.float32[2] = 0.24;
             attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
@@ -747,9 +755,6 @@ std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuff
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-            attachmentInfo.clearValue.color.float32[0] = 0.24;
-            attachmentInfo.clearValue.color.float32[1] = 0.24;
-            attachmentInfo.clearValue.color.float32[2] = 0.24;
             attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
@@ -767,9 +772,6 @@ std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuff
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-            attachmentInfo.clearValue.color.float32[0] = 0.24;
-            attachmentInfo.clearValue.color.float32[1] = 0.24;
-            attachmentInfo.clearValue.color.float32[2] = 0.24;
             attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
@@ -787,9 +789,6 @@ std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuff
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-            attachmentInfo.clearValue.color.float32[0] = 0.24;
-            attachmentInfo.clearValue.color.float32[1] = 0.24;
-            attachmentInfo.clearValue.color.float32[2] = 0.24;
             attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
@@ -807,9 +806,6 @@ std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuff
             attachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             attachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-            attachmentInfo.clearValue.color.float32[0] = 0.24;
-            attachmentInfo.clearValue.color.float32[1] = 0.24;
-            attachmentInfo.clearValue.color.float32[2] = 0.24;
             attachmentInfo.clearValue.color.float32[3] = 1.0;
 
             colorAttachments.push_back(attachmentInfo);
@@ -1043,6 +1039,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
 
                 requestSet.bindings[binding].used = true;
                 requestSet.bindings[binding].stageFlags |= stageFlagBit;
+                requestSet.bindings[binding].originalName = resource.name;
 
                 qInfo() << "Requesting set" << set << "at" << binding;
             }
@@ -1413,10 +1410,41 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                 auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
-                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT && p < cachedPipeline.pixelShader.num_resource_parameters) {
-                    const char *name = cachedPipeline.pixelShader.resource_parameters[p].name;
+                if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT) {
+                    const char *name = nullptr;
+                    if (p < cachedPipeline.pixelShader.num_resource_parameters) {
+                        name = cachedPipeline.pixelShader.resource_parameters[p].name;
+                    }
 
-                    // TODO: this may not be needed with the parent if's check, double-check please
+                    // FIXME: a giant hack for now, until i figure out why the textures are swapped/missing for this pass in characterlegacy.shpk
+                    if (pass == "PASS_G_OPAQUE") {
+                        switch (p) {
+                        case 0:
+                            name = "g_SamplerDiffuse";
+                            break;
+                        case 1:
+                            name = "g_SamplerNormal";
+                            break;
+                        case 2:
+                            name = "g_SamplerIndex";
+                            break;
+                        case 3:
+                            name = "g_blackTex_notagametexture"; // idk, its just black in my retail capture
+                            break;
+                        case 4:
+                            name = "g_SamplerTable";
+                            break;
+                        case 5:
+                            name = "g_SamplerTileOrb";
+                            break;
+                        case 6:
+                            name = "g_SamplerTileNormal";
+                            break;
+                        default:
+                            Q_UNREACHABLE();
+                        }
+                    }
+
                     if (name == nullptr) {
                         info->imageView = m_dummyTex.imageView;
                         qInfo() << "Unspecified image at" << j;
@@ -1447,9 +1475,9 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                         } else if (strcmp(name, "g_SamplerSpecular") == 0 && material->specularTexture.has_value()) {
                             Q_ASSERT(material);
                             info->imageView = material->specularTexture->imageView;
-                        } else if (strcmp(name, "g_SamplerMask") == 0 && material->multiTexture.has_value()) {
+                        } else if (strcmp(name, "g_SamplerMask") == 0 && material->maskTexture.has_value()) {
                             Q_ASSERT(material);
-                            info->imageView = material->multiTexture->imageView;
+                            info->imageView = material->maskTexture->imageView;
                         } else if (strcmp(name, "g_SamplerTileNormal") == 0) {
                             info->imageView = m_tileNormal.imageView;
                         } else if (strcmp(name, "g_SamplerTileOrb") == 0) {
@@ -1462,6 +1490,8 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                             } else {
                                 info->imageView = material->tableTexture->imageView;
                             }
+                        } else if (strcmp(name, "g_blackTex_notagametexture") == 0) {
+                            info->imageView = m_blackTex.imageView;
                         } else {
                             info->imageView = m_dummyTex.imageView;
                             qInfo() << "Unknown image" << name;
@@ -1503,14 +1533,9 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                     } else if (strcmp(name, "g_ModelParameter") == 0) {
                         useUniformBuffer(g_ModelParameter);
                     } else if (strcmp(name, "g_MaterialParameter") == 0) {
-                        if (pass == "PASS_COMPOSITE_SEMITRANSPARENCY") {
-                            // The composite semi-transparency uses a different alphathreshold
-                            useUniformBuffer(g_TransparencyMaterialParameter);
-                        } else {
-                            Q_ASSERT(material);
-                            Q_ASSERT(material->materialBuffer.buffer);
-                            useUniformBuffer(material->materialBuffer);
-                        }
+                        Q_ASSERT(material);
+                        Q_ASSERT(material->materialBuffer.buffer);
+                        useUniformBuffer(material->materialBuffer);
                     } else if (strcmp(name, "g_LightParam") == 0) {
                         useUniformBuffer(g_LightParam);
                     } else if (strcmp(name, "g_CommonParameter") == 0) {
@@ -1531,6 +1556,8 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                         useUniformBuffer(g_PbrParameterCommon);
                     } else if (strcmp(name, "g_WorldViewMatrix") == 0) {
                         useUniformBuffer(g_WorldViewMatrix);
+                    } else if (strcmp(name, "g_FogParameter") == 0) {
+                        useUniformBuffer(g_FogParameter);
                     } else {
                         qInfo() << "Unknown resource:" << name;
                         info->buffer = m_dummyBuffer.buffer;

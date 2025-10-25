@@ -42,6 +42,17 @@ private:
         VkDescriptorType type;
         VkShaderStageFlags stageFlags;
         bool used = false;
+        std::string originalName; // as seen in the HLSL
+
+        // Converts an originalName like t0 to just 0
+        int getTextureIndex() const
+        {
+            if (originalName.starts_with("t")) {
+                const std::string numberBits = originalName.substr(1);
+                return std::stoi(numberBits);
+            }
+            return -1;
+        }
     };
 
     struct RequestedSet {
@@ -106,6 +117,7 @@ private:
     Buffer g_ShaderTypeParameter;
     Buffer g_PbrParameterCommon;
     Buffer g_WorldViewMatrix;
+    Buffer g_FogParameter;
 
     Buffer m_planeVertexBuffer;
 
@@ -117,6 +129,7 @@ private:
     Texture m_compositeBuffer;
     Texture m_ZBuffer; // what is this?
     Texture m_dummyTex;
+    Texture m_blackTex;
     VkSampler m_sampler;
     VkSampler m_normalSampler;
     Buffer m_dummyBuffer;

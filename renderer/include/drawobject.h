@@ -27,7 +27,7 @@ struct RenderMaterial {
     std::optional<Texture> diffuseTexture;
     std::optional<Texture> normalTexture;
     std::optional<Texture> specularTexture;
-    std::optional<Texture> multiTexture;
+    std::optional<Texture> maskTexture;
     std::optional<Texture> indexTexture;
 
     std::optional<Texture> tableTexture;
