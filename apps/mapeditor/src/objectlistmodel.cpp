@@ -173,10 +173,25 @@ void ObjectListModel::refresh()
                 for (uint32_t z = 0; z < layer.num_objects; z++) {
                     const auto &object = layer.objects[z];
 
+                    QString objectName = i18n("Unknown Object");
+                    switch (object.data.tag) {
+                    case physis_LayerEntry::Tag::BG:
+                        objectName = i18n("BG Model");
+                        break;
+                    case physis_LayerEntry::Tag::EventObject:
+                        objectName = i18n("Event Object");
+                        break;
+                    case physis_LayerEntry::Tag::PopRange:
+                        objectName = i18n("Pop Range");
+                        break;
+                    default:
+                        break;
+                    }
+
                     auto objectItem = new TreeInformation();
                     objectItem->type = TreeType::Object;
                     objectItem->parent = layerItem;
-                    objectItem->name = i18n("Unknown (%1)", QString::number(object.instance_id)); // TODO: do display names if we have them
+                    objectItem->name = i18n("%1 (%2)", objectName, QString::number(object.instance_id)); // TODO: do display names if we have them
                     objectItem->row = z;
                     objectItem->data = &object;
                     layerItem->children.push_back(objectItem);
