@@ -20,11 +20,6 @@ finish-args:
   - --socket=wayland
   - --share=network
   - --device=dri
-  - --allow=multiarch
-add-extensions:
-  org.freedesktop.Platform.Compat.i386:
-    directory: lib/i386-linux-gnu
-    version: '24.08'
 modules:
   - name: glm
     buildsystem: cmake-ninja
