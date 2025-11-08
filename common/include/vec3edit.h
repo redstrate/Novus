@@ -17,6 +17,7 @@ public:
     explicit Vector3Edit(glm::vec3 &vec, QWidget *parent = nullptr);
 
     void setVector(glm::vec3 &vec);
+    void setReadOnly(bool readOnly);
 
 Q_SIGNALS:
     void onValueChanged();

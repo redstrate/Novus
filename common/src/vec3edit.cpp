@@ -55,4 +55,11 @@ void Vector3Edit::setVector(glm::vec3 &vec)
     spinBoxes.z->setValue(vec.z);
 }
 
+void Vector3Edit::setReadOnly(const bool readOnly)
+{
+    spinBoxes.x->setReadOnly(readOnly);
+    spinBoxes.y->setReadOnly(readOnly);
+    spinBoxes.z->setReadOnly(readOnly);
+}
+
 #include "moc_vec3edit.cpp"
