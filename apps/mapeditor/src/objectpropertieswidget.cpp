@@ -5,6 +5,7 @@
 
 #include "appstate.h"
 #include "collapsesection.h"
+#include "pathedit.h"
 #include "vec3edit.h"
 
 #include <KLocalizedString>
@@ -100,13 +101,13 @@ void ObjectPropertiesWidget::addBGSection(const physis_BGInstanceObject &bg)
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto bgEdit = new QLineEdit();
-    bgEdit->setText(QString::fromLatin1(bg.asset_path));
+    auto bgEdit = new PathEdit();
+    bgEdit->setPath(QString::fromLatin1(bg.asset_path));
     bgEdit->setReadOnly(true);
     layout->addRow(i18n("Asset Path"), bgEdit);
 
-    auto collisionEdit = new QLineEdit();
-    collisionEdit->setText(QString::fromLatin1(bg.collision_asset_path));
+    auto collisionEdit = new PathEdit();
+    collisionEdit->setPath(QString::fromLatin1(bg.collision_asset_path));
     collisionEdit->setReadOnly(true);
     layout->addRow(i18n("Collision Asset Path"), collisionEdit);
 }
