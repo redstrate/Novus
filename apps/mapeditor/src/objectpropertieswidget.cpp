@@ -5,12 +5,15 @@
 
 #include "appstate.h"
 #include "collapsesection.h"
+#include "vec3edit.h"
 
 #include <KLocalizedString>
 
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QVBoxLayout>
+
+#include <glm/gtc/type_ptr.hpp>
 
 ObjectPropertiesWidget::ObjectPropertiesWidget(AppState *appState, QWidget *parent)
     : QWidget(parent)
@@ -60,14 +63,29 @@ void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &obje
 
 void ObjectPropertiesWidget::addCommonSection(const physis_InstanceObject &object)
 {
-    auto section = new CollapseSection(i18n("Common"));
+    const auto section = new CollapseSection(i18n("Common"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
-    auto layout = new QFormLayout();
+    const auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto idEdit = new QLineEdit();
+    auto pos = glm::make_vec3(object.transform.translation);
+    const auto positionEdit = new Vector3Edit(pos);
+    positionEdit->setReadOnly(true);
+    layout->addRow(i18n("Position"), positionEdit);
+
+    auto rotation = glm::make_vec3(object.transform.rotation);
+    const auto rotationEdit = new Vector3Edit(rotation);
+    rotationEdit->setReadOnly(true);
+    layout->addRow(i18n("Rotation"), rotationEdit);
+
+    auto scale = glm::make_vec3(object.transform.scale);
+    const auto scaleEdit = new Vector3Edit(scale);
+    scaleEdit->setReadOnly(true);
+    layout->addRow(i18n("Scale"), scaleEdit);
+
+    const auto idEdit = new QLineEdit();
     idEdit->setText(QString::number(object.instance_id));
     idEdit->setReadOnly(true);
     layout->addRow(i18n("Instance ID"), idEdit);
