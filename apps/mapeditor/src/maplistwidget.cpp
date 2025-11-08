@@ -77,7 +77,7 @@ MapListWidget::MapListWidget(SqPackResource *data, QWidget *parent)
     listWidget = new QListView();
     listWidget->setModel(searchModel);
 
-    connect(listWidget, &QListView::clicked, [this, searchModel](const QModelIndex &index) {
+    connect(listWidget, &QListView::activated, [this, searchModel](const QModelIndex &index) {
         Q_EMIT mapSelected(searchModel->mapToSource(index).data(Qt::UserRole + 1).toString());
     });
 
