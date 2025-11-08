@@ -330,5 +330,10 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("show_unknown"), showUnknown);
 
+    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"));
+    KActionCollection::setDefaultShortcut(focusSearch, QKeySequence(Qt::CTRL | Qt::Key_F));
+    connect(focusSearch, &QAction::triggered, m_tree, &FileTreeWindow::focusSearchField);
+    actionCollection()->addAction(QStringLiteral("search"), focusSearch);
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }

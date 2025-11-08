@@ -7,7 +7,6 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QHBoxLayout>
-#include <QLineEdit>
 #include <QMenu>
 #include <QTimer>
 
@@ -26,22 +25,22 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     m_searchModel->setRecursiveFilteringEnabled(true);
     m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
-    auto searchEdit = new QLineEdit();
+    m_searchEdit = new QLineEdit();
 
     auto searchTimer = new QTimer();
     searchTimer->setSingleShot(true);
     searchTimer->setInterval(1500);
-    connect(searchTimer, &QTimer::timeout, m_searchModel, [this, searchEdit] {
-        m_searchModel->setFilterFixedString(searchEdit->text());
+    connect(searchTimer, &QTimer::timeout, m_searchModel, [this] {
+        m_searchModel->setFilterFixedString(m_searchEdit->text());
     });
 
-    searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
-    searchEdit->setClearButtonEnabled(true);
-    searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
-    connect(searchEdit, &QLineEdit::textChanged, searchTimer, [searchTimer] {
+    m_searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
+    m_searchEdit->setClearButtonEnabled(true);
+    m_searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
+    connect(m_searchEdit, &QLineEdit::textChanged, searchTimer, [searchTimer] {
         searchTimer->start();
     });
-    layout->addWidget(searchEdit);
+    layout->addWidget(m_searchEdit);
 
     m_treeWidget = new QTreeView();
     m_treeWidget->setModel(m_searchModel);
@@ -124,6 +123,11 @@ bool FileTreeWindow::selectPath(const QString &path)
         return true;
     }
     return false;
+}
+
+void FileTreeWindow::focusSearchField()
+{
+    m_searchEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }
 
 #include "moc_filetreewindow.cpp"

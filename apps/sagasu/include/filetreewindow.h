@@ -4,6 +4,7 @@
 #pragma once
 
 #include <QCheckBox>
+#include <QLineEdit>
 #include <QSortFilterProxyModel>
 #include <QTreeView>
 #include <physis.hpp>
@@ -20,6 +21,7 @@ public:
     void refreshModel();
     void setShowUnknown(bool show);
     bool selectPath(const QString &path);
+    void focusSearchField();
 
 Q_SIGNALS:
     void extractFile(const QString &path);
@@ -34,4 +36,5 @@ private:
     HashDatabase &m_database;
     bool m_showUnknown = false;
     QTreeView *m_treeWidget = nullptr;
+    QLineEdit *m_searchEdit = nullptr;
 };
