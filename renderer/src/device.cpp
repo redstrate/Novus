@@ -74,9 +74,7 @@ VkShaderModule Device::createShaderModule(const uint32_t *code, const int length
 VkShaderModule Device::loadShaderFromDisk(const std::string_view path)
 {
     QFile file((QLatin1String(path)));
-    file.open(QFile::ReadOnly);
-
-    if (!file.isOpen()) {
+    if (!file.open(QFile::ReadOnly)) {
         qFatal("Failed to open shader file: %s", path.data());
     }
 
