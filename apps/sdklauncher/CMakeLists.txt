@@ -65,7 +65,7 @@ ecm_add_app_icon(novus-launcher
 )
 
 # the current tooling completely breaks in Flatpak, and is unnecessary there anyway
-if (NOT BUILD_FLATPAK)
+if (WIN32)
     # We only need to call deploy on one executable
     qt_generate_deploy_app_script(
             TARGET novus-launcher
