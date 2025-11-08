@@ -2,9 +2,7 @@ name: Main
 
 on:
   push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
 
 env:
   QT_VERSION: 6.10.0 # Keep in sync with CMakeLists.txt
