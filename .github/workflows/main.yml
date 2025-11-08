@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: REUSE Compliance Check
-      uses: fsfe/reuse-action@v5
+      uses: fsfe/reuse-action@v6
 
   build:
     name: "Build"
@@ -43,7 +43,7 @@ jobs:
             c_compiler: cl
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         submodules: true
 
@@ -330,7 +330,7 @@ jobs:
         Remove-Item -Path ${{ steps.strings.outputs.build-output-dir }}/bin/Release -Force -Recurse
 
     - name: Archive artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: runner.os == 'Windows'
       with:
         name: ${{ runner.os }}-package
@@ -340,10 +340,10 @@ jobs:
     name: "Flatpak"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.10
       options: --privileged
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
