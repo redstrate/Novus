@@ -5,6 +5,7 @@
 #include "appstate.h"
 
 #include <KLocalizedString>
+#include <QIcon>
 
 ObjectListModel::ObjectListModel(AppState *appState, QObject *parent)
     : QAbstractItemModel(parent)
@@ -75,6 +76,18 @@ QVariant ObjectListModel::data(const QModelIndex &index, int role) const
     if (index.column() == 0) {
         if (role == Qt::DisplayRole) {
             return item->name;
+        }
+        if (role == Qt::DecorationRole) {
+            switch (item->type) {
+            case TreeType::Root:
+                Q_UNREACHABLE();
+            case TreeType::File:
+                return QIcon::fromTheme(QStringLiteral("emblem-documents-symbolic"));
+            case TreeType::Layer:
+                return QIcon::fromTheme(QStringLiteral("dialog-layers-symbolic"));
+            case TreeType::Object:
+                return QIcon::fromTheme(QStringLiteral("draw-cuboid-symbolic"));
+            }
         }
     } else if (index.column() == 1) {
         if (role == Qt::CheckStateRole && item->type == TreeType::Layer) {
