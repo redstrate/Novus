@@ -3,16 +3,23 @@
 
 #include "hashdatabase.h"
 
+#include <QDir>
 #include <QFile>
 #include <QSqlDriver>
 #include <QSqlError>
+#include <QStandardPaths>
 #include <physis.hpp>
 
 HashDatabase::HashDatabase(QObject *parent)
     : QObject(parent)
 {
     m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"));
-    m_db.setDatabaseName(QStringLiteral("customdb.db"));
+
+    const QDir appDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (!appDir.exists())
+        appDir.mkpath(appDir.absolutePath());
+
+    m_db.setDatabaseName(appDir.absoluteFilePath(QStringLiteral("paths.db")));
 
     if (!m_db.open()) {
         qFatal() << "Failed to open custom db!";
