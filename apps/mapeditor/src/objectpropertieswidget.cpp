@@ -108,7 +108,7 @@ void ObjectPropertiesWidget::addBGSection(const physis_BGInstanceObject &bg)
     auto collisionEdit = new QLineEdit();
     collisionEdit->setText(QString::fromLatin1(bg.collision_asset_path));
     collisionEdit->setReadOnly(true);
-    layout->addRow(i18n("Collision Asset Path"), bgEdit);
+    layout->addRow(i18n("Collision Asset Path"), collisionEdit);
 }
 
 void ObjectPropertiesWidget::addEventSection(const physis_EventInstanceObject &eobj)
