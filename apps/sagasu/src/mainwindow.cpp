@@ -299,6 +299,7 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
 
     auto manualAdd = new QAction(i18nc("@action:inmenu", "Manually Add Path…"));
+    manualAdd->setIcon(QIcon::fromTheme(QStringLiteral("document-new-symbolic")));
     connect(manualAdd, &QAction::triggered, [this] {
         bool ok = false;
         const QString path = QInputDialog::getText(this, i18n("Manually Add Path…"), i18n("Path:"), QLineEdit::Normal, QString{}, &ok);
