@@ -335,5 +335,16 @@ void MainWindow::setupActions()
     connect(focusSearch, &QAction::triggered, m_tree, &FileTreeWindow::focusSearchField);
     actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 
+    auto goToPath = new QAction(i18nc("@action:inmenu", "Go to Path…"));
+    KActionCollection::setDefaultShortcut(goToPath, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
+    connect(goToPath, &QAction::triggered, [this] {
+        bool ok = false;
+        const QString path = QInputDialog::getText(this, i18n("Go to Path…"), i18n("Path:"), QLineEdit::Normal, QString{}, &ok);
+        if (ok && !path.isEmpty()) {
+            m_tree->selectPath(path);
+        }
+    });
+    actionCollection()->addAction(QStringLiteral("go_to_path"), goToPath);
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
