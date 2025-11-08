@@ -15,6 +15,10 @@
       <Separator/>
       <Action name="file_quit"/>
     </Menu>
+    <Menu name="edit" >
+      <text>Edit</text>
+      <Action name="search" />
+    </Menu>
     <Menu name="view" >
       <text>View</text>
       <Action name="show_unknown" />
