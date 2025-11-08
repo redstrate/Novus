@@ -4,12 +4,14 @@
 #include "mainwindow.h"
 
 #include <KActionCollection>
+#include <KLocalizedString>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QDialog>
 #include <QHBoxLayout>
 #include <QMenuBar>
 #include <QSplitter>
+#include <glm/gtc/type_ptr.hpp>
 #include <physis.hpp>
 
 #include "appstate.h"
@@ -42,12 +44,16 @@ MainWindow::MainWindow(SqPackResource *data)
     dummyWidget->addWidget(objectPropertiesWidget);
 
     setupActions();
-    setupGUI(Keys | Save | Create);
+    setupGUI(Keys | Save | Create, QStringLiteral("mapeditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+
+    connect(m_appState, &AppState::selectedObjectChanged, this, &MainWindow::updateActionState);
+
+    updateActionState();
 }
 
 void MainWindow::setupActions()
@@ -71,6 +77,14 @@ void MainWindow::setupActions()
             dialog->exec();
         },
         actionCollection());
+
+    m_centerObjectAction = new QAction(i18nc("@action:inmenu", "Center on Object"));
+    m_centerObjectAction->setIcon(QIcon::fromTheme(QStringLiteral("camera-video-symbolic")));
+    m_centerObjectAction->setShortcut(QKeySequence(Qt::Modifier::ALT | Qt::Key::Key_C));
+    connect(m_centerObjectAction, &QAction::triggered, [this] {
+        mapView->centerOn(glm::make_vec3(m_appState->selectedObject.value()->transform.translation));
+    });
+    actionCollection()->addAction(QStringLiteral("center_object"), m_centerObjectAction);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
@@ -105,6 +119,11 @@ void MainWindow::openMap(const QString &basePath)
     loadLgb(QStringLiteral("planlive"));
 
     Q_EMIT m_appState->mapLoaded();
+}
+
+void MainWindow::updateActionState()
+{
+    m_centerObjectAction->setEnabled(m_appState->selectedObject.has_value());
 }
 
 #include "moc_mainwindow.cpp"

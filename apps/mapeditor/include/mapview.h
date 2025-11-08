@@ -21,6 +21,8 @@ public:
 
     MDLPart &part() const;
 
+    void centerOn(glm::vec3 position);
+
 public Q_SLOTS:
     void addTerrain(QString basePath, physis_Terrain terrain);
 

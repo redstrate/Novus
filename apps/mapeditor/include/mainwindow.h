@@ -23,6 +23,7 @@ public:
 private:
     void setupActions();
     void openMap(const QString &basePath);
+    void updateActionState();
 
     SqPackResource *data = nullptr;
     FileCache cache;
@@ -30,4 +31,5 @@ private:
     ObjectListWidget *objectListWidget = nullptr;
     AppState *m_appState = nullptr;
     ObjectPropertiesWidget *objectPropertiesWidget = nullptr;
+    QAction *m_centerObjectAction = nullptr;
 };

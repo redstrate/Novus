@@ -36,6 +36,11 @@ MDLPart &MapView::part() const
     return *mdlPart;
 }
 
+void MapView::centerOn(const glm::vec3 position)
+{
+    mdlPart->position = position;
+}
+
 void MapView::addTerrain(QString basePath, physis_Terrain terrain)
 {
     for (int i = 0; i < terrain.num_plates; i++) {

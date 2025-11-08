@@ -8,9 +8,13 @@
   <MenuBar>
     <Menu name="file" >
       <text>File</text>
-      <Action name="open/>
+      <Action name="open"/>
       <Separator/>
       <Action name="quit"/>
+    </Menu>
+    <Menu name="object" >
+      <text>Object</text>
+      <Action name="center_object"/>
     </Menu>
   </MenuBar>
 </gui>
