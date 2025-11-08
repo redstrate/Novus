@@ -324,7 +324,9 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("manual_add"), manualAdd);
 
     auto showUnknown = new QAction(i18nc("@action:inmenu", "Show Unknown Files/Folders"));
+    KActionCollection::setDefaultShortcut(showUnknown, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_U));
     showUnknown->setCheckable(true);
+    showUnknown->setIcon(QIcon::fromTheme(QStringLiteral("view-hidden-symbolic")));
     connect(showUnknown, &QAction::triggered, [this](const bool checked) {
         m_tree->setShowUnknown(checked);
     });
