@@ -102,6 +102,11 @@ MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 }
 
+bool MainWindow::selectPath(const QString &path)
+{
+    return m_tree->selectPath(path);
+}
+
 void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString &path)
 {
     partHolder->clear();

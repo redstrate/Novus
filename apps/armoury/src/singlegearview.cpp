@@ -16,6 +16,7 @@
 #include "filecache.h"
 #include "magic_enum.hpp"
 #include "mdlimport.h"
+#include "pathedit.h"
 
 SingleGearView::SingleGearView(SqPackResource *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)
@@ -32,12 +33,12 @@ SingleGearView::SingleGearView(SqPackResource *data, FileCache &cache, QWidget *
     auto layout = new QVBoxLayout();
     setLayout(layout);
 
-    auto mdlPathEdit = new QLineEdit();
+    auto mdlPathEdit = new PathEdit();
     mdlPathEdit->setWhatsThis(i18n("The path to this gear's model file."));
     mdlPathEdit->setReadOnly(true);
 
     connect(this, &SingleGearView::gotMDLPath, this, [this, mdlPathEdit] {
-        mdlPathEdit->setText(gearView->getLoadedGearPath());
+        mdlPathEdit->setPath(gearView->getLoadedGearPath());
         Q_EMIT doneLoadingModel();
     });
 

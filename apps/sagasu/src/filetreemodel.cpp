@@ -203,6 +203,15 @@ QVariant FileTreeModel::headerData(int section, Qt::Orientation orientation, int
     return QAbstractItemModel::headerData(section, orientation, role);
 }
 
+QModelIndex FileTreeModel::search(const QString &path) const
+{
+    const auto list = match(index(0, 0), PathRole, path, 1, Qt::MatchExactly | Qt::MatchRecursive);
+    if (list.isEmpty()) {
+        return {};
+    }
+    return list.constFirst();
+}
+
 void FileTreeModel::addKnownFolder(const QString &string)
 {
     const QStringList children = string.split(QLatin1Char('/'));

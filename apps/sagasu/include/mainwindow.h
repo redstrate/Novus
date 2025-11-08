@@ -22,6 +22,8 @@ class MainWindow : public KXmlGuiWindow
 public:
     MainWindow(const QString &gamePath, SqPackResource *data);
 
+    bool selectPath(const QString &path);
+
 private:
     void setupActions();
 

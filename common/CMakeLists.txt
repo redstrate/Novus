@@ -1,6 +1,31 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 # SPDX-License-Identifier: CC0-1.0
 
+# config file used for app executable names
+# TODO: haha this is horrible, make this easier pls
+file (GENERATE
+        OUTPUT "launcherconfig_$<CONFIG>.h.out"
+        CONTENT "\
+#pragma once\n\
+#define GEAREDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-armoury>\")\n\
+#define EXCELEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-karuku>\")\n\
+#define MAPEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-mapeditor>\")\n\
+#define MATEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-mateditor>\")\n\
+#define MDLVIEWER_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-mdlviewer>\")\n\
+#define DATAEXPLORER_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-sagasu>\")\n\
+        "
+)
+
+# copy the new file to something standard we'll plug into the C++
+add_custom_command(
+        COMMAND ${CMAKE_COMMAND} "-E" "copy_if_different" "launcherconfig_$<CONFIG>.h.out" "launcherconfig.h"
+        VERBATIM
+        PRE_BUILD
+        DEPENDS  "launcherconfig_$<CONFIG>.h.out"
+        OUTPUT   "launcherconfig.h"
+        COMMENT  "creating config.out file ({event: PRE_BUILD}, {filename: config.out})"
+)
+
 if (WIN32)
     add_library(novus-common SHARED)
 else()
@@ -14,13 +39,17 @@ target_sources(novus-common
         include/quaternionedit.h
         include/settings.h
         include/vec3edit.h
+        include/pathedit.h
 
         src/aboutdata.cpp
         src/filecache.cpp
         src/filetypes.cpp
         src/quaternionedit.cpp
         src/settings.cpp
-        src/vec3edit.cpp)
+        src/vec3edit.cpp
+        src/pathedit.cpp
+
+        launcherconfig.h)
 target_include_directories(novus-common
         PUBLIC
         include

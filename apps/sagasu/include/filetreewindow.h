@@ -5,6 +5,7 @@
 
 #include <QCheckBox>
 #include <QSortFilterProxyModel>
+#include <QTreeView>
 #include <physis.hpp>
 
 #include "filetreemodel.h"
@@ -18,6 +19,7 @@ public:
 
     void refreshModel();
     void setShowUnknown(bool show);
+    bool selectPath(const QString &path);
 
 Q_SIGNALS:
     void extractFile(const QString &path);
@@ -31,4 +33,5 @@ private:
     QString m_gamePath;
     HashDatabase &m_database;
     bool m_showUnknown = false;
+    QTreeView *m_treeWidget = nullptr;
 };

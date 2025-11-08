@@ -10,7 +10,6 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QTimer>
-#include <QTreeWidget>
 
 FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, SqPackResource *data, QWidget *parent)
     : QWidget(parent)
@@ -44,13 +43,13 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     });
     layout->addWidget(searchEdit);
 
-    auto treeWidget = new QTreeView();
-    treeWidget->setModel(m_searchModel);
-    layout->addWidget(treeWidget);
+    m_treeWidget = new QTreeView();
+    m_treeWidget->setModel(m_searchModel);
+    layout->addWidget(m_treeWidget);
 
-    treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(treeWidget, &QTreeWidget::customContextMenuRequested, this, [this, treeWidget](const QPoint &pos) {
-        auto index = treeWidget->indexAt(pos);
+    m_treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_treeWidget, &QTreeView::customContextMenuRequested, this, [this](const QPoint &pos) {
+        auto index = m_treeWidget->indexAt(pos);
 
         if (index.isValid()) {
             const auto path = m_searchModel->data(index, FileTreeModel::CustomRoles::PathRole).toString();
@@ -78,11 +77,11 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
                 });
             }
 
-            menu->exec(treeWidget->mapToGlobal(pos));
+            menu->exec(m_treeWidget->mapToGlobal(pos));
         }
     });
 
-    connect(treeWidget, &QTreeView::activated, [this, treeWidget](const QModelIndex &item) {
+    connect(m_treeWidget, &QTreeView::activated, [this](const QModelIndex &item) {
         if (item.isValid()) {
             const auto isFolder = m_searchModel->data(item, FileTreeModel::CustomRoles::IsFolderRole).toBool();
             if (isFolder) {
@@ -111,6 +110,20 @@ void FileTreeWindow::setShowUnknown(bool show)
 {
     m_showUnknown = show;
     refreshModel();
+}
+
+bool FileTreeWindow::selectPath(const QString &path)
+{
+    const auto index = m_fileModel->search(path);
+    if (index.isValid()) {
+        const auto mappedIndex = m_searchModel->mapFromSource(index);
+        // TODO: dunno if there's a better way to programmatically do this
+        m_treeWidget->selectionModel()->select(mappedIndex, QItemSelectionModel::ClearAndSelect);
+        m_treeWidget->scrollTo(mappedIndex);
+        Q_EMIT m_treeWidget->activated(mappedIndex);
+        return true;
+    }
+    return false;
 }
 
 #include "moc_filetreewindow.cpp"
