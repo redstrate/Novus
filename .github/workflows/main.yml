@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 env:
-  QT_VERSION: 6.8.2 # Keep in sync with CMakeLists.txt
+  QT_VERSION: 6.10.0 # Keep in sync with CMakeLists.txt
 
 jobs:
   reuse:
