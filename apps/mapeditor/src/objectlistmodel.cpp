@@ -89,7 +89,7 @@ QVariant ObjectListModel::headerData(int section, Qt::Orientation orientation, i
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
-            return i18nc("@title:column Object id", "Id");
+            return i18nc("@title:column Object name", "Name");
         } else if (section == 1) {
             return i18nc("@title:column If the layer is visible", "Visible");
         }
@@ -163,7 +163,7 @@ void ObjectListModel::refresh()
                     auto objectItem = new TreeInformation();
                     objectItem->type = TreeType::Object;
                     objectItem->parent = layerItem;
-                    objectItem->name = i18n("Unknown (%1)", object.instance_id); // TODO: do display names if we have them
+                    objectItem->name = i18n("Unknown (%1)", QString::number(object.instance_id)); // TODO: do display names if we have them
                     objectItem->row = z;
                     objectItem->data = &object;
                     layerItem->children.push_back(objectItem);
