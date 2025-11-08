@@ -15,11 +15,18 @@ cleanup:
   - "*.cmake"
   - "*.pc"
 finish-args:
+  # For X11
   - --share=ipc
+  # For X11 fallback
   - --socket=fallback-x11
+  # For the Wayland windowing system
   - --socket=wayland
+  # Novus has the option to download some stuff off the network
   - --share=network
+  # Rendering the 3D viewports
   - --device=dri
+  # Reading your game install, but we only need read-only access for that
+  - --filesystem=home:ro
 modules:
   - name: glm
     buildsystem: cmake-ninja
