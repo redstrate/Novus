@@ -254,7 +254,7 @@ void MainWindow::setupActions()
         QUrl url;
         url.setScheme(QStringLiteral("https"));
         url.setHost(QStringLiteral("rl2.perchbird.dev"));
-        url.setPath(QStringLiteral("/download/export/CurrentPathListWithHashes.zip"));
+        url.setPath(QStringLiteral("/download/CurrentPathListWithHashes.zip"));
 
         // TODO: Use Qcoro?
         auto reply = m_mgr->get(QNetworkRequest(url));
