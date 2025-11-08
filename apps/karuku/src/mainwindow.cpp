@@ -171,7 +171,7 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
 
     auto goToRow = new QAction(i18nc("@action:inmenu", "To Row…"));
-    goToRow->setShortcut(QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
+    KActionCollection::setDefaultShortcut(goToRow, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
     connect(goToRow, &QAction::triggered, [this] {
         bool ok = false;
         const QString text = QInputDialog::getText(this, i18n("Go To…"), i18n("Row or Subrow ID:"), QLineEdit::Normal, QString{}, &ok);

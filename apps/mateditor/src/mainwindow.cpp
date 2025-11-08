@@ -36,7 +36,7 @@ MainWindow::MainWindow(SqPackResource *data)
     dummyWidget->addWidget(matView);
 
     setupActions();
-    setupGUI(Keys | Save | Create);
+    setupGUI(Keys | Save | Create, QStringLiteral("mateditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

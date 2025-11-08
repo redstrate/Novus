@@ -80,7 +80,7 @@ void MainWindow::setupActions()
 
     m_centerObjectAction = new QAction(i18nc("@action:inmenu", "Center on Object"));
     m_centerObjectAction->setIcon(QIcon::fromTheme(QStringLiteral("camera-video-symbolic")));
-    m_centerObjectAction->setShortcut(QKeySequence(Qt::Modifier::ALT | Qt::Key::Key_C));
+    KActionCollection::setDefaultShortcut(m_centerObjectAction, QKeySequence(Qt::Modifier::ALT | Qt::Key::Key_C));
     connect(m_centerObjectAction, &QAction::triggered, [this] {
         mapView->centerOn(glm::make_vec3(m_appState->selectedObject.value()->transform.translation));
     });
