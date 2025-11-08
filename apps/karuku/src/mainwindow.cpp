@@ -27,8 +27,7 @@
 #include <QLineEdit>
 
 MainWindow::MainWindow(SqPackResource *data)
-    : KXmlGuiWindow()
-    , data(data)
+    : data(data)
 {
     setMinimumSize(1280, 720);
 

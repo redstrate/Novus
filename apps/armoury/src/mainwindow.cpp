@@ -25,8 +25,7 @@
 #include "settingswindow.h"
 
 MainWindow::MainWindow(SqPackResource *in_data)
-    : KXmlGuiWindow()
-    , data(*in_data)
+    : data(*in_data)
     , cache(FileCache{*in_data})
     , m_api(new PenumbraApi(this))
 {

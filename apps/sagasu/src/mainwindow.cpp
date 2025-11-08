@@ -35,8 +35,7 @@
 #include <QInputDialog>
 
 MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
-    : KXmlGuiWindow()
-    , data(data)
+    : data(data)
     , fileCache(*data)
 {
     // setupMenubar();

@@ -29,7 +29,6 @@ static QMap<QString, QString> links = {{QStringLiteral("XIV Dev Wiki"), QStringL
                                        {QStringLiteral("XIV Docs"), QStringLiteral("https://docs.xiv.zone")}};
 
 MainWindow::MainWindow()
-    : KXmlGuiWindow()
 {
     auto appList = new QListWidget();
 

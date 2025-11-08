@@ -19,8 +19,7 @@
 #include "mdlpart.h"
 
 MainWindow::MainWindow(SqPackResource *data)
-    : KXmlGuiWindow()
-    , data(data)
+    : data(data)
     , cache(FileCache{*data})
 {
     setMinimumSize(640, 480);

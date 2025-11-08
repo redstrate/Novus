@@ -14,8 +14,7 @@
 #include "mtrlpart.h"
 
 MainWindow::MainWindow(SqPackResource *data)
-    : KXmlGuiWindow()
-    , data(data)
+    : data(data)
     , cache(*data)
 {
     setMinimumSize(1280, 720);
