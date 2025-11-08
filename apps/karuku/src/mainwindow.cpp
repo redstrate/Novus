@@ -138,14 +138,17 @@ void MainWindow::setupActions()
             QTemporaryDir tempDir;
 
             QFile file(tempDir.filePath(QStringLiteral("latest.zip")));
-            file.open(QIODevice::WriteOnly);
+            if (!file.open(QIODevice::WriteOnly)) {
+                qFatal() << "Failed to write schema zip!";
+                return;
+            }
             file.write(reply->readAll());
             file.close();
 
             KZip archive(tempDir.filePath(QStringLiteral("latest.zip")));
             if (!archive.open(QIODevice::ReadOnly)) {
                 // TODO: these should show as message boxes
-                qFatal() << "Failed to open Godbert zip!";
+                qFatal() << "Failed to open schema zip!";
                 return;
             }
 

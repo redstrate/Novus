@@ -13,7 +13,10 @@
 Schema::Schema(const QString &path)
 {
     QFile file(path);
-    file.open(QIODevice::ReadOnly);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return;
+    }
+
     auto bytes = file.readAll();
     if (bytes.isEmpty()) {
         return;

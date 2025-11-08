@@ -73,8 +73,11 @@ MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
 
             auto fileData = physis_gamedata_extract_file(data, savePathStd.c_str());
             QFile file(savePath);
-            file.open(QIODevice::WriteOnly);
-            file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);
+            if (file.open(QIODevice::WriteOnly)) {
+                file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);
+            } else {
+                qFatal() << "Failed to write to" << savePath;
+            }
         }
     });
     connect(m_tree, &FileTreeWindow::pathSelected, this, [this](const QString &indexPath, Hash hash, const QString &path) {
@@ -217,12 +220,18 @@ void MainWindow::setupActions()
                              QMessageBox::Ok);
 
         QFile file(fileName);
-        file.open(QIODevice::ReadOnly);
+        if (file.open(QIODevice::ReadOnly)) {
+            m_database.importFileList(file.readAll());
+            m_tree->refreshModel();
 
-        m_database.importFileList(file.readAll());
-        m_tree->refreshModel();
-
-        QMessageBox::information(this, i18nc("@title:window", "Import Complete"), i18n("Successfully imported path list!"), QMessageBox::Ok, QMessageBox::Ok);
+            QMessageBox::information(this,
+                                     i18nc("@title:window", "Import Complete"),
+                                     i18n("Successfully imported path list!"),
+                                     QMessageBox::Ok,
+                                     QMessageBox::Ok);
+        } else {
+            qFatal() << "Failed to write to" << fileName;
+        }
     });
     actionCollection()->addAction(QStringLiteral("import_list"), openList);
 
@@ -255,7 +264,10 @@ void MainWindow::setupActions()
             QTemporaryDir tempDir;
 
             QFile file(tempDir.filePath(QStringLiteral("CurrentPathListWithHashes.zip")));
-            file.open(QIODevice::WriteOnly);
+            if (!file.open(QIODevice::WriteOnly)) {
+                qFatal() << "Failed to open path list!";
+                return;
+            }
             file.write(reply->readAll());
             file.close();
 

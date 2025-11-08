@@ -31,7 +31,9 @@ void LuabPart::load(physis_Buffer buffer)
     QTemporaryFile temporaryFile;
     if (temporaryFile.open()) {
         QFile file(temporaryFile.fileName());
-        file.open(QIODevice::WriteOnly);
+        if (!file.open(QIODevice::WriteOnly)) {
+            return;
+        }
         file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
         file.close();
 

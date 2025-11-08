@@ -202,9 +202,11 @@ SingleGearView::SingleGearView(SqPackResource *data, FileCache &cache, QWidget *
             auto buffer = physis_gamedata_extract_file(data, gearView->getLoadedGearPath().toStdString().c_str());
 
             QFile file(fileName);
-            file.open(QIODevice::WriteOnly);
-            file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
-            file.close();
+            if (file.open(QIODevice::WriteOnly)) {
+                file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
+            } else {
+                qFatal() << "Failed to write to" << fileName;
+            }
         }
     });
 
@@ -420,9 +422,11 @@ void SingleGearView::importModel(const QString &filename)
     if (!QDir().exists(info.absolutePath()))
         QDir().mkpath(info.absolutePath());
 
-    file.open(QIODevice::WriteOnly);
-    file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
-    file.close();
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
+    } else {
+        qFatal() << "Failed to write to" << info.absoluteFilePath();
+    }
 
     Q_EMIT importedModel();
 }
