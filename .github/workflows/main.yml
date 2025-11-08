@@ -364,6 +364,6 @@ jobs:
           submodules: true
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          bundle: astra.flatpak
+          bundle: novus.flatpak
           manifest-path: zone.xiv.novus.yml
           cache-key: flatpak-builder-${{ github.sha }}
