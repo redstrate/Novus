@@ -111,6 +111,7 @@ void EXDPart::loadTables()
         tableWidget->setModel(new ExcelModel(exd, schema));
         tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
         tableWidget->resizeColumnsToContents();
+        tableWidget->setAlternatingRowColors(true);
 
         pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1", i));
     }
