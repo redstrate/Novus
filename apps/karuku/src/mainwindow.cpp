@@ -58,6 +58,31 @@ MainWindow::MainWindow(SqPackResource *data)
         m_exdPart->loadSheet(name, file);
 
         setWindowTitle(name);
+
+        // update language selection
+        const auto availableLanguages = m_exdPart->availableLanguages();
+        if (availableLanguages.isEmpty()) {
+            m_selectLanguage->setEnabled(false);
+        } else {
+            m_selectLanguage->setEnabled(true);
+
+            m_languageMenu->clear();
+            for (const auto &[name, language] : availableLanguages) {
+                auto languageAction = new QAction(name);
+                languageAction->setActionGroup(m_languageGroup);
+                languageAction->setData(static_cast<int>(language));
+                languageAction->setCheckable(true);
+                languageAction->setChecked(language == m_exdPart->preferredLanguage());
+
+                connect(languageAction, &QAction::triggered, this, [this, languageAction](const bool checked) {
+                    if (checked) {
+                        m_exdPart->setPreferredLanguage(static_cast<Language>(languageAction->data().toInt()));
+                    }
+                });
+
+                m_languageMenu->addAction(languageAction);
+            }
+        }
     });
 
     setupActions();
@@ -187,6 +212,17 @@ void MainWindow::setupActions()
         }
     });
     actionCollection()->addAction(QStringLiteral("goto_row"), goToRow);
+
+    m_selectLanguage = new QAction(i18nc("@action:inmenu", "Language"));
+    m_selectLanguage->setEnabled(false);
+
+    m_languageMenu = new QMenu();
+    m_selectLanguage->setMenu(m_languageMenu);
+
+    m_languageGroup = new QActionGroup(this);
+    m_languageGroup->setExclusive(true);
+
+    actionCollection()->addAction(QStringLiteral("select_language"), m_selectLanguage);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }

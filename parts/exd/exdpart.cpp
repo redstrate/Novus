@@ -30,15 +30,6 @@ EXDPart::EXDPart(SqPackResource *data, AbstractExcelResolver *resolver, QWidget 
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    languageComboBox = new QComboBox();
-    connect(languageComboBox, &QComboBox::activated, this, [this](const int index) {
-        auto selectedLanguage = languageComboBox->itemData(index);
-        preferredLanguage = (Language)selectedLanguage.toInt();
-
-        loadTables();
-    });
-    layout->addWidget(languageComboBox);
-
     pageTabWidget = new QTabWidget();
     pageTabWidget->setTabPosition(QTabWidget::TabPosition::South);
     pageTabWidget->setDocumentMode(true); // hide borders
@@ -47,28 +38,8 @@ EXDPart::EXDPart(SqPackResource *data, AbstractExcelResolver *resolver, QWidget 
 
 void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 {
-    this->name = name;
+    m_name = name;
     exh = physis_parse_excel_sheet_header(buffer);
-
-    languageComboBox->clear();
-    for (unsigned int i = 0; i < exh->language_count; i++) {
-        // Don't add None to the combo box, the reason for this is because
-        // many localized sheets *report* this language but it's usually empty and useless.
-        const auto language = exh->languages[i];
-        if (language == Language::None) {
-            continue;
-        }
-
-        const auto itemText = QString::fromUtf8(magic_enum::enum_name(language));
-        // Don't add duplicates
-        if (languageComboBox->findText(itemText) == -1) {
-            languageComboBox->addItem(itemText, static_cast<int>(language));
-        }
-    }
-
-    // Show the current language as the selected item
-    const auto itemText = QString::fromUtf8(magic_enum::enum_name(getSuitableLanguage(exh)));
-    languageComboBox->setCurrentText(itemText);
 
     loadTables();
 }
@@ -90,19 +61,51 @@ void EXDPart::goToRow(const QString &query)
     }
 }
 
+void EXDPart::setPreferredLanguage(const Language language)
+{
+    if (language != m_preferredLanguage) {
+        m_preferredLanguage = language;
+        loadTables();
+    }
+}
+
+Language EXDPart::preferredLanguage() const
+{
+    return m_preferredLanguage;
+}
+
+QList<QPair<QString, Language>> EXDPart::availableLanguages() const
+{
+    QList<QPair<QString, Language>> languages;
+
+    for (unsigned int i = 0; i < exh->language_count; i++) {
+        // Don't add None to the combo box, the reason for this is because
+        // many localized sheets *report* this language but it's usually empty and useless.
+        const auto language = exh->languages[i];
+        if (language == Language::None) {
+            continue;
+        }
+
+        const auto itemText = QString::fromUtf8(magic_enum::enum_name(language));
+        languages.push_back({itemText, language});
+    }
+
+    return languages;
+}
+
 void EXDPart::loadTables()
 {
     const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
 
-    Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(name)));
+    const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(m_name)));
 
     pageTabWidget->clear();
 
     for (uint32_t i = 0; i < exh->page_count; i++) {
         auto tableWidget = new QTableView();
 
-        auto exd = physis_gamedata_read_excel_sheet(data, name.toStdString().c_str(), exh, getSuitableLanguage(exh), i);
+        auto exd = physis_gamedata_read_excel_sheet(data, m_name.toStdString().c_str(), exh, getSuitableLanguage(exh), i);
         if (exd.p_ptr == nullptr) {
             continue;
         }
@@ -121,12 +124,12 @@ void EXDPart::loadTables()
     pageTabWidget->tabBar()->setVisible(exh->page_count > 1);
 }
 
-Language EXDPart::getSuitableLanguage(physis_EXH *pExh) const
+Language EXDPart::getSuitableLanguage(const physis_EXH *pExh) const
 {
     // Find the preferred language first
     for (uint32_t i = 0; i < pExh->language_count; i++) {
-        if (pExh->languages[i] == preferredLanguage) {
-            return preferredLanguage;
+        if (pExh->languages[i] == m_preferredLanguage) {
+            return m_preferredLanguage;
         }
     }
 

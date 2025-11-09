@@ -4,6 +4,7 @@
 #pragma once
 
 #include <KXmlGuiWindow>
+#include <QActionGroup>
 #include <QNetworkAccessManager>
 
 class CachingExcelResolver;
@@ -24,4 +25,7 @@ private:
     QNetworkAccessManager *mgr = nullptr;
     EXDPart *m_exdPart = nullptr;
     CachingExcelResolver *m_excelResolver = nullptr;
+    QAction *m_selectLanguage = nullptr;
+    QMenu *m_languageMenu = nullptr;
+    QActionGroup *m_languageGroup = nullptr;
 };

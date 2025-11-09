@@ -24,6 +24,11 @@ public:
     void loadSheet(const QString &name, physis_Buffer buffer);
     void goToRow(const QString &query);
 
+    void setPreferredLanguage(Language language);
+    Language preferredLanguage() const;
+
+    QList<QPair<QString, Language>> availableLanguages() const;
+
 private:
     void loadTables();
 
@@ -31,16 +36,15 @@ private:
 
     QTabWidget *pageTabWidget = nullptr;
     QFormLayout *headerFormLayout = nullptr;
-    QComboBox *languageComboBox = nullptr;
 
     struct CachedExcel {
         physis_EXH *exh = nullptr;
         physis_EXD exd{};
     };
     QMap<QString, CachedExcel> cachedExcelSheets;
-    Language getSuitableLanguage(physis_EXH *pExh) const;
-    Language preferredLanguage = Language::English;
+    Language getSuitableLanguage(const physis_EXH *pExh) const;
+    Language m_preferredLanguage = Language::English;
     physis_EXH *exh = nullptr;
-    QString name;
+    QString m_name;
     AbstractExcelResolver *m_resolver = nullptr;
 };

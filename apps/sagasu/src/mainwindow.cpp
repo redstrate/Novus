@@ -16,6 +16,7 @@
 #include <QSplitter>
 #include <QStatusBar>
 #include <QTemporaryDir>
+#include <magic_enum.hpp>
 
 #include "cmppart.h"
 #include "dicpart.h"
@@ -33,6 +34,7 @@
 #include "texpart.h"
 
 #include <QInputDialog>
+#include <QStringListModel>
 
 MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
     : data(data)
@@ -149,9 +151,34 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         partHolder->addTab(exlWidget, i18nc("@title:tab", "Excel List"));
     } break;
     case FileType::ExcelHeader: {
+        auto exdWidgetHolder = new QWidget();
+        auto exdLayout = new QVBoxLayout();
+        exdWidgetHolder->setLayout(exdLayout);
+
         auto exdWidget = new EXDPart(data, m_excelResolver);
         exdWidget->loadSheet(info.baseName(), file);
-        partHolder->addTab(exdWidget, i18nc("@title:tab", "Excel Sheet"));
+
+        const auto availableLanguages = exdWidget->availableLanguages();
+        if (!availableLanguages.isEmpty()) {
+            auto languageComboBox = new QComboBox();
+            for (const auto &[name, language] : availableLanguages) {
+                languageComboBox->addItem(name, static_cast<int>(language));
+            }
+
+            // Show the current language as the selected item
+            const auto itemText = QString::fromUtf8(magic_enum::enum_name(exdWidget->preferredLanguage()));
+            languageComboBox->setCurrentText(itemText);
+
+            connect(languageComboBox, &QComboBox::activated, this, [languageComboBox, exdWidget](const int index) {
+                const auto selectedLanguage = languageComboBox->itemData(index);
+                exdWidget->setPreferredLanguage(static_cast<Language>(selectedLanguage.toInt()));
+            });
+            exdLayout->addWidget(languageComboBox);
+        }
+
+        exdLayout->addWidget(exdWidget);
+
+        partHolder->addTab(exdWidgetHolder, i18nc("@title:tab", "Excel Sheet"));
     } break;
     case FileType::ExcelData: {
         auto exdWidget = new QLabel(i18n("Note: Excel data files cannot be previewed standalone, select the EXH file instead."));
