@@ -203,6 +203,7 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
 
     auto goToRow = new QAction(i18nc("@action:inmenu", "To Row…"));
+    goToRow->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
     KActionCollection::setDefaultShortcut(goToRow, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
     connect(goToRow, &QAction::triggered, [this] {
         bool ok = false;
@@ -215,6 +216,7 @@ void MainWindow::setupActions()
 
     m_selectLanguage = new QAction(i18nc("@action:inmenu", "Language"));
     m_selectLanguage->setEnabled(false);
+    m_selectLanguage->setIcon(QIcon::fromTheme(QStringLiteral("languages-symbolic")));
 
     m_languageMenu = new QMenu();
     m_selectLanguage->setMenu(m_languageMenu);
