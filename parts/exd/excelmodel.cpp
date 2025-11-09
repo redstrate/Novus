@@ -15,6 +15,10 @@ ExcelModel::ExcelModel(const physis_EXD &exd, Schema schema) : m_exd(exd), m_sch
             m_rowIndices.push_back({regularRowCount, row.row_id, j});
         }
 
+        if (row.row_count > 1) {
+            m_hasSubrows = true;
+        }
+
         m_rowCount += row.row_count;
         regularRowCount++;
     }
@@ -54,7 +58,11 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
     if (role == Qt::DisplayRole) {
         if (orientation == Qt::Vertical) {
             const auto [_, row_id, subrow_id] = m_rowIndices[section];
-            return QStringLiteral("%1.%2").arg(row_id).arg(subrow_id);
+            if (m_hasSubrows) {
+                return QStringLiteral("%1.%2").arg(row_id).arg(subrow_id);
+            } else {
+                return QString::number(row_id);
+            }
         }
 
         return m_schema.nameForColumn(section);

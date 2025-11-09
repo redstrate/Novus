@@ -27,4 +27,5 @@ private:
     unsigned int m_rowCount = 0;
     std::vector<std::tuple<int, int, int>> m_rowIndices;
     Schema m_schema; // TODO: don't copy
+    bool m_hasSubrows = false;
 };
