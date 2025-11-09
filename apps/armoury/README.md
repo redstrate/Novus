@@ -2,7 +2,7 @@
 
 This tool can display gear pieces from FFXIV, and includes a full model viewer and export functionality. Basic character and bone editing is also supported.
 
-![Screenshot](https://xiv.zone/gear-editor.png)
+![Screenshot](https://xiv.zone/gear-editor-v2.png)
 
 ## Note
 

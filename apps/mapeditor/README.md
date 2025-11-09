@@ -2,7 +2,7 @@
 
 This tool can display maps from the game, albiet it's limited at the moment and navigation isn't the best.
 
-![Screenshot](https://xiv.zone/map-editor.png)
+![Screenshot](https://xiv.zone/map-editor-v2.png)
 
 ## Note
 

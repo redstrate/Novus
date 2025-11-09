@@ -2,7 +2,7 @@
 
 A suite of unofficial FFXIV tools, including a model viewer and data archive explorer.
 
-![Screenshot of some of the applications](https://xiv.zone/novus.png)
+![Screenshot of some of the applications](https://xiv.zone/novus-v2.png)
 
 ## Components
 
