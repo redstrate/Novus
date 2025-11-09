@@ -7,6 +7,7 @@
 #include <QActionGroup>
 #include <QNetworkAccessManager>
 
+class SheetListWidget;
 class CachingExcelResolver;
 class EXDPart;
 struct SqPackResource;
@@ -28,4 +29,5 @@ private:
     QAction *m_selectLanguage = nullptr;
     QMenu *m_languageMenu = nullptr;
     QActionGroup *m_languageGroup = nullptr;
+    SheetListWidget *m_sheetListWidget = nullptr;
 };

@@ -39,9 +39,9 @@ MainWindow::MainWindow(SqPackResource *data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    auto listWidget = new SheetListWidget(data);
-    listWidget->setMaximumWidth(200);
-    dummyWidget->addWidget(listWidget);
+    m_sheetListWidget = new SheetListWidget(data);
+    m_sheetListWidget->setMaximumWidth(200);
+    dummyWidget->addWidget(m_sheetListWidget);
 
     m_excelResolver = new CachingExcelResolver(data);
 
@@ -49,7 +49,7 @@ MainWindow::MainWindow(SqPackResource *data)
     m_exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
     dummyWidget->addWidget(m_exdPart);
 
-    connect(listWidget, &SheetListWidget::sheetSelected, this, [this, data](const QString &name) {
+    connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, [this, data](const QString &name) {
         auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
         auto pathStd = path.toStdString();
 
@@ -223,6 +223,12 @@ void MainWindow::setupActions()
     m_languageGroup->setExclusive(true);
 
     actionCollection()->addAction(QStringLiteral("select_language"), m_selectLanguage);
+
+    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"));
+    focusSearch->setIcon(QIcon::fromTheme(QStringLiteral("search-symbolic")));
+    KActionCollection::setDefaultShortcut(focusSearch, QKeySequence(Qt::CTRL | Qt::Key_F));
+    connect(focusSearch, &QAction::triggered, m_sheetListWidget, &SheetListWidget::focusSearchField);
+    actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }

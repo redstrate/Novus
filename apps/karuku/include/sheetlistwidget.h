@@ -14,6 +14,8 @@ class SheetListWidget : public QWidget
 public:
     explicit SheetListWidget(SqPackResource *data, QWidget *parent = nullptr);
 
+    void focusSearchField();
+
 Q_SIGNALS:
     void sheetSelected(const QString &name);
 
@@ -21,4 +23,5 @@ private:
     QListView *listWidget = nullptr;
 
     SqPackResource *data = nullptr;
+    QLineEdit *m_searchEdit = nullptr;
 };

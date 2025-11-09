@@ -22,15 +22,15 @@ SheetListWidget::SheetListWidget(SqPackResource *data, QWidget *parent)
     searchModel->setRecursiveFilteringEnabled(true);
     searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
-    auto searchEdit = new QLineEdit();
-    searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for Excel sheet names."));
-    searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
-    searchEdit->setClearButtonEnabled(true);
-    searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
-    connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
+    m_searchEdit = new QLineEdit();
+    m_searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for Excel sheet names."));
+    m_searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
+    m_searchEdit->setClearButtonEnabled(true);
+    m_searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
+    connect(m_searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
         searchModel->setFilterRegularExpression(text);
     });
-    layout->addWidget(searchEdit);
+    layout->addWidget(m_searchEdit);
 
     auto originalModel = new QStringListModel();
     searchModel->setSourceModel(originalModel);
@@ -54,6 +54,11 @@ SheetListWidget::SheetListWidget(SqPackResource *data, QWidget *parent)
     });
 
     layout->addWidget(listWidget);
+}
+
+void SheetListWidget::focusSearchField()
+{
+    m_searchEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }
 
 #include "moc_sheetlistwidget.cpp"

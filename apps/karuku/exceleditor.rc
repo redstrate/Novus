@@ -13,6 +13,10 @@
       <Separator/>
       <Action name="quit"/>
     </Menu>
+    <Menu name="edit" >
+      <text>Edit</text>
+      <Action name="search" />
+    </Menu>
     <Menu name="View" >
       <Text>View</Text>
       <Action name="select_language" />
