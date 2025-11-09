@@ -8,6 +8,7 @@
 #include <KLocalizedString>
 #include <QDir>
 #include <QFont>
+#include <QIcon>
 #include <QStandardPaths>
 #include <magic_enum.hpp>
 
@@ -114,6 +115,11 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
         toolTip.append(i18n("\nOffset: %1 (0x%2)").arg(column.offset).arg(QString::number(column.offset, 16)));
         toolTip.append(i18n("\nType: %1").arg(magic_enum::enum_name(column.data_type)));
 
+        const QString comment = m_schema.comment(m_sortedColumnIndices.indexOf(section));
+        if (!comment.isEmpty()) {
+            toolTip.append(QStringLiteral("\n\n%1").arg(comment));
+        }
+
         return toolTip;
     }
     if (role == Qt::FontRole && orientation == Qt::Horizontal) {
@@ -125,6 +131,16 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
         font.setBold(m_schema.isDisplayField(columnName));
 
         return font;
+    }
+    if (role == Qt::DecorationRole && orientation == Qt::Horizontal) {
+        if (m_schema.displayFieldIndex().value_or(-1) == section) {
+            return QIcon::fromTheme(QStringLiteral("favorite-symbolic"));
+        }
+
+        const QString comment = m_schema.comment(m_sortedColumnIndices.indexOf(section));
+        if (!comment.isEmpty()) {
+            return QIcon::fromTheme(QStringLiteral("comment-symbolic"));
+        }
     }
 
     return {};

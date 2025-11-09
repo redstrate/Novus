@@ -46,6 +46,11 @@ Schema::Schema(const QString &path)
                 }
             }
 
+            if (node.has_child("comment")) {
+                ryml::ConstNodeRef commentField = node["comment"];
+                field.comment = QString::fromLatin1(commentField.val());
+            }
+
             m_fields.push_back(field);
         }
 
@@ -88,4 +93,12 @@ std::optional<int> Schema::displayFieldIndex() const
     }
 
     return std::nullopt;
+}
+
+QString Schema::comment(uint32_t index) const
+{
+    if (index < m_fields.size()) {
+        return m_fields[index].comment;
+    }
+    return {};
 }

@@ -39,6 +39,11 @@ public:
      */
     std::optional<int> displayFieldIndex() const;
 
+    /**
+     * @brief Returns the comment for this field. Empty if none is provided.
+     */
+    QString comment(uint32_t index) const;
+
 private:
     struct Field
     {
@@ -51,6 +56,7 @@ private:
         Type type = Type::Single;
 
         QStringList targetSheets;
+        QString comment;
     };
     std::vector<Field> m_fields;
     QString m_displayField;
