@@ -18,6 +18,12 @@ class ExcelModel : public QAbstractTableModel
 public:
     ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema, AbstractExcelResolver *resolver, Language language);
 
+    enum ExcelRoles {
+        ResolvedSheetRole = Qt::UserRole,
+        ResolvedRowRole,
+    };
+    Q_ENUM(ExcelRoles);
+
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
 
@@ -34,6 +40,11 @@ private:
      * @brief Returns a nice display for a given column data.
      */
     static QVariant displayForData(const physis_ColumnData &data);
+
+    /**
+     * @brief Returns the column data for a given QModelIndex.
+     */
+    physis_ColumnData &dataForIndex(const QModelIndex &index) const;
 
     physis_EXH m_exh;
     physis_EXD m_exd;

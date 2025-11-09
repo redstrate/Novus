@@ -68,25 +68,90 @@ int ExcelModel::columnCount(const QModelIndex &parent) const
 QVariant ExcelModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole) {
-        // Look up the original row id, regardless of subrow
-        const auto [row_index, _, subrow_id] = m_rowIndices[index.row()];
-        const auto &row = m_exd.rows[row_index];
-        const auto &subrow = row.row_data[subrow_id];
-
         const auto column = m_sortedColumnIndices.indexOf(index.column());
-        const auto &data = subrow.column_data[index.column()];
+        const auto &data = dataForIndex(index);
 
         return displayForColumn(column, data);
     }
     if (role == Qt::FontRole) {
-        // Make font bold to make the display field more obvious.
         const auto mappedIndex = m_sortedColumnIndices.indexOf(index.column());
         const auto columnName = m_schema.nameForColumn(mappedIndex);
 
         QFont font;
+
+        // Make font bold to make the display field more obvious.
         font.setBold(m_schema.isDisplayField(columnName));
 
+        // Show an underline to make the resolved column more obvious.
+        if (!m_schema.targetSheetsForColumn(mappedIndex).isEmpty()) {
+            font.setUnderline(true);
+        }
+
         return font;
+    }
+    if (role == Qt::ToolTipRole) {
+        const auto mappedIndex = m_sortedColumnIndices.indexOf(index.column());
+        if (!m_schema.targetSheetsForColumn(mappedIndex).isEmpty()) {
+            // Get the resolved sheet and its row id.
+            // TODO: use multiData for this
+            const auto resolvedSheet = data(index, ExcelRoles::ResolvedSheetRole).toString();
+            if (resolvedSheet.isEmpty()) {
+                return {};
+            }
+
+            const auto resolvedRow = data(index, ExcelRoles::ResolvedRowRole).toInt();
+
+            return i18n("Links to %1#%2").arg(resolvedSheet).arg(resolvedRow);
+        }
+    }
+    if (role == ResolvedSheetRole) {
+        const auto mappedIndex = m_sortedColumnIndices.indexOf(index.column());
+        const auto targetSheets = m_schema.targetSheetsForColumn(mappedIndex);
+        if (targetSheets.isEmpty()) {
+            return {};
+        }
+
+        const auto targetRowId = data(index, ResolvedRowRole).toInt();
+
+        if (const auto value = m_resolver->resolveRow(targetSheets, targetRowId, m_language)) {
+            return value->first;
+        }
+    }
+    if (role == ResolvedRowRole) {
+        const auto &data = dataForIndex(index);
+
+        // TODO: de-duplicate with the identical switch below
+        uint32_t targetRowId;
+        switch (data.tag) {
+        case physis_ColumnData::Tag::Int8:
+            targetRowId = data.int8._0;
+            break;
+        case physis_ColumnData::Tag::UInt8:
+            targetRowId = data.u_int8._0;
+            break;
+        case physis_ColumnData::Tag::Int16:
+            targetRowId = data.int16._0;
+            break;
+        case physis_ColumnData::Tag::UInt16:
+            targetRowId = data.u_int16._0;
+            break;
+        case physis_ColumnData::Tag::Int32:
+            targetRowId = data.int32._0;
+            break;
+        case physis_ColumnData::Tag::UInt32:
+            targetRowId = data.u_int32._0;
+            break;
+        case physis_ColumnData::Tag::Int64:
+            targetRowId = data.int64._0;
+            break;
+        case physis_ColumnData::Tag::UInt64:
+            targetRowId = data.u_int64._0;
+            break;
+        default:
+            return {};
+        }
+
+        return targetRowId;
     }
 
     return {};
@@ -195,11 +260,6 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Column
                 return displayForData(data->column_data[0]); // TODO: use display field
             }
         }
-
-        if (targetSheets.size() == 1) {
-            return QStringLiteral("%1#%2").arg(targetSheets.constFirst()).arg(targetRowId);
-        }
-        return QStringLiteral("...#%1").arg(targetRowId);
     }
 
     // Normal data
@@ -246,6 +306,16 @@ QVariant ExcelModel::displayForData(const physis_ColumnData &data)
     }
 
     return columnString;
+}
+
+physis_ColumnData &ExcelModel::dataForIndex(const QModelIndex &index) const
+{
+    const auto [row_index, _, subrow_id] = m_rowIndices[index.row()];
+    const auto &row = m_exd.rows[row_index];
+    const auto &subrow = row.row_data[subrow_id];
+
+    const auto column = m_sortedColumnIndices.indexOf(index.column());
+    return subrow.column_data[index.column()];
 }
 
 #include "moc_excelmodel.cpp"
