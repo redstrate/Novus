@@ -25,7 +25,7 @@ ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema sche
 
         for (unsigned int j = 0; j < row.row_count; j++) {
             // Push a "true" row index for the given subrow. This is just for faster lookups.
-            m_rowIndices.push_back({regularRowCount, row.row_id, j});
+            m_rowIndices.emplace_back(regularRowCount, row.row_id, j);
         }
 
         if (row.row_count > 1) {
@@ -36,6 +36,7 @@ ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema sche
         regularRowCount++;
     }
 
+    // TODO: make this look-up more sensible to reduce calls to indexOf
     // Build a list of sorted indices meant for usage with schemas
     QList<std::pair<uint16_t, uint32_t>> sortedColumns;
     for (uint32_t i = 0; i < exh.column_count; i++) {
@@ -48,18 +49,19 @@ ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema sche
     }
 
     Q_ASSERT(m_rowIndices.size() == m_rowCount);
+    Q_ASSERT(m_sortedColumnIndices.size() == m_exd.column_count);
 }
 
 int ExcelModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return m_rowCount;
+    return static_cast<int>(m_rowCount);
 }
 
 int ExcelModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return m_exd.column_count;
+    return static_cast<int>(m_exd.column_count);
 }
 
 QVariant ExcelModel::data(const QModelIndex &index, int role) const
@@ -70,14 +72,14 @@ QVariant ExcelModel::data(const QModelIndex &index, int role) const
         const auto &row = m_exd.rows[row_index];
         const auto &subrow = row.row_data[subrow_id];
 
-        const auto column = index.column();
-        const auto &data = subrow.column_data[column];
+        const auto column = m_sortedColumnIndices.indexOf(index.column());
+        const auto &data = subrow.column_data[index.column()];
 
         return displayForColumn(column, data);
     }
     if (role == Qt::FontRole) {
         // Make font bold to make the display field more obvious.
-        const auto mappedIndex = m_sortedColumnIndices[index.column()];
+        const auto mappedIndex = m_sortedColumnIndices.indexOf(index.column());
         const auto columnName = m_schema.nameForColumn(mappedIndex);
 
         QFont font;
@@ -100,7 +102,7 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
             return QString::number(row_id);
         }
 
-        const auto mappedIndex = m_sortedColumnIndices[section];
+        const auto mappedIndex = m_sortedColumnIndices.indexOf(section);
         return m_schema.nameForColumn(mappedIndex);
     }
     if (role == Qt::ToolTipRole && orientation == Qt::Horizontal) {
@@ -108,7 +110,7 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
 
         QString toolTip;
         toolTip.append(i18n("Index: %1").arg(section));
-        toolTip.append(i18n("\nSchema Index: %1").arg(m_sortedColumnIndices[section]));
+        toolTip.append(i18n("\nSchema Index: %1").arg(m_sortedColumnIndices.indexOf(section)));
         toolTip.append(i18n("\nOffset: %1 (0x%2)").arg(column.offset).arg(QString::number(column.offset, 16)));
         toolTip.append(i18n("\nType: %1").arg(magic_enum::enum_name(column.data_type)));
 
@@ -116,7 +118,7 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
     }
     if (role == Qt::FontRole && orientation == Qt::Horizontal) {
         // Make font bold to make the display field more obvious.
-        const auto mappedIndex = m_sortedColumnIndices[section];
+        const auto mappedIndex = m_sortedColumnIndices.indexOf(section);
         const auto columnName = m_schema.nameForColumn(mappedIndex);
 
         QFont font;
@@ -128,7 +130,7 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
     return {};
 }
 
-QVariant ExcelModel::displayForColumn(const int column, const physis_ColumnData &data) const
+QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_ColumnData &data) const
 {
     // Check to see if there's any targets
     const auto targetSheets = m_schema.targetSheetsForColumn(column);
@@ -180,9 +182,8 @@ QVariant ExcelModel::displayForColumn(const int column, const physis_ColumnData 
 
         if (targetSheets.size() == 1) {
             return QStringLiteral("%1#%2").arg(targetSheets.constFirst()).arg(targetRowId);
-        } else {
-            return QStringLiteral("...#%1").arg(targetRowId);
         }
+        return QStringLiteral("...#%1").arg(targetRowId);
     }
 
     // Normal data

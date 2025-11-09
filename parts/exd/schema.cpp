@@ -58,17 +58,17 @@ Schema::Schema(const QString &path)
     }
 }
 
-QString Schema::nameForColumn(const int index) const
+QString Schema::nameForColumn(const uint32_t index) const
 {
-    if (static_cast<unsigned int>(index) < m_fields.size()) {
+    if (index < m_fields.size()) {
         return m_fields[index].name;
     }
     return QStringLiteral("Unknown %1").arg(index);
 }
 
-QStringList Schema::targetSheetsForColumn(const int index) const
+QStringList Schema::targetSheetsForColumn(const uint32_t index) const
 {
-    if (static_cast<unsigned int>(index) < m_fields.size()) {
+    if (index < m_fields.size()) {
         return m_fields[index].targetSheets;
     }
     return {};

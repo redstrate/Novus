@@ -28,7 +28,7 @@ private:
     /**
      * @brief Returns a nice display for a given column data, including resolving other sheets..
      */
-    QVariant displayForColumn(int column, const physis_ColumnData &data) const;
+    QVariant displayForColumn(uint32_t column, const physis_ColumnData &data) const;
 
     /**
      * @brief Returns a nice display for a given column data.
@@ -37,12 +37,12 @@ private:
 
     physis_EXH m_exh;
     physis_EXD m_exd;
-    unsigned int m_rowCount = 0;
+    uint32_t m_rowCount = 0;
     std::vector<std::tuple<int, int, int>> m_rowIndices;
     Schema m_schema; // TODO: don't copy
     bool m_hasSubrows = false;
     // Mapping from a regular index to a list of columns that were sorted by offset
-    QList<int> m_sortedColumnIndices;
+    QList<uint32_t> m_sortedColumnIndices;
     AbstractExcelResolver *m_resolver;
     Language m_language;
 };

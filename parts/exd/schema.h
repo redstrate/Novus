@@ -18,14 +18,14 @@ public:
      *
      * @note This is the index into the *schema* and is sorted by column offset.
      */
-    QString nameForColumn(int index) const;
+    QString nameForColumn(uint32_t index) const;
 
     /**
      * @brief Returns a list of target sheets for this column.
      *
      * @note Only makes sense and returns non-empty for Links.
      */
-    QStringList targetSheetsForColumn(int index) const;
+    QStringList targetSheetsForColumn(uint32_t index) const;
 
     /**
      * @brief Returns true if this column name is supposed to be the main display field.
