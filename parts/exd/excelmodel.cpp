@@ -199,7 +199,9 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
         return font;
     }
     if (role == Qt::DecorationRole && orientation == Qt::Horizontal) {
-        if (m_schema.displayFieldIndex().value_or(-1) == section) {
+        const auto mappedIndex = m_sortedColumnIndices.indexOf(section);
+
+        if (m_schema.displayFieldIndex().value_or(-1) == mappedIndex) {
             return QIcon::fromTheme(QStringLiteral("favorite-symbolic"));
         }
 
