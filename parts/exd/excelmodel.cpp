@@ -253,20 +253,20 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Column
             break;
         default:
             // There can't be columns that point to another Excel row with something like a string, so something went wrong somewhere
-            return i18n("Unknown Target?");
+            return displayForData(data);
         }
 
         if (const auto value = m_resolver->resolveRow(targetSheets, targetRowId, m_language)) {
-            const auto [sheetName, data] = *value;
+            const auto [sheetName, row] = *value;
 
-            // TODO: de-duplicate with the code in EXDPart
+            // Load schema for this sheet
             const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
             const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
 
-            Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
+            const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
 
-            if (auto displayFieldIndex = schema.displayFieldIndex()) {
-                return displayForData(data->column_data[0]); // TODO: use display field
+            if (const auto displayFieldIndex = schema.displayFieldIndex()) {
+                return displayForData(m_resolver->translateSchemaColumn(sheetName, row, *displayFieldIndex));
             }
         }
     }

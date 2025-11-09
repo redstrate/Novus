@@ -26,6 +26,8 @@ public:
      * The first sheet that contains said row ID will be returned.
      */
     virtual std::optional<std::pair<QString, physis_ExcelRow const *>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language);
+
+    virtual physis_ColumnData &translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column);
 };
 
 struct EXDSelector {
@@ -50,6 +52,8 @@ public:
     explicit CachingExcelResolver(SqPackResource *resource);
 
     std::optional<std::pair<QString, physis_ExcelRow const *>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language) override;
+
+    physis_ColumnData &translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column) override;
 
 private:
     /**

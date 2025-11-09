@@ -95,7 +95,7 @@ std::optional<int> Schema::displayFieldIndex() const
     return std::nullopt;
 }
 
-QString Schema::comment(uint32_t index) const
+QString Schema::comment(const uint32_t index) const
 {
     if (index < m_fields.size()) {
         return m_fields[index].comment;

@@ -16,6 +16,13 @@ AbstractExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t 
     return std::nullopt;
 }
 
+physis_ColumnData &AbstractExcelResolver::translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column)
+{
+    Q_UNUSED(sheetName)
+    Q_UNUSED(column)
+    return row->column_data[0];
+}
+
 CachingExcelResolver::CachingExcelResolver(SqPackResource *resource)
     : m_resource(resource)
 {
@@ -44,6 +51,28 @@ CachingExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t r
         }
     }
     return AbstractExcelResolver::resolveRow(sheetNames, row, language);
+}
+
+physis_ColumnData &CachingExcelResolver::translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, const uint32_t column)
+{
+    const auto exh = getCachedEXH(sheetName);
+    Q_ASSERT(exh);
+
+    // Build a list of sorted indices meant for usage with schemas
+    QList<std::pair<uint16_t, uint32_t>> sortedColumns;
+    for (uint32_t i = 0; i < exh->column_count; i++) {
+        sortedColumns.push_back({exh->column_definitions[i].offset, i});
+    }
+    std::ranges::sort(sortedColumns);
+
+    QList<uint32_t> sortedColumnIndices;
+
+    // FIXME: is there a way to unzip, maybe with ranges?
+    for (uint32_t i = 0; i < sortedColumns.count(); i++) {
+        sortedColumnIndices.push_back(sortedColumns[i].second);
+    }
+
+    return row->column_data[sortedColumnIndices[column]];
 }
 
 physis_EXH *CachingExcelResolver::getCachedEXH(const QString &sheetName)
