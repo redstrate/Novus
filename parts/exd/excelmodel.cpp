@@ -83,7 +83,8 @@ QVariant ExcelModel::data(const QModelIndex &index, int role) const
         font.setBold(m_schema.isDisplayField(columnName));
 
         // Show an underline to make the resolved column more obvious.
-        if (!m_schema.targetSheetsForColumn(mappedIndex).isEmpty()) {
+        const auto resolvedSheet = data(index, ExcelRoles::ResolvedSheetRole).toString();
+        if (!resolvedSheet.isEmpty()) {
             font.setUnderline(true);
         }
 
@@ -211,6 +212,14 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
     return {};
 }
 
+QHash<int, QByteArray> ExcelModel::roleNames() const
+{
+    return {
+        {ResolvedSheetRole, "resolvedSheet"},
+        {ResolvedRowRole, "resolvedRow"},
+    };
+}
+
 QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_ColumnData &data) const
 {
     // Check to see if there's any targets
@@ -314,7 +323,6 @@ physis_ColumnData &ExcelModel::dataForIndex(const QModelIndex &index) const
     const auto &row = m_exd.rows[row_index];
     const auto &subrow = row.row_data[subrow_id];
 
-    const auto column = m_sortedColumnIndices.indexOf(index.column());
     return subrow.column_data[index.column()];
 }
 
