@@ -230,6 +230,11 @@ void MainWindow::setupActions()
     connect(focusSearch, &QAction::triggered, m_sheetListWidget, &SheetListWidget::focusSearchField);
     actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 
+    auto resetSorting = new QAction(i18nc("@action:inmenu", "Reset Sorting"));
+    resetSorting->setIcon(QIcon::fromTheme(QStringLiteral("edit-reset-symbolic")));
+    connect(resetSorting, &QAction::triggered, m_exdPart, &EXDPart::resetSorting);
+    actionCollection()->addAction(QStringLiteral("reset_sorting"), resetSorting);
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
 

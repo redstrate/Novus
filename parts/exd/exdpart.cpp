@@ -19,6 +19,7 @@
 #include "magic_enum.hpp"
 #include "schema.h"
 
+#include <QSortFilterProxyModel>
 #include <QStandardPaths>
 
 EXDPart::EXDPart(SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent)
@@ -59,6 +60,14 @@ void EXDPart::goToRow(const QString &query)
             }
         }
     }
+}
+
+void EXDPart::resetSorting()
+{
+    const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->currentWidget());
+    Q_ASSERT(tableWidget);
+
+    tableWidget->sortByColumn(-1, Qt::AscendingOrder);
 }
 
 void EXDPart::setPreferredLanguage(const Language language)
@@ -110,10 +119,20 @@ void EXDPart::loadTables()
             continue;
         }
 
-        tableWidget->setModel(new ExcelModel(*exh, exd, schema, m_resolver, getSuitableLanguage(exh)));
+        auto excelModel = new ExcelModel(*exh, exd, schema, m_resolver, getSuitableLanguage(exh));
+
+        // Wrap it in a sortfilterproxy so we get column sorting for free
+        auto proxyModel = new QSortFilterProxyModel();
+        proxyModel->setSourceModel(excelModel);
+
+        tableWidget->setModel(proxyModel);
         tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
         tableWidget->resizeColumnsToContents();
         tableWidget->setAlternatingRowColors(true);
+        tableWidget->setSortingEnabled(true);
+
+        // We have to call sort(-1) here because the above call to enable sorting sorts by the first column
+        tableWidget->sortByColumn(-1, Qt::SortOrder::AscendingOrder);
 
         pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1", i));
     }

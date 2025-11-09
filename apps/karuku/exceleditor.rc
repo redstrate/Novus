@@ -20,6 +20,8 @@
     <Menu name="View" >
       <Text>View</Text>
       <Action name="select_language" />
+      <Separator/>
+      <Action name="reset_sorting" />
     </Menu>
     <Menu name="navigate" >
       <text>Navigate</text>

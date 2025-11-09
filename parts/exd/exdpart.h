@@ -23,6 +23,7 @@ public:
 
     void loadSheet(const QString &name, physis_Buffer buffer);
     void goToRow(const QString &query);
+    void resetSorting();
 
     void setPreferredLanguage(Language language);
     Language preferredLanguage() const;
