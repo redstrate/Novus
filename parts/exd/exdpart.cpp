@@ -75,14 +75,12 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 void EXDPart::goToRow(const QString &query)
 {
     for (uint32_t i = 0; i < exh->page_count; i++) {
-        auto tableWidget = qobject_cast<QTableWidget *>(pageTabWidget->widget(i));
+        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
         Q_ASSERT(tableWidget);
 
-        for (int row = 0; row < tableWidget->rowCount(); row++) {
-            auto headerItem = tableWidget->verticalHeaderItem(row);
-            Q_ASSERT(headerItem);
-
-            if (headerItem->text() == query) {
+        for (int row = 0; row < tableWidget->model()->rowCount(); row++) {
+            const auto headerItem = tableWidget->model()->headerData(row, Qt::Vertical).toString();
+            if (headerItem == query) {
                 pageTabWidget->setCurrentIndex(i);
                 tableWidget->selectRow(row);
                 return;
