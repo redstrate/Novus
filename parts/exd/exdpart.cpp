@@ -51,12 +51,23 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 
     languageComboBox->clear();
     for (unsigned int i = 0; i < exh->language_count; i++) {
-        const auto itemText = QString::fromUtf8(magic_enum::enum_name(exh->languages[i]));
+        // Don't add None to the combo box, the reason for this is because
+        // many localized sheets *report* this language but it's usually empty and useless.
+        const auto language = exh->languages[i];
+        if (language == Language::None) {
+            continue;
+        }
+
+        const auto itemText = QString::fromUtf8(magic_enum::enum_name(language));
         // Don't add duplicates
         if (languageComboBox->findText(itemText) == -1) {
-            languageComboBox->addItem(itemText, static_cast<int>(exh->languages[i]));
+            languageComboBox->addItem(itemText, static_cast<int>(language));
         }
     }
+
+    // Show the current language as the selected item
+    const auto itemText = QString::fromUtf8(magic_enum::enum_name(getSuitableLanguage(exh)));
+    languageComboBox->setCurrentText(itemText);
 
     loadTables();
 }
@@ -112,7 +123,7 @@ void EXDPart::loadTables()
     pageTabWidget->tabBar()->setVisible(exh->page_count > 1);
 }
 
-Language EXDPart::getSuitableLanguage(physis_EXH *pExh)
+Language EXDPart::getSuitableLanguage(physis_EXH *pExh) const
 {
     // Find the preferred language first
     for (uint32_t i = 0; i < pExh->language_count; i++) {

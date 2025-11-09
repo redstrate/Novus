@@ -36,7 +36,7 @@ private:
         physis_EXD exd{};
     };
     QMap<QString, CachedExcel> cachedExcelSheets;
-    Language getSuitableLanguage(physis_EXH *pExh);
+    Language getSuitableLanguage(physis_EXH *pExh) const;
     Language preferredLanguage = Language::English;
     physis_EXH *exh = nullptr;
     QString name;
