@@ -108,7 +108,7 @@ void EXDPart::loadTables()
             continue;
         }
 
-        tableWidget->setModel(new ExcelModel(exd, schema));
+        tableWidget->setModel(new ExcelModel(*exh, exd, schema));
         tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
         tableWidget->resizeColumnsToContents();
         tableWidget->setAlternatingRowColors(true);

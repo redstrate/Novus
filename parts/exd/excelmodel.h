@@ -14,7 +14,7 @@ class ExcelModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    ExcelModel(const physis_EXD &exd, Schema schema);
+    ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema);
 
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
@@ -23,9 +23,12 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
 private:
+    physis_EXH m_exh;
     physis_EXD m_exd;
     unsigned int m_rowCount = 0;
     std::vector<std::tuple<int, int, int>> m_rowIndices;
     Schema m_schema; // TODO: don't copy
     bool m_hasSubrows = false;
+    // Mapping from a regular index to a list of columns that were sorted by offset
+    QList<int> m_sortedColumnIndices;
 };

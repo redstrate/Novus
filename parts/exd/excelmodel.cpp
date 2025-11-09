@@ -3,7 +3,13 @@
 
 #include "excelmodel.h"
 
-ExcelModel::ExcelModel(const physis_EXD &exd, Schema schema) : m_exd(exd), m_schema(schema)
+#include <KLocalizedString>
+#include <magic_enum.hpp>
+
+ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema)
+    : m_exh(exh)
+    , m_exd(exd)
+    , m_schema(schema)
 {
     // We need to count the subrows to get the "true" row count.
     unsigned int regularRowCount = 0;
@@ -21,6 +27,17 @@ ExcelModel::ExcelModel(const physis_EXD &exd, Schema schema) : m_exd(exd), m_sch
 
         m_rowCount += row.row_count;
         regularRowCount++;
+    }
+
+    // Build a list of sorted indices meant for usage with schemas
+    QList<std::pair<uint16_t, uint32_t>> sortedColumns;
+    for (uint32_t i = 0; i < exh.column_count; i++) {
+        sortedColumns.push_back({exh.column_definitions[i].offset, i});
+    }
+    std::ranges::sort(sortedColumns);
+    // FIXME: is there a way to unzip, maybe with ranges?
+    for (uint32_t i = 0; i < sortedColumns.count(); i++) {
+        m_sortedColumnIndices.push_back(sortedColumns[i].second);
     }
 
     Q_ASSERT(m_rowIndices.size() == m_rowCount);
@@ -60,12 +77,23 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
             const auto [_, row_id, subrow_id] = m_rowIndices[section];
             if (m_hasSubrows) {
                 return QStringLiteral("%1.%2").arg(row_id).arg(subrow_id);
-            } else {
-                return QString::number(row_id);
             }
+            return QString::number(row_id);
         }
 
-        return m_schema.nameForColumn(section);
+        const auto mappedIndex = m_sortedColumnIndices[section];
+        return m_schema.nameForColumn(mappedIndex);
+    }
+    if (role == Qt::ToolTipRole && orientation == Qt::Horizontal) {
+        const auto column = m_exh.column_definitions[section];
+
+        QString toolTip;
+        toolTip.append(i18n("Index: %1").arg(section));
+        toolTip.append(i18n("\nSchema Index: %1").arg(m_sortedColumnIndices[section]));
+        toolTip.append(i18n("\nOffset: %1 (0x%2)").arg(column.offset).arg(QString::number(column.offset, 16)));
+        toolTip.append(i18n("\nType: %1").arg(magic_enum::enum_name(column.data_type)));
+
+        return toolTip;
     }
 
     return {};
