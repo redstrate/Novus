@@ -21,9 +21,10 @@
 
 #include <QStandardPaths>
 
-EXDPart::EXDPart(SqPackResource *data, QWidget *parent)
+EXDPart::EXDPart(SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent)
     : QWidget(parent)
     , data(data)
+    , m_resolver(resolver)
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -108,7 +109,7 @@ void EXDPart::loadTables()
             continue;
         }
 
-        tableWidget->setModel(new ExcelModel(*exh, exd, schema));
+        tableWidget->setModel(new ExcelModel(*exh, exd, schema, m_resolver, getSuitableLanguage(exh)));
         tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
         tableWidget->resizeColumnsToContents();
         tableWidget->setAlternatingRowColors(true);

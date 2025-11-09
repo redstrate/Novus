@@ -3,6 +3,8 @@
 
 #include "mainwindow.h"
 
+#include "excelresolver.h"
+
 #include <KActionCollection>
 #include <KLocalizedString>
 #include <KZip>
@@ -41,7 +43,9 @@ MainWindow::MainWindow(SqPackResource *data)
     listWidget->setMaximumWidth(200);
     dummyWidget->addWidget(listWidget);
 
-    m_exdPart = new EXDPart(data);
+    m_excelResolver = new CachingExcelResolver(data);
+
+    m_exdPart = new EXDPart(data, m_excelResolver);
     m_exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
     dummyWidget->addWidget(m_exdPart);
 

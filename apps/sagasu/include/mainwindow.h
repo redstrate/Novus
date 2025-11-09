@@ -15,6 +15,7 @@
 
 #include <QLabel>
 
+class AbstractExcelResolver;
 struct SqPackResource;
 
 class MainWindow : public KXmlGuiWindow
@@ -36,6 +37,7 @@ private:
     QLabel *m_offsetLabel = nullptr;
     QLabel *m_hashLabel = nullptr;
     QLabel *m_fileTypeLabel = nullptr;
+    AbstractExcelResolver *m_excelResolver = nullptr;
 
     void refreshParts(const QString &indexPath, Hash hash, const QString &path);
 };

@@ -6,6 +6,7 @@
 #include <KXmlGuiWindow>
 #include <QNetworkAccessManager>
 
+class CachingExcelResolver;
 class EXDPart;
 struct SqPackResource;
 
@@ -22,4 +23,5 @@ private:
     SqPackResource *data = nullptr;
     QNetworkAccessManager *mgr = nullptr;
     EXDPart *m_exdPart = nullptr;
+    CachingExcelResolver *m_excelResolver = nullptr;
 };

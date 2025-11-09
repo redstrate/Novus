@@ -9,7 +9,6 @@
 #include <QApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QHBoxLayout>
 #include <QLabel>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -20,6 +19,7 @@
 
 #include "cmppart.h"
 #include "dicpart.h"
+#include "excelresolver.h"
 #include "exdpart.h"
 #include "exlpart.h"
 #include "filepropertieswindow.h"
@@ -38,10 +38,11 @@ MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
     : data(data)
     , fileCache(*data)
 {
-    // setupMenubar();
     setMinimumSize(1280, 720);
 
     m_mgr = new QNetworkAccessManager(this);
+
+    m_excelResolver = new AbstractExcelResolver();
 
     m_offsetLabel = new QLabel(i18n("Offset: Unknown"));
     statusBar()->addWidget(m_offsetLabel);
@@ -148,7 +149,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         partHolder->addTab(exlWidget, i18nc("@title:tab", "Excel List"));
     } break;
     case FileType::ExcelHeader: {
-        auto exdWidget = new EXDPart(data);
+        auto exdWidget = new EXDPart(data, m_excelResolver);
         exdWidget->loadSheet(info.baseName(), file);
         partHolder->addTab(exdWidget, i18nc("@title:tab", "Excel Sheet"));
     } break;

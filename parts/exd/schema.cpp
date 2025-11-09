@@ -4,7 +4,6 @@
 #include "schema.h"
 
 #include <QDebug>
-#include <KLocalizedString>
 
 #define RYML_SINGLE_HDR_DEFINE_NOW
 #include <QFile>
@@ -29,6 +28,24 @@ Schema::Schema(const QString &path)
             Field field;
             field.name = QString::fromLatin1(node["name"].val());
 
+            if (node.has_child("type")) {
+                ryml::ConstNodeRef typeField = node["type"];
+                const QString typeName = QString::fromLatin1(typeField.val());
+
+                if (typeName == QStringLiteral("link")) {
+                    field.type = Field::Type::Link;
+
+                    if (node.has_child("targets")) {
+                        ryml::ConstNodeRef targetsField = node["targets"];
+                        for (auto target : targetsField) {
+                            field.targetSheets.push_back(QString::fromLatin1(target.val()));
+                        }
+                    }
+
+                    // TOOD: support switch statements
+                }
+            }
+
             m_fields.push_back(field);
         }
 
@@ -45,51 +62,16 @@ QString Schema::nameForColumn(const int index) const
 {
     if (static_cast<unsigned int>(index) < m_fields.size()) {
         return m_fields[index].name;
-    } else {
-        return QStringLiteral("Unknown %1").arg(index);
     }
+    return QStringLiteral("Unknown %1").arg(index);
 }
 
-QVariant Schema::displayForData(const physis_ColumnData &data) const
+QStringList Schema::targetSheetsForColumn(const int index) const
 {
-    QString columnString;
-    switch (data.tag) {
-    case physis_ColumnData::Tag::String:
-        columnString = QString::fromStdString(data.string._0);
-        break;
-    case physis_ColumnData::Tag::Bool:
-        columnString = data.bool_._0 ? i18nc("Value is true", "True") : i18nc("Value is false", "False");
-        break;
-    case physis_ColumnData::Tag::Int8:
-        columnString = QString::number(data.int8._0);
-        break;
-    case physis_ColumnData::Tag::UInt8:
-        columnString = QString::number(data.u_int8._0);
-        break;
-    case physis_ColumnData::Tag::Int16:
-        columnString = QString::number(data.int16._0);
-        break;
-    case physis_ColumnData::Tag::UInt16:
-        columnString = QString::number(data.u_int16._0);
-        break;
-    case physis_ColumnData::Tag::Int32:
-        columnString = QString::number(data.int32._0);
-        break;
-    case physis_ColumnData::Tag::UInt32:
-        columnString = QString::number(data.u_int32._0);
-        break;
-    case physis_ColumnData::Tag::Float32:
-        columnString = QString::number(data.float32._0);
-        break;
-    case physis_ColumnData::Tag::Int64:
-        columnString = QString::number(data.int64._0);
-        break;
-    case physis_ColumnData::Tag::UInt64:
-        columnString = QString::number(data.u_int64._0);
-        break;
+    if (static_cast<unsigned int>(index) < m_fields.size()) {
+        return m_fields[index].targetSheets;
     }
-
-    return columnString;
+    return {};
 }
 
 bool Schema::isDisplayField(const QString &name) const

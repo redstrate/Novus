@@ -2,7 +2,11 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(exdpart STATIC)
-target_sources(exdpart PRIVATE exdpart.cpp schema.cpp excelmodel.cpp)
+target_sources(exdpart PRIVATE
+        exdpart.cpp
+        schema.cpp
+        excelmodel.cpp
+        excelresolver.cpp)
 target_link_libraries(exdpart
         PUBLIC
         KF6::I18n

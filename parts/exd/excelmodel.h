@@ -9,12 +9,14 @@
 
 #include <physis.hpp>
 
+class AbstractExcelResolver;
+
 class ExcelModel : public QAbstractTableModel
 {
     Q_OBJECT
 
 public:
-    ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema);
+    ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema, AbstractExcelResolver *resolver, Language language);
 
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
@@ -23,6 +25,16 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
 private:
+    /**
+     * @brief Returns a nice display for a given column data, including resolving other sheets..
+     */
+    QVariant displayForColumn(int column, const physis_ColumnData &data) const;
+
+    /**
+     * @brief Returns a nice display for a given column data.
+     */
+    static QVariant displayForData(const physis_ColumnData &data);
+
     physis_EXH m_exh;
     physis_EXD m_exd;
     unsigned int m_rowCount = 0;
@@ -31,4 +43,6 @@ private:
     bool m_hasSubrows = false;
     // Mapping from a regular index to a list of columns that were sorted by offset
     QList<int> m_sortedColumnIndices;
+    AbstractExcelResolver *m_resolver;
+    Language m_language;
 };

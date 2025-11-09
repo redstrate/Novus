@@ -6,11 +6,12 @@
 #include <physis.hpp>
 
 #include <QString>
+#include <QStringList>
 
 class Schema
 {
 public:
-    Schema(const QString &path);
+    explicit Schema(const QString &path);
 
     /**
      * @brief Returns a human-readable name for the given column.
@@ -20,9 +21,11 @@ public:
     QString nameForColumn(int index) const;
 
     /**
-     * @brief Returns a nice display for a given column data.
+     * @brief Returns a list of target sheets for this column.
+     *
+     * @note Only makes sense and returns non-empty for Links.
      */
-    QVariant displayForData(const physis_ColumnData &data) const;
+    QStringList targetSheetsForColumn(int index) const;
 
     /**
      * @brief Returns true if this column name is supposed to be the main display field.
@@ -33,6 +36,14 @@ private:
     struct Field
     {
         QString name;
+
+        enum class Type {
+            Single,
+            Link,
+        };
+        Type type = Type::Single;
+
+        QStringList targetSheets;
     };
     std::vector<Field> m_fields;
     QString m_displayField;

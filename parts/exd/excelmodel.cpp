@@ -3,14 +3,18 @@
 
 #include "excelmodel.h"
 
+#include "excelresolver.h"
+
 #include <KLocalizedString>
 #include <QFont>
 #include <magic_enum.hpp>
 
-ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema)
+ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema, AbstractExcelResolver *resolver, Language language)
     : m_exh(exh)
     , m_exd(exd)
     , m_schema(schema)
+    , m_resolver(resolver)
+    , m_language(language)
 {
     // We need to count the subrows to get the "true" row count.
     unsigned int regularRowCount = 0;
@@ -64,8 +68,10 @@ QVariant ExcelModel::data(const QModelIndex &index, int role) const
         const auto &row = m_exd.rows[row_index];
         const auto &subrow = row.row_data[subrow_id];
 
-        const auto &column = subrow.column_data[index.column()];
-        return m_schema.displayForData(column);
+        const auto column = index.column();
+        const auto &data = subrow.column_data[column];
+
+        return displayForColumn(column, data);
     }
     if (role == Qt::FontRole) {
         // Make font bold to make the display field more obvious.
@@ -118,6 +124,100 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
     }
 
     return {};
+}
+
+QVariant ExcelModel::displayForColumn(const int column, const physis_ColumnData &data) const
+{
+    // Check to see if there's any targets
+    const auto targetSheets = m_schema.targetSheetsForColumn(column);
+    if (!targetSheets.isEmpty()) {
+        uint32_t targetRowId;
+        switch (data.tag) {
+        case physis_ColumnData::Tag::Int8:
+            targetRowId = data.int8._0;
+            break;
+        case physis_ColumnData::Tag::UInt8:
+            targetRowId = data.u_int8._0;
+            break;
+        case physis_ColumnData::Tag::Int16:
+            targetRowId = data.int16._0;
+            break;
+        case physis_ColumnData::Tag::UInt16:
+            targetRowId = data.u_int16._0;
+            break;
+        case physis_ColumnData::Tag::Int32:
+            targetRowId = data.int32._0;
+            break;
+        case physis_ColumnData::Tag::UInt32:
+            targetRowId = data.u_int32._0;
+            break;
+        case physis_ColumnData::Tag::Int64:
+            targetRowId = data.int64._0;
+            break;
+        case physis_ColumnData::Tag::UInt64:
+            targetRowId = data.u_int64._0;
+            break;
+        default:
+            // There can't be columns that point to another Excel row with something like a string, so something went wrong somewhere
+            return i18n("Unknown Target?");
+        }
+
+        if (const auto value = m_resolver->resolveRow(targetSheets, targetRowId, m_language)) {
+            const auto [sheetName, data] = *value;
+            return displayForData(data->column_data[0]); // TODO: use display field
+        }
+
+        if (targetSheets.size() == 1) {
+            return QStringLiteral("%1#%2").arg(targetSheets.constFirst()).arg(targetRowId);
+        } else {
+            return QStringLiteral("...#%1").arg(targetRowId);
+        }
+    }
+
+    // Normal data
+    return displayForData(data);
+}
+
+QVariant ExcelModel::displayForData(const physis_ColumnData &data)
+{
+    QString columnString;
+    switch (data.tag) {
+    case physis_ColumnData::Tag::String:
+        columnString = QString::fromStdString(data.string._0);
+        break;
+    case physis_ColumnData::Tag::Bool:
+        columnString = data.bool_._0 ? i18nc("Value is true", "True") : i18nc("Value is false", "False");
+        break;
+    case physis_ColumnData::Tag::Int8:
+        columnString = QString::number(data.int8._0);
+        break;
+    case physis_ColumnData::Tag::UInt8:
+        columnString = QString::number(data.u_int8._0);
+        break;
+    case physis_ColumnData::Tag::Int16:
+        columnString = QString::number(data.int16._0);
+        break;
+    case physis_ColumnData::Tag::UInt16:
+        columnString = QString::number(data.u_int16._0);
+        break;
+    case physis_ColumnData::Tag::Int32:
+        columnString = QString::number(data.int32._0);
+        break;
+    case physis_ColumnData::Tag::UInt32:
+        columnString = QString::number(data.u_int32._0);
+        break;
+    case physis_ColumnData::Tag::Float32:
+        columnString = QString::number(data.float32._0);
+        break;
+    case physis_ColumnData::Tag::Int64:
+        columnString = QString::number(data.int64._0);
+        break;
+    case physis_ColumnData::Tag::UInt64:
+        columnString = QString::number(data.u_int64._0);
+        break;
+    }
+
+    return columnString;
 }
 
 #include "moc_excelmodel.cpp"
