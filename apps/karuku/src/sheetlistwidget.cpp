@@ -47,8 +47,9 @@ SheetListWidget::SheetListWidget(SqPackResource *data, QWidget *parent)
     listWidget = new QListView();
     listWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of Excel sheet names. Select one to view it's contents."));
     listWidget->setModel(searchModel);
+    listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
 
-    connect(listWidget, &QListView::clicked, [this, searchModel](const QModelIndex &index) {
+    connect(listWidget, &QListView::activated, [this, searchModel](const QModelIndex &index) {
         Q_EMIT sheetSelected(searchModel->mapToSource(index).data(Qt::DisplayRole).toString());
     });
 
