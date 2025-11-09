@@ -32,6 +32,13 @@ public:
      */
     bool isDisplayField(const QString &name) const;
 
+    /**
+     * @brief Returns the index in the schema fields where the display field is located.
+     *
+     * Returns none if there isn't a display field set.
+     */
+    std::optional<int> displayFieldIndex() const;
+
 private:
     struct Field
     {

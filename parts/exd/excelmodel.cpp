@@ -6,7 +6,9 @@
 #include "excelresolver.h"
 
 #include <KLocalizedString>
+#include <QDir>
 #include <QFont>
+#include <QStandardPaths>
 #include <magic_enum.hpp>
 
 ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema, AbstractExcelResolver *resolver, Language language)
@@ -164,7 +166,16 @@ QVariant ExcelModel::displayForColumn(const int column, const physis_ColumnData 
 
         if (const auto value = m_resolver->resolveRow(targetSheets, targetRowId, m_language)) {
             const auto [sheetName, data] = *value;
-            return displayForData(data->column_data[0]); // TODO: use display field
+
+            // TODO: de-duplicate with the code in EXDPart
+            const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+            const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
+
+            Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
+
+            if (auto displayFieldIndex = schema.displayFieldIndex()) {
+                return displayForData(data->column_data[0]); // TODO: use display field
+            }
         }
 
         if (targetSheets.size() == 1) {

@@ -78,3 +78,14 @@ bool Schema::isDisplayField(const QString &name) const
 {
     return m_displayField == name;
 }
+
+std::optional<int> Schema::displayFieldIndex() const
+{
+    for (size_t i = 0; i < m_fields.size(); i++) {
+        if (m_fields[i].name == m_displayField) {
+            return i;
+        }
+    }
+
+    return std::nullopt;
+}

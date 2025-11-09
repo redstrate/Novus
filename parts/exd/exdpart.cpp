@@ -92,8 +92,6 @@ void EXDPart::goToRow(const QString &query)
 
 void EXDPart::loadTables()
 {
-    QString schemaPath;
-
     const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
 

@@ -63,7 +63,7 @@ physis_EXH *CachingExcelResolver::getCachedEXH(const QString &sheetName)
 physis_EXD &CachingExcelResolver::getCachedEXD(physis_EXH *exh, const EXDSelector &selector)
 {
     if (!m_cachedEXDs.contains(selector)) {
-        auto exd = physis_gamedata_read_excel_sheet(m_resource, selector.name.toStdString().c_str(), exh, selector.language, selector.page);
+        const auto exd = physis_gamedata_read_excel_sheet(m_resource, selector.name.toStdString().c_str(), exh, selector.language, selector.page);
         m_cachedEXDs.insert(selector, exd);
     }
 
