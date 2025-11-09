@@ -31,6 +31,11 @@ Schema::Schema(const QString &path)
 
             m_fields.push_back(field);
         }
+
+        if (tree.has_child(tree.root_id(), "displayField")) {
+            ryml::ConstNodeRef displayField = tree["displayField"];
+            m_displayField = QString::fromLatin1(displayField.val());
+        }
     } else {
         qWarning() << "Failed to load schema from" << path;
     }
@@ -85,4 +90,9 @@ QVariant Schema::displayForData(const physis_ColumnData &data) const
     }
 
     return columnString;
+}
+
+bool Schema::isDisplayField(const QString &name) const
+{
+    return m_displayField == name;
 }

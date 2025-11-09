@@ -4,6 +4,7 @@
 #include "excelmodel.h"
 
 #include <KLocalizedString>
+#include <QFont>
 #include <magic_enum.hpp>
 
 ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema)
@@ -66,6 +67,16 @@ QVariant ExcelModel::data(const QModelIndex &index, int role) const
         const auto &column = subrow.column_data[index.column()];
         return m_schema.displayForData(column);
     }
+    if (role == Qt::FontRole) {
+        // Make font bold to make the display field more obvious.
+        const auto mappedIndex = m_sortedColumnIndices[index.column()];
+        const auto columnName = m_schema.nameForColumn(mappedIndex);
+
+        QFont font;
+        font.setBold(m_schema.isDisplayField(columnName));
+
+        return font;
+    }
 
     return {};
 }
@@ -94,6 +105,16 @@ QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int ro
         toolTip.append(i18n("\nType: %1").arg(magic_enum::enum_name(column.data_type)));
 
         return toolTip;
+    }
+    if (role == Qt::FontRole && orientation == Qt::Horizontal) {
+        // Make font bold to make the display field more obvious.
+        const auto mappedIndex = m_sortedColumnIndices[section];
+        const auto columnName = m_schema.nameForColumn(mappedIndex);
+
+        QFont font;
+        font.setBold(m_schema.isDisplayField(columnName));
+
+        return font;
     }
 
     return {};
