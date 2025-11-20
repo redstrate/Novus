@@ -156,7 +156,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         exdWidgetHolder->setLayout(exdLayout);
 
         auto exdWidget = new EXDPart(data, m_excelResolver);
-        exdWidget->loadSheet(info.baseName(), file);
+        exdWidget->loadSheet(info.filePath().remove(QStringLiteral(".exh")).remove(QStringLiteral("exd/")), file);
 
         const auto availableLanguages = exdWidget->availableLanguages();
         if (!availableLanguages.isEmpty()) {
