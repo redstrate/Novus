@@ -139,7 +139,7 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
 
     auto item = static_cast<TreeInformation *>(index.internalPointer());
     if (role == PathRole) {
-        if (item->type != TreeType::File || item->name.isEmpty()) {
+        if (item->name.isEmpty()) {
             return {};
         }
 

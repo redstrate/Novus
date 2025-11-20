@@ -57,22 +57,22 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 
             auto menu = new QMenu();
 
+            // It doesn't make sense to copy file paths for... a file or folder that doesn't have a path.
+            if (!isUnknown) {
+                auto copyFilePathAction = menu->addAction(i18nc("@action:inmenu", "Copy Location"));
+                copyFilePathAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-copy-path-symbolic")));
+                connect(copyFilePathAction, &QAction::triggered, this, [this, path] {
+                    QClipboard *clipboard = QGuiApplication::clipboard();
+                    clipboard->setText(path);
+                });
+            }
+
             // It doesn't make sense to extract folders
             if (!isFolder) {
                 auto extractAction = menu->addAction(i18nc("@action:inmenu", "Extract…"));
                 extractAction->setIcon(QIcon::fromTheme(QStringLiteral("archive-extract-symbolic")));
                 connect(extractAction, &QAction::triggered, this, [this, path] {
                     Q_EMIT extractFile(path);
-                });
-            }
-
-            // It doesn't make sense to copy file paths for... a file or folder that doesn't have a path.
-            if (!isUnknown) {
-                auto copyFilePathAction = menu->addAction(i18nc("@action:inmenu", "Copy file path"));
-                copyFilePathAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-copy-symbolic")));
-                connect(copyFilePathAction, &QAction::triggered, this, [this, path] {
-                    QClipboard *clipboard = QGuiApplication::clipboard();
-                    clipboard->setText(path);
                 });
             }
 
