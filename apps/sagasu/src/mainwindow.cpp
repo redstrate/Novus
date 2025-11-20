@@ -181,7 +181,25 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         partHolder->addTab(exdWidgetHolder, i18nc("@title:tab", "Excel Sheet"));
     } break;
     case FileType::ExcelData: {
-        auto exdWidget = new QLabel(i18n("Note: Excel data files cannot be previewed standalone, select the EXH file instead."));
+        auto exdLayout = new QVBoxLayout();
+
+        auto helpLabel = new QLabel(i18n("Excel data files cannot be viewed standalone, select the EXH file instead."));
+        helpLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        exdLayout->addWidget(helpLabel, 0, Qt::AlignHCenter | Qt::AlignBottom);
+
+        auto goToButton = new QPushButton(i18n("Go to EXH"));
+        goToButton->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
+        connect(goToButton, &QPushButton::clicked, this, [this, originalPath = path] {
+            // TOOD: this doesn't work for some names!
+            const auto baseName = originalPath.split(QStringLiteral("_")).constFirst();
+            const auto newName = QStringLiteral("%1.exh").arg(baseName);
+            m_tree->selectPath(newName);
+        });
+        exdLayout->addWidget(goToButton, 0, Qt::AlignHCenter | Qt::AlignTop);
+
+        auto exdWidget = new QWidget();
+        exdWidget->setLayout(exdLayout);
+
         partHolder->addTab(exdWidget, i18nc("@title:tab", "Note"));
     } break;
     case FileType::Model: {
