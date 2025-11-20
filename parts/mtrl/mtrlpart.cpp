@@ -12,6 +12,7 @@
 #include <physis.hpp>
 
 #include "knownvalues.h"
+#include "pathedit.h"
 #include "texpart.h"
 
 MtrlPart::MtrlPart(SqPackResource *data, QWidget *parent)
@@ -130,7 +131,11 @@ void MtrlPart::rebuild()
 
         auto texWidget = new TexPart(m_data);
         texWidget->load(physis_gamedata_extract_file(m_data, m_material.textures[i]));
-        layout->addRow(i18n("Value:"), texWidget);
+        layout->addWidget(texWidget);
+
+        auto texturePath = new PathEdit();
+        texturePath->setPath(QString::fromLatin1(m_material.textures[i]));
+        layout->addRow(i18n("Path:"), texturePath);
     }
 
     child = nullptr;

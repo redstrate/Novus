@@ -13,7 +13,8 @@ target_link_libraries(mtrlpart
         Novus::TexPart
         KF6::I18n
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        Novus::Common)
 target_include_directories(mtrlpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(mtrlpart PRIVATE TRANSLATION_DOMAIN="novus")
 
