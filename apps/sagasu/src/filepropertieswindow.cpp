@@ -20,6 +20,7 @@ FilePropertiesWindow::FilePropertiesWindow(const QString &path, physis_Buffer bu
 
     if (!path.isEmpty()) {
         auto pathLabel = new QLabel(path);
+        pathLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
         layout->addRow(i18nc("@label", "Path:"), pathLabel);
 
         QFileInfo info(path);
@@ -27,10 +28,12 @@ FilePropertiesWindow::FilePropertiesWindow(const QString &path, physis_Buffer bu
         const FileType type = FileTypes::getFileType(info.completeSuffix());
 
         auto typeLabel = new QLabel(FileTypes::getFiletypeName(type));
+        typeLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
         layout->addRow(i18nc("@label", "Type:"), typeLabel);
     }
 
     auto sizeLabel = new QLabel(QString::number(buffer.size));
+    sizeLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
     layout->addRow(i18nc("@label", "Size (in bytes):"), sizeLabel);
 }
 
