@@ -11,6 +11,8 @@
 #include <QTabWidget>
 #include <physis.hpp>
 
+class PathEdit;
+
 class MtrlPart : public QWidget
 {
     Q_OBJECT
@@ -24,7 +26,7 @@ private:
     void rebuild();
 
     QVBoxLayout *m_itemsLayout = nullptr;
-    QLineEdit *m_shaderPackageName = nullptr;
+    PathEdit *m_shaderPackageName = nullptr;
 
     QTabWidget *m_tabWidget = nullptr;
     QVBoxLayout *m_propertiesLayout = nullptr;

@@ -8,6 +8,7 @@
 #include <QGroupBox>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTabBar>
 #include <QVBoxLayout>
 #include <physis.hpp>
 
@@ -21,15 +22,12 @@ MtrlPart::MtrlPart(SqPackResource *data, QWidget *parent)
 {
     m_itemsLayout = new QVBoxLayout(this);
 
-    auto shaderPackageLayout = new QHBoxLayout();
+    auto shaderPackageLayout = new QFormLayout();
     m_itemsLayout->addLayout(shaderPackageLayout);
 
-    m_shaderPackageName = new QLineEdit();
+    m_shaderPackageName = new PathEdit();
     m_shaderPackageName->setReadOnly(true);
-    shaderPackageLayout->addWidget(m_shaderPackageName);
-
-    auto selectShaderPackageButton = new QPushButton(i18n("Shaders…"));
-    shaderPackageLayout->addWidget(selectShaderPackageButton);
+    shaderPackageLayout->addRow(i18n("Shader Package:"), m_shaderPackageName);
 
     m_tabWidget = new QTabWidget();
     m_itemsLayout->addWidget(m_tabWidget);
@@ -58,9 +56,9 @@ MtrlPart::MtrlPart(SqPackResource *data, QWidget *parent)
 void MtrlPart::load(physis_Material file)
 {
     m_material = file;
-    m_shaderPackageName->setText(QString::fromLatin1(m_material.shpk_name));
     if (m_material.shpk_name != nullptr) {
         std::string shpkPath = "shader/sm5/shpk/" + std::string(m_material.shpk_name);
+        m_shaderPackageName->setPath(QString::fromStdString(shpkPath));
 
         auto shpkData = physis_gamedata_extract_file(m_data, shpkPath.c_str());
         if (shpkData.data != nullptr) {
@@ -135,6 +133,7 @@ void MtrlPart::rebuild()
 
         auto texturePath = new PathEdit();
         texturePath->setPath(QString::fromLatin1(m_material.textures[i]));
+        texturePath->setReadOnly(true);
         layout->addRow(i18n("Path:"), texturePath);
     }
 
