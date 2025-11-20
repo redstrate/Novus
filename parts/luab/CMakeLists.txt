@@ -8,7 +8,8 @@ target_link_libraries(luabpart
         KF6::I18n
         Physis::Physis
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        KF6::SyntaxHighlighting)
 target_include_directories(luabpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(luabpart PRIVATE TRANSLATION_DOMAIN="novus")
 if (NOT BUILD_FLATPAK)

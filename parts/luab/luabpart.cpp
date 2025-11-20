@@ -13,6 +13,12 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
+#include <KSyntaxHighlighting/Definition>
+#include <KSyntaxHighlighting/FoldingRegion>
+#include <KSyntaxHighlighting/Repository>
+#include <KSyntaxHighlighting/SyntaxHighlighter>
+#include <KSyntaxHighlighting/Theme>
+
 LuabPart::LuabPart(QWidget *parent)
     : QWidget(parent)
 {
@@ -44,6 +50,17 @@ void LuabPart::load(physis_Buffer buffer)
         luaDecProcess.waitForFinished();
 
         m_codeEdit->setText(QString::fromUtf8(luaDecProcess.readAllStandardOutput()));
+
+        // Setup highlighting
+        KSyntaxHighlighting::Repository repository;
+
+        auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_codeEdit->document());
+        highlighter->setTheme((m_codeEdit->palette().color(QPalette::Base).lightness() < 128)
+                                  ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
+                                  : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
+
+        const auto def = repository.definitionForName(QStringLiteral("Lua"));
+        highlighter->setDefinition(def);
     }
 }
 

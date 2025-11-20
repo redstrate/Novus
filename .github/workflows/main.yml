@@ -270,6 +270,13 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kxmlgui -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kxmlgui -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }} -DFORCE_DISABLE_KGLOBALACCEL=ON
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kxmlgui --config ${{ matrix.build_type }} --target install
 
+    - name: Build KSyntaxHighlighting
+      if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
+      run: |
+        git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/syntax-highlighting.git
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-syntax-highlighting -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S syntax-highlighting -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-syntax-highlighting --config ${{ matrix.build_type }} --target install
+
     - name: Build glm
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
