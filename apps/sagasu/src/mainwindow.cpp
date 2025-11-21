@@ -29,6 +29,7 @@
 #include "luabpart.h"
 #include "mdlpart.h"
 #include "mtrlpart.h"
+#include "pathedit.h"
 #include "shpkpart.h"
 #include "sklbpart.h"
 #include "texpart.h"
@@ -103,6 +104,12 @@ MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+
+    // Open paths in our own instance (see PathEdit)
+    PathEdit::handler()->setEmitSignal(true);
+    connect(PathEdit::handler(), &OpenPathHandler::pathOpened, this, [this](const QString &path) {
+        m_tree->selectPath(path);
+    });
 }
 
 bool MainWindow::selectPath(const QString &path)

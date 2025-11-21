@@ -9,6 +9,21 @@
 
 #include "novuscommon_export.h"
 
+class OpenPathHandler : public QObject
+{
+    Q_OBJECT
+public:
+    void openPath(const QString &path);
+
+    void setEmitSignal(bool emit);
+
+Q_SIGNALS:
+    void pathOpened(const QString &path);
+
+private:
+    bool m_emitSignal = false;
+};
+
 /// Represents a game path, and allows you to perform additional actions e.g. opening said path in Data Explorer.
 class NOVUSCOMMON_EXPORT PathEdit : public QWidget
 {
@@ -19,6 +34,8 @@ public:
 
     void setPath(const QString &path);
     void setReadOnly(bool readOnly);
+
+    static OpenPathHandler *handler();
 
 private:
     QLineEdit *m_lineEdit = nullptr;

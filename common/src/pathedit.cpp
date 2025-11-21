@@ -8,6 +8,22 @@
 #include <QHBoxLayout>
 #include <QProcess>
 
+Q_GLOBAL_STATIC(OpenPathHandler, openPathHandler)
+
+void OpenPathHandler::openPath(const QString &path)
+{
+    if (m_emitSignal) {
+        Q_EMIT pathOpened(path);
+    } else {
+        QProcess::startDetached(DATAEXPLORER_EXECUTABLE, {path});
+    }
+}
+
+void OpenPathHandler::setEmitSignal(const bool emit)
+{
+    m_emitSignal = emit;
+}
+
 PathEdit::PathEdit(QWidget *parent)
     : QWidget(parent)
 {
@@ -22,7 +38,7 @@ PathEdit::PathEdit(QWidget *parent)
     m_openButton->setEnabled(false);
     m_openButton->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(m_openButton, &QPushButton::clicked, this, [this] {
-        QProcess::startDetached(DATAEXPLORER_EXECUTABLE, {m_lineEdit->text()});
+        openPathHandler->openPath(m_lineEdit->text());
     });
     layout->addWidget(m_openButton);
 }
@@ -36,6 +52,11 @@ void PathEdit::setPath(const QString &path)
 void PathEdit::setReadOnly(const bool readOnly)
 {
     m_lineEdit->setReadOnly(readOnly);
+}
+
+OpenPathHandler *PathEdit::handler()
+{
+    return openPathHandler;
 }
 
 #include "moc_pathedit.cpp"
