@@ -15,7 +15,8 @@ target_link_libraries(shpkpart
         spirv-cross-core
         spirv-cross-glsl
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        KF6::SyntaxHighlighting)
 target_include_directories(shpkpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(shpkpart PRIVATE -fexceptions)
 target_compile_definitions(shpkpart PRIVATE TRANSLATION_DOMAIN="novus")

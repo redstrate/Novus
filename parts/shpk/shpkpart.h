@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <KSyntaxHighlighting/Repository>
 #include <QFormLayout>
 #include <QListWidget>
 #include <QPushButton>
@@ -74,4 +75,6 @@ private:
     QListWidget *texturesListWidget;
 
     physis_SHPK m_shpk;
+
+    KSyntaxHighlighting::Repository repository;
 };
