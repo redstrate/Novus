@@ -41,7 +41,8 @@ MapListWidget::MapListWidget(SqPackResource *data, QWidget *parent)
     auto nameExd = physis_gamedata_read_excel_sheet(data, "PlaceName", nameExh, Language::English, 0);
     auto territoryExd = physis_gamedata_read_excel_sheet(data, "TerritoryType", territoryExh, Language::None, 0);
 
-    for (uint32_t i = 0; i < territoryExh->row_count; i++) {
+    // TODO: figure out why row_count in EXH is wrong?!
+    for (uint32_t i = 0; i < territoryExh->pages[0].row_count; i++) {
         auto territoryExdRow = physis_exd_get_row(&territoryExd, i); // TODO: free, use all rows
         if (territoryExdRow != nullptr) {
             const char *bg = territoryExdRow->column_data[1].string._0;
