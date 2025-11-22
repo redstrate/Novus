@@ -19,7 +19,8 @@ enum class FileType {
     Skeleton,
     Dictionary,
     Material,
-    LuaBytecode
+    LuaBytecode,
+    HardwareCursor,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes

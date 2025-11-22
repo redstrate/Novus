@@ -15,7 +15,15 @@ class TexPart : public QWidget
 public:
     explicit TexPart(SqPackResource *data, QWidget *parent = nullptr);
 
-    void load(physis_Buffer file);
+    /**
+     * @brief Loads a .tex file.
+     */
+    void loadTex(physis_Buffer file);
+
+    /**
+     * @brief Loads a .hwc file.
+     */
+    void loadHwc(physis_Buffer file);
 
 private:
     SqPackResource *data = nullptr;

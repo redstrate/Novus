@@ -216,7 +216,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     } break;
     case FileType::Texture: {
         auto texWidget = new TexPart(data);
-        texWidget->load(file);
+        texWidget->loadTex(file);
         partHolder->addTab(texWidget, i18nc("@title:tab", "Texture"));
     } break;
     case FileType::ShaderPackage: {
@@ -248,6 +248,11 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto luabWidget = new LuabPart();
         luabWidget->load(file);
         partHolder->addTab(luabWidget, i18nc("@title:tab", "Lua"));
+    } break;
+    case FileType::HardwareCursor: {
+        auto texWidget = new TexPart(data);
+        texWidget->loadHwc(file);
+        partHolder->addTab(texWidget, i18nc("@title:tab", "Hardware Cursor"));
     } break;
     default:
         break;

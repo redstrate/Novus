@@ -128,7 +128,7 @@ void MtrlPart::rebuild()
         groupBox->setLayout(layout);
 
         auto texWidget = new TexPart(m_data);
-        texWidget->load(physis_gamedata_extract_file(m_data, m_material.textures[i]));
+        texWidget->loadTex(physis_gamedata_extract_file(m_data, m_material.textures[i]));
         layout->addWidget(texWidget);
 
         auto texturePath = new PathEdit();
