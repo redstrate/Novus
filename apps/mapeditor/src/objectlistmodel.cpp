@@ -134,11 +134,20 @@ bool ObjectListModel::setData(const QModelIndex &index, const QVariant &value, i
     return QAbstractItemModel::setData(index, value, role);
 }
 
-std::optional<physis_InstanceObject const *> ObjectListModel::objectId(const QModelIndex &index) const
+std::optional<physis_InstanceObject const *> ObjectListModel::objectAt(const QModelIndex &index) const
 {
     const auto item = static_cast<TreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Object) {
         return static_cast<physis_InstanceObject const *>(item->data);
+    }
+    return std::nullopt;
+}
+
+std::optional<physis_Layer const *> ObjectListModel::layerAt(const QModelIndex &index) const
+{
+    const auto item = static_cast<TreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::Layer) {
+        return static_cast<physis_Layer const *>(item->data);
     }
     return std::nullopt;
 }
@@ -168,6 +177,7 @@ void ObjectListModel::refresh()
                 layerItem->name = QString::fromLatin1(layer.name);
                 layerItem->row = j;
                 layerItem->id = layer.id;
+                layerItem->data = &layer;
                 fileItem->children.push_back(layerItem);
 
                 for (uint32_t z = 0; z < layer.num_objects; z++) {

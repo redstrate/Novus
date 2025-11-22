@@ -46,8 +46,9 @@ ObjectListWidget::ObjectListWidget(AppState *appState, QWidget *parent)
     treeWidget->header()->setSectionResizeMode(1, QHeaderView::Fixed);
     connect(treeWidget, &QTreeView::activated, this, [this, searchModel](const QModelIndex &index) {
         auto originalIndex = searchModel->mapToSource(index);
-        m_appState->selectedObject = m_objectListModel->objectId(originalIndex);
-        Q_EMIT m_appState->selectedObjectChanged();
+        m_appState->selectedObject = m_objectListModel->objectAt(originalIndex);
+        m_appState->selectedLayer = m_objectListModel->layerAt(originalIndex);
+        Q_EMIT m_appState->selectionChanged();
     });
 
     layout->addWidget(treeWidget);

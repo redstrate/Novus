@@ -26,15 +26,18 @@ ObjectPropertiesWidget::ObjectPropertiesWidget(AppState *appState, QWidget *pare
     m_layout->setSpacing(0);
     setLayout(m_layout);
 
-    connect(appState, &AppState::selectedObjectChanged, this, [this] {
-        resetObjectData();
+    connect(appState, &AppState::selectionChanged, this, [this] {
+        resetSections();
         if (m_appState->selectedObject) {
             refreshObjectData(*m_appState->selectedObject.value());
+        }
+        if (m_appState->selectedLayer) {
+            refreshLayerData(*m_appState->selectedLayer.value());
         }
     });
 }
 
-void ObjectPropertiesWidget::resetObjectData()
+void ObjectPropertiesWidget::resetSections()
 {
     for (auto section : m_sections) {
         m_layout->removeWidget(section);
@@ -63,6 +66,31 @@ void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &obje
     default:
         break;
     }
+}
+
+void ObjectPropertiesWidget::refreshLayerData(const physis_Layer &layer)
+{
+    const auto section = new CollapseSection(i18n("Layer"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    const auto nameEdit = new QLineEdit();
+    nameEdit->setText(QString::fromLatin1(layer.name));
+    nameEdit->setReadOnly(true);
+    layout->addRow(i18n("Name"), nameEdit);
+
+    const auto festivalIdEdit = new QLineEdit();
+    festivalIdEdit->setText(QString::number(layer.festival_id));
+    festivalIdEdit->setReadOnly(true);
+    layout->addRow(i18n("Festival ID"), festivalIdEdit);
+
+    const auto festivalPhaseEdit = new QLineEdit();
+    festivalPhaseEdit->setText(QString::number(layer.festival_phase_id));
+    festivalPhaseEdit->setReadOnly(true);
+    layout->addRow(i18n("Festival Phase"), festivalPhaseEdit);
 }
 
 void ObjectPropertiesWidget::addCommonSection(const physis_InstanceObject &object)

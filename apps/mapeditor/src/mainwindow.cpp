@@ -51,7 +51,7 @@ MainWindow::MainWindow(SqPackResource *data)
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 
-    connect(m_appState, &AppState::selectedObjectChanged, this, &MainWindow::updateActionState);
+    connect(m_appState, &AppState::selectionChanged, this, &MainWindow::updateActionState);
 
     updateActionState();
 }

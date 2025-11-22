@@ -5,6 +5,7 @@
 
 #include <QWidget>
 
+struct physis_Layer;
 struct physis_PopRangeInstanceObject;
 struct physis_EventInstanceObject;
 class QVBoxLayout;
@@ -22,8 +23,9 @@ public:
     explicit ObjectPropertiesWidget(AppState *appState, QWidget *parent = nullptr);
 
 private:
-    void resetObjectData();
+    void resetSections();
     void refreshObjectData(const physis_InstanceObject &object);
+    void refreshLayerData(const physis_Layer &layer);
 
     void addCommonSection(const physis_InstanceObject &object);
     void addBGSection(const physis_BGInstanceObject &bg);

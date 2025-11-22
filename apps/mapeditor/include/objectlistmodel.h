@@ -5,6 +5,7 @@
 
 #include <QAbstractItemModel>
 
+struct physis_Layer;
 struct physis_InstanceObject;
 class AppState;
 
@@ -48,7 +49,8 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
-    std::optional<physis_InstanceObject const *> objectId(const QModelIndex &index) const;
+    std::optional<physis_InstanceObject const *> objectAt(const QModelIndex &index) const;
+    std::optional<physis_Layer const *> layerAt(const QModelIndex &index) const;
 
 private:
     void refresh();
