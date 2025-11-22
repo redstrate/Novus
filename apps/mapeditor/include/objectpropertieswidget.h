@@ -12,6 +12,7 @@ struct physis_InstanceObject;
 struct physis_BGInstanceObject;
 class AppState;
 class QLineEdit;
+struct physis_ENPCInstanceObject;
 
 class ObjectPropertiesWidget : public QWidget
 {
@@ -28,6 +29,7 @@ private:
     void addBGSection(const physis_BGInstanceObject &bg);
     void addEventSection(const physis_EventInstanceObject &eobj);
     void addPopRangeSection(const physis_PopRangeInstanceObject &pop);
+    void addEventNPCSection(const physis_ENPCInstanceObject &enpc);
 
     AppState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;

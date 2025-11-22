@@ -57,6 +57,9 @@ void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &obje
     case physis_LayerEntry::Tag::PopRange:
         addPopRangeSection(object.data.pop_range._0);
         break;
+    case physis_LayerEntry::Tag::EventNPC:
+        addEventNPCSection(object.data.event_npc._0);
+        break;
     default:
         break;
     }
@@ -165,6 +168,21 @@ void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObj
     indexEdit->setText(QString::number(pop.index));
     indexEdit->setReadOnly(true);
     layout->addRow(i18n("Index"), indexEdit);
+}
+
+void ObjectPropertiesWidget::addEventNPCSection(const physis_ENPCInstanceObject &enpc)
+{
+    auto section = new CollapseSection(i18n("Event NPC "));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto baseIdEdit = new QLineEdit();
+    baseIdEdit->setText(QString::number(enpc.parent_data.parent_data.base_id));
+    baseIdEdit->setReadOnly(true);
+    layout->addRow(i18n("Base ID"), baseIdEdit);
 }
 
 #include "moc_objectpropertieswidget.cpp"

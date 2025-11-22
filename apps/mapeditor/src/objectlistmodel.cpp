@@ -184,6 +184,9 @@ void ObjectListModel::refresh()
                     case physis_LayerEntry::Tag::PopRange:
                         objectName = i18n("Pop Range");
                         break;
+                    case physis_LayerEntry::Tag::EventNPC:
+                        objectName = i18n("Event NPC");
+                        break;
                     default:
                         break;
                     }
