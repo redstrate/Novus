@@ -10,7 +10,7 @@ class AppState : public QObject
     Q_OBJECT
 
 public:
-    explicit AppState(QObject *parent = nullptr);
+    explicit AppState(SqPackResource *resource, QObject *parent = nullptr);
 
     QString basePath;
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
@@ -18,8 +18,16 @@ public:
     std::optional<physis_InstanceObject const *> selectedObject;
     std::optional<physis_Layer const *> selectedLayer;
 
+    /**
+     * @return The name for this Event NPC. If not found, then a generic one.
+     */
+    QString lookupENpcName(uint32_t id);
+
 Q_SIGNALS:
     void mapLoaded();
     void visibleLayerIdsChanged();
     void selectionChanged();
+
+private:
+    physis_EXD m_enpcResidentPage;
 };

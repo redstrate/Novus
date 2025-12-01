@@ -195,7 +195,8 @@ void ObjectListModel::refresh()
                         objectName = i18n("Pop Range");
                         break;
                     case physis_LayerEntry::Tag::EventNPC:
-                        objectName = i18n("Event NPC");
+                        // Give the ENPC an actual name.
+                        objectName = m_appState->lookupENpcName(object.data.event_npc._0.parent_data.parent_data.base_id);
                         break;
                     default:
                         break;

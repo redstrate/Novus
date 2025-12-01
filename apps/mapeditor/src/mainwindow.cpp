@@ -26,7 +26,7 @@ MainWindow::MainWindow(SqPackResource *data)
 {
     setMinimumSize(1280, 720);
 
-    m_appState = new AppState(this);
+    m_appState = new AppState(data, this);
 
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
