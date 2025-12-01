@@ -189,7 +189,8 @@ void ObjectListModel::refresh()
                         objectName = i18n("BG Model");
                         break;
                     case physis_LayerEntry::Tag::EventObject:
-                        objectName = i18n("Event Object");
+                        // Give the EObj an actual name.
+                        objectName = m_appState->lookupEObjName(object.data.event_object._0.parent_data.base_id);
                         break;
                     case physis_LayerEntry::Tag::PopRange:
                         objectName = i18n("Pop Range");

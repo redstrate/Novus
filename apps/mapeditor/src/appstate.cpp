@@ -8,10 +8,17 @@
 AppState::AppState(SqPackResource *resource, QObject *parent)
     : QObject(parent)
 {
-    auto exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(resource, "exd/enpcresident.exh"));
-    Q_ASSERT(exh->page_count == 1);
+    // ENPC
+    {
+        auto exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(resource, "exd/enpcresident.exh"));
+        m_enpcResidentPage = physis_gamedata_read_excel_sheet(resource, "ENpcResident", exh, Language::English, 0);
+    }
 
-    m_enpcResidentPage = physis_gamedata_read_excel_sheet(resource, "ENpcResident", exh, Language::English, 0);
+    // EOBJ
+    {
+        auto exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(resource, "exd/eobjname.exh"));
+        m_eobjNamePage = physis_gamedata_read_excel_sheet(resource, "EObjName", exh, Language::English, 0);
+    }
 }
 
 QString AppState::lookupENpcName(const uint32_t id)
@@ -21,4 +28,13 @@ QString AppState::lookupENpcName(const uint32_t id)
         return QString::fromLatin1(row->column_data[0].string._0);
     }
     return i18n("Event NPC");
+}
+
+QString AppState::lookupEObjName(uint32_t id)
+{
+    auto row = physis_exd_get_row(&m_eobjNamePage, id);
+    if (row->column_data && strlen(row->column_data[0].string._0) > 0) {
+        return QString::fromLatin1(row->column_data[0].string._0);
+    }
+    return i18n("Event Object");
 }

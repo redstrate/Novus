@@ -23,6 +23,11 @@ public:
      */
     QString lookupENpcName(uint32_t id);
 
+    /**
+     * @return The name for this Event Object. If not found, then a generic one.
+     */
+    QString lookupEObjName(uint32_t id);
+
 Q_SIGNALS:
     void mapLoaded();
     void visibleLayerIdsChanged();
@@ -30,4 +35,5 @@ Q_SIGNALS:
 
 private:
     physis_EXD m_enpcResidentPage;
+    physis_EXD m_eobjNamePage;
 };
