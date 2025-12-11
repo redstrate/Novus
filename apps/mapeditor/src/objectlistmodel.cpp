@@ -199,6 +199,10 @@ void ObjectListModel::refresh()
                         // Give the ENPC an actual name.
                         objectName = m_appState->lookupENpcName(object.data.event_npc._0.parent_data.parent_data.base_id);
                         break;
+                    case physis_LayerEntry::Tag::MapRange:
+                        // Give the ENPC an actual name.
+                        objectName = i18n("Map Range");
+                        break;
                     default:
                         break;
                     }

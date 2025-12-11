@@ -40,6 +40,7 @@ target_sources(novus-common
         include/settings.h
         include/vec3edit.h
         include/pathedit.h
+        include/enumedit.h
 
         src/aboutdata.cpp
         src/filecache.cpp
@@ -48,6 +49,7 @@ target_sources(novus-common
         src/settings.cpp
         src/vec3edit.cpp
         src/pathedit.cpp
+        src/enumedit.cpp
 
         launcherconfig.h)
 target_include_directories(novus-common
@@ -64,7 +66,8 @@ target_link_libraries(novus-common
         KF6::I18n
         Qt6::Core
         Qt6::Widgets
-        glm::glm)
+        glm::glm
+        magic_enum)
 target_compile_definitions(novus-common PRIVATE TRANSLATION_DOMAIN="novus")
 set_target_properties(novus-common PROPERTIES
         EXPORT_NAME NovusCommon

@@ -9,12 +9,15 @@
 #include "vec3edit.h"
 
 #include <KLocalizedString>
+#include <QCheckBox>
 
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QVBoxLayout>
 
 #include <glm/gtc/type_ptr.hpp>
+
+#include "enumedit.h"
 
 ObjectPropertiesWidget::ObjectPropertiesWidget(AppState *appState, QWidget *parent)
     : QWidget(parent)
@@ -62,6 +65,9 @@ void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &obje
         break;
     case physis_LayerEntry::Tag::EventNPC:
         addEventNPCSection(object.data.event_npc._0);
+        break;
+    case physis_LayerEntry::Tag::MapRange:
+        addMapRangeSection(object.data.map_range._0);
         break;
     default:
         break;
@@ -145,17 +151,14 @@ void ObjectPropertiesWidget::addBGSection(const physis_BGInstanceObject &bg)
 
 void ObjectPropertiesWidget::addEventSection(const physis_EventInstanceObject &eobj)
 {
+    addGameObjectSection(eobj.parent_data);
+
     auto section = new CollapseSection(i18n("Event Object"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
     section->setLayout(layout);
-
-    auto baseIdEdit = new QLineEdit();
-    baseIdEdit->setText(QString::number(eobj.parent_data.base_id));
-    baseIdEdit->setReadOnly(true);
-    layout->addRow(i18n("Base ID"), baseIdEdit);
 
     auto boundIdEdit = new QLineEdit();
     boundIdEdit->setText(QString::number(eobj.bound_instance_id));
@@ -200,7 +203,103 @@ void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObj
 
 void ObjectPropertiesWidget::addEventNPCSection(const physis_ENPCInstanceObject &enpc)
 {
-    auto section = new CollapseSection(i18n("Event NPC "));
+    addNPCSection(enpc.parent_data);
+
+    auto section = new CollapseSection(i18n("Event NPC"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addMapRangeSection(const physis_MapRangeInstanceObject &mapRange)
+{
+    addTriggerBoxSection(mapRange.parent_data);
+
+    auto section = new CollapseSection(i18n("Map Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto placeNameBlock = new QLineEdit();
+    placeNameBlock->setText(QString::number(mapRange.place_name_block));
+    placeNameBlock->setReadOnly(true);
+    layout->addRow(i18n("PlaceName Block"), placeNameBlock);
+
+    auto placeNameSpot = new QLineEdit();
+    placeNameSpot->setReadOnly(true);
+    placeNameSpot->setText(QString::number(mapRange.place_name_spot));
+    layout->addRow(i18n("PlaceName Spot"), placeNameSpot);
+
+    auto restBonusEffectiveCheckbox = new QCheckBox();
+    restBonusEffectiveCheckbox->setChecked(mapRange.rest_bonus_effective);
+    restBonusEffectiveCheckbox->setEnabled(false);
+    layout->addRow(i18n("Rest Bonus Effective"), restBonusEffectiveCheckbox);
+
+    auto discoveryIdEdit = new QLineEdit();
+    discoveryIdEdit->setReadOnly(true);
+    discoveryIdEdit->setText(QString::number(mapRange.discovery_id));
+    layout->addRow(i18n("Discovery ID"), discoveryIdEdit);
+
+    auto placeNameEnabledCheckbox = new QCheckBox();
+    placeNameEnabledCheckbox->setChecked(mapRange.place_name_enabled);
+    placeNameEnabledCheckbox->setEnabled(false);
+    layout->addRow(i18n("Place Name Enabled"), placeNameEnabledCheckbox);
+
+    auto discoveryEnabledCheckbox = new QCheckBox();
+    discoveryEnabledCheckbox->setChecked(mapRange.discovery_enabled);
+    discoveryEnabledCheckbox->setEnabled(false);
+    layout->addRow(i18n("Discovery Enabled"), discoveryEnabledCheckbox);
+
+    auto restBonusEnabledCheckbox = new QCheckBox();
+    restBonusEnabledCheckbox->setChecked(mapRange.rest_bonus_enabled);
+    restBonusEnabledCheckbox->setEnabled(false);
+    layout->addRow(i18n("Rest Bonus Enabled"), restBonusEnabledCheckbox);
+}
+
+void ObjectPropertiesWidget::addTriggerBoxSection(const physis_TriggerBoxInstanceObject &triggerBox)
+{
+    auto section = new CollapseSection(i18n("Trigger Box"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto shapeEdit = new EnumEdit<TriggerBoxShape>();
+    shapeEdit->setValue(triggerBox.trigger_box_shape);
+    shapeEdit->setEnabled(false);
+    layout->addRow(i18n("Shape"), shapeEdit);
+
+    auto priorityEdit = new QLineEdit();
+    priorityEdit->setText(QString::number(triggerBox.priority));
+    priorityEdit->setReadOnly(true);
+    layout->addRow(i18n("Priority"), priorityEdit);
+
+    auto enabledCheckBox = new QCheckBox();
+    enabledCheckBox->setChecked(triggerBox.enabled);
+    enabledCheckBox->setEnabled(false);
+    layout->addRow(i18n("Enabled"), enabledCheckBox);
+}
+
+void ObjectPropertiesWidget::addNPCSection(const physis_NPCInstanceObject &npc)
+{
+    addGameObjectSection(npc.parent_data);
+
+    auto section = new CollapseSection(i18n("NPC"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addGameObjectSection(const physis_GameInstanceObject &object)
+{
+    auto section = new CollapseSection(i18n("Game Object"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
@@ -208,7 +307,7 @@ void ObjectPropertiesWidget::addEventNPCSection(const physis_ENPCInstanceObject 
     section->setLayout(layout);
 
     auto baseIdEdit = new QLineEdit();
-    baseIdEdit->setText(QString::number(enpc.parent_data.parent_data.base_id));
+    baseIdEdit->setText(QString::number(object.base_id));
     baseIdEdit->setReadOnly(true);
     layout->addRow(i18n("Base ID"), baseIdEdit);
 }

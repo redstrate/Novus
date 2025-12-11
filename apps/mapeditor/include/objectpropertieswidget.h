@@ -5,6 +5,10 @@
 
 #include <QWidget>
 
+struct physis_GameInstanceObject;
+struct physis_NPCInstanceObject;
+struct physis_TriggerBoxInstanceObject;
+struct physis_MapRangeInstanceObject;
 struct physis_Layer;
 struct physis_PopRangeInstanceObject;
 struct physis_EventInstanceObject;
@@ -32,6 +36,10 @@ private:
     void addEventSection(const physis_EventInstanceObject &eobj);
     void addPopRangeSection(const physis_PopRangeInstanceObject &pop);
     void addEventNPCSection(const physis_ENPCInstanceObject &enpc);
+    void addMapRangeSection(const physis_MapRangeInstanceObject &mapRange);
+    void addTriggerBoxSection(const physis_TriggerBoxInstanceObject &triggerBox);
+    void addNPCSection(const physis_NPCInstanceObject &npc);
+    void addGameObjectSection(const physis_GameInstanceObject &object);
 
     AppState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;
