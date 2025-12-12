@@ -9,6 +9,7 @@
 #include "swapchain.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include "appstate.h"
 
@@ -55,6 +56,8 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
 
                         auto m = glm::mat4(1.0f);
                         m = glm::translate(m, {object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]});
+                        m *= glm::mat4_cast(glm::quat(glm::vec3(object.transform.rotation[0], object.transform.rotation[1], object.transform.rotation[2])));
+                        m = glm::scale(m, {object.transform.scale[0], object.transform.scale[1], object.transform.scale[2]});
 
                         vkCmdPushConstants(commandBuffer,
                                            m_pipelineLayout,
@@ -75,7 +78,36 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
                                            sizeof(glm::vec4),
                                            &color);
 
-                        Primitives::DrawSphere(commandBuffer);
+                        const auto decideBasedOnTrigger = [commandBuffer](const physis_TriggerBoxInstanceObject &trigger) {
+                            switch (trigger.trigger_box_shape) {
+                            case TriggerBoxShape::Box:
+                                Primitives::DrawCube(commandBuffer);
+                                break;
+                            case TriggerBoxShape::Sphere:
+                                Primitives::DrawSphere(commandBuffer);
+                                break;
+                            case TriggerBoxShape::Cylinder:
+                                Primitives::DrawCylinder(commandBuffer);
+                                break;
+                            case TriggerBoxShape::Plane:
+                                Primitives::DrawPlane(commandBuffer);
+                                break;
+                                // Unsupported ones
+                            case TriggerBoxShape::None:
+                            case TriggerBoxShape::Mesh:
+                            case TriggerBoxShape::PlaneTwoSided:
+                                break;
+                            }
+                        };
+
+                        switch (object.data.tag) {
+                        case physis_LayerEntry::Tag::MapRange:
+                            decideBasedOnTrigger(object.data.map_range._0.parent_data);
+                            break;
+                        default:
+                            Primitives::DrawSphere(commandBuffer);
+                            break;
+                        }
                     }
                 }
             }

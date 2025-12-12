@@ -14,6 +14,11 @@ struct Sphere {
     uint32_t indexCount;
 };
 
+struct Cylinder {
+    Buffer vertexBuffer;
+    uint32_t vertexCount;
+};
+
 class Primitives
 {
 public:
@@ -21,6 +26,12 @@ public:
     static void Cleanup(RenderManager *renderer);
 
     static void DrawSphere(VkCommandBuffer commandBuffer);
+    static void DrawCube(VkCommandBuffer commandBuffer);
+    static void DrawCylinder(VkCommandBuffer commandBuffer);
+    static void DrawPlane(VkCommandBuffer commandBuffer);
 
     static Sphere sphere;
+    static Sphere cube;
+    static Cylinder cylinder;
+    static Cylinder plane;
 };
