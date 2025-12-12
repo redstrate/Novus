@@ -200,8 +200,25 @@ void ObjectListModel::refresh()
                         objectName = m_appState->lookupENpcName(object.data.event_npc._0.parent_data.parent_data.base_id);
                         break;
                     case physis_LayerEntry::Tag::MapRange:
-                        // Give the ENPC an actual name.
                         objectName = i18n("Map Range");
+                        break;
+                    case physis_LayerEntry::Tag::SharedGroup:
+                        objectName = i18n("Shared Group");
+                        break;
+                    case physis_LayerEntry::Tag::Aetheryte:
+                        objectName = i18n("Aetheryte");
+                        break;
+                    case physis_LayerEntry::Tag::ExitRange:
+                        objectName = i18n("Exit Range");
+                        break;
+                    case physis_LayerEntry::Tag::EventRange:
+                        objectName = i18n("Event Range");
+                        break;
+                    case physis_LayerEntry::Tag::ChairMarker:
+                        objectName = i18n("Chair Marker");
+                        break;
+                    case physis_LayerEntry::Tag::PrefetchRange:
+                        objectName = i18n("Prefetch Range");
                         break;
                     default:
                         break;

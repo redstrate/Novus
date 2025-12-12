@@ -5,6 +5,12 @@
 
 #include <QWidget>
 
+struct physis_PrefetchRangeInstanceObject;
+struct physis_ChairMarkerInstanceObject;
+struct physis_EventRangeInstanceObject;
+struct physis_ExitRangeInstanceObject;
+struct physis_AetheryteInstanceObject;
+struct physis_SharedGroupInstanceObject;
 struct physis_GameInstanceObject;
 struct physis_NPCInstanceObject;
 struct physis_TriggerBoxInstanceObject;
@@ -40,6 +46,12 @@ private:
     void addTriggerBoxSection(const physis_TriggerBoxInstanceObject &triggerBox);
     void addNPCSection(const physis_NPCInstanceObject &npc);
     void addGameObjectSection(const physis_GameInstanceObject &object);
+    void addSharedGroupSection(const physis_SharedGroupInstanceObject &sharedGroup);
+    void addAetheryteSection(const physis_AetheryteInstanceObject &aetheryte);
+    void addExitRangeSection(const physis_ExitRangeInstanceObject &exitRange);
+    void addEventRangeSection(const physis_EventRangeInstanceObject &eventRange);
+    void addChairMarkerSection(const physis_ChairMarkerInstanceObject &chairMarker);
+    void addPrefetchRangeSection(const physis_PrefetchRangeInstanceObject &prefetchRange);
 
     AppState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;

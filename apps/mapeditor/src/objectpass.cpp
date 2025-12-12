@@ -104,6 +104,15 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
                         case physis_LayerEntry::Tag::MapRange:
                             decideBasedOnTrigger(object.data.map_range._0.parent_data);
                             break;
+                        case physis_LayerEntry::Tag::EventRange:
+                            decideBasedOnTrigger(object.data.event_range._0.parent_data);
+                            break;
+                        case physis_LayerEntry::Tag::ExitRange:
+                            decideBasedOnTrigger(object.data.exit_range._0.parent_data);
+                            break;
+                        case physis_LayerEntry::Tag::PrefetchRange:
+                            decideBasedOnTrigger(object.data.prefetch_range._0.parent_data);
+                            break;
                         default:
                             Primitives::DrawSphere(commandBuffer);
                             break;

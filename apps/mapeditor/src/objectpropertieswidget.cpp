@@ -69,6 +69,24 @@ void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &obje
     case physis_LayerEntry::Tag::MapRange:
         addMapRangeSection(object.data.map_range._0);
         break;
+    case physis_LayerEntry::Tag::SharedGroup:
+        addSharedGroupSection(object.data.shared_group._0);
+        break;
+    case physis_LayerEntry::Tag::Aetheryte:
+        addAetheryteSection(object.data.aetheryte._0);
+        break;
+    case physis_LayerEntry::Tag::ExitRange:
+        addExitRangeSection(object.data.exit_range._0);
+        break;
+    case physis_LayerEntry::Tag::EventRange:
+        addEventRangeSection(object.data.event_range._0);
+        break;
+    case physis_LayerEntry::Tag::ChairMarker:
+        addChairMarkerSection(object.data.chair_marker._0);
+        break;
+    case physis_LayerEntry::Tag::PrefetchRange:
+        addPrefetchRangeSection(object.data.prefetch_range._0);
+        break;
     default:
         break;
     }
@@ -310,6 +328,108 @@ void ObjectPropertiesWidget::addGameObjectSection(const physis_GameInstanceObjec
     baseIdEdit->setText(QString::number(object.base_id));
     baseIdEdit->setReadOnly(true);
     layout->addRow(i18n("Base ID"), baseIdEdit);
+}
+
+void ObjectPropertiesWidget::addSharedGroupSection(const physis_SharedGroupInstanceObject &sharedGroup)
+{
+    auto section = new CollapseSection(i18n("Shared Group"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+
+    auto assetPathEdit = new PathEdit();
+    assetPathEdit->setPath(QString::fromLatin1(sharedGroup.asset_path));
+    assetPathEdit->setReadOnly(true);
+    layout->addRow(i18n("Asset Path"), assetPathEdit);
+}
+
+void ObjectPropertiesWidget::addAetheryteSection(const physis_AetheryteInstanceObject &aetheryte)
+{
+    addGameObjectSection(aetheryte.parent_data);
+
+    auto section = new CollapseSection(i18n("Aetheryte"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+
+    auto boundInstanceIdEdit = new QLineEdit();
+    boundInstanceIdEdit->setText(QString::number(aetheryte.bound_instance_id));
+    boundInstanceIdEdit->setReadOnly(true);
+    layout->addRow(i18n("Bound Instance ID"), boundInstanceIdEdit);
+}
+
+void ObjectPropertiesWidget::addExitRangeSection(const physis_ExitRangeInstanceObject &exitRange)
+{
+    addTriggerBoxSection(exitRange.parent_data);
+
+    auto section = new CollapseSection(i18n("Exit Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+
+    auto exitTypeEdit = new EnumEdit<ExitType>();
+    exitTypeEdit->setValue(exitRange.exit_type);
+    exitTypeEdit->setEnabled(false);
+    layout->addRow(i18n("Exit Type"), exitTypeEdit);
+
+    auto zoneIdEdit = new QLineEdit();
+    zoneIdEdit->setText(QString::number(exitRange.zone_id));
+    zoneIdEdit->setReadOnly(true);
+    layout->addRow(i18n("Zone ID"), zoneIdEdit);
+
+    auto territoryTypeEdit = new QLineEdit();
+    territoryTypeEdit->setText(QString::number(exitRange.territory_type));
+    territoryTypeEdit->setReadOnly(true);
+    layout->addRow(i18n("Territory Type"), territoryTypeEdit);
+
+    auto destinationInstanceIdEdit = new QLineEdit();
+    destinationInstanceIdEdit->setText(QString::number(exitRange.destination_instance_id));
+    destinationInstanceIdEdit->setReadOnly(true);
+    layout->addRow(i18n("Destination Instance ID"), destinationInstanceIdEdit);
+
+    auto returnInstanceIdEdit = new QLineEdit();
+    returnInstanceIdEdit->setText(QString::number(exitRange.return_instance_id));
+    returnInstanceIdEdit->setReadOnly(true);
+    layout->addRow(i18n("Return Instance ID"), returnInstanceIdEdit);
+}
+
+void ObjectPropertiesWidget::addEventRangeSection(const physis_EventRangeInstanceObject &eventRange)
+{
+    addTriggerBoxSection(eventRange.parent_data);
+
+    auto section = new CollapseSection(i18n("Event Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+}
+
+void ObjectPropertiesWidget::addChairMarkerSection(const physis_ChairMarkerInstanceObject &chairMarker)
+{
+    auto section = new CollapseSection(i18n("Chair Marker"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+}
+
+void ObjectPropertiesWidget::addPrefetchRangeSection(const physis_PrefetchRangeInstanceObject &prefetchRange)
+{
+    addTriggerBoxSection(prefetchRange.parent_data);
+
+    auto section = new CollapseSection(i18n("Prefetch Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+
+    auto boundInstanceIdEdit = new QLineEdit();
+    boundInstanceIdEdit->setText(QString::number(prefetchRange.bound_instance_id));
+    boundInstanceIdEdit->setReadOnly(true);
+    layout->addRow(i18n("Bound Instance ID"), boundInstanceIdEdit);
 }
 
 #include "moc_objectpropertieswidget.cpp"
