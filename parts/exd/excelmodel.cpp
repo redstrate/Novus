@@ -12,17 +12,17 @@
 #include <QStandardPaths>
 #include <magic_enum.hpp>
 
-ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema, AbstractExcelResolver *resolver, Language language)
+ExcelModel::ExcelModel(const physis_EXH &exh, const physis_ExcelSheetPage &page, Schema schema, AbstractExcelResolver *resolver, Language language)
     : m_exh(exh)
-    , m_exd(exd)
+    , m_page(page)
     , m_schema(schema)
     , m_resolver(resolver)
     , m_language(language)
 {
     // We need to count the subrows to get the "true" row count.
     unsigned int regularRowCount = 0;
-    for (unsigned int i = 0; i < exd.row_count; i++) {
-        const auto &row = exd.rows[i];
+    for (unsigned int i = 0; i < page.row_count; i++) {
+        const auto &row = page.rows[i];
 
         for (unsigned int j = 0; j < row.row_count; j++) {
             // Push a "true" row index for the given subrow. This is just for faster lookups.
@@ -50,7 +50,7 @@ ExcelModel::ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema sche
     }
 
     Q_ASSERT(m_rowIndices.size() == m_rowCount);
-    Q_ASSERT(m_sortedColumnIndices.size() == m_exd.column_count);
+    Q_ASSERT(m_sortedColumnIndices.size() == m_page.column_count);
 }
 
 int ExcelModel::rowCount(const QModelIndex &parent) const
@@ -62,7 +62,7 @@ int ExcelModel::rowCount(const QModelIndex &parent) const
 int ExcelModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return static_cast<int>(m_exd.column_count);
+    return static_cast<int>(m_page.column_count);
 }
 
 QVariant ExcelModel::data(const QModelIndex &index, int role) const
@@ -268,7 +268,7 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Column
             const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
 
             if (const auto displayFieldIndex = schema.displayFieldIndex()) {
-                return displayForData(m_resolver->translateSchemaColumn(sheetName, row, *displayFieldIndex));
+                return displayForData(m_resolver->translateSchemaColumn(sheetName, &row.row_data[0], *displayFieldIndex));
             }
         }
     }
@@ -322,7 +322,7 @@ QVariant ExcelModel::displayForData(const physis_ColumnData &data)
 physis_ColumnData &ExcelModel::dataForIndex(const QModelIndex &index) const
 {
     const auto [row_index, _, subrow_id] = m_rowIndices[index.row()];
-    const auto &row = m_exd.rows[row_index];
+    const auto &row = m_page.rows[row_index];
     const auto &subrow = row.row_data[subrow_id];
 
     return subrow.column_data[index.column()];

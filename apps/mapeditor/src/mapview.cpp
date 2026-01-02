@@ -10,7 +10,7 @@
 #include "filecache.h"
 #include "objectpass.h"
 
-MapView::MapView(SqPackResource *data, FileCache &cache, AppState *appState, QWidget *parent)
+MapView::MapView(physis_SqPackResource *data, FileCache &cache, AppState *appState, QWidget *parent)
     : QWidget(parent)
     , m_data(data)
     , m_cache(cache)
@@ -47,8 +47,8 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
         QString mdlPath = QStringLiteral("%1%2").arg(basePath, QString::fromStdString(terrain.plates[i].filename));
         std::string mdlPathStd = mdlPath.toStdString();
 
-        auto plateMdlFile = physis_gamedata_extract_file(m_data, mdlPathStd.c_str());
-        auto plateMdl = physis_mdl_parse(plateMdlFile);
+        auto plateMdlFile = physis_sqpack_read(m_data, mdlPathStd.c_str());
+        auto plateMdl = physis_mdl_parse(m_data->platform, plateMdlFile);
         if (plateMdl.p_ptr != nullptr) {
             std::vector<physis_Material> materials;
             for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
@@ -56,7 +56,7 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
 
                 const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
                 if (matFile.size > 0) {
-                    auto mat = physis_material_parse(matFile);
+                    auto mat = physis_material_parse(m_data->platform, matFile);
                     materials.push_back(mat);
                 }
             }
@@ -85,9 +85,9 @@ void MapView::reloadMap()
 
     std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
 
-    auto tera_buffer = physis_gamedata_extract_file(m_data, bgPathStd.c_str());
+    auto tera_buffer = physis_sqpack_read(m_data, bgPathStd.c_str());
     if (tera_buffer.size > 0) {
-        auto tera = physis_parse_tera(tera_buffer);
+        auto tera = physis_terrain_parse(m_data->platform, tera_buffer);
         addTerrain(bgPath, tera);
     } else {
         qWarning() << "Failed to load" << bgPathStd;
@@ -111,12 +111,12 @@ void MapView::reloadMap()
                         std::string assetPath = object.data.bg._0.asset_path;
                         if (!assetPath.empty()) {
                             if (!mdlPart->modelExists(QString::fromStdString(assetPath))) {
-                                auto plateMdlFile = physis_gamedata_extract_file(m_data, assetPath.c_str());
+                                auto plateMdlFile = physis_sqpack_read(m_data, assetPath.c_str());
                                 if (plateMdlFile.size == 0) {
                                     continue;
                                 }
 
-                                auto plateMdl = physis_mdl_parse(plateMdlFile);
+                                auto plateMdl = physis_mdl_parse(m_data->platform, plateMdlFile);
                                 if (plateMdl.p_ptr != nullptr) {
                                     std::vector<physis_Material> materials;
                                     for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
@@ -124,7 +124,7 @@ void MapView::reloadMap()
 
                                         const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
                                         if (matFile.size > 0) {
-                                            auto mat = physis_material_parse(matFile);
+                                            auto mat = physis_material_parse(m_data->platform, matFile);
                                             materials.push_back(mat);
                                         }
                                     }

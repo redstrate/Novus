@@ -9,7 +9,7 @@
 #include <QStandardItemModel>
 #include <QVBoxLayout>
 
-MapListWidget::MapListWidget(SqPackResource *data, QWidget *parent)
+MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {
@@ -34,33 +34,32 @@ MapListWidget::MapListWidget(SqPackResource *data, QWidget *parent)
     auto originalModel = new QStandardItemModel();
     searchModel->setSourceModel(originalModel);
 
-    auto nameExh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(data, "exd/PlaceName.exh"));
-    auto territoryExh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(data, "exd/TerritoryType.exh"));
+    auto nameExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/PlaceName.exh"));
+    auto territoryExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/TerritoryType.exh"));
 
-    // Only one page, it seems?
-    auto nameExd = physis_gamedata_read_excel_sheet(data, "PlaceName", nameExh, Language::English, 0);
-    auto territoryExd = physis_gamedata_read_excel_sheet(data, "TerritoryType", territoryExh, Language::None, 0);
+    auto nameSheet = physis_sqpack_read_excel_sheet(data, "PlaceName", &nameExh, Language::English);
+    auto territorySheet = physis_sqpack_read_excel_sheet(data, "TerritoryType", &territoryExh, Language::None);
 
     // TODO: figure out why row_count in EXH is wrong?!
-    for (uint32_t i = 0; i < territoryExh->pages[0].row_count; i++) {
-        auto territoryExdRow = physis_exd_get_row(&territoryExd, i); // TODO: free, use all rows
-        if (territoryExdRow != nullptr) {
-            const char *bg = territoryExdRow->column_data[1].string._0;
+    for (uint32_t i = 0; i < territoryExh.pages[0].row_count; i++) {
+        auto territoryExdRow = physis_excel_get_row(&territorySheet, i); // TODO: free, use all rows
+        if (territoryExdRow.row_data) {
+            const char *bg = territoryExdRow.row_data[0].column_data[1].string._0;
             if (strlen(bg) == 0) {
                 continue;
             }
 
-            int placeRegionKey = territoryExdRow->column_data[3].u_int16._0;
-            auto regionExdRow = physis_exd_get_row(&nameExd, placeRegionKey); // TODO: free, use all rows
-            const char *placeRegion = regionExdRow->column_data[0].string._0;
+            int placeRegionKey = territoryExdRow.row_data[0].column_data[3].u_int16._0;
+            auto regionExdRow = physis_excel_get_row(&nameSheet, placeRegionKey); // TODO: free, use all rows
+            const char *placeRegion = regionExdRow.row_data[0].column_data[0].string._0;
 
-            int placeZoneKey = territoryExdRow->column_data[4].u_int16._0;
-            auto zoneExdRow = physis_exd_get_row(&nameExd, placeZoneKey); // TODO: free, use all rows
-            const char *placeZone = zoneExdRow->column_data[0].string._0;
+            int placeZoneKey = territoryExdRow.row_data[0].column_data[4].u_int16._0;
+            auto zoneExdRow = physis_excel_get_row(&nameSheet, placeZoneKey); // TODO: free, use all rows
+            const char *placeZone = zoneExdRow.row_data[0].column_data[0].string._0;
 
-            int placeNameKey = territoryExdRow->column_data[5].u_int16._0;
-            auto nameExdRow = physis_exd_get_row(&nameExd, placeNameKey); // TODO: free, use all rows
-            const char *placeName = nameExdRow->column_data[0].string._0;
+            int placeNameKey = territoryExdRow.row_data[0].column_data[5].u_int16._0;
+            auto nameExdRow = physis_excel_get_row(&nameSheet, placeNameKey); // TODO: free, use all rows
+            const char *placeName = nameExdRow.row_data[0].column_data[0].string._0;
 
             QStandardItem *item = new QStandardItem();
             item->setData(QString::fromStdString(bg));

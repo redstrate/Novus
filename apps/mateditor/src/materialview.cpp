@@ -8,15 +8,15 @@
 
 #include "filecache.h"
 
-MaterialView::MaterialView(SqPackResource *data, FileCache &cache, QWidget *parent)
+MaterialView::MaterialView(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)
     , data(data)
     , cache(cache)
 {
     mdlPart = new MDLPart(data, cache);
 
-    auto plateMdlFile = physis_gamedata_extract_file(data, "chara/equipment/e0028/model/c0101e0028_top.mdl");
-    m_mdl = physis_mdl_parse(plateMdlFile);
+    auto plateMdlFile = physis_sqpack_read(data, "chara/equipment/e0028/model/c0101e0028_top.mdl");
+    m_mdl = physis_mdl_parse(data->platform, plateMdlFile);
 
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -37,7 +37,7 @@ void MaterialView::addSphere(physis_Material material)
 
     QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
     std::string skelNameStd = skelName.toStdString();
-    mdlPart->setSkeleton(physis_parse_skeleton(physis_gamedata_extract_file(data, skelNameStd.c_str())));
+    mdlPart->setSkeleton(physis_skeleton_parse(data->platform, physis_sqpack_read(data, skelNameStd.c_str())));
 
     mdlPart->addModel(m_mdl, false, glm::vec3(), QStringLiteral("mdl"), {material}, 0);
 }

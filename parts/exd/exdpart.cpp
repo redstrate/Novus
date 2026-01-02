@@ -22,7 +22,7 @@
 #include <QSortFilterProxyModel>
 #include <QStandardPaths>
 
-EXDPart::EXDPart(SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent)
+EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent)
     : QWidget(parent)
     , data(data)
     , m_resolver(resolver)
@@ -40,14 +40,14 @@ EXDPart::EXDPart(SqPackResource *data, AbstractExcelResolver *resolver, QWidget 
 void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 {
     m_name = name;
-    exh = physis_parse_excel_sheet_header(buffer);
+    exh = physis_exh_parse(data->platform, buffer);
 
     loadTables();
 }
 
 void EXDPart::goToRow(const QString &query)
 {
-    for (uint32_t i = 0; i < exh->page_count; i++) {
+    for (uint32_t i = 0; i < exh.page_count; i++) {
         const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
         Q_ASSERT(tableWidget);
 
@@ -87,10 +87,10 @@ QList<QPair<QString, Language>> EXDPart::availableLanguages() const
 {
     QList<QPair<QString, Language>> languages;
 
-    for (unsigned int i = 0; i < exh->language_count; i++) {
+    for (unsigned int i = 0; i < exh.language_count; i++) {
         // Don't add None to the combo box, the reason for this is because
         // many localized sheets *report* this language but it's usually empty and useless.
-        const auto language = exh->languages[i];
+        const auto language = exh.languages[i];
         if (language == Language::None) {
             continue;
         }
@@ -111,15 +111,12 @@ void EXDPart::loadTables()
 
     pageTabWidget->clear();
 
-    for (uint32_t i = 0; i < exh->page_count; i++) {
+    auto sheet = physis_sqpack_read_excel_sheet(data, m_name.toStdString().c_str(), &exh, getSuitableLanguage(exh));
+
+    for (uint32_t i = 0; i < sheet.page_count; i++) {
         auto tableWidget = new QTableView();
 
-        auto exd = physis_gamedata_read_excel_sheet(data, m_name.toStdString().c_str(), exh, getSuitableLanguage(exh), i);
-        if (exd.p_ptr == nullptr) {
-            continue;
-        }
-
-        auto excelModel = new ExcelModel(*exh, exd, schema, m_resolver, getSuitableLanguage(exh));
+        auto excelModel = new ExcelModel(exh, sheet.pages[i], schema, m_resolver, getSuitableLanguage(exh));
 
         // Wrap it in a sortfilterproxy so we get column sorting for free
         auto proxyModel = new QSortFilterProxyModel();
@@ -140,21 +137,21 @@ void EXDPart::loadTables()
     // Expand the tabs and hide the tab bar if there's only one page
     // (it effectively makes the tab bar useless, so why show it?)
     pageTabWidget->tabBar()->setExpanding(true);
-    pageTabWidget->tabBar()->setVisible(exh->page_count > 1);
+    pageTabWidget->tabBar()->setVisible(exh.page_count > 1);
 }
 
-Language EXDPart::getSuitableLanguage(const physis_EXH *pExh) const
+Language EXDPart::getSuitableLanguage(const physis_EXH &pExh) const
 {
     // Find the preferred language first
-    for (uint32_t i = 0; i < pExh->language_count; i++) {
-        if (pExh->languages[i] == m_preferredLanguage) {
+    for (uint32_t i = 0; i < pExh.language_count; i++) {
+        if (pExh.languages[i] == m_preferredLanguage) {
             return m_preferredLanguage;
         }
     }
 
     // Fallback to None
-    for (uint32_t i = 0; i < pExh->language_count; i++) {
-        if (pExh->languages[i] == Language::None) {
+    for (uint32_t i = 0; i < pExh.language_count; i++) {
+        if (pExh.languages[i] == Language::None) {
             return Language::None;
         }
     }

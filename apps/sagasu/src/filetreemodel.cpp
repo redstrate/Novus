@@ -11,7 +11,7 @@
 
 Q_DECLARE_METATYPE(Hash)
 
-FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, SqPackResource *data, QObject *parent)
+FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, physis_SqPackResource *data, QObject *parent)
     : QAbstractItemModel(parent)
     , gameData(data)
     , m_database(database)
@@ -32,7 +32,7 @@ FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QSt
         QFileInfo info = it.fileInfo();
         if (info.exists() && info.completeSuffix().contains(QStringLiteral(".index"))) {
             std::string pathStd = info.filePath().toStdString();
-            const auto indexEntries = physis_index_parse(pathStd.c_str());
+            const auto indexEntries = physis_index_parse(data->platform, pathStd.c_str());
             for (uint32_t i = 0; i < indexEntries.num_hashes; i++) {
                 const auto hash = indexEntries.hashes[i];
                 switch (hash.tag) {

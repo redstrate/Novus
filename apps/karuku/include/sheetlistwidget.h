@@ -12,7 +12,7 @@ class SheetListWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit SheetListWidget(SqPackResource *data, QWidget *parent = nullptr);
+    explicit SheetListWidget(physis_SqPackResource *data, QWidget *parent = nullptr);
 
     void focusSearchField();
 
@@ -22,6 +22,6 @@ Q_SIGNALS:
 private:
     QListView *listWidget = nullptr;
 
-    SqPackResource *data = nullptr;
+    physis_SqPackResource *data = nullptr;
     QLineEdit *m_searchEdit = nullptr;
 };

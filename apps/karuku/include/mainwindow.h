@@ -6,23 +6,23 @@
 #include <KXmlGuiWindow>
 #include <QActionGroup>
 #include <QNetworkAccessManager>
+#include <physis.hpp>
 
 class SheetListWidget;
 class CachingExcelResolver;
 class EXDPart;
-struct SqPackResource;
 
 class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(SqPackResource *data);
+    explicit MainWindow(physis_SqPackResource data);
 
 private:
     void setupActions();
 
-    SqPackResource *data = nullptr;
+    physis_SqPackResource m_data;
     QNetworkAccessManager *mgr = nullptr;
     EXDPart *m_exdPart = nullptr;
     CachingExcelResolver *m_excelResolver = nullptr;

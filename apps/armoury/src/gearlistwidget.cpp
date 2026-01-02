@@ -11,7 +11,7 @@
 
 #include "gearlistmodel.h"
 
-GearListWidget::GearListWidget(SqPackResource *data, QWidget *parent)
+GearListWidget::GearListWidget(physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {

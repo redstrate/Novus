@@ -18,9 +18,9 @@
 
 #include "mdlpart.h"
 
-MainWindow::MainWindow(SqPackResource *data)
-    : data(data)
-    , cache(FileCache{*data})
+MainWindow::MainWindow(physis_SqPackResource data)
+    : m_data(data)
+    , cache(FileCache{m_data})
 {
     setMinimumSize(640, 480);
 
@@ -32,14 +32,14 @@ MainWindow::MainWindow(SqPackResource *data)
     layout->setSpacing(0);
     dummyWidget->setLayout(layout);
 
-    part = new MDLPart(data, cache);
+    part = new MDLPart(&m_data, cache);
     part->minimumCameraDistance = 0.05f;
 
     const int raceCode = physis_get_race_code(Race::Hyur, Tribe::Midlander, Gender::Male);
 
     QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
     std::string skelNameStd = skelName.toStdString();
-    part->setSkeleton(physis_parse_skeleton(physis_gamedata_extract_file(data, skelNameStd.c_str())));
+    part->setSkeleton(physis_skeleton_parse(m_data.platform, physis_sqpack_read(&m_data, skelNameStd.c_str())));
 
     layout->addWidget(part);
 
@@ -89,7 +89,7 @@ void MainWindow::setupActions()
                 return;
             }
 
-            auto mdl = physis_mdl_parse(buffer);
+            auto mdl = physis_mdl_parse(m_data.platform, buffer);
             if (mdl.p_ptr == nullptr) {
                 return;
             }

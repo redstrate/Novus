@@ -18,8 +18,9 @@
 #include <KSyntaxHighlighting/SyntaxHighlighter>
 #include <KSyntaxHighlighting/Theme>
 
-SHPKPart::SHPKPart(QWidget *parent)
+SHPKPart::SHPKPart(physis_SqPackResource *resource, QWidget *parent)
     : QWidget(parent)
+    , m_resource(resource)
 {
     auto layout = new QVBoxLayout();
     setLayout(layout);
@@ -143,7 +144,7 @@ SHPKPart::SHPKPart(QWidget *parent)
 
 void SHPKPart::load(physis_Buffer buffer)
 {
-    m_shpk = physis_parse_shpk(buffer);
+    m_shpk = physis_shpk_parse(m_resource->platform, buffer);
 
     // shaders
     shadersListWidget->clear();

@@ -25,7 +25,7 @@ public:
      *
      * The first sheet that contains said row ID will be returned.
      */
-    virtual std::optional<std::pair<QString, physis_ExcelRow const *>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language);
+    virtual std::optional<std::pair<QString, physis_ExcelRows>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language);
 
     virtual physis_ColumnData &translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column);
 };
@@ -33,25 +33,24 @@ public:
 struct EXDSelector {
     QString name;
     Language language;
-    uint32_t page;
 };
 
 inline bool operator==(const EXDSelector &a, const EXDSelector &b)
 {
-    return a.name == b.name && a.language == b.language && a.page == b.page;
+    return a.name == b.name && a.language == b.language;
 }
 
 inline size_t qHash(const EXDSelector &selector, const size_t seed)
 {
-    return qHashMulti(seed, selector.name, selector.language, selector.page);
+    return qHashMulti(seed, selector.name, selector.language);
 }
 
 class CachingExcelResolver : public AbstractExcelResolver
 {
 public:
-    explicit CachingExcelResolver(SqPackResource *resource);
+    explicit CachingExcelResolver(physis_SqPackResource *resource);
 
-    std::optional<std::pair<QString, physis_ExcelRow const *>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language) override;
+    std::optional<std::pair<QString, physis_ExcelRows>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language) override;
 
     physis_ColumnData &translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column) override;
 
@@ -59,19 +58,19 @@ private:
     /**
      * @brief Returns the EXH for a given sheet, loading and caching it as necessary.
      */
-    physis_EXH *getCachedEXH(const QString &sheetName);
+    physis_EXH &getCachedEXH(const QString &sheetName);
 
     /**
-     * @brief Returns the EXD for a given selector, loading and caching it as necessary.
+     * @brief Returns the sheet for a given selector, loading and caching it as necessary.
      */
-    physis_EXD &getCachedEXD(physis_EXH *exh, const EXDSelector &selector);
+    physis_ExcelSheet &getCachedSheet(const physis_EXH &exh, const EXDSelector &selector);
 
     /**
      * @brief Checks whether this sheet contains said row ID. Returns the page it can be found on, if found.
      */
-    std::optional<uint32_t> hasRow(const physis_EXH *exh, uint32_t row) const;
+    std::optional<uint32_t> hasRow(const physis_EXH &exh, uint32_t row) const;
 
-    SqPackResource *m_resource = nullptr;
-    QHash<QString, physis_EXH *> m_cachedEXHs;
-    QHash<EXDSelector, physis_EXD> m_cachedEXDs;
+    physis_SqPackResource *m_resource = nullptr;
+    QHash<QString, physis_EXH> m_cachedEXHs;
+    QHash<EXDSelector, physis_ExcelSheet> m_cachedSheets;
 };

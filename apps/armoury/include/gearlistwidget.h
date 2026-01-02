@@ -14,7 +14,7 @@ class GearListWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit GearListWidget(SqPackResource *data, QWidget *parent = nullptr);
+    explicit GearListWidget(physis_SqPackResource *data, QWidget *parent = nullptr);
 
 Q_SIGNALS:
     void gearSelected(const GearInfo &gear);
@@ -22,5 +22,5 @@ Q_SIGNALS:
 private:
     QTreeView *listWidget = nullptr;
 
-    SqPackResource *data = nullptr;
+    physis_SqPackResource *data = nullptr;
 };

@@ -7,19 +7,17 @@
 
 #include "filecache.h"
 
-struct SqPackResource;
-
 class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(SqPackResource *data);
+    explicit MainWindow(physis_SqPackResource data);
 
 private:
     void setupActions();
 
-    SqPackResource *data = nullptr;
+    physis_SqPackResource m_data;
     FileCache cache;
     physis_Material m_material;
 };

@@ -16,7 +16,7 @@ class FileTreeWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit FileTreeWindow(HashDatabase &database, const QString &gamePath, SqPackResource *data, QWidget *parent = nullptr);
+    explicit FileTreeWindow(HashDatabase &database, const QString &gamePath, physis_SqPackResource *data, QWidget *parent = nullptr);
 
     void refreshModel();
     void setShowUnknown(bool show);
@@ -28,7 +28,7 @@ Q_SIGNALS:
     void pathSelected(const QString &indexPath, Hash hash, const QString &path);
 
 private:
-    SqPackResource *data = nullptr;
+    physis_SqPackResource *data = nullptr;
     FileTreeModel *m_fileModel = nullptr;
     QSortFilterProxyModel *m_searchModel = nullptr;
     QCheckBox *m_unknownCheckbox = nullptr;

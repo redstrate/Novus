@@ -16,7 +16,7 @@ class ExcelModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    ExcelModel(const physis_EXH &exh, const physis_EXD &exd, Schema schema, AbstractExcelResolver *resolver, Language language);
+    ExcelModel(const physis_EXH &exh, const physis_ExcelSheetPage &page, Schema schema, AbstractExcelResolver *resolver, Language language);
 
     enum ExcelRoles {
         ResolvedSheetRole = Qt::UserRole,
@@ -48,7 +48,7 @@ private:
     physis_ColumnData &dataForIndex(const QModelIndex &index) const;
 
     physis_EXH m_exh;
-    physis_EXD m_exd;
+    physis_ExcelSheetPage m_page;
     uint32_t m_rowCount = 0;
     std::vector<std::tuple<int, int, int>> m_rowIndices;
     Schema m_schema; // TODO: don't copy

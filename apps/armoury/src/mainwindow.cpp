@@ -24,9 +24,9 @@
 #include "penumbraapi.h"
 #include "settingswindow.h"
 
-MainWindow::MainWindow(SqPackResource *in_data)
-    : data(*in_data)
-    , cache(FileCache{*in_data})
+MainWindow::MainWindow(physis_SqPackResource in_data)
+    : m_data(in_data)
+    , cache(FileCache{m_data})
     , m_api(new PenumbraApi(this))
 {
     setMinimumSize(QSize(800, 600));
@@ -35,11 +35,11 @@ MainWindow::MainWindow(SqPackResource *in_data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    auto gearListWidget = new GearListWidget(&data);
+    auto gearListWidget = new GearListWidget(&m_data);
     gearListWidget->setMaximumWidth(350);
     dummyWidget->addWidget(gearListWidget);
 
-    gearView = new SingleGearView(&data, cache);
+    gearView = new SingleGearView(&m_data, cache);
     connect(gearView, &SingleGearView::importedModel, m_api, &PenumbraApi::redrawAll);
     connect(gearListWidget, &GearListWidget::gearSelected, gearView, &SingleGearView::setGear);
 
@@ -55,7 +55,7 @@ MainWindow::MainWindow(SqPackResource *in_data)
     tabWidget->tabBar()->setExpanding(true);
     dummyWidget->addWidget(tabWidget);
 
-    fullModelViewer = new FullModelViewer(&data, cache);
+    fullModelViewer = new FullModelViewer(&m_data, cache);
     connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {
         gearView->setFMVAvailable(!loading);
     });
@@ -66,7 +66,7 @@ MainWindow::MainWindow(SqPackResource *in_data)
 
         int i = 0;
         for (auto material : gearView->getLoadedMaterials()) {
-            auto materialView = new MtrlPart(in_data);
+            auto materialView = new MtrlPart(&m_data);
             materialView->load(material);
             materialsView->addTab(materialView, i18n("Material %1", i)); // TODO: it would be nice to get the actual material name here
 
@@ -114,7 +114,7 @@ void MainWindow::setupActions()
     cmpEditorAction->setText(i18n("&CMP Editor"));
     cmpEditorAction->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
     connect(cmpEditorAction, &QAction::triggered, [this] {
-        auto cmpEditor = new CmpEditor(&data);
+        auto cmpEditor = new CmpEditor(&m_data);
         cmpEditor->show();
     });
     actionCollection()->addAction(QStringLiteral("cmp_editor"), cmpEditorAction);

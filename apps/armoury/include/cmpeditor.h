@@ -10,5 +10,5 @@ class CmpEditor : public CmpPart
     Q_OBJECT
 
 public:
-    explicit CmpEditor(SqPackResource *data, QWidget *parent = nullptr);
+    explicit CmpEditor(physis_SqPackResource *data, QWidget *parent = nullptr);
 };

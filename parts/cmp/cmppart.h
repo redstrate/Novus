@@ -28,14 +28,14 @@ class CmpPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit CmpPart(SqPackResource *data, QWidget *parent = nullptr);
+    explicit CmpPart(physis_SqPackResource *data, QWidget *parent = nullptr);
 
     void load(physis_Buffer file);
 
 private:
     void loadRaceData(Race race, Tribe subrace);
 
-    SqPackResource *data = nullptr;
+    physis_SqPackResource *data = nullptr;
     physis_CMP cmp{};
 
     QDoubleSpinBox *maleMinSize = nullptr;

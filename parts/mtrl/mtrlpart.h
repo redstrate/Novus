@@ -18,7 +18,7 @@ class MtrlPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit MtrlPart(SqPackResource *data, QWidget *parent = nullptr);
+    explicit MtrlPart(physis_SqPackResource *data, QWidget *parent = nullptr);
 
     void load(physis_Material file);
 
@@ -36,5 +36,5 @@ private:
     physis_Material m_material = {};
     physis_SHPK m_shpk = {};
 
-    SqPackResource *m_data = nullptr;
+    physis_SqPackResource *m_data = nullptr;
 };

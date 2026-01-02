@@ -4,9 +4,7 @@
 #pragma once
 
 #include <KXmlGuiWindow>
-#include <QComboBox>
 #include <physis.hpp>
-#include <unordered_map>
 
 #include "fullmodelviewer.h"
 #include "gearview.h"
@@ -14,7 +12,6 @@
 #include "mtrlpart.h"
 #include "singlegearview.h"
 
-struct SqPackResource;
 class FileCache;
 class PenumbraApi;
 
@@ -23,7 +20,7 @@ class MainWindow : public KXmlGuiWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(SqPackResource *data);
+    explicit MainWindow(physis_SqPackResource data);
 
 public Q_SLOTS:
     void configure();
@@ -36,7 +33,7 @@ private:
     QTabWidget *materialsView = nullptr;
     MetadataView *metadataView = nullptr;
 
-    SqPackResource &data;
+    physis_SqPackResource m_data;
     FileCache cache;
     PenumbraApi *m_api = nullptr;
 };

@@ -26,7 +26,7 @@ class RendererPass;
 class RenderManager
 {
 public:
-    RenderManager(SqPackResource *data);
+    RenderManager(physis_SqPackResource *data);
 
     bool initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
@@ -72,6 +72,6 @@ private:
     ImGuiPass *m_imGuiPass = nullptr;
     Device *m_device = nullptr;
     BaseRenderer *m_renderer = nullptr;
-    SqPackResource *m_data = nullptr;
+    physis_SqPackResource *m_data = nullptr;
     std::vector<RendererPass *> m_passes;
 };

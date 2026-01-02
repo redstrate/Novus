@@ -28,8 +28,8 @@
 
 #include <QLineEdit>
 
-MainWindow::MainWindow(SqPackResource *data)
-    : data(data)
+MainWindow::MainWindow(physis_SqPackResource data)
+    : m_data(data)
 {
     setMinimumSize(1280, 720);
 
@@ -39,21 +39,21 @@ MainWindow::MainWindow(SqPackResource *data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    m_sheetListWidget = new SheetListWidget(data);
+    m_sheetListWidget = new SheetListWidget(&m_data);
     m_sheetListWidget->setMaximumWidth(200);
     dummyWidget->addWidget(m_sheetListWidget);
 
-    m_excelResolver = new CachingExcelResolver(data);
+    m_excelResolver = new CachingExcelResolver(&m_data);
 
-    m_exdPart = new EXDPart(data, m_excelResolver);
+    m_exdPart = new EXDPart(&m_data, m_excelResolver);
     m_exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
     dummyWidget->addWidget(m_exdPart);
 
-    connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, [this, data](const QString &name) {
+    connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, [this](const QString &name) {
         auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
         auto pathStd = path.toStdString();
 
-        auto file = physis_gamedata_extract_file(data, pathStd.c_str());
+        auto file = physis_sqpack_read(&m_data, pathStd.c_str());
 
         m_exdPart->loadSheet(name, file);
 

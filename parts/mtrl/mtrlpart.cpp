@@ -16,7 +16,7 @@
 #include "pathedit.h"
 #include "texpart.h"
 
-MtrlPart::MtrlPart(SqPackResource *data, QWidget *parent)
+MtrlPart::MtrlPart(physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , m_data(data)
 {
@@ -60,9 +60,9 @@ void MtrlPart::load(physis_Material file)
         std::string shpkPath = "shader/sm5/shpk/" + std::string(m_material.shpk_name);
         m_shaderPackageName->setPath(QString::fromStdString(shpkPath));
 
-        auto shpkData = physis_gamedata_extract_file(m_data, shpkPath.c_str());
+        auto shpkData = physis_sqpack_read(m_data, shpkPath.c_str());
         if (shpkData.data != nullptr) {
-            m_shpk = physis_parse_shpk(shpkData);
+            m_shpk = physis_shpk_parse(m_data->platform, shpkData);
         }
     }
     rebuild();
@@ -128,7 +128,7 @@ void MtrlPart::rebuild()
         groupBox->setLayout(layout);
 
         auto texWidget = new TexPart(m_data);
-        texWidget->loadTex(physis_gamedata_extract_file(m_data, m_material.textures[i]));
+        texWidget->loadTex(physis_sqpack_read(m_data, m_material.textures[i]));
         layout->addWidget(texWidget);
 
         auto texturePath = new PathEdit();

@@ -19,7 +19,7 @@ class EXDPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit EXDPart(SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent = nullptr);
+    explicit EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent = nullptr);
 
     void loadSheet(const QString &name, physis_Buffer buffer);
     void goToRow(const QString &query);
@@ -33,19 +33,14 @@ public:
 private:
     void loadTables();
 
-    SqPackResource *data = nullptr;
+    physis_SqPackResource *data = nullptr;
 
     QTabWidget *pageTabWidget = nullptr;
     QFormLayout *headerFormLayout = nullptr;
 
-    struct CachedExcel {
-        physis_EXH *exh = nullptr;
-        physis_EXD exd{};
-    };
-    QMap<QString, CachedExcel> cachedExcelSheets;
-    Language getSuitableLanguage(const physis_EXH *pExh) const;
+    Language getSuitableLanguage(const physis_EXH &pExh) const;
     Language m_preferredLanguage = Language::English;
-    physis_EXH *exh = nullptr;
+    physis_EXH exh;
     QString m_name;
     AbstractExcelResolver *m_resolver = nullptr;
 };

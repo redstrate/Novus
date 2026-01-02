@@ -13,25 +13,25 @@
 #include "materialview.h"
 #include "mtrlpart.h"
 
-MainWindow::MainWindow(SqPackResource *data)
-    : data(data)
-    , cache(*data)
+MainWindow::MainWindow(physis_SqPackResource data)
+    : m_data(data)
+    , cache(data)
 {
     setMinimumSize(1280, 720);
 
-    auto matFile = physis_gamedata_extract_file(data, "chara/equipment/e0028/material/v0001/mt_c0101e0028_top_a.mtrl");
-    m_material = physis_material_parse(matFile);
+    auto matFile = physis_sqpack_read(&m_data, "chara/equipment/e0028/material/v0001/mt_c0101e0028_top_a.mtrl");
+    m_material = physis_material_parse(m_data.platform, matFile);
 
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    auto materialProperty = new MtrlPart(data);
+    auto materialProperty = new MtrlPart(&m_data);
     materialProperty->setMaximumWidth(400);
     materialProperty->load(m_material);
     dummyWidget->addWidget(materialProperty);
 
-    auto matView = new MaterialView(data, cache);
+    auto matView = new MaterialView(&m_data, cache);
     matView->addSphere(m_material);
     dummyWidget->addWidget(matView);
 

@@ -9,7 +9,6 @@
 
 class ObjectPropertiesWidget;
 class ObjectListWidget;
-struct SqPackResource;
 class MapView;
 class AppState;
 
@@ -18,14 +17,14 @@ class MainWindow : public KXmlGuiWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(SqPackResource *data);
+    explicit MainWindow(physis_SqPackResource data);
 
 private:
     void setupActions();
     void openMap(const QString &basePath);
     void updateActionState();
 
-    SqPackResource *data = nullptr;
+    physis_SqPackResource m_data;
     FileCache cache;
     MapView *mapView = nullptr;
     ObjectListWidget *objectListWidget = nullptr;

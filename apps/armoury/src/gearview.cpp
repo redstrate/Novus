@@ -11,7 +11,7 @@
 #include "filecache.h"
 #include "magic_enum.hpp"
 
-GearView::GearView(SqPackResource *data, FileCache &cache, QWidget *parent)
+GearView::GearView(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
     : QFrame(parent)
     , data(data)
     , cache(cache)
@@ -268,7 +268,7 @@ void GearView::reloadRaceDeforms()
 
     QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
     std::string skelNameStd = skelName.toStdString();
-    mdlPart->setSkeleton(physis_parse_skeleton(physis_gamedata_extract_file(data, skelNameStd.c_str())));
+    mdlPart->setSkeleton(physis_skeleton_parse(data->platform, physis_sqpack_read(data, skelNameStd.c_str())));
 }
 
 MDLPart &GearView::part() const
@@ -319,7 +319,7 @@ void GearView::updatePart()
             }
 
             if (mdl_data.size > 0) {
-                auto mdl = physis_mdl_parse(mdl_data);
+                auto mdl = physis_mdl_parse(data->platform, mdl_data);
                 if (mdl.p_ptr != nullptr) {
                     std::vector<physis_Material> materials;
                     for (uint32_t i = 0; i < mdl.num_material_names; i++) {
@@ -330,12 +330,12 @@ void GearView::updatePart()
                             physis_build_skin_material_path(physis_get_race_code(fallbackRace, fallbackTribe, currentGender), 1, material_name);
 
                         if (cache.fileExists(QLatin1String(mtrl_path.c_str()))) {
-                            auto mat = physis_material_parse(cache.lookupFile(QLatin1String(mtrl_path.c_str())));
+                            auto mat = physis_material_parse(data->platform, cache.lookupFile(QLatin1String(mtrl_path.c_str())));
                             materials.push_back(mat);
                         }
 
                         if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                            auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
+                            auto mat = physis_material_parse(data->platform, cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
                             materials.push_back(mat);
                         }
                     }
@@ -383,7 +383,7 @@ void GearView::updatePart()
         auto mdl_data = cache.lookupFile(mdlPath);
 
         if (mdl_data.size > 0) {
-            auto mdl = physis_mdl_parse(mdl_data);
+            auto mdl = physis_mdl_parse(data->platform, mdl_data);
             if (mdl.p_ptr != nullptr) {
                 std::vector<physis_Material> materials;
                 for (uint32_t i = 0; i < mdl.num_material_names; i++) {
@@ -392,7 +392,7 @@ void GearView::updatePart()
                         build_material_path_func(physis_get_race_code(currentRace, currentTribe, currentGender), index, material_name);
 
                     if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
-                        auto mat = physis_material_parse(cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
+                        auto mat = physis_material_parse(data->platform, cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
                         materials.push_back(mat);
                     }
                 }

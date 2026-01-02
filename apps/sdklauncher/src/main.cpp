@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
             const std::string dirStd = dir.toStdString();
 
-            if (!physis_gamedata_initialize(dirStd.c_str()))
+            if (!physis_sqpack_initialize(dirStd.c_str()).p_ptr)
                 continue;
 
             game.writeEntry("GameDir", dir);

@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-TexPart::TexPart(SqPackResource *data, QWidget *parent)
+TexPart::TexPart(physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {
@@ -19,7 +19,7 @@ TexPart::TexPart(SqPackResource *data, QWidget *parent)
 
 void TexPart::loadTex(physis_Buffer file)
 {
-    auto tex = physis_texture_parse(file);
+    auto tex = physis_texture_parse(data->platform, file);
 
     QImage image(tex.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
     m_label->setQPixmap(QPixmap::fromImage(image));
@@ -27,7 +27,7 @@ void TexPart::loadTex(physis_Buffer file)
 
 void TexPart::loadHwc(physis_Buffer file)
 {
-    auto tex = physis_parse_hwc(file);
+    auto tex = physis_hwc_parse(data->platform, file);
 
     QImage image(tex.rgba, Hwc_WIDTH, Hwc_HEIGHT, QImage::Format_RGBA8888);
     m_label->setQPixmap(QPixmap::fromImage(image));

@@ -11,7 +11,7 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-EXLPart::EXLPart(SqPackResource *data, QWidget *parent)
+EXLPart::EXLPart(physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {
@@ -24,7 +24,7 @@ EXLPart::EXLPart(SqPackResource *data, QWidget *parent)
 
 void EXLPart::load(physis_Buffer file)
 {
-    auto exl = physis_gamedata_read_excel_list(file);
+    auto exl = physis_exl_parse(data->platform, file);
     if (exl.entry_count > 0) {
         m_tableWidget->clear();
         m_tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);

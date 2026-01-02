@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
     const QString gameDir{getGameDirectory()};
     const std::string gameDirStd{gameDir.toStdString()};
-    const auto window = new MainWindow(gameDir, physis_gamedata_initialize(gameDirStd.c_str()));
+    const auto window = new MainWindow(gameDir, physis_sqpack_initialize(gameDirStd.c_str()));
     window->show();
 
     const QStringList args = parser.positionalArguments();

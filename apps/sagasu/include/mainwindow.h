@@ -4,10 +4,8 @@
 #pragma once
 
 #include <KXmlGuiWindow>
-#include <QMap>
 #include <QMdiArea>
 #include <QNetworkAccessManager>
-#include <QTreeWidget>
 
 #include "filecache.h"
 #include "filetreewindow.h"
@@ -16,19 +14,18 @@
 #include <QLabel>
 
 class AbstractExcelResolver;
-struct SqPackResource;
 
 class MainWindow : public KXmlGuiWindow
 {
 public:
-    MainWindow(const QString &gamePath, SqPackResource *data);
+    MainWindow(const QString &gamePath, physis_SqPackResource data);
 
     bool selectPath(const QString &path);
 
 private:
     void setupActions();
 
-    SqPackResource *data = nullptr;
+    physis_SqPackResource m_data;
     QTabWidget *partHolder = nullptr;
     FileCache fileCache;
     HashDatabase m_database;

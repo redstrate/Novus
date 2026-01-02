@@ -18,7 +18,7 @@
 #include "mdlimport.h"
 #include "pathedit.h"
 
-SingleGearView::SingleGearView(SqPackResource *data, FileCache &cache, QWidget *parent)
+SingleGearView::SingleGearView(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)
     , gearView(new GearView(data, cache))
     , data(data)
@@ -200,7 +200,7 @@ SingleGearView::SingleGearView(SqPackResource *data, FileCache &cache, QWidget *
                                                                   sanitizeMdlPath(gearView->getLoadedGearPath()),
                                                                   i18n("MDL File (*.mdl)"));
 
-            auto buffer = physis_gamedata_extract_file(data, gearView->getLoadedGearPath().toStdString().c_str());
+            auto buffer = physis_sqpack_read(data, gearView->getLoadedGearPath().toStdString().c_str());
 
             QFile file(fileName);
             if (file.open(QIODevice::WriteOnly)) {

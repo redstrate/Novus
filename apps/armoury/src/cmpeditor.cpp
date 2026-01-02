@@ -4,12 +4,12 @@
 #include "cmpeditor.h"
 #include <KLocalizedString>
 
-CmpEditor::CmpEditor(SqPackResource *data, QWidget *parent)
+CmpEditor::CmpEditor(physis_SqPackResource *data, QWidget *parent)
     : CmpPart(data, parent)
 {
     setWindowTitle(i18nc("@title:window CMP is an abbreviation", "CMP Editor"));
 
-    load(physis_gamedata_extract_file(data, "chara/xls/charamake/human.cmp"));
+    load(physis_sqpack_read(data, "chara/xls/charamake/human.cmp"));
 }
 
 #include "moc_cmpeditor.cpp"

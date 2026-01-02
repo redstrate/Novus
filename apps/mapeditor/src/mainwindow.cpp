@@ -20,13 +20,13 @@
 #include "objectlistwidget.h"
 #include "objectpropertieswidget.h"
 
-MainWindow::MainWindow(SqPackResource *data)
-    : data(data)
-    , cache(*data)
+MainWindow::MainWindow(physis_SqPackResource data)
+    : m_data(data)
+    , cache(m_data)
 {
     setMinimumSize(1280, 720);
 
-    m_appState = new AppState(data, this);
+    m_appState = new AppState(&m_data, this);
 
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
@@ -36,7 +36,7 @@ MainWindow::MainWindow(SqPackResource *data)
     objectListWidget->setMaximumWidth(400);
     dummyWidget->addWidget(objectListWidget);
 
-    mapView = new MapView(data, cache, m_appState);
+    mapView = new MapView(&m_data, cache, m_appState);
     dummyWidget->addWidget(mapView);
 
     objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
@@ -67,7 +67,7 @@ void MainWindow::setupActions()
             layout->setContentsMargins({});
             dialog->setLayout(layout);
 
-            auto listWidget = new MapListWidget(data);
+            auto listWidget = new MapListWidget(&m_data);
             connect(listWidget, &MapListWidget::mapSelected, this, [this, dialog](const QString &basePath) {
                 dialog->close();
                 openMap(basePath);
@@ -101,9 +101,9 @@ void MainWindow::openMap(const QString &basePath)
         QString lgbPath = QStringLiteral("bg/%1/level/%2.lgb").arg(base2Path, name);
         std::string bgLgbPathStd = lgbPath.toStdString();
 
-        auto bg_buffer = physis_gamedata_extract_file(data, bgLgbPathStd.c_str());
+        auto bg_buffer = physis_sqpack_read(&m_data, bgLgbPathStd.c_str());
         if (bg_buffer.size > 0) {
-            auto lgb = physis_layergroup_read(bg_buffer);
+            auto lgb = physis_layergroup_parse(m_data.platform, bg_buffer);
             if (lgb.num_chunks > 0) {
                 m_appState->lgbFiles.push_back({name, lgb});
             }

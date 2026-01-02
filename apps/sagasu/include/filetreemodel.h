@@ -42,7 +42,7 @@ class FileTreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, SqPackResource *data, QObject *parent = nullptr);
+    explicit FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, physis_SqPackResource *data, QObject *parent = nullptr);
 
     enum CustomRoles {
         PathRole = Qt::UserRole,
@@ -64,7 +64,7 @@ public:
     QModelIndex search(const QString &path) const;
 
 private:
-    SqPackResource *gameData = nullptr;
+    physis_SqPackResource *gameData = nullptr;
     TreeInformation *rootItem = nullptr;
 
     void addKnownFolder(const QString &string);

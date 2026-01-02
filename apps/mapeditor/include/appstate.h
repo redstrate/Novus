@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2025 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#pragma once
+
 #include <QObject>
 
 #include <physis.hpp>
@@ -10,7 +12,7 @@ class AppState : public QObject
     Q_OBJECT
 
 public:
-    explicit AppState(SqPackResource *resource, QObject *parent = nullptr);
+    explicit AppState(physis_SqPackResource *resource, QObject *parent = nullptr);
 
     QString basePath;
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
@@ -21,12 +23,12 @@ public:
     /**
      * @return The name for this Event NPC. If not found, then a generic one.
      */
-    QString lookupENpcName(uint32_t id);
+    QString lookupENpcName(uint32_t id) const;
 
     /**
      * @return The name for this Event Object. If not found, then a generic one.
      */
-    QString lookupEObjName(uint32_t id);
+    QString lookupEObjName(uint32_t id) const;
 
 Q_SIGNALS:
     void mapLoaded();
@@ -34,6 +36,6 @@ Q_SIGNALS:
     void selectionChanged();
 
 private:
-    physis_EXD m_enpcResidentPage;
-    physis_EXD m_eobjNamePage;
+    physis_ExcelSheet m_enpcResidentSheet;
+    physis_ExcelSheet m_eobjNameSheet;
 };

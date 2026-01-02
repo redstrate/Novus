@@ -9,7 +9,7 @@
 #include <QStringListModel>
 #include <QVBoxLayout>
 
-SheetListWidget::SheetListWidget(SqPackResource *data, QWidget *parent)
+SheetListWidget::SheetListWidget(physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , data(data)
 {
@@ -37,7 +37,7 @@ SheetListWidget::SheetListWidget(SqPackResource *data, QWidget *parent)
 
     QStringList list;
 
-    auto names = physis_gamedata_get_all_sheet_names(data);
+    auto names = physis_sqpack_get_all_sheet_names(data);
     for (uint32_t i = 0; i < names.name_count; i++) {
         list.push_back(QString::fromStdString(names.names[i]));
     }

@@ -25,7 +25,7 @@ class GearListModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit GearListModel(SqPackResource *data, QObject *parent = nullptr);
+    explicit GearListModel(physis_SqPackResource *data, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
@@ -39,15 +39,12 @@ public:
     std::optional<GearInfo> getGearFromIndex(const QModelIndex &index);
 
 private:
-    void exdFinished(int index);
-    void finished();
-
-    physis_EXH *exh;
-    QFutureWatcher<physis_EXD> *exdFuture;
+    physis_EXH m_exh;
+    physis_ExcelSheet m_sheet;
 
     std::vector<GearInfo> gears;
     QStringList slotNames;
 
-    SqPackResource *gameData = nullptr;
+    physis_SqPackResource *gameData = nullptr;
     TreeInformation *rootItem = nullptr;
 };

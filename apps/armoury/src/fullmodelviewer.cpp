@@ -16,7 +16,7 @@
 #include "boneeditor.h"
 #include "magic_enum.hpp"
 
-FullModelViewer::FullModelViewer(SqPackResource *data, FileCache &cache, QWidget *parent)
+FullModelViewer::FullModelViewer(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
     : QMainWindow(parent)
     , data(data)
 {
@@ -54,7 +54,7 @@ FullModelViewer::FullModelViewer(SqPackResource *data, FileCache &cache, QWidget
         updateHeightScaling((float)charDat.customize.height / 100.0f);
     });
 
-    cmp = physis_cmp_parse(physis_gamedata_extract_file(data, "chara/xls/charamake/human.cmp"));
+    cmp = physis_cmp_parse(data->platform, physis_sqpack_read(data, "chara/xls/charamake/human.cmp"));
 
     gearView = new GearView(data, cache);
 

@@ -37,9 +37,9 @@
 #include <QInputDialog>
 #include <QStringListModel>
 
-MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
-    : data(data)
-    , fileCache(*data)
+MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
+    : m_data(data)
+    , fileCache(m_data)
 {
     setMinimumSize(1280, 720);
 
@@ -64,8 +64,8 @@ MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    m_tree = new FileTreeWindow(m_database, gamePath, data);
-    connect(m_tree, &FileTreeWindow::extractFile, this, [this, data](const QString &path) {
+    m_tree = new FileTreeWindow(m_database, gamePath, &m_data);
+    connect(m_tree, &FileTreeWindow::extractFile, this, [this](const QString &path) {
         const QFileInfo info(path);
 
         const QString savePath =
@@ -75,7 +75,7 @@ MainWindow::MainWindow(const QString &gamePath, SqPackResource *data)
 
             std::string savePathStd = path.toStdString();
 
-            auto fileData = physis_gamedata_extract_file(data, savePathStd.c_str());
+            auto fileData = physis_sqpack_read(&m_data, savePathStd.c_str());
             QFile file(savePath);
             if (file.open(QIODevice::WriteOnly)) {
                 file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);
@@ -136,13 +136,13 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     // FIXME: this is terrible, we should not be recalculating this. it isn't a huge deal with the file + index caching, but still
     // TODO: support for unknown files
     if (!path.isEmpty()) {
-        auto datOffset = physis_gamedata_find_offset(data, pathStd.c_str());
+        auto datOffset = physis_sqpack_find_offset(&m_data, pathStd.c_str());
         m_offsetLabel->setText(i18n("Offset: 0x%1", QString::number(datOffset, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
     } else {
         m_offsetLabel->setText(i18n("Offset: Unknown"));
     }
 
-    auto file = physis_gamedata_extract_file_from_hash(data, indexPath.toStdString().c_str(), hash);
+    auto file = physis_sqpack_read_from_hash(&m_data, indexPath.toStdString().c_str(), hash);
     if (file.size == 0) {
         return;
     }
@@ -153,7 +153,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
     switch (type) {
     case FileType::ExcelList: {
-        auto exlWidget = new EXLPart(data);
+        auto exlWidget = new EXLPart(&m_data);
         exlWidget->load(file);
         partHolder->addTab(exlWidget, i18nc("@title:tab", "Excel List"));
     } break;
@@ -162,7 +162,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto exdLayout = new QVBoxLayout();
         exdWidgetHolder->setLayout(exdLayout);
 
-        auto exdWidget = new EXDPart(data, m_excelResolver);
+        auto exdWidget = new EXDPart(&m_data, m_excelResolver);
         exdWidget->loadSheet(info.filePath().remove(QStringLiteral(".exh")).remove(QStringLiteral("exd/")), file);
 
         const auto availableLanguages = exdWidget->availableLanguages();
@@ -210,38 +210,38 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         partHolder->addTab(exdWidget, i18nc("@title:tab", "Note"));
     } break;
     case FileType::Model: {
-        auto mdlWidget = new MDLPart(data, fileCache);
-        mdlWidget->addModel(physis_mdl_parse(file), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
+        auto mdlWidget = new MDLPart(&m_data, fileCache);
+        mdlWidget->addModel(physis_mdl_parse(m_data.platform, file), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
         partHolder->addTab(mdlWidget, i18nc("@title:tab", "Model"));
     } break;
     case FileType::Texture: {
-        auto texWidget = new TexPart(data);
+        auto texWidget = new TexPart(&m_data);
         texWidget->loadTex(file);
         partHolder->addTab(texWidget, i18nc("@title:tab", "Texture"));
     } break;
     case FileType::ShaderPackage: {
-        auto shpkWidget = new SHPKPart();
+        auto shpkWidget = new SHPKPart(&m_data);
         shpkWidget->load(file);
         partHolder->addTab(shpkWidget, i18nc("@title:tab", "Shader Package"));
     } break;
     case FileType::CharaMakeParams: {
-        auto cmpWidget = new CmpPart(data);
+        auto cmpWidget = new CmpPart(&m_data);
         cmpWidget->load(file);
         partHolder->addTab(cmpWidget, i18nc("@title:tab", "Chara Make Params"));
     } break;
     case FileType::Skeleton: {
         auto sklbWidget = new SklbPart();
-        sklbWidget->load(physis_parse_skeleton(file));
+        sklbWidget->load(physis_skeleton_parse(m_data.platform, file));
         partHolder->addTab(sklbWidget, i18nc("@title:tab", "Skeleton"));
     } break;
     case FileType::Dictionary: {
-        auto dicWidget = new DicPart();
+        auto dicWidget = new DicPart(&m_data);
         dicWidget->load(file);
         partHolder->addTab(dicWidget, i18nc("@title:tab", "Dictionary"));
     } break;
     case FileType::Material: {
-        auto mtrlWidget = new MtrlPart(data);
-        mtrlWidget->load(physis_material_parse(file));
+        auto mtrlWidget = new MtrlPart(&m_data);
+        mtrlWidget->load(physis_material_parse(m_data.platform, file));
         partHolder->addTab(mtrlWidget, i18nc("@title:tab", "Material"));
     } break;
     case FileType::LuaBytecode: {
@@ -250,7 +250,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         partHolder->addTab(luabWidget, i18nc("@title:tab", "Lua"));
     } break;
     case FileType::HardwareCursor: {
-        auto texWidget = new TexPart(data);
+        auto texWidget = new TexPart(&m_data);
         texWidget->loadHwc(file);
         partHolder->addTab(texWidget, i18nc("@title:tab", "Hardware Cursor"));
     } break;

@@ -5,36 +5,36 @@
 
 #include <KLocalizedString>
 
-AppState::AppState(SqPackResource *resource, QObject *parent)
+AppState::AppState(physis_SqPackResource *resource, QObject *parent)
     : QObject(parent)
 {
     // ENPC
     {
-        auto exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(resource, "exd/enpcresident.exh"));
-        m_enpcResidentPage = physis_gamedata_read_excel_sheet(resource, "ENpcResident", exh, Language::English, 0);
+        const auto exh = physis_exh_parse(resource->platform, physis_sqpack_read(resource, "exd/enpcresident.exh"));
+        m_enpcResidentSheet = physis_sqpack_read_excel_sheet(resource, "ENpcResident", &exh, Language::English);
     }
 
     // EOBJ
     {
-        auto exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(resource, "exd/eobjname.exh"));
-        m_eobjNamePage = physis_gamedata_read_excel_sheet(resource, "EObjName", exh, Language::English, 0);
+        const auto exh = physis_exh_parse(resource->platform, physis_sqpack_read(resource, "exd/eobjname.exh"));
+        m_eobjNameSheet = physis_sqpack_read_excel_sheet(resource, "EObjName", &exh, Language::English);
     }
 }
 
-QString AppState::lookupENpcName(const uint32_t id)
+QString AppState::lookupENpcName(const uint32_t id) const
 {
-    auto row = physis_exd_get_row(&m_enpcResidentPage, id);
-    if (row->column_data && strlen(row->column_data[0].string._0) > 0) {
-        return QString::fromLatin1(row->column_data[0].string._0);
+    auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
+    if (row.row_data && strlen(row.row_data[0].column_data[0].string._0) > 0) {
+        return QString::fromLatin1(row.row_data[0].column_data[0].string._0);
     }
     return i18n("Event NPC");
 }
 
-QString AppState::lookupEObjName(uint32_t id)
+QString AppState::lookupEObjName(const uint32_t id) const
 {
-    auto row = physis_exd_get_row(&m_eobjNamePage, id);
-    if (row->column_data && strlen(row->column_data[0].string._0) > 0) {
-        return QString::fromLatin1(row->column_data[0].string._0);
+    auto row = physis_excel_get_row(&m_eobjNameSheet, id);
+    if (row.row_data && strlen(row.row_data[0].column_data[0].string._0) > 0) {
+        return QString::fromLatin1(row.row_data[0].column_data[0].string._0);
     }
     return i18n("Event Object");
 }

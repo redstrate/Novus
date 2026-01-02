@@ -18,7 +18,7 @@
 #include "filecache.h"
 #include "vulkanwindow.h"
 
-MDLPart::MDLPart(SqPackResource *data, FileCache &cache, QWidget *parent)
+MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
     : QWidget(parent)
     , data(data)
     , cache(cache)
@@ -27,7 +27,7 @@ MDLPart::MDLPart(SqPackResource *data, FileCache &cache, QWidget *parent)
     viewportLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(viewportLayout);
 
-    pbd = physis_parse_pbd(physis_gamedata_extract_file(data, "chara/xls/bonedeformer/human.pbd"));
+    pbd = physis_pbd_parse(data->platform, physis_sqpack_read(data, "chara/xls/bonedeformer/human.pbd"));
 
     renderer = new RenderManager(data);
 
@@ -226,9 +226,9 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
     if (material.shpk_name != nullptr) {
         std::string shpkPath = "shader/sm5/shpk/" + std::string(material.shpk_name);
 
-        auto shpkData = physis_gamedata_extract_file(data, shpkPath.c_str());
+        auto shpkData = physis_sqpack_read(data, shpkPath.c_str());
         if (shpkData.data != nullptr) {
-            newMaterial.shaderPackage = physis_parse_shpk(shpkData);
+            newMaterial.shaderPackage = physis_shpk_parse(data->platform, shpkData);
             if (newMaterial.shaderPackage.p_ptr) {
                 // create the material parameters for this shader package
                 newMaterial.materialBuffer =
@@ -364,7 +364,7 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
         qInfo() << "Loading" << t;
 
         const auto type = t.substr(t.find_last_of('_') + 1, t.find_last_of('.') - t.find_last_of('_') - 1);
-        auto texture = physis_texture_parse(cache.lookupFile(QLatin1String(material.textures[i])));
+        auto texture = physis_texture_parse(data->platform, cache.lookupFile(QLatin1String(material.textures[i])));
         if (texture.rgba != nullptr) {
             auto gameTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
             renderer->device().nameTexture(gameTexture, material.textures[i]);

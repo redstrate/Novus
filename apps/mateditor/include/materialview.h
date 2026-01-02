@@ -16,7 +16,7 @@ class MaterialView : public QWidget
     Q_OBJECT
 
 public:
-    explicit MaterialView(SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit MaterialView(physis_SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
 
     MDLPart &part() const;
 
@@ -26,7 +26,7 @@ public Q_SLOTS:
 private:
     MDLPart *mdlPart = nullptr;
 
-    SqPackResource *data;
+    physis_SqPackResource *data;
     FileCache &cache;
 
     physis_MDL m_mdl;

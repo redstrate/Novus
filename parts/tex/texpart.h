@@ -13,7 +13,7 @@ class TexPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit TexPart(SqPackResource *data, QWidget *parent = nullptr);
+    explicit TexPart(physis_SqPackResource *data, QWidget *parent = nullptr);
 
     /**
      * @brief Loads a .tex file.
@@ -26,7 +26,7 @@ public:
     void loadHwc(physis_Buffer file);
 
 private:
-    SqPackResource *data = nullptr;
+    physis_SqPackResource *data = nullptr;
 
     ImageLabel *m_label = nullptr;
 };

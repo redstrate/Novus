@@ -55,7 +55,7 @@ const std::array<std::string, 14> passes = {
 
 constexpr int INVALID_PASS = 255;
 
-GameRenderer::GameRenderer(Device &device, SqPackResource *data)
+GameRenderer::GameRenderer(Device &device, physis_SqPackResource *data)
     : m_device(device)
     , m_data(data)
     , m_shaderManager(device)
@@ -70,15 +70,15 @@ GameRenderer::GameRenderer(Device &device, SqPackResource *data)
 
     // TODO: they switched from 3D images from ARR to 2D arrays here, not yet supported
     m_tileNormal = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM,
-                                           physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/tile_norm_array.tex")));
+                                           physis_texture_parse(m_data->platform, physis_sqpack_read(m_data, "chara/common/texture/tile_norm_array.tex")));
     m_device.nameTexture(m_tileNormal, "chara/common/texture/tile_norm_array.tex");
     m_tileOrb = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM,
-                                        physis_texture_parse(physis_gamedata_extract_file(m_data, "chara/common/texture/tile_orb_array.tex")));
+                                        physis_texture_parse(m_data->platform, physis_sqpack_read(m_data, "chara/common/texture/tile_orb_array.tex")));
     m_device.nameTexture(m_tileOrb, "chara/common/texture/tile_orb_array.tex");
 
-    directionalLightningShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/directionallighting.shpk"));
-    createViewPositionShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/createviewposition.shpk"));
-    backgroundShpk = physis_parse_shpk(physis_gamedata_extract_file(m_data, "shader/sm5/shpk/bg.shpk"));
+    directionalLightningShpk = physis_shpk_parse(m_data->platform, physis_sqpack_read(m_data, "shader/sm5/shpk/directionallighting.shpk"));
+    createViewPositionShpk = physis_shpk_parse(m_data->platform, physis_sqpack_read(m_data, "shader/sm5/shpk/createviewposition.shpk"));
+    backgroundShpk = physis_shpk_parse(m_data->platform, physis_sqpack_read(m_data, "shader/sm5/shpk/bg.shpk"));
 
     // camera data
     {
@@ -1122,6 +1122,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                             return VK_FORMAT_R16G16_SFLOAT;
                         case VertexType::Half4:
                             return VK_FORMAT_R16G16B16A16_SFLOAT;
+                        case VertexType::UnkPS3:
+                            break;
                         case VertexType::UnsignedShort2:
                             break;
                         case VertexType::UnsignedShort4:

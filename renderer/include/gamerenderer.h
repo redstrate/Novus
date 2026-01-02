@@ -27,7 +27,7 @@ struct DrawObject;
 class GameRenderer : public BaseRenderer
 {
 public:
-    GameRenderer(Device &device, SqPackResource *data);
+    GameRenderer(Device &device, physis_SqPackResource *data);
 
     void resize() override;
 
@@ -92,7 +92,7 @@ private:
     std::unordered_map<uint32_t, CachedPipeline> m_cachedPipelines;
 
     Device &m_device;
-    SqPackResource *m_data = nullptr;
+    physis_SqPackResource *m_data = nullptr;
     ShaderManager m_shaderManager;
 
     VkDescriptorSet

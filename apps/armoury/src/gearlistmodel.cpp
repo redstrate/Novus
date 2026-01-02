@@ -7,7 +7,7 @@
 #include <QtConcurrent>
 #include <magic_enum.hpp>
 
-GearListModel::GearListModel(SqPackResource *data, QObject *parent)
+GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
     : QAbstractItemModel(parent)
     , gameData(data)
 {
@@ -29,29 +29,61 @@ GearListModel::GearListModel(SqPackResource *data, QObject *parent)
         gears.push_back(info);
     }
 
-    exh = physis_parse_excel_sheet_header(physis_gamedata_extract_file(data, "exd/item.exh"));
+    m_exh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/item.exh"));
+    m_sheet = physis_sqpack_read_excel_sheet(data, "Item", &m_exh, Language::English);
 
-    exdFuture = new QFutureWatcher<physis_EXD>(this);
-    connect(exdFuture, &QFutureWatcher<physis_EXD>::resultReadyAt, this, &GearListModel::exdFinished);
-    connect(exdFuture, &QFutureWatcher<physis_EXD>::finished, this, &GearListModel::finished);
+    for (unsigned int i = 0; i < m_sheet.page_count; i++) {
+        for (unsigned int j = m_exh.pages[i].start_id; j < m_exh.pages[i].start_id + m_sheet.pages[i].row_count; j++) {
+            const auto row = physis_excel_get_row(&m_sheet, j); // TODO: use all rows, free
+            if (row.row_data) {
+                auto primaryModel = row.row_data[0].column_data[47].u_int64._0;
+                // auto secondaryModel = row.column_data[48].u_int64._0;
 
-    QVector<uint32_t> pages;
-    for (uint32_t i = 0; i < exh->page_count; i++) {
-        pages.push_back(i);
+                int16_t parts[4];
+                memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
+
+                GearInfo info = {};
+                info.name = row.row_data[0].column_data[9].string._0;
+                info.icon = row.row_data[0].column_data[10].u_int16._0;
+                info.slot = physis_slot_from_id(row.row_data[0].column_data[17].u_int8._0);
+                info.modelInfo.primaryID = parts[0];
+
+                gears.push_back(info);
+            }
+        }
     }
 
-    std::function<physis_EXD(int)> loadEXD = [this, data](const int page) -> physis_EXD {
-        return physis_gamedata_read_excel_sheet(data, "Item", exh, Language::English, page);
-    };
+    beginResetModel();
 
-    exdFuture->setFuture(QtConcurrent::mapped(pages, loadEXD));
+    rootItem = new TreeInformation();
+    rootItem->type = TreeType::Root;
+
+    int i = 0;
+    for (auto slot : magic_enum::enum_values<Slot>()) {
+        auto categoryItem = new TreeInformation();
+        categoryItem->type = TreeType::Category;
+        categoryItem->slotType = slot;
+        categoryItem->parent = rootItem;
+        categoryItem->row = i++;
+        rootItem->children.push_back(categoryItem);
+
+        int j = 0;
+        for (const auto &gear : gears) {
+            if (gear.slot == slot) {
+                auto item = new TreeInformation();
+                item->type = TreeType::Item;
+                item->gear = gear;
+                item->parent = categoryItem;
+                item->row = j++;
+                categoryItem->children.push_back(item);
+            }
+        }
+    }
+    endResetModel();
 
     for (auto slotName : magic_enum::enum_names<Slot>()) {
         slotNames.push_back(QLatin1String(slotName.data()));
     }
-
-    rootItem = new TreeInformation();
-    rootItem->type = TreeType::Root;
 }
 
 int GearListModel::rowCount(const QModelIndex &parent) const
@@ -130,9 +162,9 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
 
             const std::string iconFilename = iconFolder.toStdString() + "/" + iconFile.toStdString();
 
-            auto texFile = physis_gamedata_extract_file(gameData, iconFilename.c_str());
+            auto texFile = physis_sqpack_read(gameData, iconFilename.c_str());
             if (texFile.data != nullptr) {
-                auto tex = physis_texture_parse(texFile);
+                auto tex = physis_texture_parse(gameData->platform, texFile);
                 if (tex.rgba != nullptr) {
                     QImage image(tex.rgba, static_cast<int>(tex.width), static_cast<int>(tex.height), QImage::Format_RGBA8888);
 
@@ -168,58 +200,6 @@ std::optional<GearInfo> GearListModel::getGearFromIndex(const QModelIndex &index
         return item->gear;
     }
     return {};
-}
-
-void GearListModel::exdFinished(int index)
-{
-    auto exd = exdFuture->resultAt(index);
-
-    for (unsigned int i = 0; i < exh->row_count; i++) {
-        const auto row = physis_exd_get_row(&exd, i); // TODO: use all rows, free
-        if (row != nullptr) {
-            auto primaryModel = row->column_data[47].u_int64._0;
-            // auto secondaryModel = row.column_data[48].u_int64._0;
-
-            int16_t parts[4];
-            memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
-
-            GearInfo info = {};
-            info.name = row->column_data[9].string._0;
-            info.icon = row->column_data[10].u_int16._0;
-            info.slot = physis_slot_from_id(row->column_data[17].u_int8._0);
-            info.modelInfo.primaryID = parts[0];
-
-            gears.push_back(info);
-        }
-    }
-}
-
-void GearListModel::finished()
-{
-    beginResetModel();
-
-    int i = 0;
-    for (auto slot : magic_enum::enum_values<Slot>()) {
-        auto categoryItem = new TreeInformation();
-        categoryItem->type = TreeType::Category;
-        categoryItem->slotType = slot;
-        categoryItem->parent = rootItem;
-        categoryItem->row = i++;
-        rootItem->children.push_back(categoryItem);
-
-        int j = 0;
-        for (const auto &gear : gears) {
-            if (gear.slot == slot) {
-                auto item = new TreeInformation();
-                item->type = TreeType::Item;
-                item->gear = gear;
-                item->parent = categoryItem;
-                item->row = j++;
-                categoryItem->children.push_back(item);
-            }
-        }
-    }
-    endResetModel();
 }
 
 #include "moc_gearlistmodel.cpp"

@@ -18,7 +18,7 @@ class SHPKPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit SHPKPart(QWidget *parent = nullptr);
+    explicit SHPKPart(physis_SqPackResource *resource, QWidget *parent = nullptr);
 
     void load(physis_Buffer buffer);
 
@@ -31,6 +31,7 @@ private:
     void clearLayout(QLayout *layout);
 
     QTabWidget *pageTabWidget = nullptr;
+    physis_SqPackResource *m_resource = nullptr;
 
     QWidget *shadersTab = nullptr;
     QListWidget *shadersListWidget = nullptr;
