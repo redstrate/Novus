@@ -5,8 +5,8 @@ on:
   pull_request:
 
 env:
-  QT_VERSION: 6.10.0 # Keep in sync with CMakeLists.txt
-  KF_VERSION: v6.19.0 # Ditto
+  QT_VERSION: 6.10.1 # Keep in sync with CMakeLists.txt
+  KF_VERSION: v6.21.0 # Ditto
   PLASMA_WAYLAND_VERSION: v1.19.0
   COMMON_CMAKE_OPTIONS: "-DBUILD_TESTING=OFF -DBUILD_PYTHON_BINDINGS=OFF"
 
@@ -271,7 +271,7 @@ jobs:
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kxmlgui --config ${{ matrix.build_type }} --target install
 
     - name: Build KSyntaxHighlighting
-      if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
+      if: steps.cache-prefix-restore.outputs.cache-hit != 'true' && runner.os != 'Windows' # Re-enable when KSyntaxHighlighting builds on Windows again...
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/syntax-highlighting.git
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-syntax-highlighting -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S syntax-highlighting -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
