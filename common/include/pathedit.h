@@ -9,7 +9,7 @@
 
 #include "novuscommon_export.h"
 
-class OpenPathHandler : public QObject
+class NOVUSCOMMON_EXPORT OpenPathHandler : public QObject
 {
     Q_OBJECT
 public:
