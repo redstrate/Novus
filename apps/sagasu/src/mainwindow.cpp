@@ -227,10 +227,21 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         mdlLayout->addWidget(mdlWidget);
 
         connect(importButton, &QPushButton::clicked, this, [this, mdlWidget](bool) {
-            const QString fileName =
+            const QString importFileName =
                 QFileDialog::getOpenFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
-            if (!fileName.isEmpty()) {
-                importModel(mdlWidget->getModel(0).model, fileName);
+            const QString exportFileName =
+                QFileDialog::getSaveFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("Model file (*.mdl)"));
+            if (!importFileName.isEmpty() && !exportFileName.isEmpty()) {
+                auto mdl = mdlWidget->getModel(0).model;
+                importModel(mdl, importFileName);
+                auto buffer = physis_mdl_write(&mdl);
+
+                QFile file(exportFileName);
+                if (file.open(QIODevice::WriteOnly)) {
+                    file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
+                } else {
+                    qFatal() << "Failed to write to" << exportFileName;
+                }
             }
         });
         connect(exportButton, &QPushButton::clicked, this, [this, mdlWidget](bool) {

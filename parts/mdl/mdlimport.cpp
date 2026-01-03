@@ -60,27 +60,28 @@ void importModel(physis_MDL &existingModel, const QString &filename)
     std::vector<Shape> shapes;
 
     for (const auto &node : model.nodes) {
+        qInfo() << "Importing" << node.name;
+
+        const QStringList parts = QString::fromStdString(node.name).split(QLatin1Char(' '));
+
+        if (parts.length() < 2) {
+            qInfo() << "- Skipping because of name!";
+            continue;
+        }
+
+        const QStringList lodPartNumber = parts[2].split(QLatin1Char('.'));
+
+        const int lodNumber = 0;
+        const uint32_t partNumber = lodPartNumber[0].toInt();
+        const uint32_t submeshNumber = lodPartNumber[1].toInt();
+
+        qInfo() << "- Part:" << partNumber;
+        qInfo() << "- Submesh:" << submeshNumber;
+
         // Detect if it's a mesh node
         if (node.mesh >= 0) {
-            qInfo() << "Importing" << node.name;
-
-            const QStringList parts = QString::fromStdString(node.name).split(QLatin1Char(' '));
-            const QStringList lodPartNumber = parts[2].split(QLatin1Char('.'));
-
-            const int lodNumber = 0;
-            const uint32_t partNumber = lodPartNumber[0].toInt();
-            const uint32_t submeshNumber = lodPartNumber[1].toInt();
-
-            qInfo() << "- Part:" << partNumber;
-            qInfo() << "- Submesh:" << submeshNumber;
-
             if (partNumber >= existingModel.lods[lodNumber].num_parts) {
                 qInfo() << "- Skipping because of missing part...";
-                continue;
-            }
-
-            if (submeshNumber >= existingModel.lods[lodNumber].parts[partNumber].num_submeshes) {
-                qInfo() << "- Skipping because of missing submesh...";
                 continue;
             }
 
@@ -291,6 +292,24 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             } else {
                 duplicateBuffers = true;
             }
+        } else {
+            ProcessedPart *processedPart = nullptr;
+            for (auto &part : processingParts) {
+                if (part.partIndex == partNumber) {
+                    processedPart = &part;
+                    break;
+                }
+            }
+
+            if (processedPart == nullptr) {
+                processedPart = &processingParts.emplace_back();
+                processedPart->partIndex = partNumber;
+            }
+
+            ProcessedSubMesh &processedSubMesh = processedPart->subMeshes.emplace_back();
+            processedSubMesh.subMeshIndex = submeshNumber;
+
+            qInfo() << "- Importing mesh as empty!";
         }
     }
 
