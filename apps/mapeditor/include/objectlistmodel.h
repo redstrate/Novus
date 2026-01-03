@@ -18,6 +18,8 @@ enum class TreeType {
     Layer,
     /// A single object
     Object,
+    /// A terrain plate.
+    Plate,
 };
 
 struct TreeInformation {

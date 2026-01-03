@@ -28,7 +28,10 @@ MapView::MapView(physis_SqPackResource *data, FileCache &cache, AppState *appSta
     setLayout(layout);
 
     connect(appState, &AppState::mapLoaded, this, &MapView::reloadMap);
+
+    // TODO: be more efficient about what we reload
     connect(appState, &AppState::visibleLayerIdsChanged, this, &MapView::reloadMap);
+    connect(appState, &AppState::visibleTerrainPlatesChanged, this, &MapView::reloadMap);
 }
 
 MDLPart &MapView::part() const
@@ -44,7 +47,12 @@ void MapView::centerOn(const glm::vec3 position)
 void MapView::addTerrain(QString basePath, physis_Terrain terrain)
 {
     for (int i = 0; i < terrain.num_plates; i++) {
-        QString mdlPath = QStringLiteral("%1%2").arg(basePath, QString::fromStdString(terrain.plates[i].filename));
+        if (!m_appState->visibleTerrainPlates.contains(i)) {
+            continue;
+        }
+
+        QString base2Path = basePath.left(basePath.lastIndexOf(QStringLiteral("/level/")));
+        QString mdlPath = QStringLiteral("bg/%1/bgplate/%2").arg(base2Path, QString::fromStdString(terrain.plates[i].filename));
         std::string mdlPathStd = mdlPath.toStdString();
 
         auto plateMdlFile = physis_sqpack_read(m_data, mdlPathStd.c_str());
@@ -72,6 +80,8 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
             physis_mdl_free(&plateMdl);
 
             physis_free_file(&plateMdlFile);
+        } else {
+            qWarning() << "Failed to load plate mdl" << mdlPath;
         }
     }
 }
@@ -80,18 +90,7 @@ void MapView::reloadMap()
 {
     mdlPart->clear();
 
-    QString base2Path = m_appState->basePath.left(m_appState->basePath.lastIndexOf(QStringLiteral("/level/")));
-    QString bgPath = QStringLiteral("bg/%1/bgplate/").arg(base2Path);
-
-    std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
-
-    auto tera_buffer = physis_sqpack_read(m_data, bgPathStd.c_str());
-    if (tera_buffer.size > 0) {
-        auto tera = physis_terrain_parse(m_data->platform, tera_buffer);
-        addTerrain(bgPath, tera);
-    } else {
-        qWarning() << "Failed to load" << bgPathStd;
-    }
+    addTerrain(m_appState->basePath, m_appState->terrain);
 
     // add bg models
     for (const auto &[name, lgb] : m_appState->lgbFiles) {

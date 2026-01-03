@@ -17,6 +17,8 @@ public:
     QString basePath;
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
     QList<uint32_t> visibleLayerIds;
+    physis_Terrain terrain;
+    QList<uint32_t> visibleTerrainPlates;
     std::optional<physis_InstanceObject const *> selectedObject;
     std::optional<physis_Layer const *> selectedLayer;
 
@@ -33,6 +35,7 @@ public:
 Q_SIGNALS:
     void mapLoaded();
     void visibleLayerIdsChanged();
+    void visibleTerrainPlatesChanged();
     void selectionChanged();
 
 private:

@@ -210,9 +210,18 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         partHolder->addTab(exdWidget, i18nc("@title:tab", "Note"));
     } break;
     case FileType::Model: {
+        auto mdlWidgetHolder = new QWidget();
+        auto mdlLayout = new QVBoxLayout();
+        mdlWidgetHolder->setLayout(mdlLayout);
+
+        auto importButton = new QPushButton(QStringLiteral("Import glTF"));
+        mdlLayout->addWidget(importButton);
+
         auto mdlWidget = new MDLPart(&m_data, fileCache);
         mdlWidget->addModel(physis_mdl_parse(m_data.platform, file), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
-        partHolder->addTab(mdlWidget, i18nc("@title:tab", "Model"));
+        mdlLayout->addWidget(mdlWidget);
+
+        partHolder->addTab(mdlWidgetHolder, i18nc("@title:tab", "Model"));
     } break;
     case FileType::Texture: {
         auto texWidget = new TexPart(&m_data);

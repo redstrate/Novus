@@ -87,11 +87,18 @@ QVariant ObjectListModel::data(const QModelIndex &index, int role) const
                 return QIcon::fromTheme(QStringLiteral("dialog-layers-symbolic"));
             case TreeType::Object:
                 return QIcon::fromTheme(QStringLiteral("draw-cuboid-symbolic"));
+            case TreeType::Plate:
+                return QIcon::fromTheme(QStringLiteral("kstars_xplanet-symbolic"));
             }
         }
     } else if (index.column() == 1) {
-        if (role == Qt::CheckStateRole && item->type == TreeType::Layer) {
-            return m_appState->visibleLayerIds.contains(item->id) ? Qt::Checked : Qt::Unchecked;
+        if (role == Qt::CheckStateRole) {
+            if (item->type == TreeType::Layer) {
+                return m_appState->visibleLayerIds.contains(item->id) ? Qt::Checked : Qt::Unchecked;
+            }
+            if (item->type == TreeType::Plate) {
+                return m_appState->visibleTerrainPlates.contains(item->id) ? Qt::Checked : Qt::Unchecked;
+            }
         }
     }
 
@@ -114,7 +121,7 @@ QVariant ObjectListModel::headerData(int section, Qt::Orientation orientation, i
 Qt::ItemFlags ObjectListModel::flags(const QModelIndex &index) const
 {
     auto item = static_cast<TreeInformation *>(index.internalPointer());
-    if (index.column() == 1 && item->type == TreeType::Layer)
+    if (index.column() == 1 && (item->type == TreeType::Layer || item->type == TreeType::Plate))
         return QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
 
     return QAbstractItemModel::flags(index);
@@ -123,13 +130,22 @@ Qt::ItemFlags ObjectListModel::flags(const QModelIndex &index) const
 bool ObjectListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     auto item = static_cast<TreeInformation *>(index.internalPointer());
-    if (index.column() == 1 && item->type == TreeType::Layer) {
-        if (value.value<Qt::CheckState>() == Qt::Checked) {
-            m_appState->visibleLayerIds.push_back(item->id);
-        } else {
-            m_appState->visibleLayerIds.removeAll(item->id);
+    if (index.column() == 1) {
+        if (item->type == TreeType::Layer) {
+            if (value.value<Qt::CheckState>() == Qt::Checked) {
+                m_appState->visibleLayerIds.push_back(item->id);
+            } else {
+                m_appState->visibleLayerIds.removeAll(item->id);
+            }
+            Q_EMIT m_appState->visibleLayerIdsChanged();
+        } else if (item->type == TreeType::Plate) {
+            if (value.value<Qt::CheckState>() == Qt::Checked) {
+                m_appState->visibleTerrainPlates.push_back(item->id);
+            } else {
+                m_appState->visibleTerrainPlates.removeAll(item->id);
+            }
+            Q_EMIT m_appState->visibleTerrainPlatesChanged();
         }
-        Q_EMIT m_appState->visibleLayerIdsChanged();
     }
     return QAbstractItemModel::setData(index, value, role);
 }
@@ -155,6 +171,23 @@ std::optional<physis_Layer const *> ObjectListModel::layerAt(const QModelIndex &
 void ObjectListModel::refresh()
 {
     beginResetModel();
+
+    auto terrainItem = new TreeInformation();
+    terrainItem->type = TreeType::File;
+    terrainItem->parent = m_rootItem;
+    terrainItem->name = i18n("Terrain");
+    terrainItem->row = 0;
+    m_rootItem->children.push_back(terrainItem);
+
+    for (int i = 0; i < m_appState->terrain.num_plates; i++) {
+        auto layerItem = new TreeInformation();
+        layerItem->type = TreeType::Plate;
+        layerItem->parent = terrainItem;
+        layerItem->name = i18n("Plate %1").arg(i);
+        layerItem->row = i;
+        layerItem->id = i;
+        terrainItem->children.push_back(layerItem);
+    }
 
     for (size_t y = 0; y < m_appState->lgbFiles.size(); y++) {
         const auto &[name, lgb] = m_appState->lgbFiles[y];

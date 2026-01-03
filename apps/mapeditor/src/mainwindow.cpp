@@ -97,6 +97,17 @@ void MainWindow::openMap(const QString &basePath)
 
     setWindowTitle(basePath);
 
+    QString bgPath = QStringLiteral("bg/%1/bgplate/").arg(base2Path);
+
+    std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
+
+    auto tera_buffer = physis_sqpack_read(&m_data, bgPathStd.c_str());
+    if (tera_buffer.size > 0) {
+        m_appState->terrain = physis_terrain_parse(m_data.platform, tera_buffer);
+    } else {
+        qWarning() << "Failed to load terrain" << bgPathStd;
+    }
+
     const auto loadLgb = [this, base2Path](const QString &name) {
         QString lgbPath = QStringLiteral("bg/%1/level/%2.lgb").arg(base2Path, name);
         std::string bgLgbPathStd = lgbPath.toStdString();
@@ -117,6 +128,25 @@ void MainWindow::openMap(const QString &basePath)
     loadLgb(QStringLiteral("bg"));
     loadLgb(QStringLiteral("sound"));
     loadLgb(QStringLiteral("planlive"));
+
+    // Load terrain and bg by default
+    for (int i = 0; i < m_appState->terrain.num_plates; i++) {
+        m_appState->visibleTerrainPlates.push_back(i);
+    }
+
+    for (const auto &[name, lgb] : m_appState->lgbFiles) {
+        if (name == QStringLiteral("bg")) {
+            for (uint32_t i = 0; i < lgb.num_chunks; i++) {
+                for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
+                    // Skip festival-specific layers
+                    if (lgb.chunks[i].layers[j].festival_id == 0) {
+                        m_appState->visibleLayerIds.push_back(lgb.chunks[i].layers[j].id);
+                    }
+                }
+            }
+            break;
+        }
+    }
 
     Q_EMIT m_appState->mapLoaded();
 }
