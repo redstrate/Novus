@@ -190,20 +190,22 @@ void importModel(physis_MDL &existingModel, const QString &filename)
 
                 // We need to ensure the bones are mapped correctly
                 // When exporting from modeling software, it's possible it sorted the nodes (Blender does this)
-                for (int i = 0; i < 4; i++) {
-                    int originalBoneId = *(jointsData + i);
+                if (!model.skins.empty()) {
+                    for (int i = 0; i < 4; i++) {
+                        int originalBoneId = *(jointsData + i);
 
-                    auto joints = model.skins[0].joints;
+                        auto joints = model.skins[0].joints;
 
-                    int realBoneId = 0;
-                    for (uint32_t j = 0; j < existingModel.num_affected_bones; j++) {
-                        if (strcmp(existingModel.affected_bone_names[j], model.nodes[joints[originalBoneId]].name.c_str()) == 0) {
-                            realBoneId = j;
-                            break;
+                        int realBoneId = 0;
+                        for (uint32_t j = 0; j < existingModel.num_affected_bones; j++) {
+                            if (strcmp(existingModel.affected_bone_names[j], model.nodes[joints[originalBoneId]].name.c_str()) == 0) {
+                                realBoneId = j;
+                                break;
+                            }
                         }
-                    }
 
-                    vertex.bone_id[i] = realBoneId;
+                        vertex.bone_id[i] = realBoneId;
+                    }
                 }
 
                 newVertices.push_back(vertex);
