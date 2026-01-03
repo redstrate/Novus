@@ -7,7 +7,7 @@
 
 #include "tiny_gltf.h"
 
-void exportModel(const QString &name, const physis_MDL &model, const physis_Skeleton &skeleton, const std::vector<BoneData> &boneData, const QString &fileName)
+void exportModel(const QString &name, const physis_MDL &model, const physis_Skeleton *skeleton, const std::vector<BoneData> &boneData, const QString &fileName)
 {
     const int selectedLod = 0;
 
@@ -26,108 +26,110 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
     gltfModel.nodes.reserve(required_nodes);
 
     auto &gltfSkeletonNode = gltfModel.nodes.emplace_back();
-    gltfSkeletonNode.name = skeleton.root_bone->name;
+    gltfSkeletonNode.name = "Skeleton";
+    if (skeleton) {
+        gltfSkeletonNode.name = skeleton->root_bone->name;
+        // find needed root bones
+        std::vector<physis_Bone> root_bones;
+        // hardcode to n_hara for now
+        root_bones.push_back(skeleton->bones[1]);
 
-    // find needed root bones
-    std::vector<physis_Bone> root_bones;
-    // hardcode to n_hara for now
-    root_bones.push_back(skeleton.bones[1]);
+        for (uint32_t i = 0; i < root_bones.size(); i++) {
+            auto &node = gltfModel.nodes.emplace_back();
+            node.name = root_bones[i].name;
 
-    for (uint32_t i = 0; i < root_bones.size(); i++) {
-        auto &node = gltfModel.nodes.emplace_back();
-        node.name = root_bones[i].name;
-
-        auto &real_bone = root_bones[i];
-        node.translation = {real_bone.position[0], real_bone.position[1], real_bone.position[2]};
-        node.rotation = {real_bone.rotation[0], real_bone.rotation[1], real_bone.rotation[2], real_bone.rotation[3]};
-        node.scale = {real_bone.scale[0], real_bone.scale[1], real_bone.scale[2]};
-    }
-
-    gltfSkeletonNode.children.push_back(1);
-
-    for (uint32_t i = 0; i < model.num_affected_bones; i++) {
-        auto &node = gltfModel.nodes.emplace_back();
-        node.name = model.affected_bone_names[i];
-
-        int real_bone_id = 0;
-        for (uint32_t k = 0; k < skeleton.num_bones; k++) {
-            if (strcmp(skeleton.bones[k].name, model.affected_bone_names[i]) == 0) {
-                real_bone_id = k;
-            }
+            auto &real_bone = root_bones[i];
+            node.translation = {real_bone.position[0], real_bone.position[1], real_bone.position[2]};
+            node.rotation = {real_bone.rotation[0], real_bone.rotation[1], real_bone.rotation[2], real_bone.rotation[3]};
+            node.scale = {real_bone.scale[0], real_bone.scale[1], real_bone.scale[2]};
         }
 
-        auto &real_bone = skeleton.bones[real_bone_id];
-        node.translation = {real_bone.position[0], real_bone.position[1], real_bone.position[2]};
-        node.rotation = {real_bone.rotation[0], real_bone.rotation[1], real_bone.rotation[2], real_bone.rotation[3]};
-        node.scale = {real_bone.scale[0], real_bone.scale[1], real_bone.scale[2]};
-    }
+        gltfSkeletonNode.children.push_back(1);
 
-    // setup parenting
-    for (uint32_t i = 0; i < model.num_affected_bones; i++) {
-        int real_bone_id = 0;
-        for (uint32_t k = 0; k < skeleton.num_bones; k++) {
-            if (strcmp(skeleton.bones[k].name, model.affected_bone_names[i]) == 0) {
-                real_bone_id = k;
-            }
-        }
+        for (uint32_t i = 0; i < model.num_affected_bones; i++) {
+            auto &node = gltfModel.nodes.emplace_back();
+            node.name = model.affected_bone_names[i];
 
-        auto &real_bone = skeleton.bones[real_bone_id];
-        if (real_bone.parent_bone != nullptr) {
-            bool found = false;
-            for (uint32_t k = 0; k < model.num_affected_bones; k++) {
-                if (strcmp(model.affected_bone_names[k], real_bone.parent_bone->name) == 0) {
-                    gltfModel.nodes[k + 2].children.push_back(i + 2); // +1 for the skeleton node taking up the first index
-                    found = true;
-                }
-            }
-
-            // Find the next closest bone that isn't a direct descendant
-            // of n_root, but won't have a parent anyway
-            if (!found) {
-                gltfModel.nodes[1].children.push_back(i + 2);
-            }
-        } else {
-            gltfModel.nodes[1].children.push_back(i + 2);
-        }
-    }
-
-    auto &gltfSkin = gltfModel.skins.emplace_back();
-    gltfSkin.name = gltfSkeletonNode.name;
-    gltfSkin.skeleton = 0;
-    for (size_t i = 1; i < gltfModel.nodes.size(); i++) {
-        gltfSkin.joints.push_back(i);
-    }
-
-    // Inverse bind matrices
-    {
-        gltfSkin.inverseBindMatrices = gltfModel.accessors.size();
-
-        auto &inverseAccessor = gltfModel.accessors.emplace_back();
-        inverseAccessor.bufferView = gltfModel.bufferViews.size();
-        inverseAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-        inverseAccessor.count = gltfModel.nodes.size() - 1;
-        inverseAccessor.type = TINYGLTF_TYPE_MAT4;
-
-        auto &inverseBufferView = gltfModel.bufferViews.emplace_back();
-        inverseBufferView.buffer = gltfModel.buffers.size();
-
-        auto &inverseBuffer = gltfModel.buffers.emplace_back();
-        for (uint32_t i = 1; i < gltfModel.nodes.size(); i++) {
             int real_bone_id = 0;
-            for (uint32_t k = 0; k < skeleton.num_bones; k++) {
-                if (strcmp(skeleton.bones[k].name, gltfModel.nodes[i].name.c_str()) == 0) {
+            for (uint32_t k = 0; k < skeleton->num_bones; k++) {
+                if (strcmp(skeleton->bones[k].name, model.affected_bone_names[i]) == 0) {
                     real_bone_id = k;
                 }
             }
 
-            auto &real_bone = skeleton.bones[real_bone_id];
-            auto inverseMatrix = boneData[real_bone.index].inversePose;
-            auto inverseMatrixCPtr = reinterpret_cast<uint8_t *>(glm::value_ptr(inverseMatrix));
-
-            inverseBuffer.data.insert(inverseBuffer.data.end(), inverseMatrixCPtr, inverseMatrixCPtr + sizeof(float) * 16);
+            auto &real_bone = skeleton->bones[real_bone_id];
+            node.translation = {real_bone.position[0], real_bone.position[1], real_bone.position[2]};
+            node.rotation = {real_bone.rotation[0], real_bone.rotation[1], real_bone.rotation[2], real_bone.rotation[3]};
+            node.scale = {real_bone.scale[0], real_bone.scale[1], real_bone.scale[2]};
         }
 
-        inverseBufferView.byteLength = inverseBuffer.data.size();
+        // setup parenting
+        for (uint32_t i = 0; i < model.num_affected_bones; i++) {
+            int real_bone_id = 0;
+            for (uint32_t k = 0; k < skeleton->num_bones; k++) {
+                if (strcmp(skeleton->bones[k].name, model.affected_bone_names[i]) == 0) {
+                    real_bone_id = k;
+                }
+            }
+
+            auto &real_bone = skeleton->bones[real_bone_id];
+            if (real_bone.parent_bone != nullptr) {
+                bool found = false;
+                for (uint32_t k = 0; k < model.num_affected_bones; k++) {
+                    if (strcmp(model.affected_bone_names[k], real_bone.parent_bone->name) == 0) {
+                        gltfModel.nodes[k + 2].children.push_back(i + 2); // +1 for the skeleton node taking up the first index
+                        found = true;
+                    }
+                }
+
+                // Find the next closest bone that isn't a direct descendant
+                // of n_root, but won't have a parent anyway
+                if (!found) {
+                    gltfModel.nodes[1].children.push_back(i + 2);
+                }
+            } else {
+                gltfModel.nodes[1].children.push_back(i + 2);
+            }
+        }
+
+        auto &gltfSkin = gltfModel.skins.emplace_back();
+        gltfSkin.name = gltfSkeletonNode.name;
+        gltfSkin.skeleton = 0;
+        for (size_t i = 1; i < gltfModel.nodes.size(); i++) {
+            gltfSkin.joints.push_back(i);
+        }
+
+        // Inverse bind matrices
+        {
+            gltfSkin.inverseBindMatrices = gltfModel.accessors.size();
+
+            auto &inverseAccessor = gltfModel.accessors.emplace_back();
+            inverseAccessor.bufferView = gltfModel.bufferViews.size();
+            inverseAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+            inverseAccessor.count = gltfModel.nodes.size() - 1;
+            inverseAccessor.type = TINYGLTF_TYPE_MAT4;
+
+            auto &inverseBufferView = gltfModel.bufferViews.emplace_back();
+            inverseBufferView.buffer = gltfModel.buffers.size();
+
+            auto &inverseBuffer = gltfModel.buffers.emplace_back();
+            for (uint32_t i = 1; i < gltfModel.nodes.size(); i++) {
+                int real_bone_id = 0;
+                for (uint32_t k = 0; k < skeleton->num_bones; k++) {
+                    if (strcmp(skeleton->bones[k].name, gltfModel.nodes[i].name.c_str()) == 0) {
+                        real_bone_id = k;
+                    }
+                }
+
+                auto &real_bone = skeleton->bones[real_bone_id];
+                auto inverseMatrix = boneData[real_bone.index].inversePose;
+                auto inverseMatrixCPtr = reinterpret_cast<uint8_t *>(glm::value_ptr(inverseMatrix));
+
+                inverseBuffer.data.insert(inverseBuffer.data.end(), inverseMatrixCPtr, inverseMatrixCPtr + sizeof(float) * 16);
+            }
+
+            inverseBufferView.byteLength = inverseBuffer.data.size();
+        }
     }
 
     int mesh_offset = 0;
@@ -136,15 +138,18 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
 
         // Parts above 0 also have an index offset because it's supposed to be all in one buffer.
         // We should do that too eventually!
-        int initial_index_offset = 0;
 
-        for (uint32_t j = 0; j < part.num_submeshes; j++) {
+        if (part.num_submeshes == 0) {
+            // If the part has no submeshes, assume it just encompasses everything.
+            // This seems to be common for static meshes(?)
             gltfSkeletonNode.children.push_back(gltfModel.nodes.size());
 
             auto &gltfNode = gltfModel.nodes.emplace_back();
+            gltfNode.name = name.toStdString() + " Part " + std::to_string(i) + ".0";
 
-            gltfNode.name = name.toStdString() + " Part " + std::to_string(i) + "." + std::to_string(j);
-            gltfNode.skin = 0;
+            if (skeleton) {
+                gltfNode.skin = 0;
+            }
 
             gltfNode.mesh = gltfModel.meshes.size();
             auto &gltfMesh = gltfModel.meshes.emplace_back();
@@ -153,24 +158,16 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
 
             auto &gltfPrimitive = gltfMesh.primitives.emplace_back();
 
-            if (j == 0) {
-                initial_index_offset = lod.parts[i].submeshes[j].index_offset;
-            }
-
             gltfPrimitive.indices = gltfModel.accessors.size();
             auto &indexAccessor = gltfModel.accessors.emplace_back();
             indexAccessor.name = gltfNode.name + " Index Accessor";
             indexAccessor.bufferView = gltfModel.bufferViews.size() + 1;
             indexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
-            indexAccessor.count = lod.parts[i].submeshes[j].index_count;
-            indexAccessor.byteOffset = (lod.parts[i].submeshes[j].index_offset - initial_index_offset) * sizeof(uint16_t);
+            indexAccessor.count = lod.parts[i].num_indices;
             indexAccessor.type = TINYGLTF_TYPE_SCALAR;
 
             gltfPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
-        }
 
-        for (uint32_t j = 0; j < part.num_submeshes; j++) {
-            auto &gltfPrimitive = gltfModel.meshes[mesh_offset + j].primitives[0];
             gltfPrimitive.attributes["POSITION"] = gltfModel.accessors.size();
             gltfPrimitive.attributes["TEXCOORD_0"] = gltfModel.accessors.size() + 1;
             gltfPrimitive.attributes["TEXCOORD_1"] = gltfModel.accessors.size() + 2;
@@ -179,6 +176,52 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
             gltfPrimitive.attributes["COLOR_0"] = gltfModel.accessors.size() + 5;
             gltfPrimitive.attributes["WEIGHTS_0"] = gltfModel.accessors.size() + 6;
             gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 7;
+        } else {
+            int initial_index_offset = 0;
+            for (uint32_t j = 0; j < part.num_submeshes; j++) {
+                gltfSkeletonNode.children.push_back(gltfModel.nodes.size());
+
+                auto &gltfNode = gltfModel.nodes.emplace_back();
+                gltfNode.name = name.toStdString() + " Part " + std::to_string(i) + "." + std::to_string(j);
+
+                if (skeleton) {
+                    gltfNode.skin = 0;
+                }
+
+                gltfNode.mesh = gltfModel.meshes.size();
+                auto &gltfMesh = gltfModel.meshes.emplace_back();
+
+                gltfMesh.name = gltfNode.name + " Mesh Attribute";
+
+                auto &gltfPrimitive = gltfMesh.primitives.emplace_back();
+
+                if (j == 0) {
+                    initial_index_offset = lod.parts[i].submeshes[j].index_offset;
+                }
+
+                gltfPrimitive.indices = gltfModel.accessors.size();
+                auto &indexAccessor = gltfModel.accessors.emplace_back();
+                indexAccessor.name = gltfNode.name + " Index Accessor";
+                indexAccessor.bufferView = gltfModel.bufferViews.size() + 1;
+                indexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
+                indexAccessor.count = lod.parts[i].submeshes[j].index_count;
+                indexAccessor.byteOffset = (lod.parts[i].submeshes[j].index_offset - initial_index_offset) * sizeof(uint16_t);
+                indexAccessor.type = TINYGLTF_TYPE_SCALAR;
+
+                gltfPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
+            }
+
+            for (uint32_t j = 0; j < part.num_submeshes; j++) {
+                auto &gltfPrimitive = gltfModel.meshes[mesh_offset + j].primitives[0];
+                gltfPrimitive.attributes["POSITION"] = gltfModel.accessors.size();
+                gltfPrimitive.attributes["TEXCOORD_0"] = gltfModel.accessors.size() + 1;
+                gltfPrimitive.attributes["TEXCOORD_1"] = gltfModel.accessors.size() + 2;
+                gltfPrimitive.attributes["NORMAL"] = gltfModel.accessors.size() + 3;
+                gltfPrimitive.attributes["TANGENT"] = gltfModel.accessors.size() + 4;
+                gltfPrimitive.attributes["COLOR_0"] = gltfModel.accessors.size() + 5;
+                gltfPrimitive.attributes["WEIGHTS_0"] = gltfModel.accessors.size() + 6;
+                gltfPrimitive.attributes["JOINTS_0"] = gltfModel.accessors.size() + 7;
+            }
         }
 
         // Vertices

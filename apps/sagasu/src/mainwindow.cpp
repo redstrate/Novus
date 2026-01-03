@@ -37,6 +37,8 @@
 #include <QInputDialog>
 #include <QStringListModel>
 
+#include "mdlimport.h"
+
 MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     : m_data(data)
     , fileCache(m_data)
@@ -217,9 +219,27 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto importButton = new QPushButton(QStringLiteral("Import glTF"));
         mdlLayout->addWidget(importButton);
 
+        auto exportButton = new QPushButton(QStringLiteral("Export glTF"));
+        mdlLayout->addWidget(exportButton);
+
         auto mdlWidget = new MDLPart(&m_data, fileCache);
         mdlWidget->addModel(physis_mdl_parse(m_data.platform, file), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
         mdlLayout->addWidget(mdlWidget);
+
+        connect(importButton, &QPushButton::clicked, this, [this, mdlWidget](bool) {
+            const QString fileName =
+                QFileDialog::getOpenFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
+            if (!fileName.isEmpty()) {
+                importModel(mdlWidget->getModel(0).model, fileName);
+            }
+        });
+        connect(exportButton, &QPushButton::clicked, this, [this, mdlWidget](bool) {
+            const QString fileName =
+                QFileDialog::getSaveFileName(this, i18nc("@title:window", "Export Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
+            if (!fileName.isEmpty()) {
+                mdlWidget->exportModel(fileName);
+            }
+        });
 
         partHolder->addTab(mdlWidgetHolder, i18nc("@title:tab", "Model"));
     } break;

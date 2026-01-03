@@ -51,7 +51,7 @@ MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
 void MDLPart::exportModel(const QString &fileName)
 {
     auto &model = vkWindow->models[0];
-    ::exportModel(model.name, model.sourceObject->model, *skeleton, boneData, fileName);
+    ::exportModel(model.name, model.sourceObject->model, skeleton.get(), boneData, fileName);
 }
 
 DrawObject &MDLPart::getModel(const int index)

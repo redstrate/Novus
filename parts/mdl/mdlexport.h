@@ -13,4 +13,4 @@ struct BoneData {
     glm::mat4 localTransform, finalTransform, inversePose;
 };
 
-void exportModel(const QString &name, const physis_MDL &model, const physis_Skeleton &skeleton, const std::vector<BoneData> &boneData, const QString &fileName);
+void exportModel(const QString &name, const physis_MDL &model, const physis_Skeleton *skeleton, const std::vector<BoneData> &boneData, const QString &fileName);
