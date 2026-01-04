@@ -8,6 +8,7 @@
 #include <KConfigGroup>
 #include <KLocalizedString>
 #include <QComboBox>
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QFormLayout>
@@ -17,6 +18,7 @@
 #include <QVBoxLayout>
 
 #include "launcherconfig.h"
+#include "settingswindow.h"
 
 static QMap<QString, QPair<QString, QString>> applications = {{QStringLiteral("Gear Editor"), {QStringLiteral("zone.xiv.armoury"), GEAREDITOR_EXECUTABLE}},
                                                               {QStringLiteral("Map Editor"), {QStringLiteral("zone.xiv.mapeditor"), MAPEDITOR_EXECUTABLE}},
@@ -83,11 +85,19 @@ MainWindow::MainWindow()
     KConfig config(QStringLiteral("novusrc"));
     KConfigGroup game = config.group(QStringLiteral("Game"));
 
-    auto gameCombo = new QComboBox();
-    gameCombo->setMaximumWidth(175);
-    formLayout->addRow(i18n("Current game"), gameCombo);
+    m_gameInstallCombo = new QComboBox();
+    connect(m_gameInstallCombo, &QComboBox::activated, this, [](const int index) {
+        KConfig config(QStringLiteral("novusrc"));
+        KConfigGroup game = config.group(QStringLiteral("Game"));
+
+        auto gameInstalls = getGameInstalls();
+        game.writeEntry(QStringLiteral("CurrentInstall"), gameInstalls[index].uuid.toString());
+
+        config.sync();
+    });
+    m_gameInstallCombo->setMaximumWidth(175);
+    formLayout->addRow(i18n("Game Install"), m_gameInstallCombo);
     formLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-    gameCombo->addItem(game.readEntry("GameDir"));
 
     auto mainLayout = new QVBoxLayout();
     mainLayout->setSpacing(0);
@@ -99,12 +109,50 @@ MainWindow::MainWindow()
 
     setCentralWidget(centralWidget);
 
+    setupActions();
     setupGUI(Create);
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+
+    refreshGameInstalls();
+}
+
+void MainWindow::configure()
+{
+    auto settingsWindow = new SettingsWindow();
+    settingsWindow->show();
+
+    // TODO: refresh game instals
+}
+
+void MainWindow::setupActions()
+{
+    KStandardAction::preferences(this, &MainWindow::configure, actionCollection());
+    KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
+}
+
+void MainWindow::refreshGameInstalls()
+{
+    m_gameInstallCombo->clear();
+
+    int selectedIndex = 0;
+
+    KConfig config(QStringLiteral("novusrc"));
+    const KConfigGroup game = config.group(QStringLiteral("Game"));
+
+    auto gameInstalls = getGameInstalls();
+    for (const auto &install : gameInstalls) {
+        if (install.uuid.toString() == game.readEntry(QStringLiteral("CurrentInstall"))) {
+            selectedIndex = m_gameInstallCombo->count();
+        }
+
+        m_gameInstallCombo->addItem(install.label);
+    }
+
+    m_gameInstallCombo->setCurrentIndex(selectedIndex);
 }
 
 #include "moc_mainwindow.cpp"

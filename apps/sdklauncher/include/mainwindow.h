@@ -5,10 +5,20 @@
 
 #include <KXmlGuiWindow>
 
+class QComboBox;
 class MainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 
 public:
     MainWindow();
+
+public Q_SLOTS:
+    void configure();
+
+private:
+    void setupActions();
+    void refreshGameInstalls();
+
+    QComboBox *m_gameInstallCombo;
 };

@@ -11,6 +11,7 @@
 
 #include "aboutdata.h"
 #include "mainwindow.h"
+#include "settings.h"
 
 int main(int argc, char *argv[])
 {
@@ -28,26 +29,21 @@ int main(int argc, char *argv[])
         qputenv("QT_MESSAGE_PATTERN", "[%{time yyyy-MM-dd h:mm:ss.zzz}] %{if-category}[%{category}] %{endif}[%{type}] %{message}");
     }
 
-    KConfig config(QStringLiteral("novusrc"));
-    KConfigGroup game = config.group(QStringLiteral("Game"));
-
-    if (!game.hasKey("GameDir")) {
+    if (getGameDirectory(false).isEmpty()) {
         while (true) {
             QMessageBox msgBox;
             msgBox.setText(i18n("The game directory has not been set, please select it now. Select the 'game' folder."));
             msgBox.exec();
 
-            const QString dir = QFileDialog::getExistingDirectory(nullptr,
-                                                                  i18nc("@title:window", "Open Game Directory"),
-                                                                  QStandardPaths::standardLocations(QStandardPaths::StandardLocation::HomeLocation).last(),
-                                                                  QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-
-            const std::string dirStd = dir.toStdString();
-
-            if (!physis_sqpack_initialize(dirStd.c_str()).p_ptr)
+            if (!addNewInstall())
                 continue;
 
-            game.writeEntry("GameDir", dir);
+            KConfig config(QStringLiteral("novusrc"));
+            KConfigGroup game = config.group(QStringLiteral("Game"));
+
+            auto gameInstalls = getGameInstalls();
+
+            game.writeEntry("CurrentInstall", gameInstalls.constFirst().uuid.toString());
             config.sync();
 
             break;

@@ -10,13 +10,31 @@ AppState::AppState(physis_SqPackResource *resource, QObject *parent)
 {
     // ENPC
     {
-        const auto exh = physis_exh_parse(resource->platform, physis_sqpack_read(resource, "exd/enpcresident.exh"));
+        const auto exhFile = physis_sqpack_read(resource, "exd/enpcresident.exh");
+        if (exhFile.size == 0) {
+            qWarning() << "Failed to read exd/epncresident.exh";
+        }
+
+        const auto exh = physis_exh_parse(resource->platform, exhFile);
+        if (!exh.p_ptr) {
+            qWarning() << "Failed to parse exd/enpcresident.exh";
+        }
+
         m_enpcResidentSheet = physis_sqpack_read_excel_sheet(resource, "ENpcResident", &exh, Language::English);
     }
 
     // EOBJ
     {
-        const auto exh = physis_exh_parse(resource->platform, physis_sqpack_read(resource, "exd/eobjname.exh"));
+        const auto exhFile = physis_sqpack_read(resource, "exd/eobjname.exh");
+        if (exhFile.size == 0) {
+            qWarning() << "Failed to read exd/eobjname.exh";
+        }
+
+        const auto exh = physis_exh_parse(resource->platform, exhFile);
+        if (!exh.p_ptr) {
+            qWarning() << "Failed to parse exd/eobjname.exh";
+        }
+
         m_eobjNameSheet = physis_sqpack_read_excel_sheet(resource, "EObjName", &exh, Language::English);
     }
 }

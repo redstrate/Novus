@@ -26,6 +26,10 @@ int main(int argc, char *argv[])
     }
 
     const QString gameDir{getGameDirectory()};
+    if (gameDir.isEmpty()) {
+        return 0;
+    }
+
     const std::string gameDirStd{gameDir.toStdString()};
     const auto window = new MainWindow(physis_sqpack_initialize(gameDirStd.c_str()));
     window->show();

@@ -5,9 +5,11 @@ add_executable(novus-launcher)
 target_sources(novus-launcher
         PRIVATE
         include/mainwindow.h
+        include/settingswindow.h
 
         src/main.cpp
-        src/mainwindow.cpp)
+        src/mainwindow.cpp
+        src/settingswindow.cpp)
 target_link_libraries(novus-launcher
         PRIVATE
         Novus::Common
