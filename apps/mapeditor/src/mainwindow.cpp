@@ -61,20 +61,11 @@ void MainWindow::setupActions()
     KStandardAction::open(
         qApp,
         [this] {
-            auto dialog = new QDialog();
-
-            auto layout = new QVBoxLayout();
-            layout->setContentsMargins({});
-            dialog->setLayout(layout);
-
-            auto listWidget = new MapListWidget(&m_data);
-            connect(listWidget, &MapListWidget::mapSelected, this, [this, dialog](const QString &basePath) {
-                dialog->close();
-                openMap(basePath);
+            auto listWidget = new MapListWidget(&m_data, this);
+            connect(listWidget, &MapListWidget::accepted, this, [this, listWidget] {
+                openMap(listWidget->acceptedMap());
             });
-            layout->addWidget(listWidget);
-
-            dialog->exec();
+            listWidget->show();
         },
         actionCollection());
 

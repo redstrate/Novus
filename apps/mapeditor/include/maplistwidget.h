@@ -3,22 +3,27 @@
 
 #pragma once
 
+#include <QDialog>
 #include <QListView>
-#include <QWidget>
 #include <physis.hpp>
 
-class MapListWidget : public QWidget
+class QSortFilterProxyModel;
+
+class MapListWidget : public QDialog
 {
     Q_OBJECT
 
 public:
     explicit MapListWidget(physis_SqPackResource *data, QWidget *parent = nullptr);
 
-Q_SIGNALS:
-    void mapSelected(const QString &name);
+    QString acceptedMap() const;
+
+    void accept() override;
 
 private:
     QListView *listWidget = nullptr;
 
     physis_SqPackResource *data = nullptr;
+    QString m_acceptedMap;
+    QSortFilterProxyModel *m_searchModel = nullptr;
 };

@@ -4,35 +4,37 @@
 #include "maplistwidget.h"
 
 #include <KLocalizedString>
+#include <QDialogButtonBox>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QVBoxLayout>
 
 MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
-    : QWidget(parent)
+    : QDialog(parent)
     , data(data)
 {
+    setModal(true);
+    setMinimumSize(QSize(640, 480));
+
     auto layout = new QVBoxLayout();
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
     setLayout(layout);
 
-    auto searchModel = new QSortFilterProxyModel();
-    searchModel->setRecursiveFilteringEnabled(true);
-    searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
+    m_searchModel = new QSortFilterProxyModel();
+    m_searchModel->setRecursiveFilteringEnabled(true);
+    m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     auto searchEdit = new QLineEdit();
     searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     searchEdit->setClearButtonEnabled(true);
-    searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
-    connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
-        searchModel->setFilterRegularExpression(text);
+    connect(searchEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
+        m_searchModel->setFilterRegularExpression(text);
     });
     layout->addWidget(searchEdit);
 
     auto originalModel = new QStandardItemModel();
-    searchModel->setSourceModel(originalModel);
+    m_searchModel->setSourceModel(originalModel);
 
     auto nameExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/PlaceName.exh"));
     auto territoryExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/TerritoryType.exh"));
@@ -76,13 +78,40 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
 
     listWidget = new QListView();
     listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
-    listWidget->setModel(searchModel);
+    listWidget->setModel(m_searchModel);
 
-    connect(listWidget, &QListView::activated, [this, searchModel](const QModelIndex &index) {
-        Q_EMIT mapSelected(searchModel->mapToSource(index).data(Qt::UserRole + 1).toString());
-    });
+    connect(listWidget, &QListView::activated, this, &MapListWidget::accept);
 
     layout->addWidget(listWidget);
+
+    auto buttonBox = new QDialogButtonBox(QDialogButtonBox::Open | QDialogButtonBox::Cancel);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &MapListWidget::accept);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &MapListWidget::reject);
+    layout->addWidget(buttonBox);
+
+    // Disable when there's no selection
+    connect(listWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this, buttonBox] {
+        buttonBox->button(QDialogButtonBox::Open)->setEnabled(listWidget->selectionModel()->hasSelection());
+    });
+
+    // And it should be disabled by default
+    buttonBox->button(QDialogButtonBox::Open)->setEnabled(false);
+}
+
+QString MapListWidget::acceptedMap() const
+{
+    return m_acceptedMap;
+}
+
+void MapListWidget::accept()
+{
+    // Figure out the selection first
+    const auto index = listWidget->selectionModel()->selectedIndexes().constFirst();
+    if (index.isValid()) {
+        m_acceptedMap = m_searchModel->mapToSource(index).data(Qt::UserRole + 1).toString();
+    }
+
+    QDialog::accept();
 }
 
 #include "moc_maplistwidget.cpp"
