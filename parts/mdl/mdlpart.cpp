@@ -27,14 +27,24 @@ MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
     viewportLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(viewportLayout);
 
-    pbd = physis_pbd_parse(data->platform, physis_sqpack_read(data, "chara/xls/bonedeformer/human.pbd"));
+    auto pbdFile = physis_sqpack_read(data, "chara/xls/bonedeformer/human.pbd");
+    if (pbdFile.size == 0) {
+        qWarning() << "Failed to read chara/xls/bonedeformer/human.pbd";
+    } else {
+        pbd = physis_pbd_parse(data->platform, pbdFile);
+        if (!pbd.p_ptr) {
+            qWarning() << "Failed to parse chara/xls/bonedeformer/human.pbd";
+        }
+    }
 
     renderer = new RenderManager(data);
 
     auto inst = new QVulkanInstance();
     inst->setVkInstance(renderer->device().instance);
     inst->setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
-    inst->create();
+    if (!inst->create()) {
+        qWarning() << "Failed to create QVulkanInstance!";
+    }
 
     vkWindow = new VulkanWindow(this, renderer, inst);
     vkWindow->setVulkanInstance(inst);
