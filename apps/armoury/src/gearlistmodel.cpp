@@ -42,10 +42,15 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
                 int16_t parts[4];
                 memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
 
+                const auto slot = physis_slot_from_id(row.row_data[0].column_data[17].u_int8._0);
+                if (slot == Slot::Invalid) {
+                    continue;
+                }
+
                 GearInfo info = {};
                 info.name = row.row_data[0].column_data[9].string._0;
                 info.icon = row.row_data[0].column_data[10].u_int16._0;
-                info.slot = physis_slot_from_id(row.row_data[0].column_data[17].u_int8._0);
+                info.slot = slot;
                 info.modelInfo.primaryID = parts[0];
 
                 gears.push_back(info);
@@ -60,6 +65,10 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
 
     int i = 0;
     for (auto slot : magic_enum::enum_values<Slot>()) {
+        if (slot == Slot::Invalid) {
+            continue;
+        }
+
         auto categoryItem = new TreeInformation();
         categoryItem->type = TreeType::Category;
         categoryItem->slotType = slot;

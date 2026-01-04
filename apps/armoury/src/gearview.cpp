@@ -354,7 +354,11 @@ void GearView::updatePart()
                     gearAddition.mdl = mdl;
                     gearAddition.path = mdlPath;
                     loadedGears.push_back(gearAddition);
+                } else {
+                    qWarning() << "Failed to parse" << mdlPath;
                 }
+            } else {
+                qWarning() << "Failed to load" << mdlPath;
             }
         }
 
