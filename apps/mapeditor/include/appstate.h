@@ -14,6 +14,8 @@ class AppState : public QObject
 public:
     explicit AppState(physis_SqPackResource *resource, QObject *parent = nullptr);
 
+    void clear();
+
     QString basePath;
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
     QList<uint32_t> visibleLayerIds;

@@ -84,6 +84,7 @@ void MainWindow::openMap(const QString &basePath)
 {
     QString base2Path = basePath.left(basePath.lastIndexOf(QStringLiteral("/level/")));
 
+    m_appState->clear();
     m_appState->basePath = basePath;
 
     setWindowTitle(basePath);

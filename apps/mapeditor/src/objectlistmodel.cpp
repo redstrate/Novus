@@ -172,6 +172,10 @@ void ObjectListModel::refresh()
 {
     beginResetModel();
 
+    // Reset the root item otherwise the children is left-over
+    m_rootItem = new TreeInformation();
+    m_rootItem->type = TreeType::Root;
+
     auto terrainItem = new TreeInformation();
     terrainItem->type = TreeType::File;
     terrainItem->parent = m_rootItem;

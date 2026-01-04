@@ -21,6 +21,17 @@ AppState::AppState(physis_SqPackResource *resource, QObject *parent)
     }
 }
 
+void AppState::clear()
+{
+    basePath.clear();
+    lgbFiles.clear();
+    visibleLayerIds.clear();
+    terrain = {};
+    visibleTerrainPlates.clear();
+    selectedObject.reset();
+    selectedLayer.reset();
+}
+
 QString AppState::lookupENpcName(const uint32_t id) const
 {
     auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
