@@ -15,8 +15,16 @@ MaterialView::MaterialView(physis_SqPackResource *data, FileCache &cache, QWidge
 {
     mdlPart = new MDLPart(data, cache);
 
-    auto plateMdlFile = physis_sqpack_read(data, "chara/equipment/e0028/model/c0101e0028_top.mdl");
+    auto mdlPath = "chara/equipment/e0028/model/c0101e0028_top.mdl";
+    auto plateMdlFile = physis_sqpack_read(data, mdlPath);
+    if (plateMdlFile.size == 0) {
+        qWarning() << "Failed to load MDL:" << mdlPath;
+    }
+
     m_mdl = physis_mdl_parse(data->platform, plateMdlFile);
+    if (m_mdl.p_ptr == nullptr) {
+        qWarning() << "Failed to parse MDL:" << mdlPath;
+    }
 
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
