@@ -75,6 +75,7 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
     }
 
     listWidget = new QListView();
+    listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
     listWidget->setModel(searchModel);
 
     connect(listWidget, &QListView::activated, [this, searchModel](const QModelIndex &index) {
