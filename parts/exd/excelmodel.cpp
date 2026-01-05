@@ -20,21 +20,19 @@ ExcelModel::ExcelModel(const physis_EXH &exh, const physis_ExcelSheetPage &page,
     , m_language(language)
 {
     // We need to count the subrows to get the "true" row count.
-    unsigned int regularRowCount = 0;
-    for (unsigned int i = 0; i < page.row_count; i++) {
-        const auto &row = page.rows[i];
+    for (unsigned int i = 0; i < page.entry_count; i++) {
+        const auto &entry = page.entries[i];
 
-        for (unsigned int j = 0; j < row.row_count; j++) {
+        for (unsigned int j = 0; j < entry.subrow_count; j++) {
             // Push a "true" row index for the given subrow. This is just for faster lookups.
-            m_rowIndices.emplace_back(regularRowCount, row.row_id, j);
+            m_rowIndices.emplace_back(i, entry.row_id, j);
         }
 
-        if (row.row_count > 1) {
+        if (entry.subrow_count > 1) {
             m_hasSubrows = true;
         }
 
-        m_rowCount += row.row_count;
-        regularRowCount++;
+        m_rowCount += entry.subrow_count;
     }
 
     // TODO: make this look-up more sensible to reduce calls to indexOf
@@ -124,28 +122,28 @@ QVariant ExcelModel::data(const QModelIndex &index, int role) const
         // TODO: de-duplicate with the identical switch below
         uint32_t targetRowId;
         switch (data.tag) {
-        case physis_ColumnData::Tag::Int8:
+        case physis_Field::Tag::Int8:
             targetRowId = data.int8._0;
             break;
-        case physis_ColumnData::Tag::UInt8:
+        case physis_Field::Tag::UInt8:
             targetRowId = data.u_int8._0;
             break;
-        case physis_ColumnData::Tag::Int16:
+        case physis_Field::Tag::Int16:
             targetRowId = data.int16._0;
             break;
-        case physis_ColumnData::Tag::UInt16:
+        case physis_Field::Tag::UInt16:
             targetRowId = data.u_int16._0;
             break;
-        case physis_ColumnData::Tag::Int32:
+        case physis_Field::Tag::Int32:
             targetRowId = data.int32._0;
             break;
-        case physis_ColumnData::Tag::UInt32:
+        case physis_Field::Tag::UInt32:
             targetRowId = data.u_int32._0;
             break;
-        case physis_ColumnData::Tag::Int64:
+        case physis_Field::Tag::Int64:
             targetRowId = data.int64._0;
             break;
-        case physis_ColumnData::Tag::UInt64:
+        case physis_Field::Tag::UInt64:
             targetRowId = data.u_int64._0;
             break;
         default:
@@ -222,35 +220,35 @@ QHash<int, QByteArray> ExcelModel::roleNames() const
     };
 }
 
-QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_ColumnData &data) const
+QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field &data) const
 {
     // Check to see if there's any targets
     const auto targetSheets = m_schema.targetSheetsForColumn(column);
     if (!targetSheets.isEmpty()) {
         uint32_t targetRowId;
         switch (data.tag) {
-        case physis_ColumnData::Tag::Int8:
+        case physis_Field::Tag::Int8:
             targetRowId = data.int8._0;
             break;
-        case physis_ColumnData::Tag::UInt8:
+        case physis_Field::Tag::UInt8:
             targetRowId = data.u_int8._0;
             break;
-        case physis_ColumnData::Tag::Int16:
+        case physis_Field::Tag::Int16:
             targetRowId = data.int16._0;
             break;
-        case physis_ColumnData::Tag::UInt16:
+        case physis_Field::Tag::UInt16:
             targetRowId = data.u_int16._0;
             break;
-        case physis_ColumnData::Tag::Int32:
+        case physis_Field::Tag::Int32:
             targetRowId = data.int32._0;
             break;
-        case physis_ColumnData::Tag::UInt32:
+        case physis_Field::Tag::UInt32:
             targetRowId = data.u_int32._0;
             break;
-        case physis_ColumnData::Tag::Int64:
+        case physis_Field::Tag::Int64:
             targetRowId = data.int64._0;
             break;
-        case physis_ColumnData::Tag::UInt64:
+        case physis_Field::Tag::UInt64:
             targetRowId = data.u_int64._0;
             break;
         default:
@@ -268,7 +266,7 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Column
             const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
 
             if (const auto displayFieldIndex = schema.displayFieldIndex()) {
-                return displayForData(m_resolver->translateSchemaColumn(sheetName, &row.row_data[0], *displayFieldIndex));
+                return displayForData(m_resolver->translateSchemaColumn(sheetName, &row, *displayFieldIndex));
             }
         }
     }
@@ -277,41 +275,41 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Column
     return displayForData(data);
 }
 
-QVariant ExcelModel::displayForData(const physis_ColumnData &data)
+QVariant ExcelModel::displayForData(const physis_Field &data)
 {
     QString columnString;
     switch (data.tag) {
-    case physis_ColumnData::Tag::String:
+    case physis_Field::Tag::String:
         columnString = QString::fromStdString(data.string._0);
         break;
-    case physis_ColumnData::Tag::Bool:
+    case physis_Field::Tag::Bool:
         columnString = data.bool_._0 ? i18nc("Value is true", "True") : i18nc("Value is false", "False");
         break;
-    case physis_ColumnData::Tag::Int8:
+    case physis_Field::Tag::Int8:
         columnString = QString::number(data.int8._0);
         break;
-    case physis_ColumnData::Tag::UInt8:
+    case physis_Field::Tag::UInt8:
         columnString = QString::number(data.u_int8._0);
         break;
-    case physis_ColumnData::Tag::Int16:
+    case physis_Field::Tag::Int16:
         columnString = QString::number(data.int16._0);
         break;
-    case physis_ColumnData::Tag::UInt16:
+    case physis_Field::Tag::UInt16:
         columnString = QString::number(data.u_int16._0);
         break;
-    case physis_ColumnData::Tag::Int32:
+    case physis_Field::Tag::Int32:
         columnString = QString::number(data.int32._0);
         break;
-    case physis_ColumnData::Tag::UInt32:
+    case physis_Field::Tag::UInt32:
         columnString = QString::number(data.u_int32._0);
         break;
-    case physis_ColumnData::Tag::Float32:
+    case physis_Field::Tag::Float32:
         columnString = QString::number(data.float32._0);
         break;
-    case physis_ColumnData::Tag::Int64:
+    case physis_Field::Tag::Int64:
         columnString = QString::number(data.int64._0);
         break;
-    case physis_ColumnData::Tag::UInt64:
+    case physis_Field::Tag::UInt64:
         columnString = QString::number(data.u_int64._0);
         break;
     }
@@ -319,13 +317,26 @@ QVariant ExcelModel::displayForData(const physis_ColumnData &data)
     return columnString;
 }
 
-physis_ColumnData &ExcelModel::dataForIndex(const QModelIndex &index) const
+physis_Field &ExcelModel::dataForIndex(const QModelIndex &index) const
 {
-    const auto [row_index, _, subrow_id] = m_rowIndices[index.row()];
-    const auto &row = m_page.rows[row_index];
-    const auto &subrow = row.row_data[subrow_id];
+    const auto [row_index, _, subrow_index] = m_rowIndices[index.row()];
+    if (row_index < m_page.entry_count) {
+        const auto &row = m_page.entries[row_index];
 
-    return subrow.column_data[index.column()];
+        if (subrow_index < row.subrow_count) {
+            const auto &subrow = row.subrows[subrow_index];
+
+            if (index.column() < static_cast<int>(m_page.column_count)) {
+                return subrow.columns[index.column()];
+            }
+            qFatal() << "Requesting column" << index.column() << "despite the column count being" << m_page.column_count;
+            Q_UNREACHABLE();
+        }
+        qFatal() << "Requesting subrow of index" << subrow_index << "despite the subrow count for" << row.row_id << "being" << subrow_index;
+        Q_UNREACHABLE();
+    }
+    qFatal() << "Requesting entry of index" << row_index << "despite the entry count being" << m_page.entry_count;
+    Q_UNREACHABLE();
 }
 
 #include "moc_excelmodel.cpp"

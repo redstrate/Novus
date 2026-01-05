@@ -53,8 +53,8 @@ void AppState::clear()
 QString AppState::lookupENpcName(const uint32_t id) const
 {
     auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
-    if (row.row_data && strlen(row.row_data[0].column_data[0].string._0) > 0) {
-        return QString::fromLatin1(row.row_data[0].column_data[0].string._0);
+    if (row.columns && strlen(row.columns[0].string._0) > 0) {
+        return QString::fromLatin1(row.columns[0].string._0);
     }
     return i18n("Event NPC");
 }
@@ -62,8 +62,8 @@ QString AppState::lookupENpcName(const uint32_t id) const
 QString AppState::lookupEObjName(const uint32_t id) const
 {
     auto row = physis_excel_get_row(&m_eobjNameSheet, id);
-    if (row.row_data && strlen(row.row_data[0].column_data[0].string._0) > 0) {
-        return QString::fromLatin1(row.row_data[0].column_data[0].string._0);
+    if (row.columns && strlen(row.columns[0].string._0) > 0) {
+        return QString::fromLatin1(row.columns[0].string._0);
     }
     return i18n("Event Object");
 }

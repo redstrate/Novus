@@ -7,8 +7,7 @@
 
 #include <KLocalizedString>
 
-std::optional<std::pair<QString, physis_ExcelRows>>
-AbstractExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
+std::optional<std::pair<QString, physis_ExcelRow>> AbstractExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
 {
     Q_UNUSED(sheetNames)
     Q_UNUSED(row)
@@ -16,11 +15,11 @@ AbstractExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t 
     return std::nullopt;
 }
 
-physis_ColumnData &AbstractExcelResolver::translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column)
+physis_Field &AbstractExcelResolver::translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column)
 {
     Q_UNUSED(sheetName)
     Q_UNUSED(column)
-    return row->column_data[0];
+    return row->columns[0];
 }
 
 CachingExcelResolver::CachingExcelResolver(physis_SqPackResource *resource)
@@ -28,7 +27,7 @@ CachingExcelResolver::CachingExcelResolver(physis_SqPackResource *resource)
 {
 }
 
-std::optional<std::pair<QString, physis_ExcelRows>> CachingExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
+std::optional<std::pair<QString, physis_ExcelRow>> CachingExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
 {
     for (const auto &sheetName : sheetNames) {
         const auto exh = getCachedEXH(sheetName);
@@ -51,7 +50,7 @@ std::optional<std::pair<QString, physis_ExcelRows>> CachingExcelResolver::resolv
     return AbstractExcelResolver::resolveRow(sheetNames, row, language);
 }
 
-physis_ColumnData &CachingExcelResolver::translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, const uint32_t column)
+physis_Field &CachingExcelResolver::translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, const uint32_t column)
 {
     const auto exh = getCachedEXH(sheetName);
     Q_ASSERT(exh.p_ptr);
@@ -70,7 +69,7 @@ physis_ColumnData &CachingExcelResolver::translateSchemaColumn(const QString &sh
         sortedColumnIndices.push_back(sortedColumns[i].second);
     }
 
-    return row->column_data[sortedColumnIndices[column]];
+    return row->columns[sortedColumnIndices[column]];
 }
 
 physis_EXH &CachingExcelResolver::getCachedEXH(const QString &sheetName)

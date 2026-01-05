@@ -33,23 +33,23 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
     m_sheet = physis_sqpack_read_excel_sheet(data, "Item", &m_exh, Language::English);
 
     for (unsigned int i = 0; i < m_sheet.page_count; i++) {
-        for (unsigned int j = m_exh.pages[i].start_id; j < m_exh.pages[i].start_id + m_sheet.pages[i].row_count; j++) {
+        for (unsigned int j = m_exh.pages[i].start_id; j < m_exh.pages[i].start_id + m_sheet.pages[i].entry_count; j++) {
             const auto row = physis_excel_get_row(&m_sheet, j); // TODO: use all rows, free
-            if (row.row_data) {
-                auto primaryModel = row.row_data[0].column_data[47].u_int64._0;
+            if (row.columns) {
+                auto primaryModel = row.columns[47].u_int64._0;
                 // auto secondaryModel = row.column_data[48].u_int64._0;
 
                 int16_t parts[4];
                 memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
 
-                const auto slot = physis_slot_from_id(row.row_data[0].column_data[17].u_int8._0);
+                const auto slot = physis_slot_from_id(row.columns[17].u_int8._0);
                 if (slot == Slot::Invalid) {
                     continue;
                 }
 
                 GearInfo info = {};
-                info.name = row.row_data[0].column_data[9].string._0;
-                info.icon = row.row_data[0].column_data[10].u_int16._0;
+                info.name = row.columns[9].string._0;
+                info.icon = row.columns[10].u_int16._0;
                 info.slot = slot;
                 info.modelInfo.primaryID = parts[0];
 
