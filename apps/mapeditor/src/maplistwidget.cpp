@@ -45,23 +45,23 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
     // TODO: figure out why row_count in EXH is wrong?!
     for (uint32_t i = 0; i < territoryExh.pages[0].row_count; i++) {
         auto territoryExdRow = physis_excel_get_row(&territorySheet, i); // TODO: free, use all rows
-        if (territoryExdRow.row_data) {
-            const char *bg = territoryExdRow.row_data[0].column_data[1].string._0;
+        if (territoryExdRow.columns) {
+            const char *bg = territoryExdRow.columns[1].string._0;
             if (strlen(bg) == 0) {
                 continue;
             }
 
-            int placeRegionKey = territoryExdRow.row_data[0].column_data[3].u_int16._0;
+            int placeRegionKey = territoryExdRow.columns[3].u_int16._0;
             auto regionExdRow = physis_excel_get_row(&nameSheet, placeRegionKey); // TODO: free, use all rows
-            const char *placeRegion = regionExdRow.row_data[0].column_data[0].string._0;
+            const char *placeRegion = regionExdRow.columns[0].string._0;
 
-            int placeZoneKey = territoryExdRow.row_data[0].column_data[4].u_int16._0;
+            int placeZoneKey = territoryExdRow.columns[4].u_int16._0;
             auto zoneExdRow = physis_excel_get_row(&nameSheet, placeZoneKey); // TODO: free, use all rows
-            const char *placeZone = zoneExdRow.row_data[0].column_data[0].string._0;
+            const char *placeZone = zoneExdRow.columns[0].string._0;
 
-            int placeNameKey = territoryExdRow.row_data[0].column_data[5].u_int16._0;
+            int placeNameKey = territoryExdRow.columns[5].u_int16._0;
             auto nameExdRow = physis_excel_get_row(&nameSheet, placeNameKey); // TODO: free, use all rows
-            const char *placeName = nameExdRow.row_data[0].column_data[0].string._0;
+            const char *placeName = nameExdRow.columns[0].string._0;
 
             QStandardItem *item = new QStandardItem();
             item->setData(QString::fromStdString(bg));

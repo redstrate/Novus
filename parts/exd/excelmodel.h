@@ -35,22 +35,22 @@ private:
     /**
      * @brief Returns a nice display for a given column data, including resolving other sheets..
      */
-    QVariant displayForColumn(uint32_t column, const physis_ColumnData &data) const;
+    QVariant displayForColumn(uint32_t column, const physis_Field &data) const;
 
     /**
      * @brief Returns a nice display for a given column data.
      */
-    static QVariant displayForData(const physis_ColumnData &data);
+    static QVariant displayForData(const physis_Field &data);
 
     /**
      * @brief Returns the column data for a given QModelIndex.
      */
-    physis_ColumnData &dataForIndex(const QModelIndex &index) const;
+    physis_Field &dataForIndex(const QModelIndex &index) const;
 
     physis_EXH m_exh;
     physis_ExcelSheetPage m_page;
     uint32_t m_rowCount = 0;
-    std::vector<std::tuple<int, int, int>> m_rowIndices;
+    std::vector<std::tuple<uint32_t, uint32_t, uint32_t>> m_rowIndices;
     Schema m_schema; // TODO: don't copy
     bool m_hasSubrows = false;
     // Mapping from a regular index to a list of columns that were sorted by offset
