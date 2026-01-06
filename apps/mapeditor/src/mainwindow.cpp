@@ -106,7 +106,7 @@ void MainWindow::openMap(const QString &basePath)
 
         auto bg_buffer = physis_sqpack_read(&m_data, bgLgbPathStd.c_str());
         if (bg_buffer.size > 0) {
-            auto lgb = physis_layergroup_parse(m_data.platform, bg_buffer);
+            auto lgb = physis_lgb_parse(m_data.platform, bg_buffer);
             if (lgb.num_chunks > 0) {
                 m_appState->lgbFiles.push_back({name, lgb});
             }

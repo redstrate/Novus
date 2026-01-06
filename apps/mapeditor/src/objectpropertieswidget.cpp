@@ -337,6 +337,7 @@ void ObjectPropertiesWidget::addSharedGroupSection(const physis_SharedGroupInsta
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
+    section->setLayout(layout);
 
     auto assetPathEdit = new PathEdit();
     assetPathEdit->setPath(QString::fromLatin1(sharedGroup.asset_path));
@@ -353,6 +354,7 @@ void ObjectPropertiesWidget::addAetheryteSection(const physis_AetheryteInstanceO
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
+    section->setLayout(layout);
 
     auto boundInstanceIdEdit = new QLineEdit();
     boundInstanceIdEdit->setText(QString::number(aetheryte.bound_instance_id));
@@ -369,6 +371,7 @@ void ObjectPropertiesWidget::addExitRangeSection(const physis_ExitRangeInstanceO
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
+    section->setLayout(layout);
 
     auto exitTypeEdit = new EnumEdit<ExitType>();
     exitTypeEdit->setValue(exitRange.exit_type);
@@ -425,6 +428,7 @@ void ObjectPropertiesWidget::addPrefetchRangeSection(const physis_PrefetchRangeI
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
+    section->setLayout(layout);
 
     auto boundInstanceIdEdit = new QLineEdit();
     boundInstanceIdEdit->setText(QString::number(prefetchRange.bound_instance_id));
