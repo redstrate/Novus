@@ -200,7 +200,7 @@ void ObjectListModel::refresh()
         fileItem->type = TreeType::File;
         fileItem->parent = m_rootItem;
         fileItem->name = name;
-        fileItem->row = y;
+        fileItem->row = y + 1;
         m_rootItem->children.push_back(fileItem);
 
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
