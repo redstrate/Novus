@@ -4,21 +4,25 @@
 #include "scenepart.h"
 
 #include "filecache.h"
+#include "objectpropertieswidget.h"
 #include "scenelistwidget.h"
 #include "scenestate.h"
 
-#include <QVBoxLayout>
+#include <QHBoxLayout>
 
 ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , m_appState(new SceneState(data))
     , m_data(data)
 {
-    auto layout = new QVBoxLayout();
+    auto layout = new QHBoxLayout();
     setLayout(layout);
 
     m_sceneListWidget = new SceneListWidget(m_appState);
     layout->addWidget(m_sceneListWidget);
+
+    m_objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
+    layout->addWidget(m_objectPropertiesWidget);
 }
 
 void ScenePart::loadSgb(physis_Buffer file)

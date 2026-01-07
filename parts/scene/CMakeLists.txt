@@ -8,11 +8,15 @@ target_sources(scenepart
         scenelistmodel.h
         scenestate.h
         scenepart.h
+        objectpropertieswidget.h
+        collapsesection.h
 
         scenelistwidget.cpp
         scenelistmodel.cpp
         scenestate.cpp
-        scenepart.cpp)
+        scenepart.cpp
+        objectpropertieswidget.cpp
+        collapsesection.cpp)
 target_link_libraries(scenepart
         PUBLIC
         Novus::Renderer

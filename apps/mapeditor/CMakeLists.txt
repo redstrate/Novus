@@ -9,17 +9,13 @@ target_sources(novus-mapeditor
         include/mapview.h
         include/objectpass.h
         include/primitives.h
-        include/objectpropertieswidget.h
-        include/collapsesection.h
 
         src/main.cpp
         src/mainwindow.cpp
         src/maplistwidget.cpp
         src/mapview.cpp
         src/objectpass.cpp
-        src/primitives.cpp
-        src/objectpropertieswidget.cpp
-        src/collapsesection.cpp)
+        src/primitives.cpp)
 target_include_directories(novus-mapeditor
         PUBLIC
         include)

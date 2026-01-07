@@ -11,6 +11,7 @@
 
 class SceneListWidget;
 class SceneState;
+class ObjectPropertiesWidget;
 struct physis_SqPackResource;
 
 class VulkanWindow;
@@ -28,4 +29,5 @@ private:
     SceneState *m_appState = nullptr;
     physis_SqPackResource *m_data = nullptr;
     SceneListWidget *m_sceneListWidget = nullptr;
+    ObjectPropertiesWidget *m_objectPropertiesWidget = nullptr;
 };
