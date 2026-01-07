@@ -7,6 +7,7 @@
 
 #include "filecache.h"
 
+class ScenePart;
 class ObjectPropertiesWidget;
 class SceneListWidget;
 class MapView;
@@ -26,9 +27,6 @@ private:
 
     physis_SqPackResource m_data;
     FileCache cache;
-    MapView *mapView = nullptr;
-    SceneListWidget *objectListWidget = nullptr;
-    SceneState *m_appState = nullptr;
-    ObjectPropertiesWidget *objectPropertiesWidget = nullptr;
+    ScenePart *m_part = nullptr;
     QAction *m_centerObjectAction = nullptr;
 };

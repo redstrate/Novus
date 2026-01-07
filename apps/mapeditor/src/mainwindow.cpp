@@ -7,17 +7,13 @@
 #include <KLocalizedString>
 #include <QApplication>
 #include <QDesktopServices>
-#include <QDialog>
-#include <QHBoxLayout>
 #include <QMenuBar>
-#include <QSplitter>
 #include <glm/gtc/type_ptr.hpp>
 #include <physis.hpp>
 
-#include "../../../parts/scene/mapview.h"
-#include "../../../parts/scene/objectpropertieswidget.h"
 #include "maplistwidget.h"
-#include "scenelistwidget.h"
+#include "mapview.h"
+#include "scenepart.h"
 #include "scenestate.h"
 
 MainWindow::MainWindow(physis_SqPackResource data)
@@ -26,22 +22,8 @@ MainWindow::MainWindow(physis_SqPackResource data)
 {
     setMinimumSize(1280, 720);
 
-    m_appState = new SceneState(&m_data, this);
-
-    auto dummyWidget = new QSplitter();
-    dummyWidget->setChildrenCollapsible(false);
-    setCentralWidget(dummyWidget);
-
-    objectListWidget = new SceneListWidget(m_appState);
-    objectListWidget->setMaximumWidth(400);
-    dummyWidget->addWidget(objectListWidget);
-
-    mapView = new MapView(&m_data, cache, m_appState);
-    dummyWidget->addWidget(mapView);
-
-    objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
-    objectPropertiesWidget->setMaximumWidth(400);
-    dummyWidget->addWidget(objectPropertiesWidget);
+    m_part = new ScenePart(&m_data);
+    setCentralWidget(m_part);
 
     setupActions();
     setupGUI(Keys | Save | Create, QStringLiteral("mapeditor.rc"));
@@ -51,7 +33,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 
-    connect(m_appState, &SceneState::selectionChanged, this, &MainWindow::updateActionState);
+    connect(m_part->sceneState(), &SceneState::selectionChanged, this, &MainWindow::updateActionState);
 
     updateActionState();
 }
@@ -73,7 +55,7 @@ void MainWindow::setupActions()
     m_centerObjectAction->setIcon(QIcon::fromTheme(QStringLiteral("camera-video-symbolic")));
     KActionCollection::setDefaultShortcut(m_centerObjectAction, QKeySequence(Qt::Modifier::ALT | Qt::Key::Key_C));
     connect(m_centerObjectAction, &QAction::triggered, [this] {
-        mapView->centerOn(glm::make_vec3(m_appState->selectedObject.value()->transform.translation));
+        m_part->mapView()->centerOn(glm::make_vec3(m_part->sceneState()->selectedObject.value()->transform.translation));
     });
     actionCollection()->addAction(QStringLiteral("center_object"), m_centerObjectAction);
 
@@ -82,7 +64,7 @@ void MainWindow::setupActions()
 
 void MainWindow::openMap(const QString &basePath)
 {
-    m_appState->clear();
+    m_part->sceneState()->clear();
 
     QString lvbPath = QStringLiteral("bg/%1.lvb").arg(basePath);
     std::string lvbPathStd = lvbPath.toStdString();
@@ -92,7 +74,7 @@ void MainWindow::openMap(const QString &basePath)
         auto lvb = physis_lvb_parse(m_data.platform, lvbFile);
         if (lvb.sections) {
             // TODO: read all sections?
-            m_appState->load(&m_data, lvb.sections[0]);
+            m_part->sceneState()->load(&m_data, lvb.sections[0]);
         } else {
             qWarning() << "Failed to parse lvb" << lvbPath;
         }
@@ -105,7 +87,7 @@ void MainWindow::openMap(const QString &basePath)
 
 void MainWindow::updateActionState()
 {
-    m_centerObjectAction->setEnabled(m_appState->selectedObject.has_value());
+    m_centerObjectAction->setEnabled(m_part->sceneState()->selectedObject.has_value());
 }
 
 #include "moc_mainwindow.cpp"

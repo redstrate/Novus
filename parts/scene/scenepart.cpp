@@ -44,4 +44,14 @@ void ScenePart::loadSgb(physis_Buffer file)
     }
 }
 
+SceneState *ScenePart::sceneState() const
+{
+    return m_appState;
+}
+
+MapView *ScenePart::mapView() const
+{
+    return m_mapView;
+}
+
 #include "moc_scenepart.cpp"

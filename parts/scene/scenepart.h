@@ -27,6 +27,9 @@ public:
 
     void loadSgb(physis_Buffer file);
 
+    SceneState *sceneState() const;
+    MapView *mapView() const;
+
 private:
     SceneState *m_appState = nullptr;
     physis_SqPackResource *m_data = nullptr;
