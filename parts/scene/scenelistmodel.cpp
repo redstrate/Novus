@@ -295,6 +295,28 @@ void SceneListModel::addLayer(uint32_t index, TreeInformation *fileItem, const p
         objectItem->row = z;
         objectItem->data = &object;
         layerItem->children.push_back(objectItem);
+
+        // Load nested shared group data
+        if (object.data.tag == physis_LayerEntry::Tag::SharedGroup) {
+            const auto sgbPath = QString::fromLatin1(object.data.shared_group._0.asset_path);
+            if (m_appState->nestedSharedGroups.contains(sgbPath)) {
+                appendSgb(objectItem, m_appState->nestedSharedGroups[sgbPath]);
+            } else {
+                qWarning() << "Not displaying SGB" << sgbPath << "because it failed to load.";
+            }
+        }
+    }
+}
+
+void SceneListModel::appendSgb(TreeInformation *parentNode, physis_Sgb &sgb)
+{
+    for (uint32_t i = 0; i < sgb.section_count; i++) {
+        for (uint32_t j = 0; j < sgb.sections[i].num_layer_groups; j++) {
+            for (uint32_t z = 0; z < sgb.sections[i].layer_groups[j].layer_count; z++) {
+                const auto layer = sgb.sections[i].layer_groups[j].layers[z];
+                addLayer(z, parentNode, layer);
+            }
+        }
     }
 }
 

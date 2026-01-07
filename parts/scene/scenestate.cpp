@@ -91,6 +91,24 @@ void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &sect
         }
     }
 
+    // Process nested shared groups
+    for (const auto &[name, lgb] : lgbFiles) {
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
+            for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
+                auto layer = lgb.chunks[i].layers[j];
+                for (uint32_t h = 0; h < layer.num_objects; h++) {
+                    if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
+                        processSharedGroup(data, layer.objects[h].data.shared_group._0.asset_path);
+                    }
+                }
+            }
+        }
+    }
+
+    for (const auto layerGroup : embeddedLgbs) {
+        processScnLayerGroup(data, layerGroup);
+    }
+
     Q_EMIT mapLoaded();
 }
 
@@ -122,4 +140,48 @@ QString SceneState::lookupEObjName(const uint32_t id) const
         return QString::fromLatin1(row.columns[0].string._0);
     }
     return i18n("Event Object");
+}
+
+void SceneState::processSharedGroup(physis_SqPackResource *data, const char *path)
+{
+    qInfo() << "Processing" << path;
+
+    if (nestedSharedGroups.contains(QString::fromLatin1(path))) {
+        qInfo() << "- Skipping because it's already loaded.";
+        return;
+    }
+
+    const auto sgbFile = physis_sqpack_read(data, path);
+    if (sgbFile.size == 0) {
+        qWarning() << "Failed to find" << path;
+        return;
+    }
+
+    const auto sgb = physis_sgb_parse(data->platform, sgbFile);
+    if (!sgb.sections) {
+        qWarning() << "Failed to parse" << path;
+        return;
+    }
+
+    nestedSharedGroups[QString::fromLatin1(path)] = sgb;
+
+    // Pick up this SGB's own SGBs
+    for (uint32_t i = 0; i < sgb.section_count; i++) {
+        for (uint32_t j = 0; j < sgb.sections[i].num_layer_groups; j++) {
+            auto layerGroup = sgb.sections[i].layer_groups[j];
+            processScnLayerGroup(data, layerGroup);
+        }
+    }
+}
+
+void SceneState::processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group)
+{
+    for (uint32_t j = 0; j < group.layer_count; j++) {
+        const auto layer = group.layers[j];
+        for (uint32_t h = 0; h < layer.num_objects; h++) {
+            if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
+                processSharedGroup(data, layer.objects[h].data.shared_group._0.asset_path);
+            }
+        }
+    }
 }

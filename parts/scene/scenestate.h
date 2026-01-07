@@ -5,6 +5,7 @@
 
 #include <QObject>
 
+#include <QHash>
 #include <physis.hpp>
 
 class SceneState : public QObject
@@ -25,6 +26,7 @@ public:
     QList<uint32_t> visibleTerrainPlates;
     std::optional<physis_InstanceObject const *> selectedObject;
     std::optional<physis_Layer const *> selectedLayer;
+    QHash<QString, physis_Sgb> nestedSharedGroups;
 
     /**
      * @return The name for this Event NPC. If not found, then a generic one.
@@ -43,6 +45,9 @@ Q_SIGNALS:
     void selectionChanged();
 
 private:
+    void processSharedGroup(physis_SqPackResource *data, const char *path);
+    void processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group);
+
     physis_ExcelSheet m_enpcResidentSheet;
     physis_ExcelSheet m_eobjNameSheet;
 };
