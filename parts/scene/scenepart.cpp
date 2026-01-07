@@ -10,18 +10,26 @@
 
 #include <QHBoxLayout>
 
+#include "mapview.h"
+
 ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
     , m_appState(new SceneState(data))
     , m_data(data)
+    , m_fileCache(*data) // TODO: re-use FileCache
 {
     auto layout = new QHBoxLayout();
     setLayout(layout);
 
     m_sceneListWidget = new SceneListWidget(m_appState);
+    m_sceneListWidget->setMaximumWidth(400);
     layout->addWidget(m_sceneListWidget);
 
+    m_mapView = new MapView(data, m_fileCache, m_appState);
+    layout->addWidget(m_mapView);
+
     m_objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
+    m_objectPropertiesWidget->setMaximumWidth(400);
     layout->addWidget(m_objectPropertiesWidget);
 }
 

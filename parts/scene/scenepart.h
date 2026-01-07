@@ -6,9 +6,11 @@
 #include <QWidget>
 #include <physis.hpp>
 
+#include "filecache.h"
 #include "mdlexport.h"
 #include "rendermanager.h"
 
+class MapView;
 class SceneListWidget;
 class SceneState;
 class ObjectPropertiesWidget;
@@ -30,4 +32,6 @@ private:
     physis_SqPackResource *m_data = nullptr;
     SceneListWidget *m_sceneListWidget = nullptr;
     ObjectPropertiesWidget *m_objectPropertiesWidget = nullptr;
+    MapView *m_mapView = nullptr;
+    FileCache m_fileCache;
 };

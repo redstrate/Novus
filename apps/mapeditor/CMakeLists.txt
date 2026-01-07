@@ -6,16 +6,10 @@ target_sources(novus-mapeditor
         PRIVATE
         include/mainwindow.h
         include/maplistwidget.h
-        include/mapview.h
-        include/objectpass.h
-        include/primitives.h
 
         src/main.cpp
         src/mainwindow.cpp
-        src/maplistwidget.cpp
-        src/mapview.cpp
-        src/objectpass.cpp
-        src/primitives.cpp)
+        src/maplistwidget.cpp)
 target_include_directories(novus-mapeditor
         PUBLIC
         include)

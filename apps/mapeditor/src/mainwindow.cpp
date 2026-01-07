@@ -14,9 +14,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <physis.hpp>
 
+#include "../../../parts/scene/mapview.h"
 #include "../../../parts/scene/objectpropertieswidget.h"
 #include "maplistwidget.h"
-#include "mapview.h"
 #include "scenelistwidget.h"
 #include "scenestate.h"
 
