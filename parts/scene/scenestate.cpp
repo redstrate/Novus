@@ -168,6 +168,8 @@ void SceneState::processSharedGroup(physis_SqPackResource *data, const char *pat
     // Pick up this SGB's own SGBs
     for (uint32_t i = 0; i < sgb.section_count; i++) {
         for (uint32_t j = 0; j < sgb.sections[i].num_layer_groups; j++) {
+            // TODO: represent the layer group here (with name)
+
             auto layerGroup = sgb.sections[i].layer_groups[j];
             processScnLayerGroup(data, layerGroup);
         }
