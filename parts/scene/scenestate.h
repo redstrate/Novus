@@ -15,6 +15,12 @@ public:
     void clear();
     void load(physis_SqPackResource *data, const physis_ScnSection &section);
 
+    /// Transformation to apply to all subsequent children.
+    Transformation transformation = {
+        .translation = {0, 0, 0},
+        .rotation = {0, 0, 0},
+        .scale = {1, 1, 1},
+    };
     QString basePath;
     QList<physis_ScnTimeline> embeddedTimelines;
     physis_Terrain terrain = {};
@@ -25,7 +31,7 @@ public:
     QHash<uint32_t, ObjectScene> nestedScenes;
 
 private:
-    void processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const char *path);
+    void processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path);
     void processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group);
 };
 

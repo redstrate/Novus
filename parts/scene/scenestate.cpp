@@ -90,7 +90,7 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
                 auto layer = lgb.chunks[i].layers[j];
                 for (uint32_t h = 0; h < layer.num_objects; h++) {
                     if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
-                        processSharedGroup(data, layer.objects[h].instance_id, layer.objects[h].data.shared_group._0.asset_path);
+                        processSharedGroup(data, layer.objects[h].instance_id, layer.objects[h].transform, layer.objects[h].data.shared_group._0.asset_path);
                     }
                 }
             }
@@ -155,7 +155,7 @@ QString SceneState::lookupEObjName(const uint32_t id) const
     return i18n("Event Object");
 }
 
-void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const char *path)
+void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path)
 {
     qInfo() << "Processing" << path;
 
@@ -173,6 +173,7 @@ void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t insta
 
     // TODO: load more than one section?
     nestedScenes[instanceId].load(data, sgb.sections[0]);
+    nestedScenes[instanceId].transformation = transformation;
 }
 
 void ObjectScene::processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group)
@@ -181,7 +182,7 @@ void ObjectScene::processScnLayerGroup(physis_SqPackResource *data, const physis
         const auto layer = group.layers[j];
         for (uint32_t h = 0; h < layer.num_objects; h++) {
             if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
-                processSharedGroup(data, layer.objects[h].instance_id, layer.objects[h].data.shared_group._0.asset_path);
+                processSharedGroup(data, layer.objects[h].instance_id, layer.objects[h].transform, layer.objects[h].data.shared_group._0.asset_path);
             }
         }
     }
