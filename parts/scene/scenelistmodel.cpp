@@ -176,22 +176,23 @@ void SceneListModel::refresh()
     m_rootItem = new TreeInformation();
     m_rootItem->type = TreeType::Root;
 
-    auto terrainItem = new TreeInformation();
-    terrainItem->type = TreeType::File;
-    terrainItem->parent = m_rootItem;
-    terrainItem->name = i18n("Terrain");
-    terrainItem->row = 0;
-    m_rootItem->children.push_back(terrainItem);
+    if (m_appState->terrain.num_plates > 0) {
+        auto terrainItem = new TreeInformation();
+        terrainItem->type = TreeType::File;
+        terrainItem->parent = m_rootItem;
+        terrainItem->name = i18n("Terrain");
+        m_rootItem->children.push_back(terrainItem);
 
-    // Add terrain plates
-    for (int i = 0; i < m_appState->terrain.num_plates; i++) {
-        auto layerItem = new TreeInformation();
-        layerItem->type = TreeType::Plate;
-        layerItem->parent = terrainItem;
-        layerItem->name = i18n("Plate %1").arg(i);
-        layerItem->row = i;
-        layerItem->id = i;
-        terrainItem->children.push_back(layerItem);
+        // Add terrain plates
+        for (int i = 0; i < m_appState->terrain.num_plates; i++) {
+            auto layerItem = new TreeInformation();
+            layerItem->type = TreeType::Plate;
+            layerItem->parent = terrainItem;
+            layerItem->name = i18n("Plate %1").arg(i);
+            layerItem->row = i;
+            layerItem->id = i;
+            terrainItem->children.push_back(layerItem);
+        }
     }
 
     // External LGB files
@@ -202,7 +203,7 @@ void SceneListModel::refresh()
         fileItem->type = TreeType::File;
         fileItem->parent = m_rootItem;
         fileItem->name = name;
-        fileItem->row = y + 1;
+        fileItem->row = m_rootItem->children.size();
         m_rootItem->children.push_back(fileItem);
 
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
@@ -221,7 +222,7 @@ void SceneListModel::refresh()
         fileItem->type = TreeType::File;
         fileItem->parent = m_rootItem;
         fileItem->name = QString::fromLatin1(lgb.name);
-        fileItem->row = y + m_appState->lgbFiles.size() + 1;
+        fileItem->row = m_rootItem->children.size();
         m_rootItem->children.push_back(fileItem);
 
         for (uint32_t i = 0; i < lgb.layer_count; i++) {
@@ -231,6 +232,7 @@ void SceneListModel::refresh()
 
     endResetModel();
 }
+
 void SceneListModel::addLayer(uint32_t index, TreeInformation *fileItem, const physis_Layer &layer)
 {
     auto layerItem = new TreeInformation();
