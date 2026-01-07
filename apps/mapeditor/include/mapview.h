@@ -10,14 +10,14 @@
 #include <physis.hpp>
 
 struct GameData;
-class AppState;
+class SceneState;
 
 class MapView : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MapView(physis_SqPackResource *data, FileCache &cache, AppState *appState, QWidget *parent = nullptr);
+    explicit MapView(physis_SqPackResource *data, FileCache &cache, SceneState *appState, QWidget *parent = nullptr);
 
     MDLPart &part() const;
 
@@ -33,5 +33,5 @@ private:
 
     physis_SqPackResource *m_data;
     FileCache &m_cache;
-    AppState *m_appState;
+    SceneState *m_appState;
 };

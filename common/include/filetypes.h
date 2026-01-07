@@ -21,6 +21,7 @@ enum class FileType {
     Material,
     LuaBytecode,
     HardwareCursor,
+    SharedGroup,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes

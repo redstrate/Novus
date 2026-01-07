@@ -10,12 +10,12 @@
 
 class RenderManager;
 class Device;
-class AppState;
+class SceneState;
 
 class ObjectPass : public RendererPass
 {
 public:
-    ObjectPass(RenderManager *renderer, AppState *appState);
+    ObjectPass(RenderManager *renderer, SceneState *appState);
 
     void render(VkCommandBuffer commandBuffer, Camera &camera) override;
 
@@ -27,5 +27,5 @@ private:
 
     RenderManager *m_renderer;
     Device &m_device;
-    AppState *m_appState;
+    SceneState *m_appState;
 };

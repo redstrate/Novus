@@ -11,9 +11,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include "appstate.h"
+#include "scenestate.h"
 
-ObjectPass::ObjectPass(RenderManager *renderer, AppState *appState)
+ObjectPass::ObjectPass(RenderManager *renderer, SceneState *appState)
     : m_renderer(renderer)
     , m_device(m_renderer->device())
     , m_appState(appState)

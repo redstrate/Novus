@@ -6,11 +6,11 @@
 #include <QThreadPool>
 #include <QVBoxLayout>
 
-#include "appstate.h"
 #include "filecache.h"
 #include "objectpass.h"
+#include "scenestate.h"
 
-MapView::MapView(physis_SqPackResource *data, FileCache &cache, AppState *appState, QWidget *parent)
+MapView::MapView(physis_SqPackResource *data, FileCache &cache, SceneState *appState, QWidget *parent)
     : QWidget(parent)
     , m_data(data)
     , m_cache(cache)
@@ -27,11 +27,11 @@ MapView::MapView(physis_SqPackResource *data, FileCache &cache, AppState *appSta
     layout->addWidget(mdlPart);
     setLayout(layout);
 
-    connect(appState, &AppState::mapLoaded, this, &MapView::reloadMap);
+    connect(appState, &SceneState::mapLoaded, this, &MapView::reloadMap);
 
     // TODO: be more efficient about what we reload
-    connect(appState, &AppState::visibleLayerIdsChanged, this, &MapView::reloadMap);
-    connect(appState, &AppState::visibleTerrainPlatesChanged, this, &MapView::reloadMap);
+    connect(appState, &SceneState::visibleLayerIdsChanged, this, &MapView::reloadMap);
+    connect(appState, &SceneState::visibleTerrainPlatesChanged, this, &MapView::reloadMap);
 }
 
 MDLPart &MapView::part() const
@@ -52,7 +52,7 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
         }
 
         QString base2Path = basePath.left(basePath.lastIndexOf(QStringLiteral("/level/")));
-        QString mdlPath = QStringLiteral("bg/%1/bgplate/%2").arg(base2Path, QString::fromStdString(terrain.plates[i].filename));
+        QString mdlPath = QStringLiteral("%1/bgplate/%2").arg(base2Path, QString::fromStdString(terrain.plates[i].filename));
         std::string mdlPathStd = mdlPath.toStdString();
 
         auto plateMdlFile = physis_sqpack_read(m_data, mdlPathStd.c_str());

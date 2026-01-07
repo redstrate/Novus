@@ -3,9 +3,9 @@
 
 #include "objectpropertieswidget.h"
 
-#include "appstate.h"
 #include "collapsesection.h"
 #include "pathedit.h"
+#include "scenestate.h"
 #include "vec3edit.h"
 
 #include <KLocalizedString>
@@ -19,7 +19,7 @@
 
 #include "enumedit.h"
 
-ObjectPropertiesWidget::ObjectPropertiesWidget(AppState *appState, QWidget *parent)
+ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *parent)
     : QWidget(parent)
     , m_appState(appState)
 {
@@ -29,7 +29,7 @@ ObjectPropertiesWidget::ObjectPropertiesWidget(AppState *appState, QWidget *pare
     m_layout->setSpacing(0);
     setLayout(m_layout);
 
-    connect(appState, &AppState::selectionChanged, this, [this] {
+    connect(appState, &SceneState::selectionChanged, this, [this] {
         resetSections();
         if (m_appState->selectedObject) {
             refreshObjectData(*m_appState->selectedObject.value());

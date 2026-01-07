@@ -14,11 +14,11 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <physis.hpp>
 
-#include "appstate.h"
 #include "maplistwidget.h"
 #include "mapview.h"
-#include "objectlistwidget.h"
 #include "objectpropertieswidget.h"
+#include "scenelistwidget.h"
+#include "scenestate.h"
 
 MainWindow::MainWindow(physis_SqPackResource data)
     : m_data(data)
@@ -26,13 +26,13 @@ MainWindow::MainWindow(physis_SqPackResource data)
 {
     setMinimumSize(1280, 720);
 
-    m_appState = new AppState(&m_data, this);
+    m_appState = new SceneState(&m_data, this);
 
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    objectListWidget = new ObjectListWidget(m_appState);
+    objectListWidget = new SceneListWidget(m_appState);
     objectListWidget->setMaximumWidth(400);
     dummyWidget->addWidget(objectListWidget);
 
@@ -51,7 +51,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 
-    connect(m_appState, &AppState::selectionChanged, this, &MainWindow::updateActionState);
+    connect(m_appState, &SceneState::selectionChanged, this, &MainWindow::updateActionState);
 
     updateActionState();
 }
@@ -82,65 +82,25 @@ void MainWindow::setupActions()
 
 void MainWindow::openMap(const QString &basePath)
 {
-    QString base2Path = basePath.left(basePath.lastIndexOf(QStringLiteral("/level/")));
-
     m_appState->clear();
-    m_appState->basePath = basePath;
+
+    QString lvbPath = QStringLiteral("bg/%1.lvb").arg(basePath);
+    std::string lvbPathStd = lvbPath.toStdString();
+
+    auto lvbFile = physis_sqpack_read(&m_data, lvbPathStd.c_str());
+    if (lvbFile.size > 0) {
+        auto lvb = physis_lvb_parse(m_data.platform, lvbFile);
+        if (lvb.sections) {
+            // TODO: read all sections?
+            m_appState->load(&m_data, lvb.sections[0]);
+        } else {
+            qWarning() << "Failed to parse lvb" << lvbPath;
+        }
+    } else {
+        qWarning() << "Failed to find lvb" << lvbPath;
+    }
 
     setWindowTitle(basePath);
-
-    QString bgPath = QStringLiteral("bg/%1/bgplate/").arg(base2Path);
-
-    std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
-
-    auto tera_buffer = physis_sqpack_read(&m_data, bgPathStd.c_str());
-    if (tera_buffer.size > 0) {
-        m_appState->terrain = physis_terrain_parse(m_data.platform, tera_buffer);
-    } else {
-        qWarning() << "Failed to load terrain" << bgPathStd;
-    }
-
-    const auto loadLgb = [this, base2Path](const QString &name) {
-        QString lgbPath = QStringLiteral("bg/%1/level/%2.lgb").arg(base2Path, name);
-        std::string bgLgbPathStd = lgbPath.toStdString();
-
-        auto bg_buffer = physis_sqpack_read(&m_data, bgLgbPathStd.c_str());
-        if (bg_buffer.size > 0) {
-            auto lgb = physis_lgb_parse(m_data.platform, bg_buffer);
-            if (lgb.num_chunks > 0) {
-                m_appState->lgbFiles.push_back({name, lgb});
-            }
-        }
-    };
-
-    loadLgb(QStringLiteral("planevent"));
-    loadLgb(QStringLiteral("vfx"));
-    loadLgb(QStringLiteral("planmap"));
-    loadLgb(QStringLiteral("planner"));
-    loadLgb(QStringLiteral("bg"));
-    loadLgb(QStringLiteral("sound"));
-    loadLgb(QStringLiteral("planlive"));
-
-    // Load terrain and bg by default
-    for (int i = 0; i < m_appState->terrain.num_plates; i++) {
-        m_appState->visibleTerrainPlates.push_back(i);
-    }
-
-    for (const auto &[name, lgb] : m_appState->lgbFiles) {
-        if (name == QStringLiteral("bg")) {
-            for (uint32_t i = 0; i < lgb.num_chunks; i++) {
-                for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
-                    // Skip festival-specific layers
-                    if (lgb.chunks[i].layers[j].festival_id == 0) {
-                        m_appState->visibleLayerIds.push_back(lgb.chunks[i].layers[j].id);
-                    }
-                }
-            }
-            break;
-        }
-    }
-
-    Q_EMIT m_appState->mapLoaded();
 }
 
 void MainWindow::updateActionState()

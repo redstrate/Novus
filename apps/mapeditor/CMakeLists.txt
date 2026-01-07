@@ -8,9 +8,6 @@ target_sources(novus-mapeditor
         include/maplistwidget.h
         include/mapview.h
         include/objectpass.h
-        include/objectlistwidget.h
-        include/appstate.h
-        include/objectlistmodel.h
         include/primitives.h
         include/objectpropertieswidget.h
         include/collapsesection.h
@@ -20,9 +17,6 @@ target_sources(novus-mapeditor
         src/maplistwidget.cpp
         src/mapview.cpp
         src/objectpass.cpp
-        src/objectlistwidget.cpp
-        src/appstate.cpp
-        src/objectlistmodel.cpp
         src/primitives.cpp
         src/objectpropertieswidget.cpp
         src/collapsesection.cpp)
@@ -33,6 +27,7 @@ target_link_libraries(novus-mapeditor
         PRIVATE
         Novus::Common
         Novus::MdlPart
+        Novus::ScenePart
         Physis::Physis
         Qt6::Core
         Qt6::Widgets)

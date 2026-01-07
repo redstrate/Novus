@@ -38,6 +38,7 @@
 #include <QStringListModel>
 
 #include "mdlimport.h"
+#include "scenepart.h"
 
 MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     : m_data(data)
@@ -293,6 +294,11 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto texWidget = new TexPart(&m_data);
         texWidget->loadHwc(file);
         partHolder->addTab(texWidget, i18nc("@title:tab", "Hardware Cursor"));
+    } break;
+    case FileType::SharedGroup: {
+        auto scenePart = new ScenePart(&m_data);
+        scenePart->loadSgb(file);
+        partHolder->addTab(scenePart, i18nc("@title:tab", "Shared Group"));
     } break;
     default:
         break;

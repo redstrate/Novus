@@ -1,7 +1,7 @@
-// SPDX-FileCopyrightText: 2025 Joshua Goins <josh@redstrate.com>
+// SPDX-FileCopyrightText: 2026 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "objectlistwidget.h"
+#include "scenelistwidget.h"
 
 #include <KLocalizedString>
 #include <QHeaderView>
@@ -10,10 +10,10 @@
 #include <QStringListModel>
 #include <QVBoxLayout>
 
-#include "appstate.h"
-#include "objectlistmodel.h"
+#include "scenelistmodel.h"
+#include "scenestate.h"
 
-ObjectListWidget::ObjectListWidget(AppState *appState, QWidget *parent)
+SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     : QWidget(parent)
     , m_appState(appState)
 {
@@ -36,7 +36,7 @@ ObjectListWidget::ObjectListWidget(AppState *appState, QWidget *parent)
     });
     layout->addWidget(searchEdit);
 
-    m_objectListModel = new ObjectListModel(appState, this);
+    m_objectListModel = new SceneListModel(appState, this);
     searchModel->setSourceModel(m_objectListModel);
 
     treeWidget = new QTreeView();
@@ -53,5 +53,3 @@ ObjectListWidget::ObjectListWidget(AppState *appState, QWidget *parent)
 
     layout->addWidget(treeWidget);
 }
-
-#include "moc_objectlistwidget.cpp"

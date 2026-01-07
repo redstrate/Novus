@@ -8,9 +8,9 @@
 #include "filecache.h"
 
 class ObjectPropertiesWidget;
-class ObjectListWidget;
+class SceneListWidget;
 class MapView;
-class AppState;
+class SceneState;
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -27,8 +27,8 @@ private:
     physis_SqPackResource m_data;
     FileCache cache;
     MapView *mapView = nullptr;
-    ObjectListWidget *objectListWidget = nullptr;
-    AppState *m_appState = nullptr;
+    SceneListWidget *objectListWidget = nullptr;
+    SceneState *m_appState = nullptr;
     ObjectPropertiesWidget *objectPropertiesWidget = nullptr;
     QAction *m_centerObjectAction = nullptr;
 };

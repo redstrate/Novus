@@ -21,7 +21,7 @@ struct physis_EventInstanceObject;
 class QVBoxLayout;
 struct physis_InstanceObject;
 struct physis_BGInstanceObject;
-class AppState;
+class SceneState;
 class QLineEdit;
 struct physis_ENPCInstanceObject;
 
@@ -30,7 +30,7 @@ class ObjectPropertiesWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit ObjectPropertiesWidget(AppState *appState, QWidget *parent = nullptr);
+    explicit ObjectPropertiesWidget(SceneState *appState, QWidget *parent = nullptr);
 
 private:
     void resetSections();
@@ -53,7 +53,7 @@ private:
     void addChairMarkerSection(const physis_ChairMarkerInstanceObject &chairMarker);
     void addPrefetchRangeSection(const physis_PrefetchRangeInstanceObject &prefetchRange);
 
-    AppState *m_appState = nullptr;
+    SceneState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;
     QList<QWidget *> m_sections;
 };

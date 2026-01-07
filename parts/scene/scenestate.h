@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Joshua Goins <josh@redstrate.com>
+// SPDX-FileCopyrightText: 2026 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -7,17 +7,19 @@
 
 #include <physis.hpp>
 
-class AppState : public QObject
+class SceneState : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit AppState(physis_SqPackResource *resource, QObject *parent = nullptr);
+    explicit SceneState(physis_SqPackResource *resource, QObject *parent = nullptr);
 
+    void load(physis_SqPackResource *data, const physis_ScnSection &section);
     void clear();
 
     QString basePath;
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
+    std::vector<physis_ScnLayerGroup> embeddedLgbs;
     QList<uint32_t> visibleLayerIds;
     physis_Terrain terrain;
     QList<uint32_t> visibleTerrainPlates;

@@ -1,23 +1,23 @@
 // SPDX-FileCopyrightText: 2025 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "objectlistmodel.h"
-#include "appstate.h"
+#include "scenelistmodel.h"
+#include "scenestate.h"
 
 #include <KLocalizedString>
 #include <QIcon>
 
-ObjectListModel::ObjectListModel(AppState *appState, QObject *parent)
+SceneListModel::SceneListModel(SceneState *appState, QObject *parent)
     : QAbstractItemModel(parent)
     , m_appState(appState)
 {
     m_rootItem = new TreeInformation();
     m_rootItem->type = TreeType::Root;
 
-    connect(m_appState, &AppState::mapLoaded, this, &ObjectListModel::refresh);
+    connect(m_appState, &SceneState::mapLoaded, this, &SceneListModel::refresh);
 }
 
-int ObjectListModel::rowCount(const QModelIndex &parent) const
+int SceneListModel::rowCount(const QModelIndex &parent) const
 {
     TreeInformation *parentItem;
 
@@ -29,13 +29,13 @@ int ObjectListModel::rowCount(const QModelIndex &parent) const
     return static_cast<int>(parentItem->children.size());
 }
 
-int ObjectListModel::columnCount(const QModelIndex &parent) const
+int SceneListModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return 2;
 }
 
-QModelIndex ObjectListModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex SceneListModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return {};
@@ -53,7 +53,7 @@ QModelIndex ObjectListModel::index(int row, int column, const QModelIndex &paren
     return {};
 }
 
-QModelIndex ObjectListModel::parent(const QModelIndex &index) const
+QModelIndex SceneListModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
         return {};
@@ -67,7 +67,7 @@ QModelIndex ObjectListModel::parent(const QModelIndex &index) const
     return createIndex(parentItem->row, 0, parentItem);
 }
 
-QVariant ObjectListModel::data(const QModelIndex &index, int role) const
+QVariant SceneListModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return {};
@@ -105,7 +105,7 @@ QVariant ObjectListModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-QVariant ObjectListModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant SceneListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
@@ -118,7 +118,7 @@ QVariant ObjectListModel::headerData(int section, Qt::Orientation orientation, i
     return QAbstractItemModel::headerData(section, orientation, role);
 }
 
-Qt::ItemFlags ObjectListModel::flags(const QModelIndex &index) const
+Qt::ItemFlags SceneListModel::flags(const QModelIndex &index) const
 {
     auto item = static_cast<TreeInformation *>(index.internalPointer());
     if (index.column() == 1 && (item->type == TreeType::Layer || item->type == TreeType::Plate))
@@ -127,7 +127,7 @@ Qt::ItemFlags ObjectListModel::flags(const QModelIndex &index) const
     return QAbstractItemModel::flags(index);
 }
 
-bool ObjectListModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool SceneListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     auto item = static_cast<TreeInformation *>(index.internalPointer());
     if (index.column() == 1) {
@@ -150,7 +150,7 @@ bool ObjectListModel::setData(const QModelIndex &index, const QVariant &value, i
     return QAbstractItemModel::setData(index, value, role);
 }
 
-std::optional<physis_InstanceObject const *> ObjectListModel::objectAt(const QModelIndex &index) const
+std::optional<physis_InstanceObject const *> SceneListModel::objectAt(const QModelIndex &index) const
 {
     const auto item = static_cast<TreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Object) {
@@ -159,7 +159,7 @@ std::optional<physis_InstanceObject const *> ObjectListModel::objectAt(const QMo
     return std::nullopt;
 }
 
-std::optional<physis_Layer const *> ObjectListModel::layerAt(const QModelIndex &index) const
+std::optional<physis_Layer const *> SceneListModel::layerAt(const QModelIndex &index) const
 {
     const auto item = static_cast<TreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Layer) {
@@ -168,7 +168,7 @@ std::optional<physis_Layer const *> ObjectListModel::layerAt(const QModelIndex &
     return std::nullopt;
 }
 
-void ObjectListModel::refresh()
+void SceneListModel::refresh()
 {
     beginResetModel();
 
@@ -183,6 +183,7 @@ void ObjectListModel::refresh()
     terrainItem->row = 0;
     m_rootItem->children.push_back(terrainItem);
 
+    // Add terrain plates
     for (int i = 0; i < m_appState->terrain.num_plates; i++) {
         auto layerItem = new TreeInformation();
         layerItem->type = TreeType::Plate;
@@ -193,6 +194,7 @@ void ObjectListModel::refresh()
         terrainItem->children.push_back(layerItem);
     }
 
+    // External LGB files
     for (size_t y = 0; y < m_appState->lgbFiles.size(); y++) {
         const auto &[name, lgb] = m_appState->lgbFiles[y];
 
@@ -206,73 +208,92 @@ void ObjectListModel::refresh()
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             const auto &chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
-                const auto &layer = chunk.layers[j];
-
-                auto layerItem = new TreeInformation();
-                layerItem->type = TreeType::Layer;
-                layerItem->parent = fileItem;
-                layerItem->name = QString::fromLatin1(layer.name);
-                layerItem->row = j;
-                layerItem->id = layer.id;
-                layerItem->data = &layer;
-                fileItem->children.push_back(layerItem);
-
-                for (uint32_t z = 0; z < layer.num_objects; z++) {
-                    const auto &object = layer.objects[z];
-
-                    QString objectName = i18n("Unknown Object");
-                    switch (object.data.tag) {
-                    case physis_LayerEntry::Tag::BG:
-                        objectName = i18n("BG Model");
-                        break;
-                    case physis_LayerEntry::Tag::EventObject:
-                        // Give the EObj an actual name.
-                        objectName = m_appState->lookupEObjName(object.data.event_object._0.parent_data.base_id);
-                        break;
-                    case physis_LayerEntry::Tag::PopRange:
-                        objectName = i18n("Pop Range");
-                        break;
-                    case physis_LayerEntry::Tag::EventNPC:
-                        // Give the ENPC an actual name.
-                        objectName = m_appState->lookupENpcName(object.data.event_npc._0.parent_data.parent_data.base_id);
-                        break;
-                    case physis_LayerEntry::Tag::MapRange:
-                        objectName = i18n("Map Range");
-                        break;
-                    case physis_LayerEntry::Tag::SharedGroup:
-                        objectName = i18n("Shared Group");
-                        break;
-                    case physis_LayerEntry::Tag::Aetheryte:
-                        objectName = i18n("Aetheryte");
-                        break;
-                    case physis_LayerEntry::Tag::ExitRange:
-                        objectName = i18n("Exit Range");
-                        break;
-                    case physis_LayerEntry::Tag::EventRange:
-                        objectName = i18n("Event Range");
-                        break;
-                    case physis_LayerEntry::Tag::ChairMarker:
-                        objectName = i18n("Chair Marker");
-                        break;
-                    case physis_LayerEntry::Tag::PrefetchRange:
-                        objectName = i18n("Prefetch Range");
-                        break;
-                    default:
-                        break;
-                    }
-
-                    auto objectItem = new TreeInformation();
-                    objectItem->type = TreeType::Object;
-                    objectItem->parent = layerItem;
-                    objectItem->name = i18n("%1 (%2)", objectName, QString::number(object.instance_id)); // TODO: do display names if we have them
-                    objectItem->row = z;
-                    objectItem->data = &object;
-                    layerItem->children.push_back(objectItem);
-                }
+                addLayer(j, fileItem, chunk.layers[j]);
             }
         }
     }
+
+    // Embeded LGBs
+    for (size_t y = 0; y < m_appState->embeddedLgbs.size(); y++) {
+        const auto &lgb = m_appState->embeddedLgbs[y];
+
+        auto fileItem = new TreeInformation();
+        fileItem->type = TreeType::File;
+        fileItem->parent = m_rootItem;
+        fileItem->name = QString::fromLatin1(lgb.name);
+        fileItem->row = y + m_appState->lgbFiles.size() + 1;
+        m_rootItem->children.push_back(fileItem);
+
+        for (uint32_t i = 0; i < lgb.layer_count; i++) {
+            addLayer(i, fileItem, lgb.layers[i]);
+        }
+    }
+
     endResetModel();
 }
+void SceneListModel::addLayer(uint32_t index, TreeInformation *fileItem, const physis_Layer &layer)
+{
+    auto layerItem = new TreeInformation();
+    layerItem->type = TreeType::Layer;
+    layerItem->parent = fileItem;
+    layerItem->name = QString::fromLatin1(layer.name);
+    layerItem->row = index;
+    layerItem->id = layer.id;
+    layerItem->data = &layer;
+    fileItem->children.push_back(layerItem);
 
-#include "moc_objectlistmodel.cpp"
+    for (uint32_t z = 0; z < layer.num_objects; z++) {
+        const auto &object = layer.objects[z];
+
+        QString objectName = i18n("Unknown Object");
+        switch (object.data.tag) {
+        case physis_LayerEntry::Tag::BG:
+            objectName = i18n("BG Model");
+            break;
+        case physis_LayerEntry::Tag::EventObject:
+            // Give the EObj an actual name.
+            objectName = m_appState->lookupEObjName(object.data.event_object._0.parent_data.base_id);
+            break;
+        case physis_LayerEntry::Tag::PopRange:
+            objectName = i18n("Pop Range");
+            break;
+        case physis_LayerEntry::Tag::EventNPC:
+            // Give the ENPC an actual name.
+            objectName = m_appState->lookupENpcName(object.data.event_npc._0.parent_data.parent_data.base_id);
+            break;
+        case physis_LayerEntry::Tag::MapRange:
+            objectName = i18n("Map Range");
+            break;
+        case physis_LayerEntry::Tag::SharedGroup:
+            objectName = i18n("Shared Group");
+            break;
+        case physis_LayerEntry::Tag::Aetheryte:
+            objectName = i18n("Aetheryte");
+            break;
+        case physis_LayerEntry::Tag::ExitRange:
+            objectName = i18n("Exit Range");
+            break;
+        case physis_LayerEntry::Tag::EventRange:
+            objectName = i18n("Event Range");
+            break;
+        case physis_LayerEntry::Tag::ChairMarker:
+            objectName = i18n("Chair Marker");
+            break;
+        case physis_LayerEntry::Tag::PrefetchRange:
+            objectName = i18n("Prefetch Range");
+            break;
+        default:
+            break;
+        }
+
+        auto objectItem = new TreeInformation();
+        objectItem->type = TreeType::Object;
+        objectItem->parent = layerItem;
+        objectItem->name = i18n("%1 (%2)", objectName, QString::number(object.instance_id)); // TODO: do display names if we have them
+        objectItem->row = z;
+        objectItem->data = &object;
+        layerItem->children.push_back(objectItem);
+    }
+}
+
+// "moc_scenelistmodel.cpp"

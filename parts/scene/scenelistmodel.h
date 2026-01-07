@@ -7,7 +7,7 @@
 
 struct physis_Layer;
 struct physis_InstanceObject;
-class AppState;
+class SceneState;
 
 enum class TreeType {
     /// Root of the tree
@@ -33,12 +33,12 @@ struct TreeInformation {
     std::vector<TreeInformation *> children;
 };
 
-class ObjectListModel : public QAbstractItemModel
+class SceneListModel : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
-    explicit ObjectListModel(AppState *appState, QObject *parent = nullptr);
+    explicit SceneListModel(SceneState *appState, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
@@ -56,7 +56,8 @@ public:
 
 private:
     void refresh();
+    void addLayer(uint32_t index, TreeInformation *fileItem, const physis_Layer &layer);
 
-    AppState *m_appState = nullptr;
+    SceneState *m_appState = nullptr;
     TreeInformation *m_rootItem = nullptr;
 };
