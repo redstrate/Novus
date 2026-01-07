@@ -9,6 +9,7 @@
 #include <QWidget>
 #include <physis.hpp>
 
+class ObjectScene;
 struct GameData;
 class SceneState;
 
@@ -28,6 +29,7 @@ public Q_SLOTS:
 
 private:
     void reloadMap();
+    void processScene(const ObjectScene &scene);
 
     MDLPart *mdlPart = nullptr;
 

@@ -33,7 +33,8 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
-        for (const auto &[_, lgb] : m_appState->lgbFiles) {
+        // TODO: support nested scenes
+        for (const auto &[_, lgb] : m_appState->rootScene.lgbFiles) {
             for (uint32_t i = 0; i < lgb.num_chunks; i++) {
                 const auto &chunk = lgb.chunks[i];
                 for (uint32_t j = 0; j < chunk.num_layers; j++) {

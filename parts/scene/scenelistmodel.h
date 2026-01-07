@@ -5,6 +5,7 @@
 
 #include <QAbstractItemModel>
 
+struct ObjectScene;
 struct physis_Sgb;
 struct physis_Layer;
 struct physis_InstanceObject;
@@ -57,8 +58,8 @@ public:
 
 private:
     void refresh();
-    void addLayer(uint32_t index, TreeInformation *fileItem, const physis_Layer &layer);
-    void appendSgb(TreeInformation *parentNode, physis_Sgb &sgb);
+    void addLayer(uint32_t index, TreeInformation *fileItem, const physis_Layer &layer, ObjectScene &scene);
+    void processScene(TreeInformation *parentNode, ObjectScene &scene);
 
     SceneState *m_appState = nullptr;
     TreeInformation *m_rootItem = nullptr;

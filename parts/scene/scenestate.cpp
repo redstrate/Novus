@@ -7,7 +7,6 @@
 
 SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
     : QObject(parent)
-    , terrain({})
 {
     // ENPC
     {
@@ -40,7 +39,15 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
     }
 }
 
-void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &section)
+void ObjectScene::clear()
+{
+    basePath.clear();
+    lgbFiles.clear();
+    terrain = {};
+    embeddedLgbs.clear();
+}
+
+void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &section)
 {
     basePath = QString::fromLatin1(section.general.bg_path);
 
@@ -59,7 +66,7 @@ void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &sect
         if (bg_buffer.size > 0) {
             const auto lgb = physis_lgb_parse(data->platform, bg_buffer);
             if (lgb.num_chunks > 0) {
-                lgbFiles.push_back({QString::fromLatin1(path), lgb});
+                lgbFiles.emplace_back(QString::fromLatin1(path), lgb);
             }
         }
     };
@@ -72,12 +79,39 @@ void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &sect
         embeddedLgbs.push_back(section.layer_groups[i]);
     }
 
+    for (uint32_t i = 0; i < section.timelines.timeline_count; i++) {
+        embeddedTimelines.push_back(section.timelines.timelines[i]);
+    }
+
+    // Process nested shared groups
+    for (const auto &[name, lgb] : lgbFiles) {
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
+            for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
+                auto layer = lgb.chunks[i].layers[j];
+                for (uint32_t h = 0; h < layer.num_objects; h++) {
+                    if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
+                        processSharedGroup(data, layer.objects[h].instance_id, layer.objects[h].data.shared_group._0.asset_path);
+                    }
+                }
+            }
+        }
+    }
+
+    for (const auto layerGroup : embeddedLgbs) {
+        processScnLayerGroup(data, layerGroup);
+    }
+}
+
+void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &section)
+{
+    rootScene.load(data, section);
+
     // Load terrain and bg by default
-    for (int i = 0; i < terrain.num_plates; i++) {
+    for (int i = 0; i < rootScene.terrain.num_plates; i++) {
         visibleTerrainPlates.push_back(i);
     }
 
-    for (const auto &[name, lgb] : lgbFiles) {
+    for (const auto &[name, lgb] : rootScene.lgbFiles) {
         if (name.endsWith(QStringLiteral("bg.lgb"))) {
             for (uint32_t i = 0; i < lgb.num_chunks; i++) {
                 for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
@@ -91,37 +125,16 @@ void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &sect
         }
     }
 
-    // Process nested shared groups
-    for (const auto &[name, lgb] : lgbFiles) {
-        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
-            for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
-                auto layer = lgb.chunks[i].layers[j];
-                for (uint32_t h = 0; h < layer.num_objects; h++) {
-                    if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
-                        processSharedGroup(data, layer.objects[h].data.shared_group._0.asset_path);
-                    }
-                }
-            }
-        }
-    }
-
-    for (const auto layerGroup : embeddedLgbs) {
-        processScnLayerGroup(data, layerGroup);
-    }
-
     Q_EMIT mapLoaded();
 }
 
 void SceneState::clear()
 {
-    basePath.clear();
-    lgbFiles.clear();
+    rootScene.clear();
     visibleLayerIds.clear();
-    terrain = {};
-    visibleTerrainPlates.clear();
     selectedObject.reset();
     selectedLayer.reset();
-    embeddedLgbs.clear();
+    visibleTerrainPlates.clear();
 }
 
 QString SceneState::lookupENpcName(const uint32_t id) const
@@ -142,14 +155,9 @@ QString SceneState::lookupEObjName(const uint32_t id) const
     return i18n("Event Object");
 }
 
-void SceneState::processSharedGroup(physis_SqPackResource *data, const char *path)
+void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const char *path)
 {
     qInfo() << "Processing" << path;
-
-    if (nestedSharedGroups.contains(QString::fromLatin1(path))) {
-        qInfo() << "- Skipping because it's already loaded.";
-        return;
-    }
 
     const auto sgbFile = physis_sqpack_read(data, path);
     if (sgbFile.size == 0) {
@@ -163,26 +171,17 @@ void SceneState::processSharedGroup(physis_SqPackResource *data, const char *pat
         return;
     }
 
-    nestedSharedGroups[QString::fromLatin1(path)] = sgb;
-
-    // Pick up this SGB's own SGBs
-    for (uint32_t i = 0; i < sgb.section_count; i++) {
-        for (uint32_t j = 0; j < sgb.sections[i].num_layer_groups; j++) {
-            // TODO: represent the layer group here (with name)
-
-            auto layerGroup = sgb.sections[i].layer_groups[j];
-            processScnLayerGroup(data, layerGroup);
-        }
-    }
+    // TODO: load more than one section?
+    nestedScenes[instanceId].load(data, sgb.sections[0]);
 }
 
-void SceneState::processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group)
+void ObjectScene::processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group)
 {
     for (uint32_t j = 0; j < group.layer_count; j++) {
         const auto layer = group.layers[j];
         for (uint32_t h = 0; h < layer.num_objects; h++) {
             if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
-                processSharedGroup(data, layer.objects[h].data.shared_group._0.asset_path);
+                processSharedGroup(data, layer.objects[h].instance_id, layer.objects[h].data.shared_group._0.asset_path);
             }
         }
     }

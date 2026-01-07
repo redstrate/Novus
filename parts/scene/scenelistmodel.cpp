@@ -176,64 +176,12 @@ void SceneListModel::refresh()
     m_rootItem = new TreeInformation();
     m_rootItem->type = TreeType::Root;
 
-    if (m_appState->terrain.num_plates > 0) {
-        auto terrainItem = new TreeInformation();
-        terrainItem->type = TreeType::File;
-        terrainItem->parent = m_rootItem;
-        terrainItem->name = i18n("Terrain");
-        m_rootItem->children.push_back(terrainItem);
-
-        // Add terrain plates
-        for (int i = 0; i < m_appState->terrain.num_plates; i++) {
-            auto layerItem = new TreeInformation();
-            layerItem->type = TreeType::Plate;
-            layerItem->parent = terrainItem;
-            layerItem->name = i18n("Plate %1").arg(i);
-            layerItem->row = i;
-            layerItem->id = i;
-            terrainItem->children.push_back(layerItem);
-        }
-    }
-
-    // External LGB files
-    for (size_t y = 0; y < m_appState->lgbFiles.size(); y++) {
-        const auto &[name, lgb] = m_appState->lgbFiles[y];
-
-        auto fileItem = new TreeInformation();
-        fileItem->type = TreeType::File;
-        fileItem->parent = m_rootItem;
-        fileItem->name = name;
-        fileItem->row = m_rootItem->children.size();
-        m_rootItem->children.push_back(fileItem);
-
-        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
-            const auto &chunk = lgb.chunks[i];
-            for (uint32_t j = 0; j < chunk.num_layers; j++) {
-                addLayer(j, fileItem, chunk.layers[j]);
-            }
-        }
-    }
-
-    // Embeded LGBs
-    for (size_t y = 0; y < m_appState->embeddedLgbs.size(); y++) {
-        const auto &lgb = m_appState->embeddedLgbs[y];
-
-        auto fileItem = new TreeInformation();
-        fileItem->type = TreeType::File;
-        fileItem->parent = m_rootItem;
-        fileItem->name = QString::fromLatin1(lgb.name);
-        fileItem->row = m_rootItem->children.size();
-        m_rootItem->children.push_back(fileItem);
-
-        for (uint32_t i = 0; i < lgb.layer_count; i++) {
-            addLayer(i, fileItem, lgb.layers[i]);
-        }
-    }
+    processScene(m_rootItem, m_appState->rootScene);
 
     endResetModel();
 }
 
-void SceneListModel::addLayer(uint32_t index, TreeInformation *fileItem, const physis_Layer &layer)
+void SceneListModel::addLayer(uint32_t index, TreeInformation *fileItem, const physis_Layer &layer, ObjectScene &scene)
 {
     auto layerItem = new TreeInformation();
     layerItem->type = TreeType::Layer;
@@ -297,25 +245,83 @@ void SceneListModel::addLayer(uint32_t index, TreeInformation *fileItem, const p
         layerItem->children.push_back(objectItem);
 
         // Load nested shared group data
-        if (object.data.tag == physis_LayerEntry::Tag::SharedGroup) {
-            const auto sgbPath = QString::fromLatin1(object.data.shared_group._0.asset_path);
-            if (m_appState->nestedSharedGroups.contains(sgbPath)) {
-                appendSgb(objectItem, m_appState->nestedSharedGroups[sgbPath]);
-            } else {
-                qWarning() << "Not displaying SGB" << sgbPath << "because it failed to load.";
-            }
+        if (scene.nestedScenes.contains(object.instance_id)) {
+            auto nestedScene = scene.nestedScenes[object.instance_id];
+            processScene(objectItem, nestedScene);
         }
     }
 }
 
-void SceneListModel::appendSgb(TreeInformation *parentNode, physis_Sgb &sgb)
+void SceneListModel::processScene(TreeInformation *parentNode, ObjectScene &scene)
 {
-    for (uint32_t i = 0; i < sgb.section_count; i++) {
-        for (uint32_t j = 0; j < sgb.sections[i].num_layer_groups; j++) {
-            for (uint32_t z = 0; z < sgb.sections[i].layer_groups[j].layer_count; z++) {
-                const auto layer = sgb.sections[i].layer_groups[j].layers[z];
-                addLayer(z, parentNode, layer);
+    if (scene.terrain.num_plates > 0) {
+        auto terrainItem = new TreeInformation();
+        terrainItem->type = TreeType::File;
+        terrainItem->parent = parentNode;
+        terrainItem->name = i18n("Terrain");
+        parentNode->children.push_back(terrainItem);
+
+        // Add terrain plates
+        for (int i = 0; i < scene.terrain.num_plates; i++) {
+            auto layerItem = new TreeInformation();
+            layerItem->type = TreeType::Plate;
+            layerItem->parent = terrainItem;
+            layerItem->name = i18n("Plate %1").arg(i);
+            layerItem->row = i;
+            layerItem->id = i;
+            terrainItem->children.push_back(layerItem);
+        }
+    }
+
+    if (scene.embeddedTimelines.length() > 0) {
+        auto timelinesItem = new TreeInformation();
+        timelinesItem->type = TreeType::File;
+        timelinesItem->parent = parentNode;
+        timelinesItem->name = i18n("Timelines");
+        parentNode->children.push_back(timelinesItem);
+
+        for (uint32_t i = 0; i < scene.embeddedTimelines.size(); i++) {
+            auto timelineItem = new TreeInformation();
+            timelineItem->type = TreeType::Plate;
+            timelineItem->parent = timelineItem;
+            timelineItem->name = i18n("Timeline");
+            timelineItem->row = i;
+            timelinesItem->children.push_back(timelineItem);
+        }
+    }
+
+    // External LGB files
+    for (size_t y = 0; y < scene.lgbFiles.size(); y++) {
+        const auto &[name, lgb] = scene.lgbFiles[y];
+
+        auto fileItem = new TreeInformation();
+        fileItem->type = TreeType::File;
+        fileItem->parent = parentNode;
+        fileItem->name = name;
+        fileItem->row = m_rootItem->children.size();
+        parentNode->children.push_back(fileItem);
+
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
+            const auto &chunk = lgb.chunks[i];
+            for (uint32_t j = 0; j < chunk.num_layers; j++) {
+                addLayer(j, fileItem, chunk.layers[j], scene);
             }
+        }
+    }
+
+    // Embeded LGBs
+    for (size_t y = 0; y < scene.embeddedLgbs.size(); y++) {
+        const auto &lgb = scene.embeddedLgbs[y];
+
+        auto fileItem = new TreeInformation();
+        fileItem->type = TreeType::File;
+        fileItem->parent = parentNode;
+        fileItem->name = QString::fromLatin1(lgb.name);
+        fileItem->row = parentNode->children.size();
+        parentNode->children.push_back(fileItem);
+
+        for (uint32_t i = 0; i < lgb.layer_count; i++) {
+            addLayer(i, fileItem, lgb.layers[i], scene);
         }
     }
 }

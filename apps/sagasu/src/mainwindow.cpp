@@ -302,7 +302,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         partHolder->addTab(scenePart, i18nc("@title:tab", "Shared Group"));
     } break;
     case FileType::TimelineMotion: {
-        auto tmbPart = new TmbPart();
+        auto tmbPart = new TmbPart(&m_data);
         tmbPart->load(file);
         partHolder->addTab(tmbPart, i18nc("@title:tab", "Timeline Motion"));
     } break;

@@ -90,10 +90,15 @@ void MapView::reloadMap()
 {
     mdlPart->clear();
 
-    addTerrain(m_appState->basePath, m_appState->terrain);
+    processScene(m_appState->rootScene);
+}
+
+void MapView::processScene(const ObjectScene &scene)
+{
+    addTerrain(scene.basePath, scene.terrain);
 
     // add bg models
-    for (const auto &[name, lgb] : m_appState->lgbFiles) {
+    for (const auto &[name, lgb] : scene.lgbFiles) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             const auto chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
@@ -156,6 +161,10 @@ void MapView::reloadMap()
                 }
             }
         }
+    }
+
+    for (const auto &scene : scene.nestedScenes.values()) {
+        processScene(scene);
     }
 }
 

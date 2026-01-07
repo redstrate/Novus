@@ -8,6 +8,27 @@
 #include <QHash>
 #include <physis.hpp>
 
+/// Represents a "SCN1" section, which could be a complete level (LVB) or a prefab (SGB). These can also be infinitely nested.
+class ObjectScene
+{
+public:
+    void clear();
+    void load(physis_SqPackResource *data, const physis_ScnSection &section);
+
+    QString basePath;
+    QList<physis_ScnTimeline> embeddedTimelines;
+    physis_Terrain terrain = {};
+    std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
+    std::vector<physis_ScnLayerGroup> embeddedLgbs;
+
+    /// Key is the ID of the SGB instance.
+    QHash<uint32_t, ObjectScene> nestedScenes;
+
+private:
+    void processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const char *path);
+    void processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group);
+};
+
 class SceneState : public QObject
 {
     Q_OBJECT
@@ -18,15 +39,12 @@ public:
     void load(physis_SqPackResource *data, const physis_ScnSection &section);
     void clear();
 
-    QString basePath;
-    std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
-    std::vector<physis_ScnLayerGroup> embeddedLgbs;
+    /// The root scene.
+    ObjectScene rootScene;
     QList<uint32_t> visibleLayerIds;
-    physis_Terrain terrain;
-    QList<uint32_t> visibleTerrainPlates;
     std::optional<physis_InstanceObject const *> selectedObject;
     std::optional<physis_Layer const *> selectedLayer;
-    QHash<QString, physis_Sgb> nestedSharedGroups;
+    QList<uint32_t> visibleTerrainPlates;
 
     /**
      * @return The name for this Event NPC. If not found, then a generic one.
@@ -45,9 +63,6 @@ Q_SIGNALS:
     void selectionChanged();
 
 private:
-    void processSharedGroup(physis_SqPackResource *data, const char *path);
-    void processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group);
-
     physis_ExcelSheet m_enpcResidentSheet;
     physis_ExcelSheet m_eobjNameSheet;
 };
