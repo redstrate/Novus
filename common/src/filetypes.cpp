@@ -19,7 +19,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("mtrl"), FileType::Material},
                                                      {QStringLiteral("luab"), FileType::LuaBytecode},
                                                      {QStringLiteral("hwc"), FileType::HardwareCursor},
-                                                     {QStringLiteral("sgb"), FileType::SharedGroup}};
+                                                     {QStringLiteral("sgb"), FileType::SharedGroup},
+                                                     {QStringLiteral("tmb"), FileType::TimelineMotion}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -34,7 +35,8 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::Material, i18n("Material")},
                                                 {FileType::LuaBytecode, i18n("Lua Bytecode")},
                                                 {FileType::HardwareCursor, i18n("Hardware Cursor")},
-                                                {FileType::SharedGroup, i18n("Shared Group")}};
+                                                {FileType::SharedGroup, i18n("Shared Group")},
+                                                {FileType::TimelineMotion, i18n("Timeline Motion")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -49,7 +51,8 @@ const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiter
                                                 {FileType::Material, QStringLiteral("map-globe-symbolic")},
                                                 {FileType::LuaBytecode, QStringLiteral("text-x-lua")},
                                                 {FileType::HardwareCursor, QStringLiteral("cursor-arrow-symbolic")},
-                                                {FileType::SharedGroup, QStringLiteral("object-group-symbolic")}};
+                                                {FileType::SharedGroup, QStringLiteral("object-group-symbolic")},
+                                                {FileType::TimelineMotion, QStringLiteral("preferences-desktop-animations")}};
 
 FileType FileTypes::getFileType(const QString &extension)
 {

@@ -22,6 +22,7 @@ enum class FileType {
     LuaBytecode,
     HardwareCursor,
     SharedGroup,
+    TimelineMotion,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes

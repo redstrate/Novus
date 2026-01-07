@@ -39,6 +39,7 @@
 
 #include "mdlimport.h"
 #include "scenepart.h"
+#include "tmbpart.h"
 
 MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     : m_data(data)
@@ -299,6 +300,11 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto scenePart = new ScenePart(&m_data);
         scenePart->loadSgb(file);
         partHolder->addTab(scenePart, i18nc("@title:tab", "Shared Group"));
+    } break;
+    case FileType::TimelineMotion: {
+        auto tmbPart = new TmbPart();
+        tmbPart->load(file);
+        partHolder->addTab(tmbPart, i18nc("@title:tab", "Timeline Motion"));
     } break;
     default:
         break;
