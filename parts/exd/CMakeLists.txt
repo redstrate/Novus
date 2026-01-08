@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(exdpart STATIC)
+set_common_properties(exdpart)
 target_sources(exdpart PRIVATE
         exdpart.cpp
         schema.cpp

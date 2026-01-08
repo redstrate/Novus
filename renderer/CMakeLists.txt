@@ -7,6 +7,10 @@ find_package(SPIRV-Headers REQUIRED)
 find_package(glslang) # for additional debug information in the GLSL
 
 add_library(renderer STATIC)
+set_target_properties(renderer
+        PROPERTIES
+        EXCLUDE_FROM_SANITIZERS ON)
+set_common_properties(renderer)
 target_sources(renderer
         PRIVATE
         include/baserenderer.h

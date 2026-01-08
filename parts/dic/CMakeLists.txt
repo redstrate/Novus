@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(dicpart STATIC)
+set_common_properties(dicpart)
 target_sources(dicpart PRIVATE dicpart.cpp)
 target_link_libraries(dicpart
         PUBLIC

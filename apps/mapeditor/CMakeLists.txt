@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_executable(novus-mapeditor)
+set_common_properties(novus-mapeditor)
 target_sources(novus-mapeditor
         PRIVATE
         include/mainwindow.h

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(tmbpart STATIC)
+set_common_properties(tmbpart)
 target_sources(tmbpart PRIVATE tmbpart.cpp)
 target_link_libraries(tmbpart
         PUBLIC

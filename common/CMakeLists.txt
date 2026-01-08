@@ -31,6 +31,7 @@ if (WIN32)
 else()
     add_library(novus-common STATIC)
 endif()
+set_common_properties(novus-common)
 target_sources(novus-common
         PRIVATE
         include/aboutdata.h

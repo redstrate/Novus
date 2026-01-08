@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(mdlpart STATIC)
+set_common_properties(mdlpart)
 target_sources(mdlpart
         PRIVATE
         mdlexport.cpp

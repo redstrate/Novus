@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(mtrlpart STATIC)
+set_common_properties(mtrlpart)
 target_sources(mtrlpart
         PRIVATE
         knownvalues.h

@@ -6,6 +6,7 @@ find_package(spirv_cross_glsl REQUIRED)
 find_package(SPIRV-Headers REQUIRED)
 
 add_library(shpkpart STATIC)
+set_common_properties(shpkpart)
 target_sources(shpkpart PRIVATE shpkpart.cpp)
 target_link_libraries(shpkpart
         PUBLIC

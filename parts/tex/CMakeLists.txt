@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(texpart STATIC)
+set_common_properties(texpart)
 target_sources(texpart
         PRIVATE
         imagelabel.cpp

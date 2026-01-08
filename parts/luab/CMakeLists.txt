@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(luabpart STATIC)
+set_common_properties(luabpart)
 target_sources(luabpart PRIVATE luabpart.cpp)
 target_link_libraries(luabpart
         PUBLIC

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(cmppart STATIC)
+set_common_properties(cmppart)
 target_sources(cmppart PRIVATE cmppart.cpp cmppart.h)
 target_link_libraries(cmppart
         PUBLIC

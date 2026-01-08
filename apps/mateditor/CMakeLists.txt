@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_executable(novus-mateditor)
+set_common_properties(novus-mateditor)
 target_sources(novus-mateditor
         PRIVATE
         include/mainwindow.h

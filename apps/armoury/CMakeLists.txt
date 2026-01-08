@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_executable(novus-armoury)
+set_common_properties(novus-armoury)
 target_sources(novus-armoury
         PRIVATE
         include/boneeditor.h

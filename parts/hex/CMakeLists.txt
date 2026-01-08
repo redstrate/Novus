@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(hexpart STATIC)
+set_common_properties(hexpart)
 target_sources(hexpart PRIVATE
         document/buffer/qhexbuffer.cpp
         document/buffer/qhexbuffer.h

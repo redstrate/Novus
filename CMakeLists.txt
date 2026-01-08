@@ -17,6 +17,8 @@ find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
 list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+include(Common)
+
 include(KDEInstallDirs)
 include(ECMFindQmlModule)
 include(KDECMakeSettings)

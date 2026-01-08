@@ -4,6 +4,10 @@
 set(BUILD_SHARED_LIBS OFF)
 add_compile_options(-w)
 
+if (ENABLE_SANITIZERS)
+    set(Rust_TOOLCHAIN "nightly")
+endif()
+
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
@@ -13,6 +17,9 @@ FetchContent_MakeAvailable(Corrosion)
 
 corrosion_import_crate(MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/Cargo.toml)
 target_include_directories(physis INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/target/public)
+if (ENABLE_SANITIZERS)
+    corrosion_add_target_rustflags(physis -Zsanitizer=address -Zsanitizer=leak)
+endif()
 
 add_library(Physis::Physis ALIAS physis)
 

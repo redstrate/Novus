@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(scenepart STATIC)
+set_common_properties(scenepart)
 target_sources(scenepart
         PRIVATE
         scenelistwidget.h

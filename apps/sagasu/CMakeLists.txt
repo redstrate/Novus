@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_executable(novus-sagasu)
+set_common_properties(novus-sagasu)
 target_sources(novus-sagasu
         PRIVATE
         include/hashdatabase.h

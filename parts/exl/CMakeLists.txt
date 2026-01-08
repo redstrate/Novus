@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_library(exlpart STATIC)
+set_common_properties(exlpart)
 target_sources(exlpart PRIVATE exlpart.cpp)
 target_link_libraries(exlpart
         PUBLIC

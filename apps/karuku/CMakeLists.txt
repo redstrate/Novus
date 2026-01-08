@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 add_executable(novus-karuku)
+set_common_properties(novus-karuku)
 target_sources(novus-karuku
         PRIVATE
         include/mainwindow.h
