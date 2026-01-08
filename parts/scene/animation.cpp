@@ -66,23 +66,25 @@ Track::Track(const int32_t tmfcId, const QHash<physis_Attribute, FCurve> &curves
 {
 }
 
-Transformation Track::transformationAtTime(const float time) const
+void Track::applyTransformation(const float time, Transformation &existingTransformation) const
 {
-    return Transformation{
-        .translation =
-            {
-                m_fCurves[physis_Attribute::PositionX].atTime(time),
-                m_fCurves[physis_Attribute::PositionY].atTime(time),
-                m_fCurves[physis_Attribute::PositionZ].atTime(time),
-            },
-        .rotation =
-            {
-                qDegreesToRadians(m_fCurves[physis_Attribute::RotationX].atTime(time)),
-                qDegreesToRadians(m_fCurves[physis_Attribute::RotationY].atTime(time)),
-                qDegreesToRadians(m_fCurves[physis_Attribute::RotationZ].atTime(time)),
-            },
-        .scale = {1, 1, 1}, // TODO: support scale
+    const auto applyIfExisting = [this, time](auto &value, physis_Attribute attribute) {
+        if (m_fCurves.contains(attribute)) {
+            value = m_fCurves[attribute].atTime(time);
+        }
     };
+
+    // position
+    applyIfExisting(existingTransformation.translation[0], physis_Attribute::PositionX);
+    applyIfExisting(existingTransformation.translation[1], physis_Attribute::PositionY);
+    applyIfExisting(existingTransformation.translation[2], physis_Attribute::PositionZ);
+
+    // rotation
+    applyIfExisting(existingTransformation.rotation[0], physis_Attribute::RotationX);
+    applyIfExisting(existingTransformation.rotation[1], physis_Attribute::RotationY);
+    applyIfExisting(existingTransformation.rotation[2], physis_Attribute::RotationZ);
+
+    // TODO: support scaling
 }
 
 int32_t Track::tmfcId() const
@@ -100,18 +102,23 @@ Animation::Animation(const ObjectScene &scene)
 void Animation::update(ObjectScene &scene, const float time)
 {
     for (const auto &[id, track] : m_actorTracks.asKeyValueRange()) {
-        const auto newTransformation = track->transformationAtTime(time);
         if (scene.nestedScenes.contains(id)) {
-            scene.nestedScenes[id].transformation = newTransformation;
+            track->applyTransformation(time, scene.nestedScenes[id].transformation);
         } else {
+            bool found = false;
             // TODO: searches through embedded LGBs, but it really should be all objects maybe?
             // We really need a proper scene graph anyhow
             for (auto &lgb : scene.embeddedLgbs) {
                 for (uint32_t i = 0; i < lgb.layer_count; i++) {
                     for (uint32_t j = 0; j < lgb.layers[i].num_objects; j++) {
-                        lgb.layers[i].objects[j].transform = newTransformation;
+                        track->applyTransformation(time, lgb.layers[i].objects[j].transform);
+                        found = true;
                     }
                 }
+            }
+
+            if (!found) {
+                qWarning() << "Failed to find actor" << id << "to animate!";
             }
         }
     }
@@ -199,6 +206,52 @@ void Animation::processScene(const ObjectScene &scene)
                 }
             } else {
                 qWarning() << "Couldn't find TMAC for" << instance.tmac_time << "time and instance" << instance.instance_id;
+            }
+        }
+    }
+
+    for (const auto &descriptor : scene.actionDescriptors) {
+        // Only rotation animations are supported for now.
+        if (descriptor.tag == ScnSGActionControllerDescriptor::Tag::Rotation) {
+            const auto &rotation = descriptor.rotation._0;
+
+            if (rotation.vfx_has_child1 || rotation.vfx_has_child2) {
+                qWarning() << "Found rotation action descriptor wanting to animate VFX, but that isn't supported yet!";
+            }
+
+            if (rotation.bg_part_id != 0) {
+                // TODO: don't emulate this using FCurves
+                QHash<physis_Attribute, FCurve> curves;
+
+                physis_Attribute targetAttribute;
+                switch (rotation.axis) {
+                case RotationAxis::X:
+                    targetAttribute = physis_Attribute::RotationX;
+                    break;
+                case RotationAxis::Y:
+                    targetAttribute = physis_Attribute::RotationY;
+                    break;
+                case RotationAxis::Z:
+                    targetAttribute = physis_Attribute::RotationZ;
+                    break;
+                }
+
+                QList<TmfcRow> points;
+                points.resize(2);
+
+                points[0].time = 0.0;
+                points[0].value = 0.0;
+
+                points[1].time = rotation.duration;
+                points[1].value = rotation.value;
+
+                m_duration = std::max(static_cast<float>(m_duration), rotation.duration);
+
+                curves[targetAttribute] = FCurve(points);
+
+                auto track = new Track(-1, curves);
+                m_tracks.push_back(track);
+                m_actorTracks[rotation.bg_part_id] = track;
             }
         }
     }

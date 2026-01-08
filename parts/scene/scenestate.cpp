@@ -85,6 +85,10 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
         embeddedTimelines.push_back(section.timelines.timelines[i]);
     }
 
+    for (uint32_t i = 0; i < section.action_descriptors.descriptor_count; i++) {
+        actionDescriptors.push_back(section.action_descriptors.descriptors[i]);
+    }
+
     // Process nested shared groups
     for (const auto &[name, lgb] : lgbFiles) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {

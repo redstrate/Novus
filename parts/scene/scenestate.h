@@ -34,6 +34,7 @@ public:
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
     std::vector<physis_ScnLayerGroup> embeddedLgbs;
     Animation *animation = nullptr;
+    std::vector<ScnSGActionControllerDescriptor> actionDescriptors;
 
     /// Key is the ID of the SGB instance.
     QHash<uint32_t, ObjectScene> nestedScenes;

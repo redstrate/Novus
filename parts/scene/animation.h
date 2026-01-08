@@ -32,7 +32,7 @@ class Track
 public:
     explicit Track(int32_t tmfcId, const QHash<physis_Attribute, FCurve> &curves);
 
-    Transformation transformationAtTime(float time) const;
+    void applyTransformation(float time, Transformation &existingTransformation) const;
     int32_t tmfcId() const;
 
 private:
