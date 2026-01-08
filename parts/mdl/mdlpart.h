@@ -70,14 +70,14 @@ public Q_SLOTS:
 
     void addModel(physis_MDL mdl,
                   bool skinned,
-                  glm::vec3 position,
+                  Transformation transformation,
                   const QString &name,
                   std::vector<physis_Material> materials,
                   int lod,
                   uint16_t fromBodyId = 101,
                   uint16_t toBodyId = 101);
 
-    void addExistingModel(const QString &name, glm::vec3 position);
+    void addExistingModel(const QString &name, Transformation transformation);
 
     void removeModel(const physis_MDL &mdl);
 

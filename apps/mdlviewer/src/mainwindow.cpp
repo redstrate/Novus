@@ -98,7 +98,12 @@ void MainWindow::setupActions()
 
             setWindowFilePath(fileName);
 
-            part->addModel(mdl, false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
+            Transformation transformation{};
+            transformation.scale[0] = 1;
+            transformation.scale[1] = 1;
+            transformation.scale[2] = 1;
+
+            part->addModel(mdl, false, transformation, QStringLiteral("mdl"), {}, 0);
 
             // Clear layout
             QLayoutItem *child = nullptr;

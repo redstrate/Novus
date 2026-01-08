@@ -85,7 +85,7 @@ void MDLPart::clear()
 
 void MDLPart::addModel(physis_MDL mdl,
                        bool skinned,
-                       glm::vec3 position,
+                       Transformation transformation,
                        const QString &name,
                        std::vector<physis_Material> materials,
                        int lod,
@@ -113,7 +113,7 @@ void MDLPart::addModel(physis_MDL mdl,
     }
 
     Q_ASSERT(model != nullptr);
-    vkWindow->models.push_back(DrawObjectInstance{name, model, position});
+    vkWindow->models.push_back(DrawObjectInstance{name, model, transformation});
 
     Q_EMIT modelChanged();
 }
@@ -500,10 +500,10 @@ bool MDLPart::modelExists(const QString &name)
     return vkWindow->sourceModels.contains(name);
 }
 
-void MDLPart::addExistingModel(const QString &name, glm::vec3 position)
+void MDLPart::addExistingModel(const QString &name, Transformation transformation)
 {
     auto model = vkWindow->sourceModels[name];
-    vkWindow->models.push_back(DrawObjectInstance{name, model, position});
+    vkWindow->models.push_back(DrawObjectInstance{name, model, transformation});
 }
 
 #include "moc_mdlpart.cpp"

@@ -3,6 +3,7 @@
 
 #include "simplerenderer.h"
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include "camera.h"
 #include "device.h"
@@ -135,7 +136,9 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
 
             auto m = glm::mat4(1.0f);
-            m = glm::translate(m, model.position);
+            m = glm::translate(m, glm::vec3(model.transformation.translation[0], model.transformation.translation[1], model.transformation.translation[2]));
+            m *= glm::mat4_cast(glm::quat(glm::vec3(model.transformation.rotation[0], model.transformation.rotation[1], model.transformation.rotation[2])));
+            m = glm::scale(m, glm::vec3(model.transformation.scale[0], model.transformation.scale[1], model.transformation.scale[2]));
 
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,

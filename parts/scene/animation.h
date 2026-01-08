@@ -54,7 +54,6 @@ public:
 private:
     void processScene(const ObjectScene &scene);
     void processTimeline(const physis_Tmb &timeline);
-    void processUpdateScene(ObjectScene &scene, float time);
 
     QList<Track *> m_tracks;
     QHash<uint32_t, Track *> m_actorTracks;

@@ -33,7 +33,7 @@ ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
     m_animationTimeSlider->setMaximumWidth(400);
     m_animationTimeSlider->setEnabled(false);
     connect(m_animationTimeSlider, &QSlider::valueChanged, this, [this](const int value) {
-        m_animation->update(m_appState->rootScene, value);
+        m_appState->updateAllAnimations(value);
         Q_EMIT m_appState->mapLoaded(); // FIXME: extreme solution to lack of a proper updatable scene graph
     });
     sidebarLayout->addWidget(m_animationTimeSlider);
@@ -53,11 +53,11 @@ void ScenePart::loadSgb(physis_Buffer file)
         // TODO: load more than one section?
         m_appState->load(m_data, sgb.sections[0]);
 
-        m_animation = new Animation(m_appState->rootScene);
-
         // Update animation slider maximum
-        m_animationTimeSlider->setMaximum(m_animation->duration());
+        m_animationTimeSlider->setMaximum(m_appState->longestAnimationTime());
         m_animationTimeSlider->setEnabled(true);
+
+        qInfo() << "Longest animation time:" << m_appState->longestAnimationTime();
     } else {
         qWarning() << "Failed to parse SGB!";
     }

@@ -5,6 +5,8 @@
 
 #include <KLocalizedString>
 
+#include "animation.h"
+
 SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
     : QObject(parent)
 {
@@ -100,6 +102,8 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
     for (const auto layerGroup : embeddedLgbs) {
         processScnLayerGroup(data, layerGroup);
     }
+
+    animation = new Animation(*this);
 }
 
 void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &section)
@@ -124,6 +128,8 @@ void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &sect
             break;
         }
     }
+
+    processLongestAnimationTime(rootScene);
 
     Q_EMIT mapLoaded();
 }
@@ -153,6 +159,34 @@ QString SceneState::lookupEObjName(const uint32_t id) const
         return QString::fromLatin1(row.columns[0].string._0);
     }
     return i18n("Event Object");
+}
+
+float SceneState::longestAnimationTime() const
+{
+    return m_longestAnimationTime;
+}
+
+void SceneState::updateAllAnimations(const float time)
+{
+    processUpdateAnimation(rootScene, time);
+}
+
+void SceneState::processLongestAnimationTime(const ObjectScene &scene)
+{
+    m_longestAnimationTime = std::max(m_longestAnimationTime, scene.animation->duration());
+
+    for (const auto &nestedScene : scene.nestedScenes.values()) {
+        processLongestAnimationTime(nestedScene);
+    }
+}
+
+void SceneState::processUpdateAnimation(ObjectScene &scene, float time)
+{
+    scene.animation->update(scene, time);
+
+    for (auto &nestedScene : scene.nestedScenes.values()) {
+        processUpdateAnimation(nestedScene, time);
+    }
 }
 
 void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path)

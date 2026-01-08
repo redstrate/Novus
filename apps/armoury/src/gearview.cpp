@@ -343,9 +343,15 @@ void GearView::updatePart()
                     maxLod = std::max(mdl.num_lod, maxLod);
 
                     gearAddition.bodyId = physis_get_race_code(fallbackRace, fallbackTribe, currentGender);
+
+                    Transformation transformation{};
+                    transformation.scale[0] = 1;
+                    transformation.scale[1] = 1;
+                    transformation.scale[2] = 1;
+
                     mdlPart->addModel(mdl,
                                       true,
-                                      glm::vec3(),
+                                      transformation,
                                       sanitizeMdlPath(mdlPath),
                                       materials,
                                       currentLod,
@@ -401,7 +407,12 @@ void GearView::updatePart()
                     }
                 }
 
-                mdlPart->addModel(mdl, true, glm::vec3(), sanitizeMdlPath(mdlPath), materials, currentLod);
+                Transformation transformation{};
+                transformation.scale[0] = 1;
+                transformation.scale[1] = 1;
+                transformation.scale[2] = 1;
+
+                mdlPart->addModel(mdl, true, transformation, sanitizeMdlPath(mdlPath), materials, currentLod);
             }
         }
     };

@@ -8,6 +8,8 @@
 #include <QHash>
 #include <physis.hpp>
 
+class Animation;
+
 /// Represents a "SCN1" section, which could be a complete level (LVB) or a prefab (SGB). These can also be infinitely nested.
 class ObjectScene
 {
@@ -26,6 +28,7 @@ public:
     physis_Terrain terrain = {};
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
     std::vector<physis_ScnLayerGroup> embeddedLgbs;
+    Animation *animation = nullptr;
 
     /// Key is the ID of the SGB instance.
     QHash<uint32_t, ObjectScene> nestedScenes;
@@ -62,6 +65,10 @@ public:
      */
     QString lookupEObjName(uint32_t id) const;
 
+    float longestAnimationTime() const;
+
+    void updateAllAnimations(float time);
+
 Q_SIGNALS:
     void mapLoaded();
     void visibleLayerIdsChanged();
@@ -69,6 +76,10 @@ Q_SIGNALS:
     void selectionChanged();
 
 private:
+    void processLongestAnimationTime(const ObjectScene &scene);
+    void processUpdateAnimation(ObjectScene &scene, float time);
+
     physis_ExcelSheet m_enpcResidentSheet;
     physis_ExcelSheet m_eobjNameSheet;
+    float m_longestAnimationTime = 0.0f;
 };

@@ -51,5 +51,5 @@ struct DrawObject {
 struct DrawObjectInstance {
     QString name;
     DrawObject *sourceObject = nullptr;
-    glm::vec3 position;
+    Transformation transformation;
 };

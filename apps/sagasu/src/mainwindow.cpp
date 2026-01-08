@@ -224,8 +224,13 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto exportButton = new QPushButton(QStringLiteral("Export glTF"));
         mdlLayout->addWidget(exportButton);
 
+        Transformation transformation{};
+        transformation.scale[0] = 1;
+        transformation.scale[1] = 1;
+        transformation.scale[2] = 1;
+
         auto mdlWidget = new MDLPart(&m_data, fileCache);
-        mdlWidget->addModel(physis_mdl_parse(m_data.platform, file), false, glm::vec3(), QStringLiteral("mdl"), {}, 0);
+        mdlWidget->addModel(physis_mdl_parse(m_data.platform, file), false, transformation, QStringLiteral("mdl"), {}, 0);
         mdlLayout->addWidget(mdlWidget);
 
         connect(importButton, &QPushButton::clicked, this, [this, mdlWidget](bool) {

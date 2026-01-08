@@ -69,12 +69,13 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
                 }
             }
 
-            mdlPart->addModel(plateMdl,
-                              false,
-                              glm::vec3(terrain.plates[i].position[0], 0.0f, terrain.plates[i].position[1]),
-                              QStringLiteral("terapart%1").arg(i),
-                              materials,
-                              0);
+            Transformation transformation{
+                .translation = {terrain.plates[i].position[0], 0.0f, terrain.plates[i].position[1]},
+                .rotation = {0, 0, 0},
+                .scale = {1, 1, 1},
+            };
+
+            mdlPart->addModel(plateMdl, false, transformation, QStringLiteral("terapart%1").arg(i), materials, 0);
 
             // We don't need this, and it will just take up memory
             physis_mdl_free(&plateMdl);
@@ -142,9 +143,9 @@ void MapView::processLayer(const physis_Layer &layer, const Transformation &root
                                       a.rotation[2] + b.rotation[2],
                                   },
                               .scale = {
-                                  a.scale[0] + b.scale[0],
-                                  a.scale[1] + b.scale[1],
-                                  a.scale[2] + b.scale[2],
+                                  a.scale[0] * b.scale[0],
+                                  a.scale[1] * b.scale[1],
+                                  a.scale[2] * b.scale[2],
                               }};
     };
 
@@ -176,12 +177,7 @@ void MapView::processLayer(const physis_Layer &layer, const Transformation &root
                             }
                         }
 
-                        mdlPart->addModel(plateMdl,
-                                          false,
-                                          glm::vec3(combinedTransform.translation[0], combinedTransform.translation[1], combinedTransform.translation[2]),
-                                          QString::fromStdString(assetPath),
-                                          materials,
-                                          0);
+                        mdlPart->addModel(plateMdl, false, combinedTransform, QString::fromStdString(assetPath), materials, 0);
 
                         // We don't need this, and it will just take up memory
                         physis_mdl_free(&plateMdl);
@@ -191,8 +187,7 @@ void MapView::processLayer(const physis_Layer &layer, const Transformation &root
 
                     physis_free_file(&plateMdlFile);
                 } else {
-                    mdlPart->addExistingModel(QString::fromStdString(assetPath),
-                                              glm::vec3(combinedTransform.translation[0], combinedTransform.translation[1], combinedTransform.translation[2]));
+                    mdlPart->addExistingModel(QString::fromStdString(assetPath), combinedTransform);
                 }
             }
         } break;

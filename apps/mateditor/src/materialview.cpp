@@ -47,7 +47,12 @@ void MaterialView::addSphere(physis_Material material)
     std::string skelNameStd = skelName.toStdString();
     mdlPart->setSkeleton(physis_skeleton_parse(data->platform, physis_sqpack_read(data, skelNameStd.c_str())));
 
-    mdlPart->addModel(m_mdl, false, glm::vec3(), QStringLiteral("mdl"), {material}, 0);
+    Transformation transformation{};
+    transformation.scale[0] = 1;
+    transformation.scale[1] = 1;
+    transformation.scale[2] = 1;
+
+    mdlPart->addModel(m_mdl, false, transformation, QStringLiteral("mdl"), {material}, 0);
 }
 
 #include "moc_materialview.cpp"

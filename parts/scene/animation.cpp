@@ -29,8 +29,6 @@ float FCurve::atTime(const float time) const
     const auto adjustedMomentStart = time - startTime; // Example: 20 - 400
     const auto adjustedMoment = adjustedMomentStart / duration; // ???
 
-    qInfo() << "Between points:" << startTime << adjustedMoment << endTime;
-
     return std::lerp(startPoint.value, endPoint.value, adjustedMoment);
 }
 
@@ -96,18 +94,27 @@ Animation::Animation(const ObjectScene &scene)
 {
     processScene(scene);
 
-    // TODO: I suspect this won't work out because nested scenes may share IDs, but I'm unsure. Then we would need an animation nesting system similar to
-    // scenes.
-    for (const auto &nestedScene : scene.nestedScenes.values()) {
-        processScene(nestedScene);
-    }
-
     qInfo() << "Processed" << m_tracks.size() << "timelines with" << m_actorTracks.size() << "actors!";
 }
 
 void Animation::update(ObjectScene &scene, const float time)
 {
-    processUpdateScene(scene, time);
+    for (const auto &[id, track] : m_actorTracks.asKeyValueRange()) {
+        const auto newTransformation = track->transformationAtTime(time);
+        if (scene.nestedScenes.contains(id)) {
+            scene.nestedScenes[id].transformation = newTransformation;
+        } else {
+            // TODO: searches through embedded LGBs, but it really should be all objects maybe?
+            // We really need a proper scene graph anyhow
+            for (auto &lgb : scene.embeddedLgbs) {
+                for (uint32_t i = 0; i < lgb.layer_count; i++) {
+                    for (uint32_t j = 0; j < lgb.layers[i].num_objects; j++) {
+                        lgb.layers[i].objects[j].transform = newTransformation;
+                    }
+                }
+            }
+        }
+    }
 }
 
 float Animation::duration() const
@@ -219,33 +226,6 @@ void Animation::processTimeline(const physis_Tmb &timeline)
         }
         default:
             break;
-        }
-    }
-}
-
-void printTransformation(const Transformation &transformation)
-{
-    qInfo() << "- pos[x] =" << transformation.translation[0];
-    qInfo() << "- pos[y] =" << transformation.translation[1];
-    qInfo() << "- pos[z] =" << transformation.translation[2];
-
-    qInfo() << "- rot[x] =" << transformation.rotation[0];
-    qInfo() << "- rot[y] =" << transformation.rotation[1];
-    qInfo() << "- rot[z] =" << transformation.rotation[2];
-
-    qInfo() << "- scl[x] =" << transformation.scale[0];
-    qInfo() << "- scl[y] =" << transformation.scale[1];
-    qInfo() << "- scl[z] =" << transformation.scale[2];
-}
-
-void Animation::processUpdateScene(ObjectScene &scene, const float time)
-{
-    for (const auto &[id, track] : m_actorTracks.asKeyValueRange()) {
-        if (scene.nestedScenes.contains(id)) {
-            qInfo() << "Updating nested scene" << id;
-            scene.nestedScenes[id].transformation = track->transformationAtTime(time);
-            printTransformation(scene.nestedScenes[id].transformation);
-            qInfo() << "";
         }
     }
 }

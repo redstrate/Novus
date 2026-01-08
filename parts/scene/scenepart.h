@@ -17,7 +17,6 @@ class SceneState;
 class ObjectPropertiesWidget;
 struct physis_SqPackResource;
 class VulkanWindow;
-class Animation;
 
 class ScenePart : public QWidget
 {
@@ -38,6 +37,5 @@ private:
     ObjectPropertiesWidget *m_objectPropertiesWidget = nullptr;
     MapView *m_mapView = nullptr;
     FileCache m_fileCache;
-    Animation *m_animation;
     QSlider *m_animationTimeSlider = nullptr;
 };
