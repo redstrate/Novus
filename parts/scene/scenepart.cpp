@@ -10,6 +10,7 @@
 
 #include <QHBoxLayout>
 
+#include "animation.h"
 #include "mapview.h"
 
 ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
@@ -21,9 +22,21 @@ ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
     auto layout = new QHBoxLayout();
     setLayout(layout);
 
+    auto sidebarLayout = new QVBoxLayout();
+    layout->addLayout(sidebarLayout);
+
     m_sceneListWidget = new SceneListWidget(m_appState);
     m_sceneListWidget->setMaximumWidth(400);
-    layout->addWidget(m_sceneListWidget);
+    sidebarLayout->addWidget(m_sceneListWidget);
+
+    m_animationTimeSlider = new QSlider(Qt::Orientation::Horizontal);
+    m_animationTimeSlider->setMaximumWidth(400);
+    m_animationTimeSlider->setEnabled(false);
+    connect(m_animationTimeSlider, &QSlider::valueChanged, this, [this](const int value) {
+        m_animation->update(m_appState->rootScene, value);
+        Q_EMIT m_appState->mapLoaded(); // FIXME: extreme solution to lack of a proper updatable scene graph
+    });
+    sidebarLayout->addWidget(m_animationTimeSlider);
 
     m_mapView = new MapView(data, m_fileCache, m_appState);
     layout->addWidget(m_mapView);
@@ -39,6 +52,12 @@ void ScenePart::loadSgb(physis_Buffer file)
     if (sgb.sections) {
         // TODO: load more than one section?
         m_appState->load(m_data, sgb.sections[0]);
+
+        m_animation = new Animation(m_appState->rootScene);
+
+        // Update animation slider maximum
+        m_animationTimeSlider->setMaximum(m_animation->duration());
+        m_animationTimeSlider->setEnabled(true);
     } else {
         qWarning() << "Failed to parse SGB!";
     }

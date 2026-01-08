@@ -408,15 +408,19 @@ void ObjectPropertiesWidget::addEventRangeSection(const physis_EventRangeInstanc
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
+    setLayout(layout);
 }
 
 void ObjectPropertiesWidget::addChairMarkerSection(const physis_ChairMarkerInstanceObject &chairMarker)
 {
+    Q_UNUSED(chairMarker);
+
     auto section = new CollapseSection(i18n("Chair Marker"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
+    setLayout(layout);
 }
 
 void ObjectPropertiesWidget::addPrefetchRangeSection(const physis_PrefetchRangeInstanceObject &prefetchRange)
