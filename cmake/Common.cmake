@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Joshua Goins <josh@redstrate.com>
+# SPDX-License-Identifier: CC0-1.0
+
 macro(set_common_properties target)
     # Needed for stupid glslang-using libraries
     get_target_property(EXCLUDE_FROM_SANITIZERS ${target} EXCLUDE_FROM_SANITIZERS)
