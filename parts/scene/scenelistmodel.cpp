@@ -196,6 +196,12 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
         case physis_LayerEntry::Tag::BG:
             objectName = i18n("BG Model");
             break;
+        case physis_LayerEntry::Tag::LayLight:
+            objectName = i18n("Light");
+            break;
+        case physis_LayerEntry::Tag::Vfx:
+            objectName = i18n("Vfx");
+            break;
         case physis_LayerEntry::Tag::EventObject:
             // Give the EObj an actual name.
             objectName = m_appState->lookupEObjName(object.data.event_object._0.parent_data.base_id);

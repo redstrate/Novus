@@ -5,6 +5,8 @@
 
 #include <QWidget>
 
+struct physis_VfxInstanceObject;
+struct physis_LightInstanceObject;
 struct physis_PrefetchRangeInstanceObject;
 struct physis_ChairMarkerInstanceObject;
 struct physis_EventRangeInstanceObject;
@@ -52,6 +54,8 @@ private:
     void addEventRangeSection(const physis_EventRangeInstanceObject &eventRange);
     void addChairMarkerSection(const physis_ChairMarkerInstanceObject &chairMarker);
     void addPrefetchRangeSection(const physis_PrefetchRangeInstanceObject &prefetchRange);
+    void addLightSection(const physis_LightInstanceObject &light);
+    void addVfxSection(const physis_VfxInstanceObject &vfx);
 
     SceneState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;

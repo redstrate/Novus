@@ -57,6 +57,12 @@ void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &obje
     case physis_LayerEntry::Tag::BG:
         addBGSection(object.data.bg._0);
         break;
+    case physis_LayerEntry::Tag::LayLight:
+        addLightSection(object.data.lay_light._0);
+        break;
+    case physis_LayerEntry::Tag::Vfx:
+        addVfxSection(object.data.vfx._0);
+        break;
     case physis_LayerEntry::Tag::EventObject:
         addEventSection(object.data.event_object._0);
         break;
@@ -438,6 +444,36 @@ void ObjectPropertiesWidget::addPrefetchRangeSection(const physis_PrefetchRangeI
     boundInstanceIdEdit->setText(QString::number(prefetchRange.bound_instance_id));
     boundInstanceIdEdit->setReadOnly(true);
     layout->addRow(i18n("Bound Instance ID"), boundInstanceIdEdit);
+}
+
+void ObjectPropertiesWidget::addLightSection(const physis_LightInstanceObject &light)
+{
+    auto section = new CollapseSection(i18n("Light"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto lightTypeEdit = new EnumEdit<LightType>();
+    lightTypeEdit->setValue(light.light_type);
+    lightTypeEdit->setEnabled(false);
+    layout->addRow(i18n("Light Type"), lightTypeEdit);
+}
+
+void ObjectPropertiesWidget::addVfxSection(const physis_VfxInstanceObject &vfx)
+{
+    auto section = new CollapseSection(i18n("VFX"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto assetPathEdit = new PathEdit();
+    assetPathEdit->setPath(QString::fromLatin1(vfx.asset_path));
+    assetPathEdit->setReadOnly(true);
+    layout->addRow(i18n("Asset Path"), assetPathEdit);
 }
 
 #include "moc_objectpropertieswidget.cpp"
