@@ -11,20 +11,17 @@ SceneListModel::SceneListModel(SceneState *appState, QObject *parent)
     : QAbstractItemModel(parent)
     , m_appState(appState)
 {
-    m_rootItem = new TreeInformation();
-    m_rootItem->type = TreeType::Root;
-
     connect(m_appState, &SceneState::mapLoaded, this, &SceneListModel::refresh);
 }
 
 int SceneListModel::rowCount(const QModelIndex &parent) const
 {
-    TreeInformation *parentItem;
+    SceneTreeInformation const *parentItem;
 
     if (!parent.isValid())
-        parentItem = m_rootItem;
+        parentItem = &m_rootItem;
     else
-        parentItem = static_cast<TreeInformation *>(parent.internalPointer());
+        parentItem = static_cast<SceneTreeInformation *>(parent.internalPointer());
 
     return static_cast<int>(parentItem->children.size());
 }
@@ -40,14 +37,14 @@ QModelIndex SceneListModel::index(int row, int column, const QModelIndex &parent
     if (!hasIndex(row, column, parent))
         return {};
 
-    TreeInformation *parentItem;
+    SceneTreeInformation const *parentItem;
 
     if (!parent.isValid())
-        parentItem = m_rootItem;
+        parentItem = &m_rootItem;
     else
-        parentItem = static_cast<TreeInformation *>(parent.internalPointer());
+        parentItem = static_cast<SceneTreeInformation *>(parent.internalPointer());
 
-    TreeInformation *childItem = parentItem->children[row];
+    SceneTreeInformation *childItem = parentItem->children[row];
     if (childItem)
         return createIndex(row, column, childItem);
     return {};
@@ -58,10 +55,10 @@ QModelIndex SceneListModel::parent(const QModelIndex &index) const
     if (!index.isValid())
         return {};
 
-    auto childItem = static_cast<TreeInformation *>(index.internalPointer());
-    TreeInformation *parentItem = childItem->parent;
+    auto childItem = static_cast<SceneTreeInformation *>(index.internalPointer());
+    SceneTreeInformation *parentItem = childItem->parent;
 
-    if (parentItem == m_rootItem)
+    if (parentItem == &m_rootItem)
         return {};
 
     return createIndex(parentItem->row, 0, parentItem);
@@ -72,7 +69,7 @@ QVariant SceneListModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return {};
 
-    auto item = static_cast<TreeInformation *>(index.internalPointer());
+    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (index.column() == 0) {
         if (role == Qt::DisplayRole) {
             return item->name;
@@ -120,7 +117,7 @@ QVariant SceneListModel::headerData(int section, Qt::Orientation orientation, in
 
 Qt::ItemFlags SceneListModel::flags(const QModelIndex &index) const
 {
-    auto item = static_cast<TreeInformation *>(index.internalPointer());
+    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (index.column() == 1 && (item->type == TreeType::Layer || item->type == TreeType::Plate))
         return QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
 
@@ -129,7 +126,7 @@ Qt::ItemFlags SceneListModel::flags(const QModelIndex &index) const
 
 bool SceneListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    auto item = static_cast<TreeInformation *>(index.internalPointer());
+    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (index.column() == 1) {
         if (item->type == TreeType::Layer) {
             if (value.value<Qt::CheckState>() == Qt::Checked) {
@@ -152,7 +149,7 @@ bool SceneListModel::setData(const QModelIndex &index, const QVariant &value, in
 
 std::optional<physis_InstanceObject const *> SceneListModel::objectAt(const QModelIndex &index) const
 {
-    const auto item = static_cast<TreeInformation *>(index.internalPointer());
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Object) {
         return static_cast<physis_InstanceObject const *>(item->data);
     }
@@ -161,7 +158,7 @@ std::optional<physis_InstanceObject const *> SceneListModel::objectAt(const QMod
 
 std::optional<physis_Layer const *> SceneListModel::layerAt(const QModelIndex &index) const
 {
-    const auto item = static_cast<TreeInformation *>(index.internalPointer());
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Layer) {
         return static_cast<physis_Layer const *>(item->data);
     }
@@ -172,18 +169,17 @@ void SceneListModel::refresh()
 {
     beginResetModel();
 
-    // Reset the root item otherwise the children is left-over
-    m_rootItem = new TreeInformation();
-    m_rootItem->type = TreeType::Root;
+    // Reset the root item
+    m_rootItem.children.clear();
 
-    processScene(m_rootItem, m_appState->rootScene);
+    processScene(&m_rootItem, m_appState->rootScene);
 
     endResetModel();
 }
 
-void SceneListModel::addLayer(uint32_t index, TreeInformation *fileItem, const physis_Layer &layer, ObjectScene &scene)
+void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, const physis_Layer &layer, ObjectScene &scene)
 {
-    auto layerItem = new TreeInformation();
+    auto layerItem = new SceneTreeInformation();
     layerItem->type = TreeType::Layer;
     layerItem->parent = fileItem;
     layerItem->name = QString::fromLatin1(layer.name);
@@ -236,7 +232,7 @@ void SceneListModel::addLayer(uint32_t index, TreeInformation *fileItem, const p
             break;
         }
 
-        auto objectItem = new TreeInformation();
+        auto objectItem = new SceneTreeInformation();
         objectItem->type = TreeType::Object;
         objectItem->parent = layerItem;
         objectItem->name = i18n("%1 (%2)", objectName, QString::number(object.instance_id)); // TODO: do display names if we have them
@@ -252,10 +248,10 @@ void SceneListModel::addLayer(uint32_t index, TreeInformation *fileItem, const p
     }
 }
 
-void SceneListModel::processScene(TreeInformation *parentNode, ObjectScene &scene)
+void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene &scene)
 {
     if (scene.terrain.num_plates > 0) {
-        auto terrainItem = new TreeInformation();
+        auto terrainItem = new SceneTreeInformation();
         terrainItem->type = TreeType::File;
         terrainItem->parent = parentNode;
         terrainItem->name = i18n("Terrain");
@@ -263,7 +259,7 @@ void SceneListModel::processScene(TreeInformation *parentNode, ObjectScene &scen
 
         // Add terrain plates
         for (int i = 0; i < scene.terrain.num_plates; i++) {
-            auto layerItem = new TreeInformation();
+            auto layerItem = new SceneTreeInformation();
             layerItem->type = TreeType::Plate;
             layerItem->parent = terrainItem;
             layerItem->name = i18n("Plate %1").arg(i);
@@ -274,14 +270,14 @@ void SceneListModel::processScene(TreeInformation *parentNode, ObjectScene &scen
     }
 
     if (scene.embeddedTimelines.length() > 0) {
-        auto timelinesItem = new TreeInformation();
+        auto timelinesItem = new SceneTreeInformation();
         timelinesItem->type = TreeType::File;
         timelinesItem->parent = parentNode;
         timelinesItem->name = i18n("Timelines");
         parentNode->children.push_back(timelinesItem);
 
         for (uint32_t i = 0; i < scene.embeddedTimelines.size(); i++) {
-            auto timelineItem = new TreeInformation();
+            auto timelineItem = new SceneTreeInformation();
             timelineItem->type = TreeType::Plate;
             timelineItem->parent = timelineItem;
             timelineItem->name = i18n("Timeline");
@@ -294,11 +290,11 @@ void SceneListModel::processScene(TreeInformation *parentNode, ObjectScene &scen
     for (size_t y = 0; y < scene.lgbFiles.size(); y++) {
         const auto &[name, lgb] = scene.lgbFiles[y];
 
-        auto fileItem = new TreeInformation();
+        auto fileItem = new SceneTreeInformation();
         fileItem->type = TreeType::File;
         fileItem->parent = parentNode;
         fileItem->name = name;
-        fileItem->row = m_rootItem->children.size();
+        fileItem->row = parentNode->children.size();
         parentNode->children.push_back(fileItem);
 
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
@@ -313,7 +309,7 @@ void SceneListModel::processScene(TreeInformation *parentNode, ObjectScene &scen
     for (size_t y = 0; y < scene.embeddedLgbs.size(); y++) {
         const auto &lgb = scene.embeddedLgbs[y];
 
-        auto fileItem = new TreeInformation();
+        auto fileItem = new SceneTreeInformation();
         fileItem->type = TreeType::File;
         fileItem->parent = parentNode;
         fileItem->name = QString::fromLatin1(lgb.name);

@@ -91,11 +91,39 @@ void MapView::reloadMap()
 {
     mdlPart->clear();
 
-    processScene(m_appState->rootScene);
+    Transformation transformation{};
+    transformation.scale[0] = 1;
+    transformation.scale[1] = 1;
+    transformation.scale[2] = 1;
+
+    processScene(m_appState->rootScene, transformation);
 }
 
-void MapView::processScene(const ObjectScene &scene)
+Transformation addTransformation(const Transformation &a, const Transformation &b)
 {
+    return Transformation{.translation =
+                              {
+                                  a.translation[0] + b.translation[0],
+                                  a.translation[1] + b.translation[1],
+                                  a.translation[2] + b.translation[2],
+                              },
+                          .rotation =
+                              {
+                                  a.rotation[0] + b.rotation[0],
+                                  a.rotation[1] + b.rotation[1],
+                                  a.rotation[2] + b.rotation[2],
+                              },
+                          .scale = {
+                              a.scale[0] * b.scale[0],
+                              a.scale[1] * b.scale[1],
+                              a.scale[2] * b.scale[2],
+                          }};
+}
+
+void MapView::processScene(ObjectScene &scene, const Transformation &rootTransformation)
+{
+    scene.combinedTransformation = addTransformation(scene.transformation, rootTransformation);
+
     addTerrain(scene.basePath, scene.terrain);
 
     for (const auto &layerGroup : scene.embeddedLgbs) {
@@ -105,7 +133,7 @@ void MapView::processScene(const ObjectScene &scene)
                 continue;
             }
 
-            processLayer(layer, scene.transformation);
+            processLayer(layer, scene.combinedTransformation);
         }
     }
     for (const auto &[name, lgb] : scene.lgbFiles) {
@@ -117,38 +145,18 @@ void MapView::processScene(const ObjectScene &scene)
                     continue;
                 }
 
-                processLayer(layer, scene.transformation);
+                processLayer(layer, scene.combinedTransformation);
             }
         }
     }
 
-    for (const auto &nestedScene : scene.nestedScenes.values()) {
-        processScene(nestedScene);
+    for (auto &nestedScene : scene.nestedScenes.values()) {
+        processScene(nestedScene, scene.combinedTransformation);
     }
 }
 
 void MapView::processLayer(const physis_Layer &layer, const Transformation &rootTransformation)
 {
-    const auto addTransformation = [](const Transformation &a, const Transformation &b) {
-        return Transformation{.translation =
-                                  {
-                                      a.translation[0] + b.translation[0],
-                                      a.translation[1] + b.translation[1],
-                                      a.translation[2] + b.translation[2],
-                                  },
-                              .rotation =
-                                  {
-                                      a.rotation[0] + b.rotation[0],
-                                      a.rotation[1] + b.rotation[1],
-                                      a.rotation[2] + b.rotation[2],
-                                  },
-                              .scale = {
-                                  a.scale[0] * b.scale[0],
-                                  a.scale[1] * b.scale[1],
-                                  a.scale[2] * b.scale[2],
-                              }};
-    };
-
     for (uint32_t z = 0; z < layer.num_objects; z++) {
         const auto object = layer.objects[z];
 

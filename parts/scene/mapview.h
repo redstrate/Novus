@@ -29,7 +29,7 @@ public Q_SLOTS:
 
 private:
     void reloadMap();
-    void processScene(const ObjectScene &scene);
+    void processScene(ObjectScene &scene, const Transformation &rootTransformation);
     void processLayer(const physis_Layer &layer, const Transformation &rootTransformation);
 
     MDLPart *mdlPart = nullptr;

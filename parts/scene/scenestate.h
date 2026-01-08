@@ -23,6 +23,11 @@ public:
         .rotation = {0, 0, 0},
         .scale = {1, 1, 1},
     };
+    Transformation combinedTransformation = {
+        .translation = {0, 0, 0},
+        .rotation = {0, 0, 0},
+        .scale = {1, 1, 1},
+    };
     QString basePath;
     QList<physis_ScnTimeline> embeddedTimelines;
     physis_Terrain terrain = {};
