@@ -60,7 +60,7 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
 
     beginResetModel();
 
-    rootItem = new TreeInformation();
+    rootItem = new SceneTreeInformation();
     rootItem->type = TreeType::Root;
 
     int i = 0;
@@ -69,7 +69,7 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
             continue;
         }
 
-        auto categoryItem = new TreeInformation();
+        auto categoryItem = new SceneTreeInformation();
         categoryItem->type = TreeType::Category;
         categoryItem->slotType = slot;
         categoryItem->parent = rootItem;
@@ -79,7 +79,7 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
         int j = 0;
         for (const auto &gear : gears) {
             if (gear.slot == slot) {
-                auto item = new TreeInformation();
+                auto item = new SceneTreeInformation();
                 item->type = TreeType::Item;
                 item->gear = gear;
                 item->parent = categoryItem;
@@ -97,14 +97,14 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
 
 int GearListModel::rowCount(const QModelIndex &parent) const
 {
-    TreeInformation *parentItem;
+    SceneTreeInformation *parentItem;
     if (parent.column() > 0)
         return 0;
 
     if (!parent.isValid())
         parentItem = rootItem;
     else
-        parentItem = static_cast<TreeInformation *>(parent.internalPointer());
+        parentItem = static_cast<SceneTreeInformation *>(parent.internalPointer());
 
     return static_cast<int>(parentItem->children.size());
 }
@@ -120,14 +120,14 @@ QModelIndex GearListModel::index(int row, int column, const QModelIndex &parent)
     if (!hasIndex(row, column, parent))
         return {};
 
-    TreeInformation *parentItem;
+    SceneTreeInformation *parentItem;
 
     if (!parent.isValid())
         parentItem = rootItem;
     else
-        parentItem = static_cast<TreeInformation *>(parent.internalPointer());
+        parentItem = static_cast<SceneTreeInformation *>(parent.internalPointer());
 
-    TreeInformation *childItem = parentItem->children[row];
+    SceneTreeInformation *childItem = parentItem->children[row];
     if (childItem)
         return createIndex(row, column, childItem);
     return {};
@@ -138,8 +138,8 @@ QModelIndex GearListModel::parent(const QModelIndex &index) const
     if (!index.isValid())
         return {};
 
-    auto childItem = static_cast<TreeInformation *>(index.internalPointer());
-    TreeInformation *parentItem = childItem->parent;
+    auto childItem = static_cast<SceneTreeInformation *>(index.internalPointer());
+    SceneTreeInformation *parentItem = childItem->parent;
 
     if (parentItem == rootItem)
         return {};
@@ -152,7 +152,7 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return {};
 
-    auto item = static_cast<TreeInformation *>(index.internalPointer());
+    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
 
     if (item->type == TreeType::Category) {
         if (role == Qt::DisplayRole) {
@@ -204,7 +204,7 @@ QVariant GearListModel::headerData(int section, Qt::Orientation orientation, int
 
 std::optional<GearInfo> GearListModel::getGearFromIndex(const QModelIndex &index)
 {
-    auto item = static_cast<TreeInformation *>(index.internalPointer());
+    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item->type == TreeType::Item) {
         return item->gear;
     }

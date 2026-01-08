@@ -10,14 +10,14 @@
 
 enum class TreeType { Root, Category, Item };
 
-struct TreeInformation {
+struct SceneTreeInformation {
     TreeType type;
     std::optional<Slot> slotType;
-    TreeInformation *parent = nullptr;
+    SceneTreeInformation *parent = nullptr;
     std::optional<GearInfo> gear;
     int row = 0;
 
-    std::vector<TreeInformation *> children;
+    std::vector<SceneTreeInformation *> children;
 };
 
 class GearListModel : public QAbstractItemModel
@@ -46,5 +46,5 @@ private:
     QStringList slotNames;
 
     physis_SqPackResource *gameData = nullptr;
-    TreeInformation *rootItem = nullptr;
+    SceneTreeInformation *rootItem = nullptr;
 };

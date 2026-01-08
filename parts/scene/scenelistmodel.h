@@ -24,15 +24,15 @@ enum class TreeType {
     Plate,
 };
 
-struct TreeInformation {
-    TreeType type;
-    TreeInformation *parent = nullptr;
+struct SceneTreeInformation {
+    TreeType type = TreeType::Root;
+    SceneTreeInformation *parent = nullptr;
     int row = 0;
     QString name;
-    uint32_t id;
+    uint32_t id = 0;
     void const *data = nullptr;
 
-    std::vector<TreeInformation *> children;
+    std::vector<SceneTreeInformation *> children{};
 };
 
 class SceneListModel : public QAbstractItemModel
@@ -58,9 +58,9 @@ public:
 
 private:
     void refresh();
-    void addLayer(uint32_t index, TreeInformation *fileItem, const physis_Layer &layer, ObjectScene &scene);
-    void processScene(TreeInformation *parentNode, ObjectScene &scene);
+    void addLayer(uint32_t index, SceneTreeInformation *fileItem, const physis_Layer &layer, ObjectScene &scene);
+    void processScene(SceneTreeInformation *parentNode, ObjectScene &scene);
 
     SceneState *m_appState = nullptr;
-    TreeInformation *m_rootItem = nullptr;
+    SceneTreeInformation m_rootItem;
 };

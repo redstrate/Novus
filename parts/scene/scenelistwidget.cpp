@@ -36,9 +36,6 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     });
     layout->addWidget(searchEdit);
 
-    m_objectListModel = new SceneListModel(appState, this);
-    searchModel->setSourceModel(m_objectListModel);
-
     treeWidget = new QTreeView();
     treeWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of objects on this map."));
     treeWidget->setModel(searchModel);
@@ -50,6 +47,8 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
         m_appState->selectedLayer = m_objectListModel->layerAt(originalIndex);
         Q_EMIT m_appState->selectionChanged();
     });
-
     layout->addWidget(treeWidget);
+
+    m_objectListModel = new SceneListModel(m_appState, treeWidget);
+    searchModel->setSourceModel(m_objectListModel);
 }
