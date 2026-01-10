@@ -5,6 +5,9 @@
 
 #include <QThreadPool>
 #include <QVBoxLayout>
+#include <glm/detail/type_quat.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include "filecache.h"
 #include "objectpass.h"
@@ -99,30 +102,54 @@ void MapView::reloadMap()
     processScene(m_appState->rootScene, transformation);
 }
 
-Transformation addTransformation(const Transformation &a, const Transformation &b)
+glm::mat4 transformToMat4(const Transformation &transformation)
 {
-    return Transformation{.translation =
-                              {
-                                  a.translation[0] + b.translation[0],
-                                  a.translation[1] + b.translation[1],
-                                  a.translation[2] + b.translation[2],
-                              },
+    glm::mat4 m(1.0f);
+    m = glm::translate(m, glm::vec3(transformation.translation[0], transformation.translation[1], transformation.translation[2]));
+    m *= glm::mat4_cast(glm::quat(glm::vec3(transformation.rotation[0], transformation.rotation[1], transformation.rotation[2])));
+    m = glm::scale(m, glm::vec3(transformation.scale[0], transformation.scale[1], transformation.scale[2]));
+
+    return m;
+}
+
+Transformation fromMat4(const glm::mat4 &m)
+{
+    glm::vec3 translation;
+    glm::quat rotation;
+    glm::vec3 scale;
+    glm::vec3 skew;
+    glm::vec4 perspective;
+    glm::decompose(m, scale, rotation, translation, skew, perspective);
+
+    auto eulerAngles = glm::eulerAngles(rotation);
+
+    return Transformation{.translation = {translation[0], translation[1], translation[2]},
                           .rotation =
                               {
-                                  a.rotation[0] + b.rotation[0],
-                                  a.rotation[1] + b.rotation[1],
-                                  a.rotation[2] + b.rotation[2],
+                                  eulerAngles[0],
+                                  eulerAngles[1],
+                                  eulerAngles[2],
                               },
                           .scale = {
-                              a.scale[0] * b.scale[0],
-                              a.scale[1] * b.scale[1],
-                              a.scale[2] * b.scale[2],
+                              scale[0],
+                              scale[1],
+                              scale[2],
                           }};
+}
+
+Transformation addTransformation(const Transformation &a, const Transformation &b)
+{
+    // NOTE: I know this is stupid, but I plan on replacing this whole system eventually.
+
+    const auto aMat = transformToMat4(a);
+    const auto bMat = transformToMat4(b);
+
+    return fromMat4(aMat * bMat);
 }
 
 void MapView::processScene(ObjectScene &scene, const Transformation &rootTransformation)
 {
-    scene.combinedTransformation = addTransformation(scene.transformation, rootTransformation);
+    scene.combinedTransformation = addTransformation(rootTransformation, scene.transformation);
 
     addTerrain(scene.basePath, scene.terrain);
 
