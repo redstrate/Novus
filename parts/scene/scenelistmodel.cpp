@@ -292,6 +292,23 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         }
     }
 
+    if (scene.actionDescriptors.size() > 0) {
+        auto actionsItem = new SceneTreeInformation();
+        actionsItem->type = TreeType::File;
+        actionsItem->parent = parentNode;
+        actionsItem->name = i18n("Actions");
+        parentNode->children.push_back(actionsItem);
+
+        for (uint32_t i = 0; i < scene.actionDescriptors.size(); i++) {
+            auto actionItem = new SceneTreeInformation();
+            actionItem->type = TreeType::Plate;
+            actionItem->parent = actionItem;
+            actionItem->name = i18n("Action");
+            actionItem->row = i;
+            actionsItem->children.push_back(actionItem);
+        }
+    }
+
     // External LGB files
     for (size_t y = 0; y < scene.lgbFiles.size(); y++) {
         const auto &[name, lgb] = scene.lgbFiles[y];
