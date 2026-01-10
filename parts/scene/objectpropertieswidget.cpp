@@ -13,6 +13,7 @@
 
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QTableWidget>
 #include <QVBoxLayout>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -36,6 +37,12 @@ ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *pa
         }
         if (m_appState->selectedLayer) {
             refreshLayerData(*m_appState->selectedLayer.value());
+        }
+        if (m_appState->selectedTimeline) {
+            refreshTimelineData(*m_appState->selectedTimeline.value());
+        }
+        if (m_appState->selectedAction) {
+            refreshActionData(*m_appState->selectedAction.value());
         }
     });
 }
@@ -121,6 +128,82 @@ void ObjectPropertiesWidget::refreshLayerData(const physis_Layer &layer)
     festivalPhaseEdit->setText(QString::number(layer.festival_phase_id));
     festivalPhaseEdit->setReadOnly(true);
     layout->addRow(i18n("Festival Phase"), festivalPhaseEdit);
+}
+
+void ObjectPropertiesWidget::refreshTimelineData(const physis_ScnTimeline &timeline)
+{
+    const auto section = new CollapseSection(i18n("Timeline"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto instanceWidget = new QTableWidget();
+    instanceWidget->setColumnCount(2);
+    instanceWidget->setRowCount(timeline.instance_count);
+    instanceWidget->setHorizontalHeaderLabels({i18n("Instance ID"), i18n("TMAC Time")});
+    layout->addWidget(instanceWidget);
+
+    for (uint32_t i = 0; i < timeline.instance_count; i++) {
+        const auto instance = timeline.instances[i];
+
+        instanceWidget->setItem(i, 0, new QTableWidgetItem(QString::number(instance.instance_id)));
+        instanceWidget->setItem(i, 1, new QTableWidgetItem(QString::number(instance.tmac_time)));
+    }
+}
+
+void ObjectPropertiesWidget::refreshActionData(const ScnSGActionControllerDescriptor &action)
+{
+    const auto section = new CollapseSection(i18n("Action"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto typeEdit = new EnumEdit<ScnSGActionControllerDescriptor::Tag>();
+    typeEdit->setValue(action.tag);
+    typeEdit->setEnabled(false);
+    layout->addRow(i18n("Type"), typeEdit);
+
+    switch (action.tag) {
+    case ScnSGActionControllerDescriptor::Tag::Rotation: {
+        const auto &rotation = action.rotation._0;
+
+        auto bgPartIdEdit = new QLineEdit();
+        bgPartIdEdit->setText(QString::number(rotation.bg_part_id));
+        bgPartIdEdit->setReadOnly(true);
+        layout->addRow(i18n("BG Part ID"), bgPartIdEdit);
+
+        auto vfxChildId1Edit = new QLineEdit();
+        vfxChildId1Edit->setText(QString::number(rotation.vfx_child1_id));
+        vfxChildId1Edit->setReadOnly(true);
+        layout->addRow(i18n("VFX Child 2 ID"), vfxChildId1Edit);
+
+        auto vfxChildId2Edit = new QLineEdit();
+        vfxChildId2Edit->setText(QString::number(rotation.vfx_child_2_id));
+        vfxChildId2Edit->setReadOnly(true);
+        layout->addRow(i18n("VFX Child 1 ID"), vfxChildId2Edit);
+
+        auto rotationAxisEdit = new EnumEdit<RotationAxis>();
+        rotationAxisEdit->setValue(rotation.axis);
+        rotationAxisEdit->setEnabled(false);
+        layout->addRow(i18n("Axis"), rotationAxisEdit);
+
+        auto durationEdit = new QLineEdit();
+        durationEdit->setText(QString::number(rotation.duration));
+        durationEdit->setReadOnly(true);
+        layout->addRow(i18n("Duration"), durationEdit);
+
+        auto valueEdit = new QLineEdit();
+        valueEdit->setText(QString::number(rotation.value));
+        valueEdit->setReadOnly(true);
+        layout->addRow(i18n("Value"), valueEdit);
+    } break;
+    case ScnSGActionControllerDescriptor::Tag::Unknown:
+        break;
+    }
 }
 
 void ObjectPropertiesWidget::addCommonSection(const physis_InstanceObject &object)

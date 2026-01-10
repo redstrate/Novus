@@ -45,6 +45,8 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
         auto originalIndex = searchModel->mapToSource(index);
         m_appState->selectedObject = m_objectListModel->objectAt(originalIndex);
         m_appState->selectedLayer = m_objectListModel->layerAt(originalIndex);
+        m_appState->selectedTimeline = m_objectListModel->timelineAt(originalIndex);
+        m_appState->selectedAction = m_objectListModel->actionAt(originalIndex);
         Q_EMIT m_appState->selectionChanged();
     });
     layout->addWidget(treeWidget);

@@ -5,6 +5,8 @@
 
 #include <QWidget>
 
+struct physis_ScnTimeline;
+struct ScnSGActionControllerDescriptor;
 struct physis_VfxInstanceObject;
 struct physis_LightInstanceObject;
 struct physis_PrefetchRangeInstanceObject;
@@ -38,6 +40,8 @@ private:
     void resetSections();
     void refreshObjectData(const physis_InstanceObject &object);
     void refreshLayerData(const physis_Layer &layer);
+    void refreshTimelineData(const physis_ScnTimeline &timeline);
+    void refreshActionData(const ScnSGActionControllerDescriptor &action);
 
     void addCommonSection(const physis_InstanceObject &object);
     void addBGSection(const physis_BGInstanceObject &bg);

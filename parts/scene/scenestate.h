@@ -60,6 +60,8 @@ public:
     QList<uint32_t> visibleLayerIds;
     std::optional<physis_InstanceObject const *> selectedObject;
     std::optional<physis_Layer const *> selectedLayer;
+    std::optional<physis_ScnTimeline const *> selectedTimeline;
+    std::optional<ScnSGActionControllerDescriptor const *> selectedAction;
     QList<uint32_t> visibleTerrainPlates;
 
     /**

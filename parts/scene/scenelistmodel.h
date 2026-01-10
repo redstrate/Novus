@@ -5,6 +5,8 @@
 
 #include <QAbstractItemModel>
 
+struct ScnSGActionControllerDescriptor;
+struct physis_ScnTimeline;
 struct ObjectScene;
 struct physis_Sgb;
 struct physis_Layer;
@@ -22,6 +24,10 @@ enum class TreeType {
     Object,
     /// A terrain plate.
     Plate,
+    /// A motion timeline.
+    Timeline,
+    /// A action.
+    Action,
 };
 
 struct SceneTreeInformation {
@@ -55,6 +61,8 @@ public:
 
     std::optional<physis_InstanceObject const *> objectAt(const QModelIndex &index) const;
     std::optional<physis_Layer const *> layerAt(const QModelIndex &index) const;
+    std::optional<physis_ScnTimeline const *> timelineAt(const QModelIndex &index) const;
+    std::optional<ScnSGActionControllerDescriptor const *> actionAt(const QModelIndex &index) const;
 
 private:
     void refresh();

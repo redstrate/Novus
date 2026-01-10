@@ -86,6 +86,9 @@ QVariant SceneListModel::data(const QModelIndex &index, int role) const
                 return QIcon::fromTheme(QStringLiteral("draw-cuboid-symbolic"));
             case TreeType::Plate:
                 return QIcon::fromTheme(QStringLiteral("kstars_xplanet-symbolic"));
+            case TreeType::Timeline:
+            case TreeType::Action:
+                return QIcon::fromTheme(QStringLiteral("preferences-desktop-animations"));
             }
         }
     } else if (index.column() == 1) {
@@ -161,6 +164,24 @@ std::optional<physis_Layer const *> SceneListModel::layerAt(const QModelIndex &i
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Layer) {
         return static_cast<physis_Layer const *>(item->data);
+    }
+    return std::nullopt;
+}
+
+std::optional<physis_ScnTimeline const *> SceneListModel::timelineAt(const QModelIndex &index) const
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::Timeline) {
+        return static_cast<physis_ScnTimeline const *>(item->data);
+    }
+    return std::nullopt;
+}
+
+std::optional<ScnSGActionControllerDescriptor const *> SceneListModel::actionAt(const QModelIndex &index) const
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::Action) {
+        return static_cast<ScnSGActionControllerDescriptor const *>(item->data);
     }
     return std::nullopt;
 }
@@ -248,7 +269,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
 
         // Load nested shared group data
         if (scene.nestedScenes.contains(object.instance_id)) {
-            auto nestedScene = scene.nestedScenes[object.instance_id];
+            auto &nestedScene = scene.nestedScenes[object.instance_id];
             processScene(objectItem, nestedScene);
         }
     }
@@ -261,6 +282,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         terrainItem->type = TreeType::File;
         terrainItem->parent = parentNode;
         terrainItem->name = i18n("Terrain");
+        terrainItem->row = parentNode->children.size();
         parentNode->children.push_back(terrainItem);
 
         // Add terrain plates
@@ -280,14 +302,16 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         timelinesItem->type = TreeType::File;
         timelinesItem->parent = parentNode;
         timelinesItem->name = i18n("Timelines");
+        timelinesItem->row = parentNode->children.size();
         parentNode->children.push_back(timelinesItem);
 
         for (uint32_t i = 0; i < scene.embeddedTimelines.size(); i++) {
             auto timelineItem = new SceneTreeInformation();
-            timelineItem->type = TreeType::Plate;
-            timelineItem->parent = timelineItem;
+            timelineItem->type = TreeType::Timeline;
+            timelineItem->parent = timelinesItem;
             timelineItem->name = i18n("Timeline");
             timelineItem->row = i;
+            timelineItem->data = &scene.embeddedTimelines[i];
             timelinesItem->children.push_back(timelineItem);
         }
     }
@@ -297,14 +321,16 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         actionsItem->type = TreeType::File;
         actionsItem->parent = parentNode;
         actionsItem->name = i18n("Actions");
+        actionsItem->row = parentNode->children.size();
         parentNode->children.push_back(actionsItem);
 
         for (uint32_t i = 0; i < scene.actionDescriptors.size(); i++) {
             auto actionItem = new SceneTreeInformation();
-            actionItem->type = TreeType::Plate;
-            actionItem->parent = actionItem;
+            actionItem->type = TreeType::Action;
+            actionItem->parent = actionsItem;
             actionItem->name = i18n("Action");
             actionItem->row = i;
+            actionItem->data = &scene.actionDescriptors[i];
             actionsItem->children.push_back(actionItem);
         }
     }
