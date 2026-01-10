@@ -57,3 +57,8 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     });
     searchModel->setSourceModel(m_objectListModel);
 }
+
+void SceneListWidget::expandToDepth(const int depth)
+{
+    treeWidget->expandToDepth(depth);
+}

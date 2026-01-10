@@ -58,6 +58,9 @@ void ScenePart::loadSgb(physis_Buffer file)
         m_animationTimeSlider->setEnabled(true);
 
         qInfo() << "Longest animation time:" << m_appState->longestAnimationTime();
+
+        // Expand the first level of the SGB
+        m_sceneListWidget->expandToDepth(1);
     } else {
         qWarning() << "Failed to parse SGB!";
     }

@@ -18,6 +18,8 @@ class SceneListWidget : public QWidget
 public:
     explicit SceneListWidget(SceneState *appState, QWidget *parent = nullptr);
 
+    void expandToDepth(int depth);
+
 private:
     QTreeView *treeWidget = nullptr;
     SceneListModel *m_objectListModel = nullptr;
