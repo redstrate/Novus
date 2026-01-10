@@ -30,6 +30,7 @@
 #include "mdlpart.h"
 #include "mtrlpart.h"
 #include "pathedit.h"
+#include "shcdpart.h"
 #include "shpkpart.h"
 #include "sklbpart.h"
 #include "texpart.h"
@@ -289,6 +290,11 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto tmbPart = new TmbPart(&m_data);
         tmbPart->load(file);
         addTab(tmbPart);
+    } break;
+    case FileType::Shader: {
+        auto shcdPart = new SHCDPart(&m_data);
+        shcdPart->load(file);
+        addTab(shcdPart);
     } break;
     default:
         m_fileActions->setVisible(false);

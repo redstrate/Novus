@@ -34,6 +34,7 @@ target_link_libraries(novus-sagasu
         Novus::LuabPart
         Novus::ScenePart
         Novus::TmbPart
+        Novus::ShcdPart
         Qt6::Concurrent
         Qt6::Network)
 

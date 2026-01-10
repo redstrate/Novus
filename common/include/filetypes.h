@@ -23,6 +23,7 @@ enum class FileType {
     HardwareCursor,
     SharedGroup,
     TimelineMotion,
+    Shader,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes

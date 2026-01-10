@@ -272,8 +272,8 @@ void SHPKPart::loadShader(const QModelIndex &index)
         const auto def = repository.definitionForName(QStringLiteral("GLSL"));
         highlighter->setDefinition(def);
 #endif
-    } catch (const std::exception &exception) {
-        qWarning() << "Failed to load shader:" << exception.what();
+    } catch (const dxvk::DxvkError &exception) {
+        qWarning() << "Failed to load shader:" << exception.message();
     }
 
     // resources
