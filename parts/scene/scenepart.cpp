@@ -9,8 +9,8 @@
 #include "scenestate.h"
 
 #include <QHBoxLayout>
+#include <QSplitter>
 
-#include "animation.h"
 #include "mapview.h"
 
 ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
@@ -19,11 +19,18 @@ ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
     , m_data(data)
     , m_fileCache(*data) // TODO: re-use FileCache
 {
-    auto layout = new QHBoxLayout();
+    auto layout = new QVBoxLayout();
     setLayout(layout);
 
+    auto splitter = new QSplitter();
+    splitter->setChildrenCollapsible(false);
+    layout->addWidget(splitter);
+
+    auto sidebarWidget = new QWidget();
+    splitter->addWidget(sidebarWidget);
+
     auto sidebarLayout = new QVBoxLayout();
-    layout->addLayout(sidebarLayout);
+    sidebarWidget->setLayout(sidebarLayout);
 
     m_sceneListWidget = new SceneListWidget(m_appState);
     m_sceneListWidget->setMaximumWidth(400);
@@ -39,11 +46,12 @@ ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
     sidebarLayout->addWidget(m_animationTimeSlider);
 
     m_mapView = new MapView(data, m_fileCache, m_appState);
-    layout->addWidget(m_mapView);
+    splitter->addWidget(m_mapView);
+    splitter->setStretchFactor(1, 1);
 
     m_objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
     m_objectPropertiesWidget->setMaximumWidth(400);
-    layout->addWidget(m_objectPropertiesWidget);
+    splitter->addWidget(m_objectPropertiesWidget);
 }
 
 void ScenePart::loadSgb(physis_Buffer file)
