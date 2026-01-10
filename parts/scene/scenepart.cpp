@@ -20,6 +20,8 @@ ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
     , m_fileCache(*data) // TODO: re-use FileCache
 {
     auto layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     setLayout(layout);
 
     auto splitter = new QSplitter();
@@ -30,6 +32,8 @@ ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
     splitter->addWidget(sidebarWidget);
 
     auto sidebarLayout = new QVBoxLayout();
+    sidebarLayout->setContentsMargins(0, 0, 0, 0);
+    sidebarLayout->setSpacing(0);
     sidebarWidget->setLayout(sidebarLayout);
 
     m_sceneListWidget = new SceneListWidget(m_appState);
