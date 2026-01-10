@@ -147,6 +147,13 @@ void SceneState::clear()
     visibleTerrainPlates.clear();
 }
 
+void SceneState::showAll()
+{
+    showAllInScene(rootScene);
+
+    Q_EMIT visibleLayerIdsChanged();
+}
+
 QString SceneState::lookupENpcName(const uint32_t id) const
 {
     auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
@@ -190,6 +197,27 @@ void SceneState::processUpdateAnimation(ObjectScene &scene, float time)
 
     for (auto &nestedScene : scene.nestedScenes.values()) {
         processUpdateAnimation(nestedScene, time);
+    }
+}
+
+void SceneState::showAllInScene(const ObjectScene &scene)
+{
+    for (const auto &[_, lgb] : scene.lgbFiles) {
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
+            for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
+                visibleLayerIds.push_back(lgb.chunks[i].layers[j].id);
+            }
+        }
+    }
+
+    for (const auto &layerGroup : scene.embeddedLgbs) {
+        for (uint32_t i = 0; i < layerGroup.layer_count; i++) {
+            visibleLayerIds.push_back(layerGroup.layers[i].id);
+        }
+    }
+
+    for (const auto &nestedScene : scene.nestedScenes) {
+        showAllInScene(nestedScene);
     }
 }
 

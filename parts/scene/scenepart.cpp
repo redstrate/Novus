@@ -61,6 +61,9 @@ void ScenePart::loadSgb(physis_Buffer file)
 
         // Expand the first level of the SGB
         m_sceneListWidget->expandToDepth(1);
+
+        // Show everything by default
+        m_appState->showAll();
     } else {
         qWarning() << "Failed to parse SGB!";
     }

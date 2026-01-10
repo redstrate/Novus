@@ -53,6 +53,7 @@ public:
 
     void load(physis_SqPackResource *data, const physis_ScnSection &section);
     void clear();
+    void showAll();
 
     /// The root scene.
     ObjectScene rootScene;
@@ -84,6 +85,7 @@ Q_SIGNALS:
 private:
     void processLongestAnimationTime(const ObjectScene &scene);
     void processUpdateAnimation(ObjectScene &scene, float time);
+    void showAllInScene(const ObjectScene &scene);
 
     physis_ExcelSheet m_enpcResidentSheet;
     physis_ExcelSheet m_eobjNameSheet;
