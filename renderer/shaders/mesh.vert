@@ -33,7 +33,7 @@ layout(std430, binding = 2) buffer readonly BoneInformation {
 
 void main() {
     vec4 bPos = model * vec4(inPosition, 1.0);
-    vec4 bNor = vec4(inNormal, 0.0);
+    vec4 bNor = model * vec4(inNormal, 0.0);
 
     gl_Position = vp * bPos;
     outNormal = bNor.xyz;
