@@ -35,6 +35,8 @@ private:
     QLabel *m_hashLabel = nullptr;
     QLabel *m_fileTypeLabel = nullptr;
     AbstractExcelResolver *m_excelResolver = nullptr;
+    QAction *m_fileActions = nullptr;
+    QMenu *m_fileActionsMenu = nullptr;
 
     void refreshParts(const QString &indexPath, Hash hash, const QString &path);
 };

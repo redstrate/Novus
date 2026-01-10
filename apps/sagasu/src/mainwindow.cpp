@@ -155,41 +155,29 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
     m_fileTypeLabel->setText(i18n("File Type: %1", FileTypes::getFiletypeName(type)));
 
+    m_fileActionsMenu->clear();
+
+    const auto addTab = [this, type](QWidget *widget) {
+        const QString typeName = FileTypes::getFiletypeName(type);
+
+        partHolder->addTab(widget, typeName);
+        m_fileActions->setText(typeName);
+        m_fileActions->setVisible(true);
+    };
+
     switch (type) {
     case FileType::ExcelList: {
         auto exlWidget = new EXLPart(&m_data);
         exlWidget->load(file);
-        partHolder->addTab(exlWidget, i18nc("@title:tab", "Excel List"));
+
+        addTab(exlWidget);
     } break;
     case FileType::ExcelHeader: {
-        auto exdWidgetHolder = new QWidget();
-        auto exdLayout = new QVBoxLayout();
-        exdWidgetHolder->setLayout(exdLayout);
-
         auto exdWidget = new EXDPart(&m_data, m_excelResolver);
         exdWidget->loadSheet(info.filePath().remove(QStringLiteral(".exh")).remove(QStringLiteral("exd/")), file);
+        addTab(exdWidget);
 
-        const auto availableLanguages = exdWidget->availableLanguages();
-        if (!availableLanguages.isEmpty()) {
-            auto languageComboBox = new QComboBox();
-            for (const auto &[name, language] : availableLanguages) {
-                languageComboBox->addItem(name, static_cast<int>(language));
-            }
-
-            // Show the current language as the selected item
-            const auto itemText = QString::fromUtf8(magic_enum::enum_name(exdWidget->preferredLanguage()));
-            languageComboBox->setCurrentText(itemText);
-
-            connect(languageComboBox, &QComboBox::activated, this, [languageComboBox, exdWidget](const int index) {
-                const auto selectedLanguage = languageComboBox->itemData(index);
-                exdWidget->setPreferredLanguage(static_cast<Language>(selectedLanguage.toInt()));
-            });
-            exdLayout->addWidget(languageComboBox);
-        }
-
-        exdLayout->addWidget(exdWidget);
-
-        partHolder->addTab(exdWidgetHolder, i18nc("@title:tab", "Excel Sheet"));
+        m_fileActionsMenu->addAction(exdWidget->selectLanguageAction());
     } break;
     case FileType::ExcelData: {
         auto exdLayout = new QVBoxLayout();
@@ -211,19 +199,9 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto exdWidget = new QWidget();
         exdWidget->setLayout(exdLayout);
 
-        partHolder->addTab(exdWidget, i18nc("@title:tab", "Note"));
+        addTab(exdWidget);
     } break;
     case FileType::Model: {
-        auto mdlWidgetHolder = new QWidget();
-        auto mdlLayout = new QVBoxLayout();
-        mdlWidgetHolder->setLayout(mdlLayout);
-
-        auto importButton = new QPushButton(QStringLiteral("Import glTF"));
-        mdlLayout->addWidget(importButton);
-
-        auto exportButton = new QPushButton(QStringLiteral("Export glTF"));
-        mdlLayout->addWidget(exportButton);
-
         Transformation transformation{};
         transformation.scale[0] = 1;
         transformation.scale[1] = 1;
@@ -231,9 +209,10 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
         auto mdlWidget = new MDLPart(&m_data, fileCache);
         mdlWidget->addModel(physis_mdl_parse(m_data.platform, file), false, transformation, QStringLiteral("mdl"), {}, 0);
-        mdlLayout->addWidget(mdlWidget);
+        addTab(mdlWidget);
 
-        connect(importButton, &QPushButton::clicked, this, [this, mdlWidget](bool) {
+        auto importAction = m_fileActionsMenu->addAction(QStringLiteral("Import glTF"));
+        connect(importAction, &QAction::triggered, this, [this, mdlWidget](bool) {
             const QString importFileName =
                 QFileDialog::getOpenFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
             const QString exportFileName =
@@ -251,67 +230,68 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
                 }
             }
         });
-        connect(exportButton, &QPushButton::clicked, this, [this, mdlWidget](bool) {
+
+        auto exportAction = m_fileActionsMenu->addAction(QStringLiteral("Export glTF"));
+        connect(exportAction, &QAction::triggered, this, [this, mdlWidget](bool) {
             const QString fileName =
                 QFileDialog::getSaveFileName(this, i18nc("@title:window", "Export Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
             if (!fileName.isEmpty()) {
                 mdlWidget->exportModel(fileName);
             }
         });
-
-        partHolder->addTab(mdlWidgetHolder, i18nc("@title:tab", "Model"));
     } break;
     case FileType::Texture: {
         auto texWidget = new TexPart(&m_data);
         texWidget->loadTex(file);
-        partHolder->addTab(texWidget, i18nc("@title:tab", "Texture"));
+        addTab(texWidget);
     } break;
     case FileType::ShaderPackage: {
         auto shpkWidget = new SHPKPart(&m_data);
         shpkWidget->load(file);
-        partHolder->addTab(shpkWidget, i18nc("@title:tab", "Shader Package"));
+        addTab(shpkWidget);
     } break;
     case FileType::CharaMakeParams: {
         auto cmpWidget = new CmpPart(&m_data);
         cmpWidget->load(file);
-        partHolder->addTab(cmpWidget, i18nc("@title:tab", "Chara Make Params"));
+        addTab(cmpWidget);
     } break;
     case FileType::Skeleton: {
         auto sklbWidget = new SklbPart();
         sklbWidget->load(physis_skeleton_parse(m_data.platform, file));
-        partHolder->addTab(sklbWidget, i18nc("@title:tab", "Skeleton"));
+        addTab(sklbWidget);
     } break;
     case FileType::Dictionary: {
         auto dicWidget = new DicPart(&m_data);
         dicWidget->load(file);
-        partHolder->addTab(dicWidget, i18nc("@title:tab", "Dictionary"));
+        addTab(dicWidget);
     } break;
     case FileType::Material: {
         auto mtrlWidget = new MtrlPart(&m_data);
         mtrlWidget->load(physis_material_parse(m_data.platform, file));
-        partHolder->addTab(mtrlWidget, i18nc("@title:tab", "Material"));
+        addTab(mtrlWidget);
     } break;
     case FileType::LuaBytecode: {
         auto luabWidget = new LuabPart();
         luabWidget->load(file);
-        partHolder->addTab(luabWidget, i18nc("@title:tab", "Lua"));
+        addTab(luabWidget);
     } break;
     case FileType::HardwareCursor: {
         auto texWidget = new TexPart(&m_data);
         texWidget->loadHwc(file);
-        partHolder->addTab(texWidget, i18nc("@title:tab", "Hardware Cursor"));
+        addTab(texWidget);
     } break;
     case FileType::SharedGroup: {
         auto scenePart = new ScenePart(&m_data);
         scenePart->loadSgb(file);
-        partHolder->addTab(scenePart, i18nc("@title:tab", "Shared Group"));
+        addTab(scenePart);
     } break;
     case FileType::TimelineMotion: {
         auto tmbPart = new TmbPart(&m_data);
         tmbPart->load(file);
-        partHolder->addTab(tmbPart, i18nc("@title:tab", "Timeline Motion"));
+        addTab(tmbPart);
     } break;
     default:
+        m_fileActions->setVisible(false);
         break;
     }
 
@@ -464,6 +444,12 @@ void MainWindow::setupActions()
         }
     });
     actionCollection()->addAction(QStringLiteral("go_to_path"), goToPath);
+
+    m_fileActionsMenu = new QMenu();
+
+    m_fileActions = new QAction();
+    m_fileActions->setMenu(m_fileActionsMenu);
+    actionCollection()->addAction(QStringLiteral("file_actions"), m_fileActions);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }

@@ -19,6 +19,8 @@
 #include "magic_enum.hpp"
 #include "schema.h"
 
+#include <QActionGroup>
+#include <QMenu>
 #include <QSortFilterProxyModel>
 #include <QStandardPaths>
 
@@ -35,6 +37,16 @@ EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, Q
     pageTabWidget->setTabPosition(QTabWidget::TabPosition::South);
     pageTabWidget->setDocumentMode(true); // hide borders
     layout->addWidget(pageTabWidget);
+
+    m_selectLanguage = new QAction(i18nc("@action:inmenu", "Language"));
+    m_selectLanguage->setEnabled(false);
+    m_selectLanguage->setIcon(QIcon::fromTheme(QStringLiteral("languages-symbolic")));
+
+    m_languageMenu = new QMenu();
+    m_selectLanguage->setMenu(m_languageMenu);
+
+    m_languageGroup = new QActionGroup(this);
+    m_languageGroup->setExclusive(true);
 }
 
 void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
@@ -43,6 +55,31 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
     exh = physis_exh_parse(data->platform, buffer);
 
     loadTables();
+
+    // update language selection
+    const auto languages = availableLanguages();
+    if (languages.isEmpty()) {
+        m_selectLanguage->setEnabled(false);
+    } else {
+        m_selectLanguage->setEnabled(true);
+
+        m_languageMenu->clear();
+        for (const auto &[name, language] : languages) {
+            auto languageAction = new QAction(name);
+            languageAction->setActionGroup(m_languageGroup);
+            languageAction->setData(static_cast<int>(language));
+            languageAction->setCheckable(true);
+            languageAction->setChecked(language == preferredLanguage());
+
+            connect(languageAction, &QAction::triggered, this, [this, languageAction](const bool checked) {
+                if (checked) {
+                    setPreferredLanguage(static_cast<Language>(languageAction->data().toInt()));
+                }
+            });
+
+            m_languageMenu->addAction(languageAction);
+        }
+    }
 }
 
 void EXDPart::goToRow(const QString &query)
@@ -100,6 +137,11 @@ QList<QPair<QString, Language>> EXDPart::availableLanguages() const
     }
 
     return languages;
+}
+
+QAction *EXDPart::selectLanguageAction() const
+{
+    return m_selectLanguage;
 }
 
 void EXDPart::loadTables()

@@ -29,6 +29,7 @@ public:
     Language preferredLanguage() const;
 
     QList<QPair<QString, Language>> availableLanguages() const;
+    QAction *selectLanguageAction() const;
 
 private:
     void loadTables();
@@ -43,4 +44,7 @@ private:
     physis_EXH exh;
     QString m_name;
     AbstractExcelResolver *m_resolver = nullptr;
+    QAction *m_selectLanguage = nullptr;
+    QMenu *m_languageMenu = nullptr;
+    QActionGroup *m_languageGroup = nullptr;
 };
