@@ -23,9 +23,11 @@ When it's complete, a file called `novus.flatpak` will appear in the repository 
   * macOS may work but is currently unsupported. Patches are accepted to fix any problems with macOS builds though.
 * [CMake](https://cmake.org) 3.25 or later
 * [Qt](https://www.qt.io/) 6.9 or later
+  * When building on Windows, set the QTDIR environment variable to point to your installation. Otherwise, this has to be set up through CMake instead if you know how to.
 * [KDE Frameworks](https://develop.kde.org/products/frameworks/) 6
 * [Rust](https://www.rust-lang.org/)
 * [Corrosion](https://github.com/corrosion-rs/corrosion)
+* Python with the `lxml` module
 
 ### Getting source code
 
