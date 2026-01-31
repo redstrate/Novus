@@ -18,5 +18,9 @@ Copy-Item -Path "$PrefixDir/bin/KF6ColorScheme.dll" -Destination "$BuildDir/bin"
 Copy-Item -Path "$PrefixDir/bin/intl-8.dll" -Destination "$BuildDir/bin"
 Copy-Item -Path "$PrefixDir/bin/KF6IconThemes.dll" -Destination "$BuildDir/bin"
 Copy-Item -Path "$PrefixDir/bin/iconv.dll" -Destination "$BuildDir/bin"
-Copy-Item -Path "$PrefixDir/bin/zlibd.dll" -Destination "$BuildDir/bin"
+Copy-Item -Path "$PrefixDir/bin/zd.dll" -Destination "$BuildDir/bin"
 Copy-Item -Path "$env:QTDIR/bin/Qt6PrintSupportd.dll" -Destination "$BuildDir/bin"
+if (!(Test-Path "$BuildDir/plugins/sqldrivers")) {
+    New-Item -ItemType Directory -Path "$BuildDir/plugins/sqldrivers"
+}
+Copy-Item -Path "$env:QTDIR/plugins/sqldrivers/qsqlited.dll" -Destination "$BuildDir/plugins/sqldrivers"
