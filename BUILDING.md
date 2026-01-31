@@ -22,7 +22,7 @@ When it's complete, a file called `novus.flatpak` will appear in the repository 
 * [Linux](https://kernel.org/) or Windows
   * macOS may work but is currently unsupported. Patches are accepted to fix any problems with macOS builds though.
 * [CMake](https://cmake.org) 3.25 or later
-* [Qt](https://www.qt.io/) 6.6 or later
+* [Qt](https://www.qt.io/) 6.9 or later
 * [KDE Frameworks](https://develop.kde.org/products/frameworks/) 6
 * [Rust](https://www.rust-lang.org/)
 * [Corrosion](https://github.com/corrosion-rs/corrosion)
