@@ -10,10 +10,15 @@ $PrefixDir = (Get-Location).Path + "/prefix"
 
 $NumCores = [Environment]::ProcessorCount
 
-function Configure($Name, $ExtraArgs = "") {
-    $Command = "cmake -B $BuildDir-$Name -DCMAKE_PREFIX_PATH=$PrefixDir -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl -DCMAKE_BUILD_TYPE=Debug -S $LocalDir/$Name -DCMAKE_INSTALL_PREFIX=$PrefixDir $ExtraArgs"
-    Write-Output "Running $Command"
-    Invoke-Expression $Command
+function Configure {
+    param(
+        [string]$Name,
+        [Parameter(ValueFromRemainingArguments=$true)]
+        [string[]]$ExtraArgs
+    )
+    $Arguments = @("-B", "$BuildDir-$Name", "-DCMAKE_PREFIX_PATH=$PrefixDir", "-DCMAKE_CXX_COMPILER=cl", "-DCMAKE_C_COMPILER=cl", "-DCMAKE_BUILD_TYPE=Debug", "-S", "$LocalDir/$Name", "-DCMAKE_INSTALL_PREFIX=$PrefixDir"; $ExtraArgs)
+    Write-Output "Running cmake $Arguments"
+    & { cmake @Arguments }
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to configure $Name"
     }
@@ -37,21 +42,29 @@ function CheckCompileResult($Name) {
     }
 }
 
+function Download($Url, $FileName) {
+    if (Test-Path "$LocalDir/$FileName") {
+        Write-Information "Skipping download of $FileName because it's source directory already exists"
+    } else {
+        Invoke-WebRequest $Url -OutFile "$LocalDir/$FileName"
+    }
+}
+
 if (!(Test-Path $LocalDir)) {
     New-Item -ItemType Directory -Path $LocalDir
 }
 
 # Setup Windows dependencies
-Invoke-WebRequest https://xiv.zone/distrib/dependencies/gettext.zip -OutFile "$LocalDir/gettext.zip"
+Download https://xiv.zone/distrib/dependencies/gettext.zip "gettext.zip"
 Expand-Archive -Path "$LocalDir/gettext.zip" -DestinationPath $PrefixDir -Force
 
-Invoke-WebRequest https://xiv.zone/distrib/dependencies/iconv.zip -OutFile "$LocalDir/iconv.zip"
+Download https://xiv.zone/distrib/dependencies/iconv.zip "iconv.zip"
 Expand-Archive -Path "$LocalDir/iconv.zip" -DestinationPath $PrefixDir -Force
 
-Invoke-WebRequest https://cfhcable.dl.sourceforge.net/project/gnuwin32/gperf/3.0.1/gperf-3.0.1-bin.zip -OutFile "$LocalDir/gperf.zip"
+Download https://cfhcable.dl.sourceforge.net/project/gnuwin32/gperf/3.0.1/gperf-3.0.1-bin.zip "gperf.zip"
 Expand-Archive -Path "$LocalDir/gperf.zip" -DestinationPath $PrefixDir -Force
 
-Invoke-WebRequest https://xiv.zone/distrib/dependencies/icoutils.zip -OutFile "$LocalDir/icoutils.zip"
+Download https://xiv.zone/distrib/dependencies/icoutils.zip "icoutils.zip"
 Expand-Archive -Path "$LocalDir/icoutils.zip" -DestinationPath $PrefixDir -Force
 
 # Build zlib
@@ -90,7 +103,7 @@ CheckCompileResult "kconfig"
 
 # Build KArchive
 Clone "karchive" "https://invent.kde.org/frameworks/karchive.git"
-Configure "karchive" "-DBUILD_TESTING=OFF -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF"
+Configure "karchive" "-DBUILD_TESTING=OFF" "-DWITH_BZIP2=OFF" "-DWITH_LIBLZMA=OFF" "-DWITH_LIBZSTD=OFF"
 cmake --build "$BuildDir-karchive" --config Debug --target install --parallel $NumCores
 CheckCompileResult "karchive"
 
@@ -132,6 +145,14 @@ Configure "kconfigwidgets" "-DBUILD_TESTING=OFF"
 cmake --build "$BuildDir-kconfigwidgets" --config Debug --target install --parallel $NumCores
 CheckCompileResult "kconfigwidgets"
 
+# Build breeze icons
+Clone "breeze-icons" "https://invent.kde.org/frameworks/breeze-icons.git"
+Configure "breeze-icons" "-DICONS_LIBRARY=ON" "-DSKIP_INSTALL_ICONS=ON"
+# Building it twice is intentional, the first time will always fail
+cmake --build "$BuildDir-breeze-icons" --config Debug --target install --parallel $NumCores
+cmake --build "$BuildDir-breeze-icons" --config Debug --target install --parallel $NumCores
+CheckCompileResult "breeze-icons"
+
 # Build KIconThemes
 Clone "kiconthemes" "https://invent.kde.org/frameworks/kiconthemes.git"
 Configure "kiconthemes" "-DBUILD_TESTING=OFF"
@@ -152,13 +173,13 @@ CheckCompileResult "kcompletion"
 
 # Build KTextWidgets
 Clone "ktextwidgets" "https://invent.kde.org/frameworks/ktextwidgets.git"
-Configure "ktextwidgets" "-DBUILD_TESTING=OFF -DWITH_TEXT_TO_SPEECH=OFF"
+Configure "ktextwidgets" "-DBUILD_TESTING=OFF" "-DWITH_TEXT_TO_SPEECH=OFF"
 cmake --build "$BuildDir-ktextwidgets" --config Debug --target install --parallel $NumCores
 CheckCompileResult "ktextwidgets"
 
 # Build KXmlGui
 Clone "kxmlgui" "https://invent.kde.org/frameworks/kxmlgui.git"
-Configure "kxmlgui" "-DBUILD_TESTING=OFF -DFORCE_DISABLE_KGLOBALACCEL=ON"
+Configure "kxmlgui" "-DBUILD_TESTING=OFF" "-DFORCE_DISABLE_KGLOBALACCEL=ON"
 cmake --build "$BuildDir-kxmlgui" --config Debug --target install --parallel $NumCores
 CheckCompileResult "kxmlgui"
 
@@ -196,11 +217,3 @@ Clone "SPIRV-Headers" "https://github.com/KhronosGroup/SPIRV-Headers.git"
 Configure "SPIRV-Headers"
 cmake --build "$BuildDir-SPIRV-Headers" --config Debug --target install --parallel $NumCores
 CheckCompileResult "SPIRV-Headers"
-
-# Build breeze icons
-Clone "breeze-icons" "https://invent.kde.org/frameworks/breeze-icons.git"
-Configure "breeze-icons" "-DICONS_LIBRARY=ON -DSKIP_INSTALL_ICONS=ON"
-# Building it twice is intentional, the first time will always fail
-cmake --build "$BuildDir-breeze-icons" --config Debug --target install --parallel $NumCores
-cmake --build "$BuildDir-breeze-icons" --config Debug --target install --parallel $NumCores
-CheckCompileResult "breeze-icons"
