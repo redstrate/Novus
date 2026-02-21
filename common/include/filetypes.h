@@ -7,6 +7,8 @@
 
 #include "novuscommon_export.h"
 
+#include <physis.hpp>
+
 enum class FileType {
     Unknown,
     ExcelList,
@@ -24,6 +26,7 @@ enum class FileType {
     SharedGroup,
     TimelineMotion,
     Shader,
+    LayerGroupBinary,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes
@@ -33,4 +36,5 @@ public:
 
     static QString getFiletypeName(FileType fileType);
     static QString getFiletypeIcon(FileType fileType);
+    static QString printDebugInformation(FileType fileType, Platform platform, physis_Buffer buffer);
 };

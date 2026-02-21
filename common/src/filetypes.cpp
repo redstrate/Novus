@@ -5,6 +5,7 @@
 
 #include <KLocalizedString>
 #include <QMap>
+#include <physis.hpp>
 
 const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), FileType::ExcelList},
                                                      {QStringLiteral("exh"), FileType::ExcelHeader},
@@ -21,7 +22,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("hwc"), FileType::HardwareCursor},
                                                      {QStringLiteral("sgb"), FileType::SharedGroup},
                                                      {QStringLiteral("tmb"), FileType::TimelineMotion},
-                                                     {QStringLiteral("shcd"), FileType::Shader}};
+                                                     {QStringLiteral("shcd"), FileType::Shader},
+                                                     {QStringLiteral("lgb"), FileType::LayerGroupBinary}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -38,7 +40,8 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::HardwareCursor, i18n("Hardware Cursor")},
                                                 {FileType::SharedGroup, i18n("Shared Group")},
                                                 {FileType::TimelineMotion, i18n("Timeline Motion")},
-                                                {FileType::Shader, i18n("Shader")}};
+                                                {FileType::Shader, i18n("Shader")},
+                                                {FileType::LayerGroupBinary, i18n("Layer Group Binary")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -57,6 +60,8 @@ const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiter
                                                 {FileType::TimelineMotion, QStringLiteral("preferences-desktop-animations")},
                                                 {FileType::Shader, QStringLiteral("paint-pattern-symbolic")}};
 
+const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>> typeToDebug{{FileType::LayerGroupBinary, physis_lgb_debug}};
+
 FileType FileTypes::getFileType(const QString &extension)
 {
     return extensionToType.value(extension, FileType::Unknown);
@@ -64,10 +69,27 @@ FileType FileTypes::getFileType(const QString &extension)
 
 QString FileTypes::getFiletypeName(FileType fileType)
 {
-    return typeToName.value(fileType);
+    if (typeToName.contains(fileType)) {
+        return typeToName.value(fileType);
+    }
+    return typeToName.value(FileType::Unknown);
 }
 
 QString FileTypes::getFiletypeIcon(FileType fileType)
 {
-    return typeToIcon.value(fileType);
+    if (typeToIcon.contains(fileType)) {
+        return typeToIcon.value(fileType);
+    }
+    return typeToIcon.value(FileType::Unknown);
+}
+
+QString FileTypes::printDebugInformation(FileType fileType, Platform platform, physis_Buffer buffer)
+{
+    if (typeToDebug.contains(fileType)) {
+        const auto stringPtr = typeToDebug[fileType](platform, buffer);
+        if (stringPtr != nullptr) {
+            return QString::fromLatin1(stringPtr);
+        }
+    }
+    return i18n("No debug information available");
 }

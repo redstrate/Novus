@@ -301,6 +301,12 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         break;
     }
 
+    // TODO: this is sort of inefficient as it re-parses the whole file again...
+    const auto debugInformation = FileTypes::printDebugInformation(type, m_data.platform, file);
+    const auto debugInformationText = new QTextEdit();
+    debugInformationText->setText(debugInformation);
+    partHolder->addTab(debugInformationText, i18nc("@title:tab", "Debug"));
+
     auto hexWidget = new HexPart();
     hexWidget->loadFile(file);
     partHolder->addTab(hexWidget, i18nc("@title:tab", "Raw Hex"));
