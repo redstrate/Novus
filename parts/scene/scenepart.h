@@ -23,7 +23,8 @@ class ScenePart : public QWidget
     Q_OBJECT
 
 public:
-    explicit ScenePart(physis_SqPackResource *data, QWidget *parent = nullptr);
+    // TODO: eventually remove fixedSize hack used in map editor
+    explicit ScenePart(physis_SqPackResource *data, bool fixedSize = false, QWidget *parent = nullptr);
 
     void loadSgb(physis_Buffer file);
 

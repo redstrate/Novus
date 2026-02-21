@@ -13,7 +13,7 @@
 
 #include "mapview.h"
 
-ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
+ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *parent)
     : QWidget(parent)
     , m_appState(new SceneState(data))
     , m_data(data)
@@ -38,6 +38,8 @@ ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
 
     m_sceneListWidget = new SceneListWidget(m_appState);
     m_sceneListWidget->setMaximumWidth(400);
+    if (fixedSize)
+        m_sceneListWidget->setMinimumWidth(400);
     sidebarLayout->addWidget(m_sceneListWidget);
 
     m_animationTimeSlider = new QSlider(Qt::Orientation::Horizontal);
@@ -55,6 +57,8 @@ ScenePart::ScenePart(physis_SqPackResource *data, QWidget *parent)
 
     m_objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
     m_objectPropertiesWidget->setMaximumWidth(400);
+    if (fixedSize)
+        m_objectPropertiesWidget->setMinimumWidth(400);
     splitter->addWidget(m_objectPropertiesWidget);
 }
 
