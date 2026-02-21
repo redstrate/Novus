@@ -85,6 +85,11 @@ void ScenePart::loadSgb(physis_Buffer file)
     }
 }
 
+void ScenePart::focusSearchField()
+{
+    m_sceneListWidget->focusSearchField();
+}
+
 SceneState *ScenePart::sceneState() const
 {
     return m_appState;

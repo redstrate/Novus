@@ -26,15 +26,15 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     searchModel->setRecursiveFilteringEnabled(true);
     searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
-    auto searchEdit = new QLineEdit();
-    searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for objects."));
-    searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
-    searchEdit->setClearButtonEnabled(true);
-    searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
-    connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
+    m_searchEdit = new QLineEdit();
+    m_searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for objects."));
+    m_searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
+    m_searchEdit->setClearButtonEnabled(true);
+    m_searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
+    connect(m_searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
         searchModel->setFilterRegularExpression(text);
     });
-    layout->addWidget(searchEdit);
+    layout->addWidget(m_searchEdit);
 
     treeWidget = new QTreeView();
     treeWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of objects on this map."));
@@ -63,4 +63,9 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
 void SceneListWidget::expandToDepth(const int depth)
 {
     treeWidget->expandToDepth(depth);
+}
+
+void SceneListWidget::focusSearchField()
+{
+    m_searchEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }

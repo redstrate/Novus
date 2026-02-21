@@ -59,6 +59,12 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("center_object"), m_centerObjectAction);
 
+    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"));
+    focusSearch->setIcon(QIcon::fromTheme(QStringLiteral("search-symbolic")));
+    KActionCollection::setDefaultShortcut(focusSearch, QKeySequence(Qt::CTRL | Qt::Key_F));
+    connect(focusSearch, &QAction::triggered, m_part, &ScenePart::focusSearchField);
+    actionCollection()->addAction(QStringLiteral("search"), focusSearch);
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
 

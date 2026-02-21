@@ -19,9 +19,11 @@ public:
     explicit SceneListWidget(SceneState *appState, QWidget *parent = nullptr);
 
     void expandToDepth(int depth);
+    void focusSearchField();
 
 private:
     QTreeView *treeWidget = nullptr;
     SceneListModel *m_objectListModel = nullptr;
     SceneState *m_appState = nullptr;
+    QLineEdit *m_searchEdit = nullptr;
 };

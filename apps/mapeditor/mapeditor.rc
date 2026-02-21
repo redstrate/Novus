@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="mapeditor"
-     version="1"
+     version="2"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
@@ -11,6 +11,10 @@
       <Action name="open"/>
       <Separator/>
       <Action name="quit"/>
+    </Menu>
+    <Menu name="edit" >
+      <text>Edit</text>
+      <Action name="search" />
     </Menu>
     <Menu name="object" >
       <text>Object</text>
