@@ -121,6 +121,7 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
     setWindowTitle(basePath);
 
     m_goToEntranceAction->setEnabled(contentFinderCondition != 0);
+    m_goToExitAction->setEnabled(contentFinderCondition != 0);
 
     if (contentFinderCondition != 0) {
         qInfo() << "This map contains a duty! CF:" << contentFinderCondition;
