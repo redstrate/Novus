@@ -64,13 +64,201 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
             const char *placeName = nameExdRow.columns[0].string._0;
 
             int contentFinderCondition = territoryExdRow.columns[10].u_int16._0;
+            int territoryIntendedUse = territoryExdRow.columns[9].u_int8._0;
+            QString territoryIntendedUseString = i18n("Unknown TIU (%1)").arg(territoryIntendedUse);
+            // NOTE: Please keep in sync with Kawari!
+            switch (territoryIntendedUse) {
+            case 0:
+                territoryIntendedUseString = i18n("Town");
+                break;
+            case 1:
+                territoryIntendedUseString = i18n("OpenWorld");
+                break;
+            case 2:
+                territoryIntendedUseString = i18n("Inn");
+                break;
+            case 3:
+                territoryIntendedUseString = i18n("Dungeon");
+                break;
+            case 4:
+                territoryIntendedUseString = i18n("VariantDungeon");
+                break;
+            case 5:
+                territoryIntendedUseString = i18n("Jail");
+                break;
+            case 6:
+                territoryIntendedUseString = i18n("OpeningArea");
+                break;
+            case 7:
+                territoryIntendedUseString = i18n("LobbyArea");
+                break;
+            case 8:
+                territoryIntendedUseString = i18n("AllianceRaid");
+                break;
+            case 9:
+                territoryIntendedUseString = i18n("OpenWorldInstanceBattle");
+                break;
+            case 10:
+                territoryIntendedUseString = i18n("Trial");
+                break;
+            case 11:
+                territoryIntendedUseString = i18n("Unk100");
+                break;
+            case 12:
+                territoryIntendedUseString = i18n("Unk110");
+                break;
+            case 13:
+                territoryIntendedUseString = i18n("HousingOutdoor");
+                break;
+            case 14:
+                territoryIntendedUseString = i18n("HousingIndoor");
+                break;
+            case 15:
+                territoryIntendedUseString = i18n("SoloOverworldInstance");
+                break;
+            case 16:
+                territoryIntendedUseString = i18n("Raid1");
+                break;
+            case 17:
+                territoryIntendedUseString = i18n("Raid2");
+                break;
+            case 18:
+                territoryIntendedUseString = i18n("Frontline");
+                break;
+            case 19:
+                territoryIntendedUseString = i18n("Unk120");
+                break;
+            case 20:
+                territoryIntendedUseString = i18n("ChocoboRacing");
+                break;
+            case 21:
+                territoryIntendedUseString = i18n("IshgardRestoration");
+                break;
+            case 22:
+                territoryIntendedUseString = i18n("Wedding");
+                break;
+            case 23:
+                territoryIntendedUseString = i18n("GoldSaucer");
+                break;
+            case 26:
+                territoryIntendedUseString = i18n("ExploratoryMissions");
+                break;
+            case 27:
+                territoryIntendedUseString = i18n("HallOfTheNovice");
+                break;
+            case 28:
+                territoryIntendedUseString = i18n("CrystallineConflict");
+                break;
+            case 29:
+                territoryIntendedUseString = i18n("SoloDuty");
+                break;
+            case 30:
+                territoryIntendedUseString = i18n("FreeCompanyGarrison");
+                break;
+            case 31:
+                territoryIntendedUseString = i18n("DeepDungeon");
+                break;
+            case 32:
+                territoryIntendedUseString = i18n("Seasonal");
+                break;
+            case 33:
+                territoryIntendedUseString = i18n("TreasureDungeon");
+                break;
+            case 34:
+                territoryIntendedUseString = i18n("SeasonalInstancedArea");
+                break;
+            case 35:
+                territoryIntendedUseString = i18n("TripleTriadBattleHall");
+                break;
+            case 36:
+                territoryIntendedUseString = i18n("ChaoticRaid");
+                break;
+            case 37:
+                territoryIntendedUseString = i18n("CrystallineConflictCustomMatch");
+                break;
+            case 39:
+                territoryIntendedUseString = i18n("RivalWings");
+                break;
+            case 40:
+                territoryIntendedUseString = i18n("PrivateEventArea");
+                break;
+            case 41:
+                territoryIntendedUseString = i18n("Eureka");
+                break;
+            case 42:
+                territoryIntendedUseString = i18n("Unk2");
+                break;
+            case 43:
+                territoryIntendedUseString = i18n("Unk3");
+                break;
+            case 44:
+                territoryIntendedUseString = i18n("Leap of Faith");
+                break;
+            case 45:
+                territoryIntendedUseString = i18n("MaskedCarnival");
+                break;
+            case 46:
+                territoryIntendedUseString = i18n("OceanFishing");
+                break;
+            case 47:
+                territoryIntendedUseString = i18n("Unk7");
+                break;
+            case 48:
+                territoryIntendedUseString = i18n("Unk8");
+                break;
+            case 49:
+                territoryIntendedUseString = i18n("IslandSanctuary");
+                break;
+            case 50:
+                territoryIntendedUseString = i18n("Unk10");
+                break;
+            case 51:
+                territoryIntendedUseString = i18n("TripleTriadInvitationalParlor");
+                break;
+            case 52:
+                territoryIntendedUseString = i18n("Unk12");
+                break;
+            case 53:
+                territoryIntendedUseString = i18n("Unk13");
+                break;
+            case 54:
+                territoryIntendedUseString = i18n("Unk14");
+                break;
+            case 55:
+                territoryIntendedUseString = i18n("Unk15");
+                break;
+            case 56:
+                territoryIntendedUseString = i18n("Elysion");
+                break;
+            case 57:
+                territoryIntendedUseString = i18n("CriterionDungeon");
+                break;
+            case 58:
+                territoryIntendedUseString = i18n("SavageCriterionDungeon");
+                break;
+            case 59:
+                territoryIntendedUseString = i18n("Blunderville");
+                break;
+            case 60:
+                territoryIntendedUseString = i18n("CosmicExploration");
+                break;
+            case 61:
+                territoryIntendedUseString = i18n("OccultCrescent");
+                break;
+            case 62:
+                territoryIntendedUseString = i18n("Unk22");
+                break;
+            default:
+                break;
+            }
 
             QStandardItem *item = new QStandardItem();
             item->setData(QString::fromStdString(bg));
             item->setData(contentFinderCondition, Qt::UserRole + 2);
-            item->setText(QStringLiteral("%1 %2 (%3, %4, %5)")
+            item->setText(QStringLiteral("%1 %2 %3 (%4, %5, %6)")
                               .arg(QString::number(i))
-                              .arg(QString::fromStdString(bg),
+                              .arg(territoryIntendedUseString,
+                                   QString::fromStdString(bg),
                                    QString::fromStdString(placeRegion),
                                    QString::fromStdString(placeZone),
                                    QString::fromStdString(placeName)));
