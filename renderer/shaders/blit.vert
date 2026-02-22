@@ -6,6 +6,9 @@
 layout (location = 0) out vec2 outUV;
 
 void main() {
-    outUV = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
-    gl_Position = vec4(outUV * 2.0f + -1.0f, 0.0f, 1.0f);
+    vec2 pos = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
+    outUV = pos;
+    // NOTE: This weird X flip is to make zones not appear flipped. I don't know why they are like this.
+    outUV.x *= -1.0f;
+    gl_Position = vec4(pos * 2.0f + -1.0f, 0.0f, 1.0f);
 }

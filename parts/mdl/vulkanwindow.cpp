@@ -107,7 +107,7 @@ bool VulkanWindow::event(QEvent *e)
             const int deltaY = mouseEvent->position().y() - part->lastY;
 
             if (part->cameraMode == MDLPart::CameraMode::Orbit) {
-                part->yaw += deltaX * 0.01f; // TODO: remove these magic numbers
+                part->yaw -= deltaX * 0.01f; // TODO: remove these magic numbers
                 part->pitch += deltaY * 0.01f;
             } else {
                 const glm::vec3 position(part->cameraDistance * std::sin(part->yaw),
@@ -210,7 +210,7 @@ void VulkanWindow::render()
         }
 
         if (pressed_keys[1]) {
-            movX = -0.05f;
+            movX = 0.05f;
         }
 
         if (pressed_keys[2]) {
@@ -218,7 +218,7 @@ void VulkanWindow::render()
         }
 
         if (pressed_keys[3]) {
-            movX = 0.05f;
+            movX = -0.05f;
         }
 
         glm::vec3 forward, right;
