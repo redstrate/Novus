@@ -25,7 +25,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
 {
     setMinimumSize(1280, 720);
 
-    m_part = new ScenePart(&m_data, true, false);
+    m_part = new ScenePart(&m_data, true);
     setCentralWidget(m_part);
 
     setupActions();
@@ -101,6 +101,8 @@ void MainWindow::setupActions()
 void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
 {
     m_part->sceneState()->clear();
+    m_mapEffects.clear();
+    m_lgbEventRange = 0;
 
     QString lvbPath = QStringLiteral("bg/%1.lvb").arg(basePath);
     std::string lvbPathStd = lvbPath.toStdString();
@@ -138,6 +140,17 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
         auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
 
         m_lgbEventRange = instanceContentRow.columns[7].u_int32._0;
+
+        auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
+
+        auto mapEffectExh = physis_exh_parse(m_data.platform, physis_sqpack_read(&m_data, "exd/ContentDirectorManagedSG.exh"));
+        auto mapEffectSheet = physis_sqpack_read_excel_sheet(&m_data, "ContentDirectorManagedSG", &mapEffectExh, Language::None);
+
+        auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
+        for (size_t i = 0; i < effectCount; i++) {
+            auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
+            m_mapEffects.push_back(effectRow.columns[0].int32._0);
+        }
     }
 }
 

@@ -13,7 +13,7 @@
 
 #include "mapview.h"
 
-ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, bool enableAnimation, QWidget *parent)
+ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *parent)
     : QWidget(parent)
     , m_appState(new SceneState(data))
     , m_data(data)
@@ -49,8 +49,7 @@ ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, bool enableAni
         m_appState->updateAllAnimations(value);
         Q_EMIT m_appState->mapLoaded(); // FIXME: extreme solution to lack of a proper updatable scene graph
     });
-    if (enableAnimation)
-        sidebarLayout->addWidget(m_animationTimeSlider);
+    sidebarLayout->addWidget(m_animationTimeSlider);
 
     m_mapView = new MapView(data, m_fileCache, m_appState);
     splitter->addWidget(m_mapView);
@@ -61,6 +60,19 @@ ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, bool enableAni
     if (fixedSize)
         m_objectPropertiesWidget->setMinimumWidth(400);
     splitter->addWidget(m_objectPropertiesWidget);
+
+    connect(
+        m_appState,
+        &SceneState::mapLoaded,
+        this,
+        [this] {
+            // Update animation slider maximum
+            m_animationTimeSlider->setMaximum(m_appState->longestAnimationTime());
+            m_animationTimeSlider->setEnabled(true);
+
+            qInfo() << "Longest animation time:" << m_appState->longestAnimationTime();
+        },
+        Qt::SingleShotConnection);
 }
 
 void ScenePart::loadSgb(physis_Buffer file)
@@ -69,12 +81,6 @@ void ScenePart::loadSgb(physis_Buffer file)
     if (sgb.sections) {
         // TODO: load more than one section?
         m_appState->load(m_data, sgb.sections[0]);
-
-        // Update animation slider maximum
-        m_animationTimeSlider->setMaximum(m_appState->longestAnimationTime());
-        m_animationTimeSlider->setEnabled(true);
-
-        qInfo() << "Longest animation time:" << m_appState->longestAnimationTime();
 
         // Expand the first level of the SGB
         m_sceneListWidget->expandToDepth(1);
