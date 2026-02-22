@@ -128,11 +128,11 @@ void MtrlPart::rebuild()
         groupBox->setLayout(layout);
 
         auto texWidget = new TexPart(m_data);
-        texWidget->loadTex(physis_sqpack_read(m_data, m_material.textures[i]));
+        texWidget->loadTex(physis_sqpack_read(m_data, m_material.textures[sampler.texture_index]));
         layout->addWidget(texWidget);
 
         auto texturePath = new PathEdit();
-        texturePath->setPath(QString::fromLatin1(m_material.textures[i]));
+        texturePath->setPath(QString::fromLatin1(m_material.textures[sampler.texture_index]));
         texturePath->setReadOnly(true);
         layout->addRow(i18n("Path:"), texturePath);
     }
