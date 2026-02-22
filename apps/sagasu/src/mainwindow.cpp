@@ -38,6 +38,14 @@
 #include <QInputDialog>
 #include <QStringListModel>
 
+#ifdef HAVE_SYNTAX_HIGHLIGHTING
+#include <KSyntaxHighlighting/Definition>
+#include <KSyntaxHighlighting/FoldingRegion>
+#include <KSyntaxHighlighting/Repository>
+#include <KSyntaxHighlighting/SyntaxHighlighter>
+#include <KSyntaxHighlighting/Theme>
+#endif
+
 #include "mdlimport.h"
 #include "scenepart.h"
 #include "tmbpart.h"
@@ -305,6 +313,18 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     const auto debugInformation = FileTypes::printDebugInformation(type, m_data.platform, file);
     const auto debugInformationText = new QTextEdit();
     debugInformationText->setText(debugInformation);
+#ifdef HAVE_SYNTAX_HIGHLIGHTING
+    // Setup highlighting
+    KSyntaxHighlighting::Repository repository;
+
+    auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(debugInformationText->document());
+    highlighter->setTheme((debugInformationText->palette().color(QPalette::Base).lightness() < 128)
+                              ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
+                              : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
+
+    const auto def = repository.definitionForName(QStringLiteral("Rust"));
+    highlighter->setDefinition(def);
+#endif
     partHolder->addTab(debugInformationText, i18nc("@title:tab", "Debug"));
 
     auto hexWidget = new HexPart();

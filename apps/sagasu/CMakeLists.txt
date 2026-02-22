@@ -13,6 +13,12 @@ target_sources(novus-sagasu
         src/filetreewindow.cpp
         src/filepropertieswindow.cpp
         src/filetreemodel.cpp)
+if (TARGET KF6::SyntaxHighlighting)
+    target_link_libraries(novus-sagasu
+            PUBLIC
+            KF6::SyntaxHighlighting)
+    target_compile_definitions(novus-sagasu PUBLIC HAVE_SYNTAX_HIGHLIGHTING)
+endif()
 target_include_directories(novus-sagasu PRIVATE include)
 target_link_libraries(novus-sagasu
         PRIVATE
