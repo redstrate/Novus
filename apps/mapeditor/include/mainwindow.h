@@ -31,6 +31,7 @@ private:
     ScenePart *m_part = nullptr;
     QAction *m_centerObjectAction = nullptr;
     QAction *m_goToEntranceAction = nullptr;
+    QAction *m_goToExitAction = nullptr;
     QLabel *m_cameraPosLabel = nullptr;
     uint32_t m_lgbEventRange = 0;
 };

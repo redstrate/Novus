@@ -40,6 +40,7 @@ public:
     QHash<uint32_t, ObjectScene> nestedScenes;
 
     Transformation locateGameObject(uint32_t instanceId) const;
+    Transformation locateGameObjectByBaseId(uint32_t baseId) const;
 
 private:
     void processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path);

@@ -76,6 +76,16 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("duty_go_to_entrance"), m_goToEntranceAction);
 
+    m_goToExitAction = new QAction(i18nc("@action:inmenu", "Go to Exit"));
+    m_goToEntranceAction->setEnabled(false);
+    connect(m_goToExitAction, &QAction::triggered, m_part, [this] {
+        // TODO: what if there are multiple exits, is that a thing?
+
+        auto exitTransform = m_part->sceneState()->rootScene.locateGameObjectByBaseId(2000139); // TODO: extract into a constant
+        m_part->mapView()->centerOn(glm::make_vec3(exitTransform.translation));
+    });
+    actionCollection()->addAction(QStringLiteral("duty_go_to_exit"), m_goToExitAction);
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 
     m_cameraPosLabel = new QLabel(i18n("..."));

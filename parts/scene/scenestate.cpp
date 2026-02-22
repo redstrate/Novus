@@ -242,6 +242,31 @@ Transformation ObjectScene::locateGameObject(const uint32_t instanceId) const
     return {};
 }
 
+Transformation ObjectScene::locateGameObjectByBaseId(const uint32_t baseId) const
+{
+    // TODO: support everything else within ObjectScene, nested transforms etc
+
+    for (const auto &[_, lgb] : lgbFiles) {
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
+            for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
+                for (uint32_t z = 0; z < lgb.chunks[i].layers[j].num_objects; z++) {
+                    if (lgb.chunks[i].layers[j].objects[z].data.tag != physis_LayerEntry::Tag::EventObject) {
+                        continue;
+                    }
+
+                    if (lgb.chunks[i].layers[j].objects[z].data.event_object._0.parent_data.base_id == baseId) {
+                        return lgb.chunks[i].layers[j].objects[z].transform;
+                    }
+                }
+            }
+        }
+    }
+
+    qWarning() << "Failed to locate game object by base id" << baseId;
+
+    return {};
+}
+
 void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path)
 {
     qInfo() << "Processing" << path;

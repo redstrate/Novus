@@ -23,6 +23,7 @@
     <Menu name="duty" >
       <text>Duty</text>
       <Action name="duty_go_to_entrance"/>
+      <Action name="duty_go_to_exit"/>
     </Menu>
   </MenuBar>
 </gui>
