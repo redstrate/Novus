@@ -60,6 +60,7 @@ Q_SIGNALS:
     void skeletonChanged();
     // Called when a Vulkan context is available, and you can safely access RenderManager
     void initializeRender();
+    void cameraMoved();
 
 public Q_SLOTS:
     /// Clears all stored MDLs.

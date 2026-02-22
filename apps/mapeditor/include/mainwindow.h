@@ -7,6 +7,7 @@
 
 #include "filecache.h"
 
+class QLabel;
 class ScenePart;
 class ObjectPropertiesWidget;
 class SceneListWidget;
@@ -30,5 +31,6 @@ private:
     ScenePart *m_part = nullptr;
     QAction *m_centerObjectAction = nullptr;
     QAction *m_goToEntranceAction = nullptr;
+    QLabel *m_cameraPosLabel = nullptr;
     uint32_t m_lgbEventRange = 0;
 };

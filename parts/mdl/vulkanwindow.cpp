@@ -118,6 +118,7 @@ bool VulkanWindow::event(QEvent *e)
 
                 part->position += glm::vec3{0, 1, 0} * (float)deltaY * 0.01f;
                 part->position.y = std::clamp(part->position.y, 0.0f, 10.0f);
+                Q_EMIT part->cameraMoved();
             }
 
             part->lastX = mouseEvent->position().x();
@@ -226,6 +227,7 @@ void VulkanWindow::render()
 
         part->position += right * movX * 200.0f * deltaTime;
         part->position += forward * movY * 200.0f * deltaTime;
+        Q_EMIT part->cameraMoved();
 
         m_renderer->camera.view = glm::mat4(1.0f);
         m_renderer->camera.view = glm::translate(m_renderer->camera.view, part->position);

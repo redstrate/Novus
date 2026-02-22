@@ -16,6 +16,9 @@
 #include "scenepart.h"
 #include "scenestate.h"
 
+#include <QLabel>
+#include <QStatusBar>
+
 MainWindow::MainWindow(physis_SqPackResource data)
     : m_data(data)
     , cache(m_data)
@@ -74,6 +77,15 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("duty_go_to_entrance"), m_goToEntranceAction);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
+
+    m_cameraPosLabel = new QLabel(i18n("..."));
+    statusBar()->addWidget(m_cameraPosLabel);
+    connect(&m_part->mapView()->part(), &MDLPart::cameraMoved, this, [this] {
+        m_cameraPosLabel->setText(i18n("X: %1 Y: %2 Z: %3")
+                                      .arg(m_part->mapView()->part().position.x)
+                                      .arg(m_part->mapView()->part().position.y)
+                                      .arg(m_part->mapView()->part().position.z));
+    });
 }
 
 void MainWindow::openMap(const QString &basePath, int contentFinderCondition)

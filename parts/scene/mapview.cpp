@@ -45,6 +45,7 @@ MDLPart &MapView::part() const
 void MapView::centerOn(const glm::vec3 position)
 {
     mdlPart->position = position;
+    Q_EMIT mdlPart->cameraMoved();
 }
 
 void MapView::addTerrain(QString basePath, physis_Terrain terrain)
