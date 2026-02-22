@@ -113,7 +113,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             if (static_cast<size_t>(part.materialIndex) >= model.sourceObject->materials.size()) {
                 material = &defaultMaterial;
             } else {
-                material = const_cast<RenderMaterial *>(&model.sourceObject->materials[part.materialIndex]);
+                material = &model.sourceObject->materials[part.materialIndex];
             }
 
             const auto h = hash(*model.sourceObject, *material);
@@ -470,6 +470,8 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
         // qFatal("Failed to create descriptor set!");
         return VK_NULL_HANDLE;
     }
+
+    m_device.nameObject(VK_OBJECT_TYPE_DESCRIPTOR_SET, reinterpret_cast<uint64_t>(set), material.path.c_str());
 
     const size_t bufferSize = sizeof(glm::mat4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
 

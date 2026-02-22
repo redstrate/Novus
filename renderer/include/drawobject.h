@@ -20,11 +20,13 @@ struct RenderPart {
 enum class MaterialType { Object, Skin };
 
 struct RenderMaterial {
+    std::string path;
     physis_Material mat;
     MaterialType type = MaterialType::Object;
     physis_SHPK shaderPackage{};
 
     std::optional<Texture> diffuseTexture;
+    std::string diffuseTexturePath;
     std::optional<Texture> normalTexture;
     std::optional<Texture> specularTexture;
     std::optional<Texture> maskTexture;

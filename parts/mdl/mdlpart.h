@@ -73,7 +73,7 @@ public Q_SLOTS:
                   bool skinned,
                   Transformation transformation,
                   const QString &name,
-                  std::vector<physis_Material> materials,
+                  std::vector<std::pair<std::string, physis_Material>> materials,
                   int lod,
                   uint16_t fromBodyId = 101,
                   uint16_t toBodyId = 101);
@@ -97,8 +97,8 @@ protected:
     bool event(QEvent *event) override;
 
 private:
-    RenderMaterial createMaterial(const physis_Material &mat);
-    RenderMaterial createOrCacheMaterial(const physis_Material &mat);
+    RenderMaterial createMaterial(const std::string &path, const physis_Material &mat);
+    RenderMaterial createOrCacheMaterial(const std::string &path, const physis_Material &mat);
     uint64_t getMaterialHash(const physis_Material &mat);
 
     void calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone);

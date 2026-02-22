@@ -321,7 +321,7 @@ void GearView::updatePart()
             if (mdl_data.size > 0) {
                 auto mdl = physis_mdl_parse(data->platform, mdl_data);
                 if (mdl.p_ptr != nullptr) {
-                    std::vector<physis_Material> materials;
+                    std::vector<std::pair<std::string, physis_Material>> materials;
                     for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                         const char *material_name = mdl.material_names[i];
 
@@ -331,12 +331,12 @@ void GearView::updatePart()
 
                         if (cache.fileExists(QLatin1String(mtrl_path.c_str()))) {
                             auto mat = physis_material_parse(data->platform, cache.lookupFile(QLatin1String(mtrl_path.c_str())));
-                            materials.push_back(mat);
+                            materials.push_back(std::make_pair(mtrl_path, mat));
                         }
 
                         if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                             auto mat = physis_material_parse(data->platform, cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                            materials.push_back(mat);
+                            materials.push_back(std::make_pair(mtrl_path, mat));
                         }
                     }
 
@@ -395,7 +395,7 @@ void GearView::updatePart()
         if (mdl_data.size > 0) {
             auto mdl = physis_mdl_parse(data->platform, mdl_data);
             if (mdl.p_ptr != nullptr) {
-                std::vector<physis_Material> materials;
+                std::vector<std::pair<std::string, physis_Material>> materials;
                 for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                     const char *material_name = mdl.material_names[i];
                     const std::string skinmtrl_path =
@@ -403,7 +403,7 @@ void GearView::updatePart()
 
                     if (cache.fileExists(QLatin1String(skinmtrl_path.c_str()))) {
                         auto mat = physis_material_parse(data->platform, cache.lookupFile(QLatin1String(skinmtrl_path.c_str())));
-                        materials.push_back(mat);
+                        materials.push_back(std::make_pair(skinmtrl_path, mat));
                     }
                 }
 

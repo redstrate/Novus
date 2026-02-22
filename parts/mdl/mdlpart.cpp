@@ -87,7 +87,7 @@ void MDLPart::addModel(physis_MDL mdl,
                        bool skinned,
                        Transformation transformation,
                        const QString &name,
-                       std::vector<physis_Material> materials,
+                       std::vector<std::pair<std::string, physis_Material>> materials,
                        int lod,
                        uint16_t fromBodyId,
                        uint16_t toBodyId)
@@ -101,12 +101,12 @@ void MDLPart::addModel(physis_MDL mdl,
         model->to_body_id = toBodyId;
         model->skinned = skinned;
 
-        std::transform(materials.begin(), materials.end(), std::back_inserter(model->materials), [this](const physis_Material &mat) {
-            return createOrCacheMaterial(mat);
+        std::ranges::transform(materials, std::back_inserter(model->materials), [this](const std::pair<std::string, physis_Material> &mat) {
+            return createOrCacheMaterial(mat.first, mat.second);
         });
 
         if (materials.empty()) {
-            model->materials.push_back(createOrCacheMaterial(physis_Material{}));
+            model->materials.push_back(createOrCacheMaterial("invalid", physis_Material{}));
         }
 
         vkWindow->sourceModels[name] = model;
@@ -228,9 +228,10 @@ void MDLPart::reloadBoneData()
     }
 }
 
-RenderMaterial MDLPart::createMaterial(const physis_Material &material)
+RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Material &material)
 {
     RenderMaterial newMaterial;
+    newMaterial.path = path;
     newMaterial.mat = material;
 
     if (material.shpk_name != nullptr) {
@@ -371,23 +372,22 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
             }
         }
 
-        qInfo() << "Loading" << t;
-
         const auto type = t.substr(t.find_last_of('_') + 1, t.find_last_of('.') - t.find_last_of('_') - 1);
-        auto texture = physis_texture_parse(data->platform, cache.lookupFile(QLatin1String(material.textures[i])));
+        auto texture = physis_texture_parse(data->platform, cache.lookupFile(QLatin1String(t)));
         if (texture.rgba != nullptr) {
             auto gameTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
-            renderer->device().nameTexture(gameTexture, material.textures[i]);
+            renderer->device().nameTexture(gameTexture, t);
 
-            if (type == "m") {
+            if (type == "m" && !newMaterial.maskTexture.has_value()) {
                 newMaterial.maskTexture = gameTexture;
-            } else if (type == "d") {
+            } else if (type == "d" && !newMaterial.diffuseTexture.has_value()) {
                 newMaterial.diffuseTexture = gameTexture;
-            } else if (type == "n") {
+                newMaterial.diffuseTexturePath = t;
+            } else if (type == "n" && !newMaterial.normalTexture.has_value()) {
                 newMaterial.normalTexture = gameTexture;
-            } else if (type == "s") {
+            } else if (type == "s" && !newMaterial.specularTexture.has_value()) {
                 newMaterial.specularTexture = gameTexture;
-            } else if (type == "id") {
+            } else if (type == "id" && !newMaterial.indexTexture.has_value()) {
                 newMaterial.indexTexture = gameTexture;
             } else {
                 qWarning() << "Unknown texture type" << type;
@@ -400,11 +400,11 @@ RenderMaterial MDLPart::createMaterial(const physis_Material &material)
     return newMaterial;
 }
 
-RenderMaterial MDLPart::createOrCacheMaterial(const physis_Material &mat)
+RenderMaterial MDLPart::createOrCacheMaterial(const std::string &path, const physis_Material &mat)
 {
     auto hash = getMaterialHash(mat);
     if (!renderMaterialCache.contains(hash)) {
-        renderMaterialCache[hash] = createMaterial(mat);
+        renderMaterialCache[hash] = createMaterial(path, mat);
     }
 
     return renderMaterialCache[hash];

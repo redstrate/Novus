@@ -52,7 +52,7 @@ void MaterialView::addSphere(physis_Material material)
     transformation.scale[1] = 1;
     transformation.scale[2] = 1;
 
-    mdlPart->addModel(m_mdl, false, transformation, QStringLiteral("mdl"), {material}, 0);
+    mdlPart->addModel(m_mdl, false, transformation, QStringLiteral("mdl"), {{"builtin", material}}, 0);
 }
 
 #include "moc_materialview.cpp"

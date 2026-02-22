@@ -62,14 +62,16 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
         auto plateMdlFile = physis_sqpack_read(m_data, mdlPathStd.c_str());
         auto plateMdl = physis_mdl_parse(m_data->platform, plateMdlFile);
         if (plateMdl.p_ptr != nullptr) {
-            std::vector<physis_Material> materials;
+            std::vector<std::pair<std::string, physis_Material>> materials;
             for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
                 const char *material_name = plateMdl.material_names[j];
 
                 const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
                 if (matFile.size > 0) {
                     auto mat = physis_material_parse(m_data->platform, matFile);
-                    materials.push_back(mat);
+                    materials.push_back(std::make_pair(std::string{material_name}, mat));
+                } else {
+                    qWarning() << "Failed to find terrain material" << material_name;
                 }
             }
 
@@ -202,14 +204,16 @@ void MapView::processLayer(const physis_Layer &layer, const Transformation &root
 
                     auto plateMdl = physis_mdl_parse(m_data->platform, plateMdlFile);
                     if (plateMdl.p_ptr != nullptr) {
-                        std::vector<physis_Material> materials;
+                        std::vector<std::pair<std::string, physis_Material>> materials;
                         for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
                             const char *material_name = plateMdl.material_names[j];
 
                             const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
                             if (matFile.size > 0) {
                                 auto mat = physis_material_parse(m_data->platform, matFile);
-                                materials.push_back(mat);
+                                materials.push_back(std::make_pair(material_name, mat));
+                            } else {
+                                qWarning() << "Failed to find model material" << material_name;
                             }
                         }
 
