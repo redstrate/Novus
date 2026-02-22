@@ -27,7 +27,12 @@ void main() {
     if (textureSize(diffuseTexture, 0).x == 1) {
         diffuse = vec3(1);
     } else {
-        diffuse = texture(diffuseTexture, inUV).rgb;
+        vec4 tex = texture(diffuseTexture, inUV);
+        diffuse = tex.rgb;
+        // TODO: use alpha threshold from the material
+        if (tex.a <= 0.1) {
+            discard;
+        }
     }
     if(type == 1) {
         const float skinInfluence = texture(specularTexture, inUV).r;
