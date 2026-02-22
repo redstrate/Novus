@@ -23,7 +23,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("sgb"), FileType::SharedGroup},
                                                      {QStringLiteral("tmb"), FileType::TimelineMotion},
                                                      {QStringLiteral("shcd"), FileType::Shader},
-                                                     {QStringLiteral("lgb"), FileType::LayerGroupBinary}};
+                                                     {QStringLiteral("lgb"), FileType::LayerGroupBinary},
+                                                     {QStringLiteral("lvb"), FileType::LayerVariableBinary}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -41,7 +42,8 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::SharedGroup, i18n("Shared Group")},
                                                 {FileType::TimelineMotion, i18n("Timeline Motion")},
                                                 {FileType::Shader, i18n("Shader")},
-                                                {FileType::LayerGroupBinary, i18n("Layer Group Binary")}};
+                                                {FileType::LayerGroupBinary, i18n("Layer Group Binary")},
+                                                {FileType::LayerVariableBinary, i18n("Layer Variable Binary")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -60,7 +62,8 @@ const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiter
                                                 {FileType::TimelineMotion, QStringLiteral("preferences-desktop-animations")},
                                                 {FileType::Shader, QStringLiteral("paint-pattern-symbolic")}};
 
-const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>> typeToDebug{{FileType::LayerGroupBinary, physis_lgb_debug}};
+const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>> typeToDebug{{FileType::LayerGroupBinary, physis_lgb_debug},
+                                                                                              {FileType::LayerVariableBinary, physis_lvb_debug}};
 
 FileType FileTypes::getFileType(const QString &extension)
 {

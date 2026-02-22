@@ -27,6 +27,7 @@ enum class FileType {
     TimelineMotion,
     Shader,
     LayerGroupBinary,
+    LayerVariableBinary,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes
