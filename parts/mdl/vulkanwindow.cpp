@@ -150,6 +150,9 @@ bool VulkanWindow::event(QEvent *e)
             case Qt::Key_D:
                 pressed_keys[3] = true;
                 break;
+            case Qt::Key_Shift:
+                pressed_keys[4] = true;
+                break;
             }
         }
     } break;
@@ -169,6 +172,9 @@ bool VulkanWindow::event(QEvent *e)
                 break;
             case Qt::Key_D:
                 pressed_keys[3] = false;
+                break;
+            case Qt::Key_Shift:
+                pressed_keys[4] = false;
                 break;
             }
         }
@@ -225,8 +231,13 @@ void VulkanWindow::render()
         forward = normalize(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(part->pitch, glm::vec3(1, 0, 0)) * glm::vec3(0, 0, 1));
         right = normalize(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::vec3(1, 0, 0));
 
-        part->position += right * movX * 200.0f * deltaTime;
-        part->position += forward * movY * 200.0f * deltaTime;
+        float speed = 200.0f;
+        if (pressed_keys[4]) {
+            speed = 1000.0f;
+        }
+
+        part->position += right * movX * speed * deltaTime;
+        part->position += forward * movY * speed * deltaTime;
         Q_EMIT part->cameraMoved();
 
         m_renderer->camera.view = glm::mat4(1.0f);

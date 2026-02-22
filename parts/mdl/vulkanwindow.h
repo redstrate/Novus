@@ -30,6 +30,6 @@ private:
     RenderManager *m_renderer;
     QVulkanInstance *m_instance;
     MDLPart *part;
-    bool pressed_keys[4] = {};
+    bool pressed_keys[5] = {};
     QElapsedTimer timer;
 };
