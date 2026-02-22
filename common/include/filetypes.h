@@ -28,6 +28,18 @@ enum class FileType {
     Shader,
     LayerGroupBinary,
     LayerVariableBinary,
+    UILayoutDefinition,
+    CutsceneBinary,
+    AnimatedVisualEffect,
+    PlayerCollisionBinary,
+    SoundCompressedData,
+    UIGeneratedData,
+    LevelCollisionBinary,
+    UWB, // TODO: what would this be called?
+    SkyVisibilityBinary,
+    Terrain,
+    StainingTemplate,
+    PreBoneDeformer,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes
