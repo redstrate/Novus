@@ -310,7 +310,12 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     }
 
     // TODO: this is sort of inefficient as it re-parses the whole file again...
-    const auto debugInformation = FileTypes::printDebugInformation(type, m_data.platform, file);
+    auto debugInformation = FileTypes::printDebugInformation(type, m_data.platform, file);
+    constexpr int maxDebugInformationLength = 10000;
+    if (debugInformation.length() > maxDebugInformationLength) {
+        debugInformation.resize(maxDebugInformationLength);
+        debugInformation.append(i18n("<truncated>"));
+    }
     const auto debugInformationText = new QTextEdit();
     debugInformationText->setText(debugInformation);
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
