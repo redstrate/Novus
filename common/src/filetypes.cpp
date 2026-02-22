@@ -63,7 +63,8 @@ const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiter
                                                 {FileType::Shader, QStringLiteral("paint-pattern-symbolic")}};
 
 const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>> typeToDebug{{FileType::LayerGroupBinary, physis_lgb_debug},
-                                                                                              {FileType::LayerVariableBinary, physis_lvb_debug}};
+                                                                                              {FileType::LayerVariableBinary, physis_lvb_debug},
+                                                                                              {FileType::SharedGroup, physis_sgb_debug}};
 
 FileType FileTypes::getFileType(const QString &extension)
 {
