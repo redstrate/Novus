@@ -65,13 +65,19 @@ void MainWindow::setupActions()
     connect(focusSearch, &QAction::triggered, m_part, &ScenePart::focusSearchField);
     actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 
+    m_goToEntranceAction = new QAction(i18nc("@action:inmenu", "Go to Entrance"));
+    m_goToEntranceAction->setEnabled(false);
+    connect(m_goToEntranceAction, &QAction::triggered, m_part, [this] {
+        auto entranceTransform = m_part->sceneState()->rootScene.locateGameObject(m_lgbEventRange);
+        m_part->mapView()->centerOn(glm::make_vec3(entranceTransform.translation));
+    });
+    actionCollection()->addAction(QStringLiteral("duty_go_to_entrance"), m_goToEntranceAction);
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
 
 void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
 {
-    qInfo() << "This map is bound by duty! CF:" << contentFinderCondition;
-
     m_part->sceneState()->clear();
 
     QString lvbPath = QStringLiteral("bg/%1.lvb").arg(basePath);
@@ -91,6 +97,25 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
     }
 
     setWindowTitle(basePath);
+
+    m_goToEntranceAction->setEnabled(contentFinderCondition != 0);
+
+    if (contentFinderCondition != 0) {
+        qInfo() << "This map contains a duty! CF:" << contentFinderCondition;
+
+        auto cfcExh = physis_exh_parse(m_data.platform, physis_sqpack_read(&m_data, "exd/ContentFinderCondition.exh"));
+        auto cfcSheet = physis_sqpack_read_excel_sheet(&m_data, "ContentFinderCondition", &cfcExh, Language::English);
+
+        auto cfcRow = physis_excel_get_row(&cfcSheet, contentFinderCondition);
+        auto instanceContentId = cfcRow.columns[3].u_int16._0;
+
+        auto instanceContentExh = physis_exh_parse(m_data.platform, physis_sqpack_read(&m_data, "exd/InstanceContent.exh"));
+        auto instanceContentSheet = physis_sqpack_read_excel_sheet(&m_data, "InstanceContent", &instanceContentExh, Language::None);
+
+        auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
+
+        m_lgbEventRange = instanceContentRow.columns[7].u_int32._0;
+    }
 }
 
 void MainWindow::updateActionState()

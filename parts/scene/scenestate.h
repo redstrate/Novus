@@ -39,6 +39,8 @@ public:
     /// Key is the ID of the SGB instance.
     QHash<uint32_t, ObjectScene> nestedScenes;
 
+    Transformation locateGameObject(uint32_t instanceId) const;
+
 private:
     void processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path);
     void processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group);

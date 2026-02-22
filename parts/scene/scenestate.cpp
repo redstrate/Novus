@@ -221,6 +221,27 @@ void SceneState::showAllInScene(const ObjectScene &scene)
     }
 }
 
+Transformation ObjectScene::locateGameObject(const uint32_t instanceId) const
+{
+    // TODO: support everything else within ObjectScene, nested transforms etc
+
+    for (const auto &[_, lgb] : lgbFiles) {
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
+            for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
+                for (uint32_t z = 0; z < lgb.chunks[i].layers[j].num_objects; z++) {
+                    if (lgb.chunks[i].layers[j].objects[z].instance_id == instanceId) {
+                        return lgb.chunks[i].layers[j].objects[z].transform;
+                    }
+                }
+            }
+        }
+    }
+
+    qWarning() << "Failed to locate game object" << instanceId;
+
+    return {};
+}
+
 void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path)
 {
     qInfo() << "Processing" << path;

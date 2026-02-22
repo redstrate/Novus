@@ -29,4 +29,6 @@ private:
     FileCache cache;
     ScenePart *m_part = nullptr;
     QAction *m_centerObjectAction = nullptr;
+    QAction *m_goToEntranceAction = nullptr;
+    uint32_t m_lgbEventRange = 0;
 };

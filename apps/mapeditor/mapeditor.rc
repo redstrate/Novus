@@ -20,5 +20,9 @@
       <text>Object</text>
       <Action name="center_object"/>
     </Menu>
+    <Menu name="duty" >
+      <text>Duty</text>
+      <Action name="duty_go_to_entrance"/>
+    </Menu>
   </MenuBar>
 </gui>
