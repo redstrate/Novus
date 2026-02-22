@@ -159,7 +159,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
     for (const auto &layerGroup : scene.embeddedLgbs) {
         for (uint32_t j = 0; j < layerGroup.layer_count; j++) {
             const auto layer = layerGroup.layers[j];
-            if (!m_appState->visibleLayerIds.contains(layer.id)) {
+            if (!scene.isSgb && !m_appState->visibleLayerIds.contains(layer.id)) {
                 continue;
             }
 
@@ -171,7 +171,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
             const auto chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
                 const auto layer = chunk.layers[j];
-                if (!m_appState->visibleLayerIds.contains(layer.id)) {
+                if (!scene.isSgb && !m_appState->visibleLayerIds.contains(layer.id)) {
                     continue;
                 }
 

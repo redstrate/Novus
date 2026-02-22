@@ -286,6 +286,7 @@ void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t insta
     // TODO: load more than one section?
     nestedScenes[instanceId].load(data, sgb.sections[0]);
     nestedScenes[instanceId].transformation = transformation;
+    nestedScenes[instanceId].isSgb = true;
 }
 
 void ObjectScene::processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group)

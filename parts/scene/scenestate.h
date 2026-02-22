@@ -35,6 +35,7 @@ public:
     std::vector<physis_ScnLayerGroup> embeddedLgbs;
     Animation *animation = nullptr;
     std::vector<ScnSGActionControllerDescriptor> actionDescriptors;
+    bool isSgb = false; // Currently only used to skip visibility checks.
 
     /// Key is the ID of the SGB instance.
     QHash<uint32_t, ObjectScene> nestedScenes;
