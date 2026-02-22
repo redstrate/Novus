@@ -311,7 +311,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
     // TODO: this is sort of inefficient as it re-parses the whole file again...
     auto debugInformation = FileTypes::printDebugInformation(type, m_data.platform, file);
-    constexpr int maxDebugInformationLength = 10000;
+    constexpr int maxDebugInformationLength = 1000000;
     if (debugInformation.length() > maxDebugInformationLength) {
         debugInformation.resize(maxDebugInformationLength);
         debugInformation.append(i18n("<truncated>"));
