@@ -13,7 +13,7 @@
 
 #include "mapview.h"
 
-ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *parent)
+ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, bool enableAnimation, QWidget *parent)
     : QWidget(parent)
     , m_appState(new SceneState(data))
     , m_data(data)
@@ -49,7 +49,8 @@ ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *paren
         m_appState->updateAllAnimations(value);
         Q_EMIT m_appState->mapLoaded(); // FIXME: extreme solution to lack of a proper updatable scene graph
     });
-    sidebarLayout->addWidget(m_animationTimeSlider);
+    if (enableAnimation)
+        sidebarLayout->addWidget(m_animationTimeSlider);
 
     m_mapView = new MapView(data, m_fileCache, m_appState);
     splitter->addWidget(m_mapView);

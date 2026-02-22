@@ -24,7 +24,7 @@ class ScenePart : public QWidget
 
 public:
     // TODO: eventually remove fixedSize hack used in map editor
-    explicit ScenePart(physis_SqPackResource *data, bool fixedSize = false, QWidget *parent = nullptr);
+    explicit ScenePart(physis_SqPackResource *data, bool fixedSize = false, bool enableAnimation = true, QWidget *parent = nullptr);
 
     void loadSgb(physis_Buffer file);
     void focusSearchField();

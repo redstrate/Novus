@@ -25,7 +25,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
 {
     setMinimumSize(1280, 720);
 
-    m_part = new ScenePart(&m_data, true);
+    m_part = new ScenePart(&m_data, true, false);
     setCentralWidget(m_part);
 
     setupActions();
