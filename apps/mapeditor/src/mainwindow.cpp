@@ -45,7 +45,7 @@ void MainWindow::setupActions()
         [this] {
             auto listWidget = new MapListWidget(&m_data, this);
             connect(listWidget, &MapListWidget::accepted, this, [this, listWidget] {
-                openMap(listWidget->acceptedMap());
+                openMap(listWidget->acceptedMap(), listWidget->acceptedContentFinderCondition());
             });
             listWidget->show();
         },
@@ -68,8 +68,10 @@ void MainWindow::setupActions()
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
 
-void MainWindow::openMap(const QString &basePath)
+void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
 {
+    qInfo() << "This map is bound by duty! CF:" << contentFinderCondition;
+
     m_part->sceneState()->clear();
 
     QString lvbPath = QStringLiteral("bg/%1.lvb").arg(basePath);

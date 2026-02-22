@@ -22,7 +22,7 @@ public:
 
 private:
     void setupActions();
-    void openMap(const QString &basePath);
+    void openMap(const QString &basePath, int contentFinderCondition);
     void updateActionState();
 
     physis_SqPackResource m_data;

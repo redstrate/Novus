@@ -63,8 +63,11 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
             auto nameExdRow = physis_excel_get_row(&nameSheet, placeNameKey); // TODO: free, use all rows
             const char *placeName = nameExdRow.columns[0].string._0;
 
+            int contentFinderCondition = territoryExdRow.columns[10].u_int16._0;
+
             QStandardItem *item = new QStandardItem();
             item->setData(QString::fromStdString(bg));
+            item->setData(contentFinderCondition, Qt::UserRole + 2);
             item->setText(QStringLiteral("%1 %2 (%3, %4, %5)")
                               .arg(QString::number(i))
                               .arg(QString::fromStdString(bg),
@@ -103,12 +106,18 @@ QString MapListWidget::acceptedMap() const
     return m_acceptedMap;
 }
 
+int MapListWidget::acceptedContentFinderCondition() const
+{
+    return m_acceptedContentFinderCondition;
+}
+
 void MapListWidget::accept()
 {
     // Figure out the selection first
     const auto index = listWidget->selectionModel()->selectedIndexes().constFirst();
     if (index.isValid()) {
         m_acceptedMap = m_searchModel->mapToSource(index).data(Qt::UserRole + 1).toString();
+        m_acceptedContentFinderCondition = m_searchModel->mapToSource(index).data(Qt::UserRole + 2).toInt();
     }
 
     QDialog::accept();
