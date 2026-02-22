@@ -53,7 +53,7 @@ void SHCDPart::load(physis_Buffer buffer)
         glsl.build_combined_image_samplers();
 
         spirv_cross::CompilerGLSL::Options options;
-        options.version = 310;
+        options.version = 400; // 400 is so we at least decompile compute shaders
         options.vulkan_semantics = true;
         glsl.set_common_options(options);
 
