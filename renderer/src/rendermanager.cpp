@@ -598,7 +598,7 @@ VkSampler RenderManager::defaultSampler()
 void RenderManager::updateCamera(Camera &camera)
 {
     camera.aspectRatio = static_cast<float>(m_device->swapChain->extent.width) / static_cast<float>(m_device->swapChain->extent.height);
-    camera.perspective = glm::perspective(glm::radians(camera.fieldOfView), camera.aspectRatio, camera.nearPlane, camera.farPlane);
+    camera.perspective = glm::infinitePerspective(glm::radians(camera.fieldOfView), camera.aspectRatio, camera.nearPlane);
 }
 
 void RenderManager::initBlitPipeline()
