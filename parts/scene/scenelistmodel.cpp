@@ -272,7 +272,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
         auto objectItem = new SceneTreeInformation();
         objectItem->type = TreeType::Object;
         objectItem->parent = layerItem;
-        objectItem->name = i18n("%1 (%2)", objectName, QString::number(object.instance_id)); // TODO: do display names if we have them
+        objectItem->name = objectName;
         objectItem->row = z;
         objectItem->data = &object;
         objectItem->id = object.instance_id;
