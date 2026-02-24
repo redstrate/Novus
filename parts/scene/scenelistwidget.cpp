@@ -100,3 +100,19 @@ void SceneListWidget::selectObject(uint32_t objectId)
 
     Q_EMIT treeWidget->activated(index);
 }
+
+QString SceneListWidget::lookupObjectName(uint32_t objectId)
+{
+    auto indices = m_objectListModel->match(m_objectListModel->index(0, 0, {}),
+                                            SceneListModel::SceneListRoles::ObjectIdRole,
+                                            QVariant::fromValue(objectId),
+                                            1,
+                                            Qt::MatchExactly | Qt::MatchRecursive);
+
+    if (indices.isEmpty()) {
+        qWarning() << "Somehow couldn't find ID" << objectId;
+        return {};
+    }
+
+    return indices.first().data().toString();
+}

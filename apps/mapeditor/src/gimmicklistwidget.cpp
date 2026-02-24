@@ -4,6 +4,7 @@
 #include "gimmicklistwidget.h"
 
 #include "physis.hpp"
+#include "scenepart.h"
 
 #include <KLocalizedString>
 #include <QTableWidget>
@@ -11,13 +12,14 @@
 
 #include "scenestate.h"
 
-GimmickListWidget::GimmickListWidget(SceneState *state, physis_SqPackResource *data, QWidget *parent)
+GimmickListWidget::GimmickListWidget(ScenePart *part, SceneState *state, physis_SqPackResource *data, QWidget *parent)
     : QDialog(parent)
 {
     setMinimumSize(QSize(640, 480));
     setWindowTitle(i18n("Map Gimmicks"));
 
     auto layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
     auto eobjExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/EObj.exh"));
@@ -25,8 +27,8 @@ GimmickListWidget::GimmickListWidget(SceneState *state, physis_SqPackResource *d
 
     auto tableWidget = new QTableWidget();
     tableWidget->setEditTriggers(QTableWidget::EditTrigger::NoEditTriggers);
-    tableWidget->setColumnCount(2);
-    tableWidget->setHorizontalHeaderLabels({i18n("Gimmick ID"), i18n("Game Object ID")});
+    tableWidget->setColumnCount(3);
+    tableWidget->setHorizontalHeaderLabels({i18n("Gimmick ID"), i18n("Game Object ID"), i18n("Name")});
 
     connect(tableWidget, &QTableWidget::activated, this, [state](const QModelIndex &index) {
         const uint32_t objectId = index.data(Qt::UserRole).toUInt();
@@ -57,14 +59,21 @@ GimmickListWidget::GimmickListWidget(SceneState *state, physis_SqPackResource *d
                             auto objectItem = new QTableWidgetItem(QString::number(object.instance_id));
                             objectItem->setData(Qt::UserRole, object.instance_id);
 
+                            auto nameItem = new QTableWidgetItem(part->lookupObjectName(object.instance_id));
+                            nameItem->setData(Qt::UserRole, object.instance_id);
+
                             tableWidget->setItem(row, 0, gimmickItem);
                             tableWidget->setItem(row, 1, objectItem);
+                            tableWidget->setItem(row, 2, nameItem);
                         }
                     }
                 }
             }
         }
     }
+
+    // So the text fits properly
+    tableWidget->resizeColumnsToContents();
 
     layout->addWidget(tableWidget);
 }

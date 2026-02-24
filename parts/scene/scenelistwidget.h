@@ -22,6 +22,7 @@ public:
     void expandToDepth(int depth);
     void focusSearchField();
     void selectObject(uint32_t objectId);
+    QString lookupObjectName(uint32_t objectId);
 
 private:
     QTreeView *treeWidget = nullptr;

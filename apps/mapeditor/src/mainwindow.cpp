@@ -93,7 +93,8 @@ void MainWindow::setupActions()
     m_gimmickListAction = new QAction(i18nc("@action:inmenu", "Gimmicks"));
     m_gimmickListAction->setEnabled(false);
     connect(m_gimmickListAction, &QAction::triggered, this, [this] {
-        auto listWidget = new GimmickListWidget(m_part->sceneState(), &m_data, this);
+        // TODO: only pass m_part I guess
+        auto listWidget = new GimmickListWidget(m_part, m_part->sceneState(), &m_data, this);
         listWidget->show();
     });
     actionCollection()->addAction(QStringLiteral("duty_gimmicks"), m_gimmickListAction);

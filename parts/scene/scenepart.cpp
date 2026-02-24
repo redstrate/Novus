@@ -98,9 +98,14 @@ void ScenePart::focusSearchField()
     m_sceneListWidget->focusSearchField();
 }
 
-void ScenePart::selectObject(uint32_t objectId)
+void ScenePart::selectObject(const uint32_t objectId)
 {
     m_sceneListWidget->selectObject(objectId);
+}
+
+QString ScenePart::lookupObjectName(const uint32_t objectId)
+{
+    return m_sceneListWidget->lookupObjectName(objectId);
 }
 
 SceneState *ScenePart::sceneState() const
