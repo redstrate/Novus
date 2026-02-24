@@ -5,9 +5,11 @@ add_executable(novus-mapeditor)
 set_common_properties(novus-mapeditor)
 target_sources(novus-mapeditor
         PRIVATE
+        include/gimmicklistwidget.h
         include/mainwindow.h
         include/maplistwidget.h
 
+        src/gimmicklistwidget.cpp
         src/main.cpp
         src/mainwindow.cpp
         src/maplistwidget.cpp)

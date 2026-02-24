@@ -3,6 +3,8 @@
 
 #include "mainwindow.h"
 
+#include "gimmicklistwidget.h"
+
 #include <KActionCollection>
 #include <KLocalizedString>
 #include <QApplication>
@@ -70,21 +72,29 @@ void MainWindow::setupActions()
 
     m_goToEntranceAction = new QAction(i18nc("@action:inmenu", "Go to Entrance"));
     m_goToEntranceAction->setEnabled(false);
-    connect(m_goToEntranceAction, &QAction::triggered, m_part, [this] {
+    connect(m_goToEntranceAction, &QAction::triggered, this, [this] {
         auto entranceTransform = m_part->sceneState()->rootScene.locateGameObject(m_lgbEventRange);
         m_part->mapView()->centerOn(glm::make_vec3(entranceTransform.translation));
     });
     actionCollection()->addAction(QStringLiteral("duty_go_to_entrance"), m_goToEntranceAction);
 
     m_goToExitAction = new QAction(i18nc("@action:inmenu", "Go to Exit"));
-    m_goToEntranceAction->setEnabled(false);
-    connect(m_goToExitAction, &QAction::triggered, m_part, [this] {
+    m_goToExitAction->setEnabled(false);
+    connect(m_goToExitAction, &QAction::triggered, this, [this] {
         // TODO: what if there are multiple exits, is that a thing?
 
         auto exitTransform = m_part->sceneState()->rootScene.locateGameObjectByBaseId(2000139); // TODO: extract into a constant
         m_part->mapView()->centerOn(glm::make_vec3(exitTransform.translation));
     });
     actionCollection()->addAction(QStringLiteral("duty_go_to_exit"), m_goToExitAction);
+
+    m_gimmickListAction = new QAction(i18nc("@action:inmenu", "Gimmicks"));
+    m_gimmickListAction->setEnabled(false);
+    connect(m_gimmickListAction, &QAction::triggered, this, [this] {
+        auto listWidget = new GimmickListWidget(m_part->sceneState(), &m_data, this);
+        listWidget->show();
+    });
+    actionCollection()->addAction(QStringLiteral("duty_gimmicks"), m_gimmickListAction);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 
@@ -124,6 +134,7 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
 
     m_goToEntranceAction->setEnabled(contentFinderCondition != 0);
     m_goToExitAction->setEnabled(contentFinderCondition != 0);
+    m_gimmickListAction->setEnabled(contentFinderCondition != 0);
 
     if (contentFinderCondition != 0) {
         qInfo() << "This map contains a duty! CF:" << contentFinderCondition;
