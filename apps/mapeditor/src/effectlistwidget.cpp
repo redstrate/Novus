@@ -8,10 +8,13 @@
 #include <QListWidget>
 #include <QVBoxLayout>
 
+#include <KLocalizedString>
+
 EffectListWidget::EffectListWidget(SceneState *state, std::vector<int32_t> effects, QWidget *parent)
     : QDialog(parent)
 {
     setMinimumSize(QSize(640, 480));
+    setWindowTitle(i18n("Map Effects"));
 
     auto layout = new QVBoxLayout();
     setLayout(layout);

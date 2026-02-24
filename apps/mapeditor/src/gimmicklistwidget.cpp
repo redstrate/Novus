@@ -15,6 +15,7 @@ GimmickListWidget::GimmickListWidget(SceneState *state, physis_SqPackResource *d
     : QDialog(parent)
 {
     setMinimumSize(QSize(640, 480));
+    setWindowTitle(i18n("Map Gimmicks"));
 
     auto layout = new QVBoxLayout();
     setLayout(layout);
