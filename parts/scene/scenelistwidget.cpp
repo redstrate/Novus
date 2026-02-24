@@ -72,6 +72,8 @@ void SceneListWidget::focusSearchField()
 
 void SceneListWidget::selectObject(uint32_t objectId)
 {
+    m_searchEdit->clear(); // Clear the search field so all items are visible again.
+
     auto indices = m_objectListModel->match(m_objectListModel->index(0, 0, {}),
                                             SceneListModel::SceneListRoles::ObjectIdRole,
                                             QVariant::fromValue(objectId),
@@ -92,6 +94,9 @@ void SceneListWidget::selectObject(uint32_t objectId)
         treeWidget->expand(parent);
         parent = parent.parent();
     }
+
+    // Ensure item is in view too!
+    treeWidget->scrollTo(index);
 
     Q_EMIT treeWidget->activated(index);
 }

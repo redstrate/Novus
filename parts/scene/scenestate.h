@@ -87,6 +87,7 @@ Q_SIGNALS:
     void visibleLayerIdsChanged();
     void visibleTerrainPlatesChanged();
     void selectionChanged();
+    void selectObject(uint32_t objectId);
 
 private:
     void processLongestAnimationTime(const ObjectScene &scene);

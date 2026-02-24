@@ -15,6 +15,7 @@ target_sources(scenepart
         objectpass.h
         primitives.h
         animation.h
+        objectidedit.h
 
         scenelistwidget.cpp
         scenelistmodel.cpp
@@ -25,7 +26,8 @@ target_sources(scenepart
         mapview.cpp
         objectpass.cpp
         primitives.cpp
-        animation.cpp)
+        animation.cpp
+        objectidedit.cpp)
 target_link_libraries(scenepart
         PUBLIC
         Novus::Renderer

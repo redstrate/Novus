@@ -73,6 +73,7 @@ ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *paren
             qInfo() << "Longest animation time:" << m_appState->longestAnimationTime();
         },
         Qt::SingleShotConnection);
+    connect(m_appState, &SceneState::selectObject, this, &ScenePart::selectObject);
 }
 
 void ScenePart::loadSgb(physis_Buffer file)

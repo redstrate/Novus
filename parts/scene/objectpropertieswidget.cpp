@@ -19,6 +19,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "enumedit.h"
+#include "objectidedit.h"
 
 ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *parent)
     : QWidget(parent)
@@ -267,14 +268,12 @@ void ObjectPropertiesWidget::addEventSection(const physis_EventInstanceObject &e
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto boundIdEdit = new QLineEdit();
-    boundIdEdit->setText(QString::number(eobj.bound_instance_id));
-    boundIdEdit->setReadOnly(true);
+    auto boundIdEdit = new ObjectIdEdit(m_appState);
+    boundIdEdit->setObjectId(eobj.bound_instance_id);
     layout->addRow(i18n("Bound ID"), boundIdEdit);
 
-    auto instanceIdEdit = new QLineEdit();
-    instanceIdEdit->setText(QString::number(eobj.linked_instance_id));
-    instanceIdEdit->setReadOnly(true);
+    auto instanceIdEdit = new ObjectIdEdit(m_appState);
+    instanceIdEdit->setObjectId(eobj.linked_instance_id);
     layout->addRow(i18n("Linked ID"), instanceIdEdit);
 }
 
@@ -445,9 +444,8 @@ void ObjectPropertiesWidget::addAetheryteSection(const physis_AetheryteInstanceO
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto boundInstanceIdEdit = new QLineEdit();
-    boundInstanceIdEdit->setText(QString::number(aetheryte.bound_instance_id));
-    boundInstanceIdEdit->setReadOnly(true);
+    auto boundInstanceIdEdit = new ObjectIdEdit(m_appState);
+    boundInstanceIdEdit->setObjectId(aetheryte.bound_instance_id);
     layout->addRow(i18n("Bound Instance ID"), boundInstanceIdEdit);
 }
 
@@ -477,14 +475,12 @@ void ObjectPropertiesWidget::addExitRangeSection(const physis_ExitRangeInstanceO
     territoryTypeEdit->setReadOnly(true);
     layout->addRow(i18n("Territory Type"), territoryTypeEdit);
 
-    auto destinationInstanceIdEdit = new QLineEdit();
-    destinationInstanceIdEdit->setText(QString::number(exitRange.destination_instance_id));
-    destinationInstanceIdEdit->setReadOnly(true);
+    auto destinationInstanceIdEdit = new ObjectIdEdit(m_appState);
+    destinationInstanceIdEdit->setObjectId(exitRange.destination_instance_id);
     layout->addRow(i18n("Destination Instance ID"), destinationInstanceIdEdit);
 
-    auto returnInstanceIdEdit = new QLineEdit();
-    returnInstanceIdEdit->setText(QString::number(exitRange.return_instance_id));
-    returnInstanceIdEdit->setReadOnly(true);
+    auto returnInstanceIdEdit = new ObjectIdEdit(m_appState);
+    returnInstanceIdEdit->setObjectId(exitRange.return_instance_id);
     layout->addRow(i18n("Return Instance ID"), returnInstanceIdEdit);
 }
 
@@ -523,9 +519,8 @@ void ObjectPropertiesWidget::addPrefetchRangeSection(const physis_PrefetchRangeI
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto boundInstanceIdEdit = new QLineEdit();
-    boundInstanceIdEdit->setText(QString::number(prefetchRange.bound_instance_id));
-    boundInstanceIdEdit->setReadOnly(true);
+    auto boundInstanceIdEdit = new ObjectIdEdit(m_appState);
+    boundInstanceIdEdit->setObjectId(prefetchRange.bound_instance_id);
     layout->addRow(i18n("Bound Instance ID"), boundInstanceIdEdit);
 }
 
