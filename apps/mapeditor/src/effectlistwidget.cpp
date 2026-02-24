@@ -3,10 +3,12 @@
 
 #include "effectlistwidget.h"
 
+#include "scenestate.h"
+
 #include <QListWidget>
 #include <QVBoxLayout>
 
-EffectListWidget::EffectListWidget(std::vector<int32_t> effects, QWidget *parent)
+EffectListWidget::EffectListWidget(SceneState *state, std::vector<int32_t> effects, QWidget *parent)
     : QDialog(parent)
 {
     setMinimumSize(QSize(640, 480));
@@ -17,9 +19,16 @@ EffectListWidget::EffectListWidget(std::vector<int32_t> effects, QWidget *parent
     auto listWidget = new QListWidget();
     listWidget->setEditTriggers(QListWidget::EditTrigger::NoEditTriggers);
 
+    connect(listWidget, &QListWidget::activated, this, [state](const QModelIndex &index) {
+        const uint32_t objectId = index.data(Qt::UserRole).toUInt();
+        Q_EMIT state->selectObject(objectId);
+    });
+
     for (const auto &objectId : effects) {
         if (objectId > 0) {
-            listWidget->addItem(QString::number(objectId));
+            auto item = new QListWidgetItem(QString::number(objectId));
+            item->setData(Qt::UserRole, objectId);
+            listWidget->addItem(item);
         }
     }
 

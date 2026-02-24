@@ -27,6 +27,11 @@ GimmickListWidget::GimmickListWidget(SceneState *state, physis_SqPackResource *d
     tableWidget->setColumnCount(2);
     tableWidget->setHorizontalHeaderLabels({i18n("Gimmick ID"), i18n("Game Object ID")});
 
+    connect(tableWidget, &QTableWidget::activated, this, [state](const QModelIndex &index) {
+        const uint32_t objectId = index.data(Qt::UserRole).toUInt();
+        Q_EMIT state->selectObject(objectId);
+    });
+
     for (const auto &[_, lgb] : state->rootScene.lgbFiles) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
@@ -44,8 +49,15 @@ GimmickListWidget::GimmickListWidget(SceneState *state, physis_SqPackResource *d
                         if (eventType == 15) {
                             const int row = tableWidget->rowCount();
                             tableWidget->insertRow(row);
-                            tableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(eventId)));
-                            tableWidget->setItem(row, 1, new QTableWidgetItem(QString::number(object.instance_id)));
+
+                            auto gimmickItem = new QTableWidgetItem(QString::number(eventId));
+                            gimmickItem->setData(Qt::UserRole, object.instance_id);
+
+                            auto objectItem = new QTableWidgetItem(QString::number(object.instance_id));
+                            objectItem->setData(Qt::UserRole, object.instance_id);
+
+                            tableWidget->setItem(row, 0, gimmickItem);
+                            tableWidget->setItem(row, 1, objectItem);
                         }
                     }
                 }

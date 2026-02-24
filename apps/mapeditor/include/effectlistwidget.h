@@ -5,10 +5,12 @@
 
 #include <QDialog>
 
+class SceneState;
+
 class EffectListWidget : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit EffectListWidget(std::vector<int32_t> effects, QWidget *parent = nullptr);
+    explicit EffectListWidget(SceneState *state, std::vector<int32_t> effects, QWidget *parent = nullptr);
 };

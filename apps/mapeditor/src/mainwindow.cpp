@@ -101,7 +101,7 @@ void MainWindow::setupActions()
     m_effectListAction = new QAction(i18nc("@action:inmenu", "Effects"));
     m_effectListAction->setEnabled(false);
     connect(m_effectListAction, &QAction::triggered, this, [this] {
-        auto listWidget = new EffectListWidget(m_mapEffects, this);
+        auto listWidget = new EffectListWidget(m_part->sceneState(), m_mapEffects, this);
         listWidget->show();
     });
     actionCollection()->addAction(QStringLiteral("duty_effects"), m_effectListAction);
