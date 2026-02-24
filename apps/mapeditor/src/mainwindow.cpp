@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include "effectlistwidget.h"
 #include "gimmicklistwidget.h"
 
 #include <KActionCollection>
@@ -96,6 +97,14 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("duty_gimmicks"), m_gimmickListAction);
 
+    m_effectListAction = new QAction(i18nc("@action:inmenu", "Effects"));
+    m_effectListAction->setEnabled(false);
+    connect(m_effectListAction, &QAction::triggered, this, [this] {
+        auto listWidget = new EffectListWidget(m_mapEffects, this);
+        listWidget->show();
+    });
+    actionCollection()->addAction(QStringLiteral("duty_effects"), m_effectListAction);
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 
     m_cameraPosLabel = new QLabel(i18n("..."));
@@ -135,6 +144,7 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
     m_goToEntranceAction->setEnabled(contentFinderCondition != 0);
     m_goToExitAction->setEnabled(contentFinderCondition != 0);
     m_gimmickListAction->setEnabled(contentFinderCondition != 0);
+    m_effectListAction->setEnabled(contentFinderCondition != 0);
 
     if (contentFinderCondition != 0) {
         qInfo() << "This map contains a duty! CF:" << contentFinderCondition;

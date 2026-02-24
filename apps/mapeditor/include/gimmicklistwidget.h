@@ -7,7 +7,6 @@
 #include <physis.hpp>
 
 class SceneState;
-class QSortFilterProxyModel;
 
 class GimmickListWidget : public QDialog
 {

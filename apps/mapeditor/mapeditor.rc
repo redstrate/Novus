@@ -25,6 +25,7 @@
       <Action name="duty_go_to_entrance"/>
       <Action name="duty_go_to_exit"/>
       <Action name="duty_gimmicks"/>
+      <Action name="duty_effects"/>
     </Menu>
   </MenuBar>
 </gui>
