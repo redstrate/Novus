@@ -43,6 +43,7 @@ private:
     void refreshTimelineData(const physis_ScnTimeline &timeline);
     void refreshActionData(const ScnSGActionControllerDescriptor &action);
     void refreshLgbData(const QString &path);
+    void refreshTeraData(const QString &path);
 
     void addCommonSection(const physis_InstanceObject &object);
     void addBGSection(const physis_BGInstanceObject &bg);

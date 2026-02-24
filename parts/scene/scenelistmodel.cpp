@@ -81,7 +81,11 @@ QVariant SceneListModel::data(const QModelIndex &index, int role) const
             switch (item->type) {
             case TreeType::Root:
                 Q_UNREACHABLE();
-            case TreeType::File:
+            case TreeType::TeraFile:
+            case TreeType::EmbeddedLgbFile:
+            case TreeType::Actions:
+            case TreeType::LgbFile:
+            case TreeType::Timelines:
                 return QIcon::fromTheme(QStringLiteral("emblem-documents-symbolic"));
             case TreeType::Layer:
                 return QIcon::fromTheme(QStringLiteral("dialog-layers-symbolic"));
@@ -199,8 +203,16 @@ std::optional<ScnSGActionControllerDescriptor const *> SceneListModel::actionAt(
 std::optional<QString> SceneListModel::lgbAt(const QModelIndex &index) const
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
-    // NOTE: Currently only external LGB files have a item->data, but will probably change in the future...
-    if (item && item->type == TreeType::File && item->data.isValid()) {
+    if (item && item->type == TreeType::LgbFile) {
+        return item->data.toString();
+    }
+    return std::nullopt;
+}
+
+std::optional<QString> SceneListModel::teraAt(const QModelIndex &index) const
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::TeraFile) {
         return item->data.toString();
     }
     return std::nullopt;
@@ -300,10 +312,11 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
 {
     if (scene.terrain.num_plates > 0) {
         auto terrainItem = new SceneTreeInformation();
-        terrainItem->type = TreeType::File;
+        terrainItem->type = TreeType::TeraFile;
         terrainItem->parent = parentNode;
         terrainItem->name = i18n("Terrain");
         terrainItem->row = parentNode->children.size();
+        terrainItem->data = scene.terrainPath;
         parentNode->children.push_back(terrainItem);
 
         // Add terrain plates
@@ -320,7 +333,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
 
     if (scene.embeddedTimelines.length() > 0) {
         auto timelinesItem = new SceneTreeInformation();
-        timelinesItem->type = TreeType::File;
+        timelinesItem->type = TreeType::Timelines;
         timelinesItem->parent = parentNode;
         timelinesItem->name = i18n("Timelines");
         timelinesItem->row = parentNode->children.size();
@@ -339,7 +352,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
 
     if (scene.actionDescriptors.size() > 0) {
         auto actionsItem = new SceneTreeInformation();
-        actionsItem->type = TreeType::File;
+        actionsItem->type = TreeType::Actions;
         actionsItem->parent = parentNode;
         actionsItem->name = i18n("Actions");
         actionsItem->row = parentNode->children.size();
@@ -361,7 +374,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         const auto &[name, lgb] = scene.lgbFiles[y];
 
         auto fileItem = new SceneTreeInformation();
-        fileItem->type = TreeType::File;
+        fileItem->type = TreeType::LgbFile;
         fileItem->parent = parentNode;
         fileItem->name = name;
         fileItem->row = parentNode->children.size();
@@ -381,7 +394,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         const auto &lgb = scene.embeddedLgbs[y];
 
         auto fileItem = new SceneTreeInformation();
-        fileItem->type = TreeType::File;
+        fileItem->type = TreeType::EmbeddedLgbFile;
         fileItem->parent = parentNode;
         fileItem->name = QString::fromLatin1(lgb.name);
         fileItem->row = parentNode->children.size();

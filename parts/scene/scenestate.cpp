@@ -59,6 +59,7 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
     auto tera_buffer = physis_sqpack_read(data, bgPathStd.c_str());
     if (tera_buffer.size > 0) {
         terrain = physis_terrain_parse(data->platform, tera_buffer);
+        terrainPath = QString::fromStdString(bgPathStd);
     } else {
         qWarning() << "Failed to load terrain" << bgPathStd;
     }

@@ -48,6 +48,9 @@ ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *pa
         if (m_appState->selectedLgb) {
             refreshLgbData(m_appState->selectedLgb.value());
         }
+        if (m_appState->selectedTera) {
+            refreshTeraData(m_appState->selectedTera.value());
+        }
     });
 }
 
@@ -213,6 +216,20 @@ void ObjectPropertiesWidget::refreshActionData(const ScnSGActionControllerDescri
 void ObjectPropertiesWidget::refreshLgbData(const QString &path)
 {
     const auto section = new CollapseSection(i18n("LGB"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto pathWidget = new PathEdit();
+    pathWidget->setPath(path);
+    layout->addRow(i18n("Path"), pathWidget);
+}
+
+void ObjectPropertiesWidget::refreshTeraData(const QString &path)
+{
+    const auto section = new CollapseSection(i18n("Terrain"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 

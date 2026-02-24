@@ -31,6 +31,7 @@ public:
     QString basePath;
     QList<physis_ScnTimeline> embeddedTimelines;
     physis_Terrain terrain = {};
+    QString terrainPath;
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
     std::vector<physis_ScnLayerGroup> embeddedLgbs;
     Animation *animation = nullptr;
@@ -67,6 +68,7 @@ public:
     std::optional<physis_ScnTimeline const *> selectedTimeline;
     std::optional<ScnSGActionControllerDescriptor const *> selectedAction;
     std::optional<QString> selectedLgb;
+    std::optional<QString> selectedTera;
     QList<uint32_t> visibleTerrainPlates;
 
     /**

@@ -17,9 +17,17 @@ enum class TreeType {
     /// Root of the tree
     Root,
     /// LGB file
-    File,
+    LgbFile,
+    /// Embedded LGB file
+    EmbeddedLgbFile,
+    /// TERA file
+    TeraFile,
     /// A layer.
     Layer,
+    /// Representative of all timelines in this scene.
+    Timelines,
+    /// Representative of all action descriptors in this scene.
+    Actions,
     /// A single object
     Object,
     /// A terrain plate.
@@ -70,6 +78,7 @@ public:
     std::optional<physis_ScnTimeline const *> timelineAt(const QModelIndex &index) const;
     std::optional<ScnSGActionControllerDescriptor const *> actionAt(const QModelIndex &index) const;
     std::optional<QString> lgbAt(const QModelIndex &index) const;
+    std::optional<QString> teraAt(const QModelIndex &index) const;
 
 private:
     void refresh();
