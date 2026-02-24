@@ -66,6 +66,7 @@ public:
     std::optional<physis_Layer const *> selectedLayer;
     std::optional<physis_ScnTimeline const *> selectedTimeline;
     std::optional<ScnSGActionControllerDescriptor const *> selectedAction;
+    std::optional<QString> selectedLgb;
     QList<uint32_t> visibleTerrainPlates;
 
     /**

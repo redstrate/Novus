@@ -164,7 +164,7 @@ std::optional<physis_InstanceObject const *> SceneListModel::objectAt(const QMod
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Object) {
-        return static_cast<physis_InstanceObject const *>(item->data);
+        return item->data.value<physis_InstanceObject const *>();
     }
     return std::nullopt;
 }
@@ -173,7 +173,7 @@ std::optional<physis_Layer const *> SceneListModel::layerAt(const QModelIndex &i
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Layer) {
-        return static_cast<physis_Layer const *>(item->data);
+        return item->data.value<physis_Layer const *>();
     }
     return std::nullopt;
 }
@@ -182,7 +182,7 @@ std::optional<physis_ScnTimeline const *> SceneListModel::timelineAt(const QMode
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Timeline) {
-        return static_cast<physis_ScnTimeline const *>(item->data);
+        return item->data.value<physis_ScnTimeline const *>();
     }
     return std::nullopt;
 }
@@ -191,7 +191,17 @@ std::optional<ScnSGActionControllerDescriptor const *> SceneListModel::actionAt(
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Action) {
-        return static_cast<ScnSGActionControllerDescriptor const *>(item->data);
+        return item->data.value<ScnSGActionControllerDescriptor const *>();
+    }
+    return std::nullopt;
+}
+
+std::optional<QString> SceneListModel::lgbAt(const QModelIndex &index) const
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    // NOTE: Currently only external LGB files have a item->data, but will probably change in the future...
+    if (item && item->type == TreeType::File && item->data.isValid()) {
+        return item->data.toString();
     }
     return std::nullopt;
 }
@@ -216,7 +226,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
     layerItem->name = QString::fromLatin1(layer.name);
     layerItem->row = index;
     layerItem->id = layer.id;
-    layerItem->data = &layer;
+    layerItem->data = QVariant::fromValue(&layer);
     fileItem->children.push_back(layerItem);
 
     for (uint32_t z = 0; z < layer.num_objects; z++) {
@@ -274,7 +284,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
         objectItem->parent = layerItem;
         objectItem->name = objectName;
         objectItem->row = z;
-        objectItem->data = &object;
+        objectItem->data = QVariant::fromValue(&object);
         objectItem->id = object.instance_id;
         layerItem->children.push_back(objectItem);
 
@@ -322,7 +332,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
             timelineItem->parent = timelinesItem;
             timelineItem->name = i18n("Timeline");
             timelineItem->row = i;
-            timelineItem->data = &scene.embeddedTimelines[i];
+            timelineItem->data = QVariant::fromValue(&scene.embeddedTimelines[i]);
             timelinesItem->children.push_back(timelineItem);
         }
     }
@@ -341,7 +351,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
             actionItem->parent = actionsItem;
             actionItem->name = i18n("Action");
             actionItem->row = i;
-            actionItem->data = &scene.actionDescriptors[i];
+            actionItem->data = QVariant::fromValue(&scene.actionDescriptors[i]);
             actionsItem->children.push_back(actionItem);
         }
     }
@@ -355,6 +365,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         fileItem->parent = parentNode;
         fileItem->name = name;
         fileItem->row = parentNode->children.size();
+        fileItem->data = name;
         parentNode->children.push_back(fileItem);
 
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {

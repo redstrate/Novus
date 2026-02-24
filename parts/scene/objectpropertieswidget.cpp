@@ -45,6 +45,9 @@ ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *pa
         if (m_appState->selectedAction) {
             refreshActionData(*m_appState->selectedAction.value());
         }
+        if (m_appState->selectedLgb) {
+            refreshLgbData(m_appState->selectedLgb.value());
+        }
     });
 }
 
@@ -205,6 +208,20 @@ void ObjectPropertiesWidget::refreshActionData(const ScnSGActionControllerDescri
     case ScnSGActionControllerDescriptor::Tag::Unknown:
         break;
     }
+}
+
+void ObjectPropertiesWidget::refreshLgbData(const QString &path)
+{
+    const auto section = new CollapseSection(i18n("LGB"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto pathWidget = new PathEdit();
+    pathWidget->setPath(path);
+    layout->addRow(i18n("Path"), pathWidget);
 }
 
 void ObjectPropertiesWidget::addCommonSection(const physis_InstanceObject &object)

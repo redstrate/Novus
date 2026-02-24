@@ -36,7 +36,7 @@ struct SceneTreeInformation {
     int row = 0;
     QString name;
     uint32_t id = 0;
-    void const *data = nullptr;
+    QVariant data;
 
     std::vector<SceneTreeInformation *> children{};
 };
@@ -69,6 +69,7 @@ public:
     std::optional<physis_Layer const *> layerAt(const QModelIndex &index) const;
     std::optional<physis_ScnTimeline const *> timelineAt(const QModelIndex &index) const;
     std::optional<ScnSGActionControllerDescriptor const *> actionAt(const QModelIndex &index) const;
+    std::optional<QString> lgbAt(const QModelIndex &index) const;
 
 private:
     void refresh();
