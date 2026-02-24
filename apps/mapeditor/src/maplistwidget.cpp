@@ -19,7 +19,6 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
     setMinimumSize(QSize(640, 480));
 
     auto layout = new QVBoxLayout();
-    layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
     m_searchModel = new QSortFilterProxyModel();

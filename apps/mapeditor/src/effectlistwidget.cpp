@@ -17,6 +17,7 @@ EffectListWidget::EffectListWidget(SceneState *state, std::vector<int32_t> effec
     setWindowTitle(i18n("Map Effects"));
 
     auto layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
     auto listWidget = new QListWidget();
