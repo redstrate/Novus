@@ -28,6 +28,7 @@ public:
 
     void loadSgb(physis_Buffer file);
     void focusSearchField();
+    void selectObject(uint32_t objectId);
 
     SceneState *sceneState() const;
     MapView *mapView() const;

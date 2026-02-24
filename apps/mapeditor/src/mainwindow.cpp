@@ -19,6 +19,7 @@
 #include "scenepart.h"
 #include "scenestate.h"
 
+#include <QInputDialog>
 #include <QLabel>
 #include <QStatusBar>
 
@@ -104,6 +105,18 @@ void MainWindow::setupActions()
         listWidget->show();
     });
     actionCollection()->addAction(QStringLiteral("duty_effects"), m_effectListAction);
+
+    m_goToObjectAction = new QAction(i18nc("@action:inmenu", "To Object…"));
+    m_goToObjectAction->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
+    KActionCollection::setDefaultShortcut(m_goToObjectAction, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
+    connect(m_goToObjectAction, &QAction::triggered, this, [this] {
+        bool ok = false;
+        const QString text = QInputDialog::getText(this, i18n("Go To…"), i18n("Object ID:"), QLineEdit::Normal, QString{}, &ok);
+        if (ok && !text.isEmpty()) {
+            m_part->selectObject(text.toUInt());
+        }
+    });
+    actionCollection()->addAction(QStringLiteral("goto_object"), m_goToObjectAction);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 

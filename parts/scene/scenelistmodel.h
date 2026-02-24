@@ -48,6 +48,11 @@ class SceneListModel : public QAbstractItemModel
 public:
     explicit SceneListModel(SceneState *appState, QObject *parent = nullptr);
 
+    enum SceneListRoles {
+        ObjectIdRole = Qt::UserRole,
+    };
+    Q_ENUM(SceneListRoles)
+
     int rowCount(const QModelIndex &parent) const override;
     int columnCount(const QModelIndex &parent) const override;
 
@@ -58,6 +63,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+    QHash<int, QByteArray> roleNames() const override;
 
     std::optional<physis_InstanceObject const *> objectAt(const QModelIndex &index) const;
     std::optional<physis_Layer const *> layerAt(const QModelIndex &index) const;

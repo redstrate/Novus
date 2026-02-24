@@ -97,6 +97,11 @@ void ScenePart::focusSearchField()
     m_sceneListWidget->focusSearchField();
 }
 
+void ScenePart::selectObject(uint32_t objectId)
+{
+    m_sceneListWidget->selectObject(objectId);
+}
+
 SceneState *ScenePart::sceneState() const
 {
     return m_appState;

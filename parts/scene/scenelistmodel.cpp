@@ -70,6 +70,9 @@ QVariant SceneListModel::data(const QModelIndex &index, int role) const
         return {};
 
     auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (role == SceneListRoles::ObjectIdRole) {
+        return item->id;
+    }
     if (index.column() == 0) {
         if (role == Qt::DisplayRole) {
             return item->name;
@@ -148,6 +151,13 @@ bool SceneListModel::setData(const QModelIndex &index, const QVariant &value, in
         }
     }
     return QAbstractItemModel::setData(index, value, role);
+}
+
+QHash<int, QByteArray> SceneListModel::roleNames() const
+{
+    return {
+        {ObjectIdRole, "objectId"},
+    };
 }
 
 std::optional<physis_InstanceObject const *> SceneListModel::objectAt(const QModelIndex &index) const
@@ -265,6 +275,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
         objectItem->name = i18n("%1 (%2)", objectName, QString::number(object.instance_id)); // TODO: do display names if we have them
         objectItem->row = z;
         objectItem->data = &object;
+        objectItem->id = object.instance_id;
         layerItem->children.push_back(objectItem);
 
         // Load nested shared group data

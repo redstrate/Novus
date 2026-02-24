@@ -16,6 +16,10 @@
       <text>Edit</text>
       <Action name="search" />
     </Menu>
+    <Menu name="navigate" >
+      <text>Navigate</text>
+      <Action name="goto_object" />
+    </Menu>
     <Menu name="object" >
       <text>Object</text>
       <Action name="center_object"/>

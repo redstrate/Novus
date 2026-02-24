@@ -34,6 +34,7 @@ private:
     QAction *m_goToExitAction = nullptr;
     QAction *m_gimmickListAction = nullptr;
     QAction *m_effectListAction = nullptr;
+    QAction *m_goToObjectAction = nullptr;
     QLabel *m_cameraPosLabel = nullptr;
     uint32_t m_lgbEventRange = 0;
     std::vector<int32_t> m_mapEffects;

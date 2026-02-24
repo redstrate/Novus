@@ -22,27 +22,27 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     layout->setSpacing(0);
     setLayout(layout);
 
-    auto searchModel = new QSortFilterProxyModel();
-    searchModel->setRecursiveFilteringEnabled(true);
-    searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
+    m_searchModel = new QSortFilterProxyModel();
+    m_searchModel->setRecursiveFilteringEnabled(true);
+    m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     m_searchEdit = new QLineEdit();
     m_searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for objects."));
     m_searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     m_searchEdit->setClearButtonEnabled(true);
     m_searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
-    connect(m_searchEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
-        searchModel->setFilterRegularExpression(text);
+    connect(m_searchEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
+        m_searchModel->setFilterRegularExpression(text);
     });
     layout->addWidget(m_searchEdit);
 
     treeWidget = new QTreeView();
     treeWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of objects on this map."));
-    treeWidget->setModel(searchModel);
+    treeWidget->setModel(m_searchModel);
     treeWidget->header()->setStretchLastSection(false);
     treeWidget->header()->setSectionsMovable(false);
-    connect(treeWidget, &QTreeView::activated, this, [this, searchModel](const QModelIndex &index) {
-        auto originalIndex = searchModel->mapToSource(index);
+    connect(treeWidget, &QTreeView::activated, this, [this](const QModelIndex &index) {
+        auto originalIndex = m_searchModel->mapToSource(index);
         m_appState->selectedObject = m_objectListModel->objectAt(originalIndex);
         m_appState->selectedLayer = m_objectListModel->layerAt(originalIndex);
         m_appState->selectedTimeline = m_objectListModel->timelineAt(originalIndex);
@@ -57,7 +57,7 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
         treeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
         treeWidget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     });
-    searchModel->setSourceModel(m_objectListModel);
+    m_searchModel->setSourceModel(m_objectListModel);
 }
 
 void SceneListWidget::expandToDepth(const int depth)
@@ -68,4 +68,30 @@ void SceneListWidget::expandToDepth(const int depth)
 void SceneListWidget::focusSearchField()
 {
     m_searchEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
+}
+
+void SceneListWidget::selectObject(uint32_t objectId)
+{
+    auto indices = m_objectListModel->match(m_objectListModel->index(0, 0, {}),
+                                            SceneListModel::SceneListRoles::ObjectIdRole,
+                                            QVariant::fromValue(objectId),
+                                            1,
+                                            Qt::MatchExactly | Qt::MatchRecursive);
+
+    if (indices.isEmpty()) {
+        qWarning() << "Somehow couldn't find ID" << objectId;
+        return;
+    }
+
+    const auto index = m_searchModel->mapFromSource(indices.first());
+    treeWidget->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+
+    // Expand parents of this child index
+    QModelIndex parent = index.parent();
+    while (parent.isValid()) {
+        treeWidget->expand(parent);
+        parent = parent.parent();
+    }
+
+    Q_EMIT treeWidget->activated(index);
 }
