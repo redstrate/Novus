@@ -173,7 +173,6 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
                 while (it.hasNext()) {
                     m_part->sceneState()->loadDropIn(it.next());
                 }
-                m_part->sceneState()->load(&m_data, lvb.sections[0]);
             }
         } else {
             qWarning() << "Failed to parse lvb" << lvbPath;
