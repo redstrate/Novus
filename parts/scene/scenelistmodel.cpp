@@ -221,6 +221,15 @@ std::optional<QString> SceneListModel::teraAt(const QModelIndex &index) const
     return std::nullopt;
 }
 
+std::optional<DropInObject *> SceneListModel::dropInObjectAt(const QModelIndex &index) const
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::DropInObject) {
+        return item->data.value<DropInObject *>();
+    }
+    return std::nullopt;
+}
+
 void SceneListModel::refresh()
 {
     beginResetModel();
@@ -418,7 +427,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         parentNode->children.push_back(dropinsItem);
 
         for (uint32_t i = 0; i < scene.dropInLayers.size(); i++) {
-            const auto &layer = scene.dropInLayers[i];
+            auto &layer = scene.dropInLayers[i];
 
             auto dropinLayerItem = new SceneTreeInformation();
             dropinLayerItem->type = TreeType::DropInLayer;
@@ -429,7 +438,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
             dropinsItem->children.push_back(dropinLayerItem);
 
             for (uint32_t j = 0; j < layer.objects.size(); j++) {
-                const auto &dropInObject = layer.objects[j];
+                auto &dropInObject = layer.objects[j];
 
                 auto dropinItem = new SceneTreeInformation();
                 dropinItem->type = TreeType::DropInObject;

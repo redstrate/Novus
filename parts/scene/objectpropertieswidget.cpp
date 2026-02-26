@@ -51,6 +51,9 @@ ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *pa
         if (m_appState->selectedTera) {
             refreshTeraData(m_appState->selectedTera.value());
         }
+        if (m_appState->selectedDropInObject) {
+            refreshDropInData(m_appState->selectedDropInObject.value());
+        }
     });
 }
 
@@ -239,6 +242,46 @@ void ObjectPropertiesWidget::refreshTeraData(const QString &path)
     auto pathWidget = new PathEdit();
     pathWidget->setPath(path);
     layout->addRow(i18n("Path"), pathWidget);
+}
+
+void ObjectPropertiesWidget::refreshDropInData(DropInObject *object)
+{
+    const auto section = new CollapseSection(i18n("Drop-In Object"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto pos = glm::make_vec3(object->position);
+    const auto positionEdit = new Vector3Edit(pos);
+    layout->addRow(i18n("Position"), positionEdit);
+
+    const auto idEdit = new QLineEdit();
+    idEdit->setText(QString::number(object->instanceId));
+    layout->addRow(i18n("Instance ID"), idEdit);
+
+    if (auto data = std::get_if<DropInGatheringPoint>(&object->data)) {
+        const auto baseIdEdit = new QLineEdit();
+        baseIdEdit->setText(QString::number(data->baseId));
+        layout->addRow(i18n("Base ID"), baseIdEdit);
+    } else if (auto data = std::get_if<DropInBattleNpc>(&object->data)) {
+        const auto baseIdEdit = new QLineEdit();
+        baseIdEdit->setText(QString::number(data->baseId));
+        layout->addRow(i18n("Base ID"), baseIdEdit);
+
+        const auto nameIdEdit = new QLineEdit();
+        nameIdEdit->setText(QString::number(data->nameId));
+        layout->addRow(i18n("Name ID"), nameIdEdit);
+
+        const auto hpEdit = new QLineEdit();
+        hpEdit->setText(QString::number(data->hp));
+        layout->addRow(i18n("HP"), hpEdit);
+
+        const auto levelEdit = new QLineEdit();
+        levelEdit->setText(QString::number(data->level));
+        layout->addRow(i18n("Level"), levelEdit);
+    }
 }
 
 void ObjectPropertiesWidget::addCommonSection(const physis_InstanceObject &object)

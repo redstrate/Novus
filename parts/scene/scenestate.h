@@ -95,6 +95,7 @@ public:
     std::optional<ScnSGActionControllerDescriptor const *> selectedAction;
     std::optional<QString> selectedLgb;
     std::optional<QString> selectedTera;
+    std::optional<DropInObject *> selectedDropInObject;
     QList<uint32_t> visibleTerrainPlates;
 
     /**

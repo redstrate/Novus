@@ -5,6 +5,7 @@
 
 #include <QAbstractItemModel>
 
+struct DropInObject;
 struct ScnSGActionControllerDescriptor;
 struct physis_ScnTimeline;
 struct ObjectScene;
@@ -85,6 +86,7 @@ public:
     std::optional<ScnSGActionControllerDescriptor const *> actionAt(const QModelIndex &index) const;
     std::optional<QString> lgbAt(const QModelIndex &index) const;
     std::optional<QString> teraAt(const QModelIndex &index) const;
+    std::optional<DropInObject *> dropInObjectAt(const QModelIndex &index) const;
 
 private:
     void refresh();

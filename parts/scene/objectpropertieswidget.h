@@ -5,6 +5,7 @@
 
 #include <QWidget>
 
+struct DropInObject;
 struct physis_ScnTimeline;
 struct ScnSGActionControllerDescriptor;
 struct physis_VfxInstanceObject;
@@ -44,6 +45,7 @@ private:
     void refreshActionData(const ScnSGActionControllerDescriptor &action);
     void refreshLgbData(const QString &path);
     void refreshTeraData(const QString &path);
+    void refreshDropInData(DropInObject *object);
 
     void addCommonSection(const physis_InstanceObject &object);
     void addBGSection(const physis_BGInstanceObject &bg);
