@@ -10,6 +10,30 @@
 
 class Animation;
 
+struct DropInGatheringPoint {
+    uint32_t baseId;
+};
+
+struct DropInBattleNpc {
+    uint32_t baseId;
+    uint32_t nameId;
+    uint32_t hp;
+    uint8_t level;
+};
+
+struct DropInObject {
+    uint32_t instanceId;
+    float position[3];
+    float rotation;
+
+    std::variant<DropInGatheringPoint, DropInBattleNpc, std::monostate> data;
+};
+
+struct DropInLayer {
+    QString name;
+    QList<DropInObject> objects;
+};
+
 /// Represents a "SCN1" section, which could be a complete level (LVB) or a prefab (SGB). These can also be infinitely nested.
 class ObjectScene
 {
@@ -37,6 +61,7 @@ public:
     Animation *animation = nullptr;
     std::vector<ScnSGActionControllerDescriptor> actionDescriptors;
     bool isSgb = false; // Currently only used to skip visibility checks.
+    std::vector<DropInLayer> dropInLayers;
 
     /// Key is the ID of the SGB instance.
     QHash<uint32_t, ObjectScene> nestedScenes;
@@ -57,6 +82,7 @@ public:
     explicit SceneState(physis_SqPackResource *resource, QObject *parent = nullptr);
 
     void load(physis_SqPackResource *data, const physis_ScnSection &section);
+    void loadDropIn(const QString &path);
     void clear();
     void showAll();
 

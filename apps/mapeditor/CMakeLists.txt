@@ -9,12 +9,14 @@ target_sources(novus-mapeditor
         include/gimmicklistwidget.h
         include/mainwindow.h
         include/maplistwidget.h
+        include/settingswindow.h
 
         src/effectlistwidget.cpp
         src/gimmicklistwidget.cpp
         src/main.cpp
         src/mainwindow.cpp
-        src/maplistwidget.cpp)
+        src/maplistwidget.cpp
+        src/settingswindow.cpp)
 target_include_directories(novus-mapeditor
         PUBLIC
         include)

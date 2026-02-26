@@ -7,6 +7,12 @@
 
 #include "animation.h"
 
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonObject>
+
+using namespace Qt::StringLiterals;
+
 SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
     : QObject(parent)
 {
@@ -137,6 +143,62 @@ void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &sect
     processLongestAnimationTime(rootScene);
 
     Q_EMIT mapLoaded();
+}
+
+void SceneState::loadDropIn(const QString &path)
+{
+    QFile f(path);
+    if (f.open(QIODevice::ReadOnly)) {
+        QJsonDocument document = QJsonDocument::fromJson(f.readAll());
+        auto obj = document.object();
+        if (obj.contains("appends"_L1)) {
+            for (const auto &name : rootScene.lgbFiles | std::views::keys) {
+                if (name == obj["appends"_L1]) {
+                    for (const auto &jsonLayer : obj["layers"_L1].toArray()) {
+                        const auto &jsonLayerObj = jsonLayer.toObject();
+
+                        DropInLayer layer;
+                        layer.name = jsonLayerObj["name"_L1].toString();
+
+                        for (const auto &jsonObj : jsonLayerObj["objects"_L1].toArray()) {
+                            const auto &jsonObjObj = jsonObj.toObject();
+
+                            DropInObject obj{};
+                            obj.instanceId = jsonObjObj["instance_id"_L1].toInteger();
+                            obj.position[0] = jsonObjObj["position"_L1]["x"_L1].toDouble();
+                            obj.position[1] = jsonObjObj["position"_L1]["y"_L1].toDouble();
+                            obj.position[2] = jsonObjObj["position"_L1]["z"_L1].toDouble();
+
+                            const auto &jsonData = jsonObjObj["data"_L1].toObject();
+                            const auto &jsonType = jsonData["type"_L1].toString();
+                            if (jsonType == "gathering_point"_L1) {
+                                DropInGatheringPoint gatheringPoint{};
+                                gatheringPoint.baseId = jsonData["base_id"_L1].toInteger();
+
+                                obj.data = gatheringPoint;
+                            } else if (jsonType == "battle_npc"_L1) {
+                                DropInBattleNpc battleNpc{};
+                                battleNpc.baseId = jsonData["base_id"_L1].toInteger();
+                                battleNpc.nameId = jsonData["name_id"_L1].toInteger();
+                                battleNpc.hp = jsonData["hp"_L1].toInteger();
+                                battleNpc.level = jsonData["level"_L1].toInt();
+
+                                obj.data = battleNpc;
+                            } else {
+                                qWarning() << "Unknown drop-in object type:" << jsonType;
+                            }
+
+                            layer.objects.push_back(obj);
+                        }
+
+                        rootScene.dropInLayers.push_back(layer);
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void SceneState::clear()

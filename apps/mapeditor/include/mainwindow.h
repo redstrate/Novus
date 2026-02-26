@@ -21,6 +21,9 @@ class MainWindow : public KXmlGuiWindow
 public:
     explicit MainWindow(physis_SqPackResource data);
 
+public Q_SLOTS:
+    void configure();
+
 private:
     void setupActions();
     void openMap(const QString &basePath, int contentFinderCondition);

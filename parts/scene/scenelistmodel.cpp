@@ -86,10 +86,13 @@ QVariant SceneListModel::data(const QModelIndex &index, int role) const
             case TreeType::Actions:
             case TreeType::LgbFile:
             case TreeType::Timelines:
+            case TreeType::DropIns:
                 return QIcon::fromTheme(QStringLiteral("emblem-documents-symbolic"));
             case TreeType::Layer:
+            case TreeType::DropInLayer:
                 return QIcon::fromTheme(QStringLiteral("dialog-layers-symbolic"));
             case TreeType::Object:
+            case TreeType::DropInObject:
                 return QIcon::fromTheme(QStringLiteral("draw-cuboid-symbolic"));
             case TreeType::Plate:
                 return QIcon::fromTheme(QStringLiteral("kstars_xplanet-symbolic"));
@@ -402,6 +405,46 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
 
         for (uint32_t i = 0; i < lgb.layer_count; i++) {
             addLayer(i, fileItem, lgb.layers[i], scene);
+        }
+    }
+
+    /// Drop-ins
+    if (scene.dropInLayers.size() > 0) {
+        auto dropinsItem = new SceneTreeInformation();
+        dropinsItem->type = TreeType::DropIns;
+        dropinsItem->parent = parentNode;
+        dropinsItem->name = i18n("Drop-ins");
+        dropinsItem->row = parentNode->children.size();
+        parentNode->children.push_back(dropinsItem);
+
+        for (uint32_t i = 0; i < scene.dropInLayers.size(); i++) {
+            const auto &layer = scene.dropInLayers[i];
+
+            auto dropinLayerItem = new SceneTreeInformation();
+            dropinLayerItem->type = TreeType::DropInLayer;
+            dropinLayerItem->parent = dropinsItem;
+            dropinLayerItem->name = layer.name;
+            dropinLayerItem->row = i;
+            dropinLayerItem->data = QVariant::fromValue(&layer);
+            dropinsItem->children.push_back(dropinLayerItem);
+
+            for (uint32_t j = 0; j < layer.objects.size(); j++) {
+                const auto &dropInObject = layer.objects[j];
+
+                auto dropinItem = new SceneTreeInformation();
+                dropinItem->type = TreeType::DropInObject;
+                dropinItem->parent = dropinLayerItem;
+                dropinItem->name = i18n("Unknown Object");
+                if (std::holds_alternative<DropInGatheringPoint>(dropInObject.data)) {
+                    dropinItem->name = i18n("Gathering Point");
+                } else if (std::holds_alternative<DropInBattleNpc>(dropInObject.data)) {
+                    // TODO: insert BNpcName
+                    dropinItem->name = i18n("Battle NPC");
+                }
+                dropinItem->row = j;
+                dropinItem->data = QVariant::fromValue(&dropInObject);
+                dropinLayerItem->children.push_back(dropinItem);
+            }
         }
     }
 }

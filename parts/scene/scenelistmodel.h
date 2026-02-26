@@ -36,6 +36,12 @@ enum class TreeType {
     Timeline,
     /// A action.
     Action,
+    /// Drop-ins category.
+    DropIns,
+    /// Drop-in layer.
+    DropInLayer,
+    /// A drop-in object.
+    DropInObject,
 };
 
 struct SceneTreeInformation {

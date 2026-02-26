@@ -5,6 +5,7 @@
 
 #include "effectlistwidget.h"
 #include "gimmicklistwidget.h"
+#include "settingswindow.h"
 
 #include <KActionCollection>
 #include <KLocalizedString>
@@ -19,6 +20,9 @@
 #include "scenepart.h"
 #include "scenestate.h"
 
+#include <KConfig>
+#include <KConfigGroup>
+#include <QDirIterator>
 #include <QInputDialog>
 #include <QLabel>
 #include <QStatusBar>
@@ -45,8 +49,15 @@ MainWindow::MainWindow(physis_SqPackResource data)
     updateActionState();
 }
 
+void MainWindow::configure()
+{
+    auto settingsWindow = new SettingsWindow();
+    settingsWindow->show();
+}
+
 void MainWindow::setupActions()
 {
+    KStandardAction::preferences(this, &MainWindow::configure, actionCollection());
     KStandardAction::open(
         qApp,
         [this] {
@@ -146,6 +157,18 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
         if (lvb.sections) {
             // TODO: read all sections?
             m_part->sceneState()->load(&m_data, lvb.sections[0]);
+
+            KConfig config(QStringLiteral("novusrc"));
+            KConfigGroup game = config.group(QStringLiteral("MapEditor"));
+
+            const auto dropInsPath = game.readEntry("DropInsPath");
+            if (!dropInsPath.isEmpty()) {
+                QDirIterator it(dropInsPath);
+                while (it.hasNext()) {
+                    m_part->sceneState()->loadDropIn(it.next());
+                }
+                m_part->sceneState()->load(&m_data, lvb.sections[0]);
+            }
         } else {
             qWarning() << "Failed to parse lvb" << lvbPath;
         }
