@@ -68,6 +68,12 @@ void MainWindow::setupActions()
             listWidget->show();
         },
         actionCollection());
+    KStandardAction::save(
+        qApp,
+        [this] {
+            m_part->sceneState()->saveDropIns();
+        },
+        actionCollection());
 
     m_centerObjectAction = new QAction(i18nc("@action:inmenu", "Center on Object"));
     m_centerObjectAction->setIcon(QIcon::fromTheme(QStringLiteral("camera-video-symbolic")));

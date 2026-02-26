@@ -154,6 +154,9 @@ void SceneState::loadDropIn(const QString &path)
         if (obj.contains("appends"_L1)) {
             for (const auto &name : rootScene.lgbFiles | std::views::keys) {
                 if (name == obj["appends"_L1]) {
+                    DropIn dropIn{};
+                    dropIn.appends = name;
+
                     for (const auto &jsonLayer : obj["layers"_L1].toArray()) {
                         const auto &jsonLayerObj = jsonLayer.toObject();
 
@@ -168,6 +171,7 @@ void SceneState::loadDropIn(const QString &path)
                             obj.position[0] = jsonObjObj["position"_L1]["x"_L1].toDouble();
                             obj.position[1] = jsonObjObj["position"_L1]["y"_L1].toDouble();
                             obj.position[2] = jsonObjObj["position"_L1]["z"_L1].toDouble();
+                            obj.rotation = jsonObjObj["rotation"_L1].toDouble();
 
                             const auto &jsonData = jsonObjObj["data"_L1].toObject();
                             const auto &jsonType = jsonData["type"_L1].toString();
@@ -191,12 +195,67 @@ void SceneState::loadDropIn(const QString &path)
                             layer.objects.push_back(obj);
                         }
 
-                        rootScene.dropInLayers.push_back(layer);
+                        dropIn.layers.push_back(layer);
                     }
 
-                    break;
+                    rootScene.dropIns.push_back({path, dropIn});
                 }
             }
+        }
+    }
+}
+
+void SceneState::saveDropIns()
+{
+    for (const auto &[path, dropIn] : rootScene.dropIns) {
+        QJsonObject dropInObj;
+        dropInObj["appends"_L1] = dropIn.appends;
+
+        QJsonArray layerArray;
+        for (const auto &layer : dropIn.layers) {
+            QJsonObject layerObj;
+            layerObj["name"_L1] = layer.name;
+
+            QJsonArray objArray;
+            for (const auto &object : layer.objects) {
+                QJsonObject objObj;
+                objObj["instance_id"_L1] = (qint64)object.instanceId;
+                objObj["position"_L1] = QJsonObject{
+                    {"x"_L1, object.position[0]},
+                    {"y"_L1, object.position[1]},
+                    {"z"_L1, object.position[2]},
+                };
+                objObj["rotation"_L1] = object.rotation;
+
+                if (const auto data = std::get_if<DropInGatheringPoint>(&object.data)) {
+                    objObj["data"_L1] = QJsonObject{
+                        {"type"_L1, "gathering_point"_L1},
+                        {"base_id"_L1, (qint64)data->baseId},
+                    };
+                } else if (const auto data = std::get_if<DropInBattleNpc>(&object.data)) {
+                    objObj["data"_L1] = QJsonObject{
+                        {"type"_L1, "battle_npc"_L1},
+                        {"base_id"_L1, (qint64)data->baseId},
+                        {"name_id"_L1, (qint64)data->nameId},
+                        {"hp"_L1, (qint64)data->hp},
+                        {"level"_L1, data->level},
+                    };
+                }
+
+                objArray.push_back(objObj);
+            }
+
+            layerObj["objects"_L1] = objArray;
+
+            layerArray.push_back(layerObj);
+        }
+
+        dropInObj["layers"_L1] = layerArray;
+
+        QJsonDocument document(dropInObj);
+        QFile f(path);
+        if (f.open(QIODevice::WriteOnly)) {
+            f.write(document.toJson());
         }
     }
 }

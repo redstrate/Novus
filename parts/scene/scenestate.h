@@ -34,6 +34,11 @@ struct DropInLayer {
     QList<DropInObject> objects;
 };
 
+struct DropIn {
+    QString appends;
+    QList<DropInLayer> layers;
+};
+
 /// Represents a "SCN1" section, which could be a complete level (LVB) or a prefab (SGB). These can also be infinitely nested.
 class ObjectScene
 {
@@ -61,7 +66,7 @@ public:
     Animation *animation = nullptr;
     std::vector<ScnSGActionControllerDescriptor> actionDescriptors;
     bool isSgb = false; // Currently only used to skip visibility checks.
-    std::vector<DropInLayer> dropInLayers;
+    std::vector<std::pair<QString, DropIn>> dropIns;
 
     /// Key is the ID of the SGB instance.
     QHash<uint32_t, ObjectScene> nestedScenes;
@@ -83,6 +88,7 @@ public:
 
     void load(physis_SqPackResource *data, const physis_ScnSection &section);
     void loadDropIn(const QString &path);
+    void saveDropIns();
     void clear();
     void showAll();
 

@@ -418,7 +418,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
     }
 
     /// Drop-ins
-    if (scene.dropInLayers.size() > 0) {
+    if (scene.dropIns.size() > 0) {
         auto dropinsItem = new SceneTreeInformation();
         dropinsItem->type = TreeType::DropIns;
         dropinsItem->parent = parentNode;
@@ -426,33 +426,35 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         dropinsItem->row = parentNode->children.size();
         parentNode->children.push_back(dropinsItem);
 
-        for (uint32_t i = 0; i < scene.dropInLayers.size(); i++) {
-            auto &layer = scene.dropInLayers[i];
+        for (auto &[_, dropIn] : scene.dropIns) {
+            for (uint32_t i = 0; i < dropIn.layers.size(); i++) {
+                auto &layer = dropIn.layers[i];
 
-            auto dropinLayerItem = new SceneTreeInformation();
-            dropinLayerItem->type = TreeType::DropInLayer;
-            dropinLayerItem->parent = dropinsItem;
-            dropinLayerItem->name = layer.name;
-            dropinLayerItem->row = i;
-            dropinLayerItem->data = QVariant::fromValue(&layer);
-            dropinsItem->children.push_back(dropinLayerItem);
+                auto dropinLayerItem = new SceneTreeInformation();
+                dropinLayerItem->type = TreeType::DropInLayer;
+                dropinLayerItem->parent = dropinsItem;
+                dropinLayerItem->name = layer.name;
+                dropinLayerItem->row = i;
+                dropinLayerItem->data = QVariant::fromValue(&layer);
+                dropinsItem->children.push_back(dropinLayerItem);
 
-            for (uint32_t j = 0; j < layer.objects.size(); j++) {
-                auto &dropInObject = layer.objects[j];
+                for (uint32_t j = 0; j < layer.objects.size(); j++) {
+                    auto &dropInObject = layer.objects[j];
 
-                auto dropinItem = new SceneTreeInformation();
-                dropinItem->type = TreeType::DropInObject;
-                dropinItem->parent = dropinLayerItem;
-                dropinItem->name = i18n("Unknown Object");
-                if (std::holds_alternative<DropInGatheringPoint>(dropInObject.data)) {
-                    dropinItem->name = i18n("Gathering Point");
-                } else if (std::holds_alternative<DropInBattleNpc>(dropInObject.data)) {
-                    // TODO: insert BNpcName
-                    dropinItem->name = i18n("Battle NPC");
+                    auto dropinItem = new SceneTreeInformation();
+                    dropinItem->type = TreeType::DropInObject;
+                    dropinItem->parent = dropinLayerItem;
+                    dropinItem->name = i18n("Unknown Object");
+                    if (std::holds_alternative<DropInGatheringPoint>(dropInObject.data)) {
+                        dropinItem->name = i18n("Gathering Point");
+                    } else if (std::holds_alternative<DropInBattleNpc>(dropInObject.data)) {
+                        // TODO: insert BNpcName
+                        dropinItem->name = i18n("Battle NPC");
+                    }
+                    dropinItem->row = j;
+                    dropinItem->data = QVariant::fromValue(&dropInObject);
+                    dropinLayerItem->children.push_back(dropinItem);
                 }
-                dropinItem->row = j;
-                dropinItem->data = QVariant::fromValue(&dropInObject);
-                dropinLayerItem->children.push_back(dropinItem);
             }
         }
     }
