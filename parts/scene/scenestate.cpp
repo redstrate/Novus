@@ -203,6 +203,8 @@ void SceneState::loadDropIn(const QString &path)
             }
         }
     }
+
+    Q_EMIT mapLoaded();
 }
 
 void SceneState::saveDropIns()
