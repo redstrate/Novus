@@ -39,7 +39,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("pbd"), FileType::PreBoneDeformer},
                                                      {QStringLiteral("envb"), FileType::EnvironmentBinary},
                                                      {QStringLiteral("essb"), FileType::EnvironmentSoundScapeBinary},
-                                                     {QStringLiteral("amb"), FileType::AmbientSet}};
+                                                     {QStringLiteral("amb"), FileType::AmbientSet},
+                                                     {QStringLiteral("obsb"), FileType::ObjectBehaviorSetBinary}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -73,7 +74,8 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::PreBoneDeformer, i18n("Pre Bone Deformer")},
                                                 {FileType::EnvironmentBinary, i18n("Environment Binary")},
                                                 {FileType::EnvironmentSoundScapeBinary, i18n("Environment Sound Scape Binary")},
-                                                {FileType::AmbientSet, i18n("Ambient Set")}};
+                                                {FileType::AmbientSet, i18n("Ambient Set")},
+                                                {FileType::ObjectBehaviorSetBinary, i18n("Object Behavior Set Binary")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -118,7 +120,8 @@ const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>
                                                                                               {FileType::TimelineMotion, physis_tmb_debug},
                                                                                               {FileType::EnvironmentBinary, physis_envb_debug},
                                                                                               {FileType::EnvironmentSoundScapeBinary, physis_essb_debug},
-                                                                                              {FileType::AmbientSet, physis_amb_debug}};
+                                                                                              {FileType::AmbientSet, physis_amb_debug},
+                                                                                              {FileType::ObjectBehaviorSetBinary, physis_obsb_debug}};
 
 FileType FileTypes::getFileType(const QString &extension)
 {

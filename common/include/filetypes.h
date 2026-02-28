@@ -43,6 +43,7 @@ enum class FileType {
     EnvironmentBinary,
     EnvironmentSoundScapeBinary,
     AmbientSet,
+    ObjectBehaviorSetBinary,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes
