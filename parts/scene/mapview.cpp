@@ -117,11 +117,11 @@ glm::mat4 transformToMat4(const Transformation &transformation)
 
 Transformation fromMat4(const glm::mat4 &m)
 {
-    glm::vec3 translation;
-    glm::quat rotation;
-    glm::vec3 scale;
-    glm::vec3 skew;
-    glm::vec4 perspective;
+    glm::vec3 translation{};
+    glm::quat rotation{};
+    glm::vec3 scale{};
+    glm::vec3 skew{};
+    glm::vec4 perspective{};
     glm::decompose(m, scale, rotation, translation, skew, perspective);
 
     auto eulerAngles = glm::eulerAngles(rotation);
