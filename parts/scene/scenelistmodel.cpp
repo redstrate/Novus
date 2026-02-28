@@ -299,6 +299,12 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
         case physis_LayerEntry::Tag::PrefetchRange:
             objectName = i18n("Prefetch Range");
             break;
+        case physis_LayerEntry::Tag::EnvSet:
+            objectName = i18n("Env Set");
+            break;
+        case physis_LayerEntry::Tag::EnvLocation:
+            objectName = i18n("Env Location");
+            break;
         default:
             break;
         }

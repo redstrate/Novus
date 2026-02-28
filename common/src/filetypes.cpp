@@ -36,7 +36,10 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("svb"), FileType::SkyVisibilityBinary},
                                                      {QStringLiteral("tera"), FileType::Terrain},
                                                      {QStringLiteral("stm"), FileType::StainingTemplate},
-                                                     {QStringLiteral("pbd"), FileType::PreBoneDeformer}};
+                                                     {QStringLiteral("pbd"), FileType::PreBoneDeformer},
+                                                     {QStringLiteral("envb"), FileType::EnvironmentBinary},
+                                                     {QStringLiteral("essb"), FileType::EnvironmentSoundScapeBinary},
+                                                     {QStringLiteral("amb"), FileType::AmbientSet}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -67,7 +70,10 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::SkyVisibilityBinary, i18n("Sky Visibility Binary")},
                                                 {FileType::Terrain, i18n("Terrain")},
                                                 {FileType::StainingTemplate, i18n("Staining Template")},
-                                                {FileType::PreBoneDeformer, i18n("Pre Bone Deformer")}};
+                                                {FileType::PreBoneDeformer, i18n("Pre Bone Deformer")},
+                                                {FileType::EnvironmentBinary, i18n("Environment Binary")},
+                                                {FileType::EnvironmentSoundScapeBinary, i18n("Environment Sound Scape Binary")},
+                                                {FileType::AmbientSet, i18n("Ambient Set")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -109,7 +115,10 @@ const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>
                                                                                               {FileType::StainingTemplate, physis_stm_debug},
                                                                                               {FileType::PreBoneDeformer, physis_pbd_debug},
                                                                                               {FileType::CharaMakeParams, physis_cmp_debug},
-                                                                                              {FileType::TimelineMotion, physis_tmb_debug}};
+                                                                                              {FileType::TimelineMotion, physis_tmb_debug},
+                                                                                              {FileType::EnvironmentBinary, physis_envb_debug},
+                                                                                              {FileType::EnvironmentSoundScapeBinary, physis_essb_debug},
+                                                                                              {FileType::AmbientSet, physis_amb_debug}};
 
 FileType FileTypes::getFileType(const QString &extension)
 {

@@ -5,6 +5,8 @@
 
 #include <QWidget>
 
+struct physis_EnvLocationObject;
+struct physis_EnvSetInstanceObject;
 struct DropInObject;
 struct physis_ScnTimeline;
 struct ScnSGActionControllerDescriptor;
@@ -64,6 +66,8 @@ private:
     void addPrefetchRangeSection(const physis_PrefetchRangeInstanceObject &prefetchRange);
     void addLightSection(const physis_LightInstanceObject &light);
     void addVfxSection(const physis_VfxInstanceObject &vfx);
+    void addEnvSetSection(const physis_EnvSetInstanceObject &envSet);
+    void addEnvLocationSection(const physis_EnvLocationObject &envLocation);
 
     SceneState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;

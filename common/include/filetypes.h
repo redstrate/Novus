@@ -40,6 +40,9 @@ enum class FileType {
     Terrain,
     StainingTemplate,
     PreBoneDeformer,
+    EnvironmentBinary,
+    EnvironmentSoundScapeBinary,
+    AmbientSet,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes

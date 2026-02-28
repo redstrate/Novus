@@ -110,6 +110,12 @@ void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &obje
     case physis_LayerEntry::Tag::PrefetchRange:
         addPrefetchRangeSection(object.data.prefetch_range._0);
         break;
+    case physis_LayerEntry::Tag::EnvSet:
+        addEnvSetSection(object.data.env_set._0);
+        break;
+    case physis_LayerEntry::Tag::EnvLocation:
+        addEnvLocationSection(object.data.env_location._0);
+        break;
     default:
         break;
     }
@@ -629,6 +635,85 @@ void ObjectPropertiesWidget::addVfxSection(const physis_VfxInstanceObject &vfx)
     assetPathEdit->setPath(QString::fromLatin1(vfx.asset_path));
     assetPathEdit->setReadOnly(true);
     layout->addRow(i18n("Asset Path"), assetPathEdit);
+}
+
+void ObjectPropertiesWidget::addEnvSetSection(const physis_EnvSetInstanceObject &envSet)
+{
+    auto section = new CollapseSection(i18n("Env Set"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto assetPathEdit = new PathEdit();
+    assetPathEdit->setPath(QString::fromLatin1(envSet.asset_path));
+    assetPathEdit->setReadOnly(true);
+    layout->addRow(i18n("Asset Path"), assetPathEdit);
+
+    auto boundInstanceIdEdit = new ObjectIdEdit(m_appState);
+    boundInstanceIdEdit->setObjectId(envSet.bound_instance_id);
+    layout->addRow(i18n("Bound Instance ID"), boundInstanceIdEdit);
+
+    auto shapeEdit = new EnumEdit<EnvSetShape>();
+    shapeEdit->setValue(envSet.shape);
+    shapeEdit->setEnabled(false);
+    layout->addRow(i18n("Shape"), shapeEdit);
+
+    auto isEnvMapShootingPoint = new QCheckBox();
+    isEnvMapShootingPoint->setChecked(envSet.is_env_map_shooting_point);
+    isEnvMapShootingPoint->setEnabled(false);
+    layout->addRow(i18n("Is Shooting Point"), isEnvMapShootingPoint);
+
+    auto priorityEdit = new QLineEdit();
+    priorityEdit->setText(QString::number(envSet.priority));
+    priorityEdit->setReadOnly(true);
+    layout->addRow(i18n("Priority"), priorityEdit);
+
+    auto effectiveRangeEdit = new QLineEdit();
+    effectiveRangeEdit->setText(QString::number(envSet.effective_range));
+    effectiveRangeEdit->setReadOnly(true);
+    layout->addRow(i18n("Effective Range"), effectiveRangeEdit);
+
+    auto interpolationTime = new QLineEdit();
+    interpolationTime->setText(QString::number(envSet.interpolation_time));
+    interpolationTime->setReadOnly(true);
+    layout->addRow(i18n("Interpolation Time"), interpolationTime);
+
+    auto reverbEdit = new QLineEdit();
+    reverbEdit->setText(QString::number(envSet.reverb));
+    reverbEdit->setReadOnly(true);
+    layout->addRow(i18n("Reverb"), reverbEdit);
+
+    auto filterEdit = new QLineEdit();
+    filterEdit->setText(QString::number(envSet.filter));
+    filterEdit->setReadOnly(true);
+    layout->addRow(i18n("Filter"), filterEdit);
+
+    auto soundAssetPath = new PathEdit();
+    soundAssetPath->setPath(QString::fromLatin1(envSet.sound_asset_path));
+    soundAssetPath->setReadOnly(true);
+    layout->addRow(i18n("Sound Asset Path"), soundAssetPath);
+}
+
+void ObjectPropertiesWidget::addEnvLocationSection(const physis_EnvLocationObject &envLocation)
+{
+    auto section = new CollapseSection(i18n("Env Location"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto ambientLightAssetPath = new PathEdit();
+    ambientLightAssetPath->setPath(QString::fromLatin1(envLocation.ambient_light_asset_path));
+    ambientLightAssetPath->setReadOnly(true);
+    layout->addRow(i18n("Ambient Light Asset Path"), ambientLightAssetPath);
+
+    auto envMapAssetPath = new PathEdit();
+    envMapAssetPath->setPath(QString::fromLatin1(envLocation.env_map_asset_path));
+    envMapAssetPath->setReadOnly(true);
+    layout->addRow(i18n("Env Map Asset Path"), envMapAssetPath);
 }
 
 #include "moc_objectpropertieswidget.cpp"
