@@ -5,6 +5,7 @@
 #include "scenestate.h"
 
 #include <KLocalizedString>
+#include <QFileInfo>
 #include <QIcon>
 
 SceneListModel::SceneListModel(SceneState *appState, QObject *parent)
@@ -264,9 +265,10 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
         case physis_LayerEntry::Tag::LayLight:
             objectName = i18n("Light");
             break;
-        case physis_LayerEntry::Tag::Vfx:
-            objectName = i18n("Vfx");
-            break;
+        case physis_LayerEntry::Tag::Vfx: {
+            QFileInfo info(QString::fromLatin1(object.data.vfx._0.asset_path));
+            objectName = info.fileName();
+        } break;
         case physis_LayerEntry::Tag::EventObject:
             // Give the EObj an actual name.
             objectName = m_appState->lookupEObjName(object.data.event_object._0.parent_data.base_id);
@@ -281,9 +283,10 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
         case physis_LayerEntry::Tag::MapRange:
             objectName = i18n("Map Range");
             break;
-        case physis_LayerEntry::Tag::SharedGroup:
-            objectName = i18n("Shared Group");
-            break;
+        case physis_LayerEntry::Tag::SharedGroup: {
+            QFileInfo info(QString::fromLatin1(object.data.shared_group._0.asset_path));
+            objectName = info.fileName();
+        } break;
         case physis_LayerEntry::Tag::Aetheryte:
             objectName = i18n("Aetheryte");
             break;
