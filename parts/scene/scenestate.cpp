@@ -186,6 +186,7 @@ void SceneState::loadDropIn(const QString &path)
                                 battleNpc.nameId = jsonData["name_id"_L1].toInteger();
                                 battleNpc.hp = jsonData["hp"_L1].toInteger();
                                 battleNpc.level = jsonData["level"_L1].toInt();
+                                battleNpc.nonpop = jsonData["nonpop"_L1].toBool();
 
                                 obj.data = battleNpc;
                             } else {
@@ -241,6 +242,7 @@ void SceneState::saveDropIns()
                         {"name_id"_L1, (qint64)data->nameId},
                         {"hp"_L1, (qint64)data->hp},
                         {"level"_L1, data->level},
+                        {"nonpop"_L1, data->nonpop},
                     };
                 }
 

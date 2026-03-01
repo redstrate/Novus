@@ -19,6 +19,7 @@ struct DropInBattleNpc {
     uint32_t nameId;
     uint32_t hp;
     uint8_t level;
+    bool nonpop;
 };
 
 struct DropInObject {

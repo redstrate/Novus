@@ -287,6 +287,10 @@ void ObjectPropertiesWidget::refreshDropInData(DropInObject *object)
         const auto levelEdit = new QLineEdit();
         levelEdit->setText(QString::number(data->level));
         layout->addRow(i18n("Level"), levelEdit);
+
+        const auto nonPopEdit = new QCheckBox();
+        nonPopEdit->setChecked(data->nonpop);
+        layout->addRow(i18n("Nonpop"), nonPopEdit);
     }
 }
 
