@@ -8,7 +8,7 @@
 
 #include "editwidget.h"
 
-class BoolEdit : public EditWidget
+class NOVUSCOMMON_EXPORT BoolEdit : public EditWidget
 {
     Q_OBJECT
 public:
