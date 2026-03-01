@@ -7,7 +7,7 @@
 #include <QTimer>
 
 Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
-    : QWidget(parent)
+    : EditWidget(parent)
     , vec(vec)
 {
     auto itemsLayout = new QHBoxLayout(this);

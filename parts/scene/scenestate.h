@@ -6,6 +6,7 @@
 #include <QObject>
 
 #include <QHash>
+#include <glm/vec3.hpp>
 #include <physis.hpp>
 
 class Animation;
@@ -18,13 +19,13 @@ struct DropInBattleNpc {
     uint32_t baseId;
     uint32_t nameId;
     uint32_t hp;
-    uint8_t level;
+    uint32_t level;
     bool nonpop;
 };
 
 struct DropInObject {
     uint32_t instanceId;
-    float position[3];
+    glm::vec3 position;
     float rotation;
 
     std::variant<DropInGatheringPoint, DropInBattleNpc, std::monostate> data;

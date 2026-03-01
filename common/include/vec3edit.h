@@ -3,13 +3,15 @@
 
 #pragma once
 
+#include "editwidget.h"
+
 #include <QSpinBox>
 #include <QWidget>
 #include <glm/glm.hpp>
 
 #include "novuscommon_export.h"
 
-class NOVUSCOMMON_EXPORT Vector3Edit : public QWidget
+class NOVUSCOMMON_EXPORT Vector3Edit : public EditWidget
 {
     Q_OBJECT
 
@@ -18,9 +20,6 @@ public:
 
     void setVector(glm::vec3 &vec);
     void setReadOnly(bool readOnly);
-
-Q_SIGNALS:
-    void onValueChanged();
 
 private:
     struct {

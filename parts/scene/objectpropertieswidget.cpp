@@ -3,6 +3,7 @@
 
 #include "objectpropertieswidget.h"
 
+#include "booledit.h"
 #include "collapsesection.h"
 #include "pathedit.h"
 #include "scenestate.h"
@@ -20,6 +21,7 @@
 
 #include "enumedit.h"
 #include "objectidedit.h"
+#include "uintedit.h"
 
 ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *parent)
     : QWidget(parent)
@@ -259,37 +261,29 @@ void ObjectPropertiesWidget::refreshDropInData(DropInObject *object)
     const auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto pos = glm::make_vec3(object->position);
-    const auto positionEdit = new Vector3Edit(pos);
+    const auto positionEdit = new Vector3Edit(object->position);
     layout->addRow(i18n("Position"), positionEdit);
 
-    const auto idEdit = new QLineEdit();
-    idEdit->setText(QString::number(object->instanceId));
+    const auto idEdit = new UIntEdit(object->instanceId);
     layout->addRow(i18n("Instance ID"), idEdit);
 
     if (auto data = std::get_if<DropInGatheringPoint>(&object->data)) {
-        const auto baseIdEdit = new QLineEdit();
-        baseIdEdit->setText(QString::number(data->baseId));
+        const auto baseIdEdit = new UIntEdit(data->baseId);
         layout->addRow(i18n("Base ID"), baseIdEdit);
     } else if (auto data = std::get_if<DropInBattleNpc>(&object->data)) {
-        const auto baseIdEdit = new QLineEdit();
-        baseIdEdit->setText(QString::number(data->baseId));
+        const auto baseIdEdit = new UIntEdit(data->baseId);
         layout->addRow(i18n("Base ID"), baseIdEdit);
 
-        const auto nameIdEdit = new QLineEdit();
-        nameIdEdit->setText(QString::number(data->nameId));
+        const auto nameIdEdit = new UIntEdit(data->nameId);
         layout->addRow(i18n("Name ID"), nameIdEdit);
 
-        const auto hpEdit = new QLineEdit();
-        hpEdit->setText(QString::number(data->hp));
+        const auto hpEdit = new UIntEdit(data->hp);
         layout->addRow(i18n("HP"), hpEdit);
 
-        const auto levelEdit = new QLineEdit();
-        levelEdit->setText(QString::number(data->level));
+        const auto levelEdit = new UIntEdit(data->level);
         layout->addRow(i18n("Level"), levelEdit);
 
-        const auto nonPopEdit = new QCheckBox();
-        nonPopEdit->setChecked(data->nonpop);
+        const auto nonPopEdit = new BoolEdit(data->nonpop);
         layout->addRow(i18n("Nonpop"), nonPopEdit);
     }
 }

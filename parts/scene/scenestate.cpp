@@ -256,7 +256,7 @@ void SceneState::saveDropIns()
                         {"base_id"_L1, (qint64)data->baseId},
                         {"name_id"_L1, (qint64)data->nameId},
                         {"hp"_L1, (qint64)data->hp},
-                        {"level"_L1, data->level},
+                        {"level"_L1, (qint64)data->level},
                         {"nonpop"_L1, data->nonpop},
                     };
                 }

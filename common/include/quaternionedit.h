@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "editwidget.h"
+
 #include <QSpinBox>
 #include <QWidget>
 
@@ -10,7 +12,7 @@
 
 #include "novuscommon_export.h"
 
-class NOVUSCOMMON_EXPORT QuaternionEdit : public QWidget
+class NOVUSCOMMON_EXPORT QuaternionEdit : public EditWidget
 {
     Q_OBJECT
 
@@ -18,9 +20,6 @@ public:
     explicit QuaternionEdit(glm::quat &quat, QWidget *parent = nullptr);
 
     void setQuat(glm::quat &quat);
-
-Q_SIGNALS:
-    void onValueChanged();
 
 private:
     struct {

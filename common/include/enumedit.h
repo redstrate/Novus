@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "editwidget.h"
+
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QWidget>
@@ -10,7 +12,7 @@
 #include <magic_enum.hpp>
 
 template<class E>
-class EnumEdit : public QWidget
+class NOVUSCOMMON_EXPORT EnumEdit : public EditWidget
 {
 public:
     explicit EnumEdit()

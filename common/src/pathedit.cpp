@@ -25,7 +25,7 @@ void OpenPathHandler::setEmitSignal(const bool emit)
 }
 
 PathEdit::PathEdit(QWidget *parent)
-    : QWidget(parent)
+    : EditWidget(parent)
 {
     auto layout = new QHBoxLayout(this);
     setMaximumHeight(35); // FIXME: don't hard-code

@@ -42,6 +42,9 @@ target_sources(novus-common
         include/vec3edit.h
         include/pathedit.h
         include/enumedit.h
+        include/editwidget.h
+        include/uintedit.h
+        include/booledit.h
 
         src/aboutdata.cpp
         src/filecache.cpp
@@ -51,6 +54,9 @@ target_sources(novus-common
         src/vec3edit.cpp
         src/pathedit.cpp
         src/enumedit.cpp
+        src/editwidget.cpp
+        src/uintedit.cpp
+        src/booledit.cpp
 
         launcherconfig.h)
 target_include_directories(novus-common

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "editwidget.h"
+
 #include <QLineEdit>
 #include <QPushButton>
 #include <QWidget>
@@ -25,7 +27,7 @@ private:
 };
 
 /// Represents a game path, and allows you to perform additional actions e.g. opening said path in Data Explorer.
-class NOVUSCOMMON_EXPORT PathEdit : public QWidget
+class NOVUSCOMMON_EXPORT PathEdit : public EditWidget
 {
     Q_OBJECT
 

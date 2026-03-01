@@ -8,7 +8,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 QuaternionEdit::QuaternionEdit(glm::quat &quat, QWidget *parent)
-    : QWidget(parent)
+    : EditWidget(parent)
     , quat(quat)
 {
     auto itemsLayout = new QHBoxLayout(this);
