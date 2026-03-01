@@ -13,6 +13,8 @@
 
 #include "scenestate.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 ObjectPass::ObjectPass(RenderManager *renderer, SceneState *appState)
     : m_renderer(renderer)
     , m_device(m_renderer->device())
@@ -119,6 +121,40 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
                             break;
                         }
                     }
+                }
+            }
+        }
+
+        for (const auto &[_, dropIn] : m_appState->rootScene.dropIns) {
+            for (const auto &layer : dropIn.layers) {
+                for (const auto &object : layer.objects) {
+                    glm::mat4 vp = camera.perspective * camera.view;
+
+                    vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
+
+                    auto m = glm::mat4(1.0f);
+                    m = glm::translate(m, glm::make_vec3(object.position));
+
+                    vkCmdPushConstants(commandBuffer,
+                                       m_pipelineLayout,
+                                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                       sizeof(glm::mat4),
+                                       sizeof(glm::mat4),
+                                       &m);
+
+                    glm::vec4 color = glm::vec4(1, 0, 0, 1);
+                    if (m_appState->selectedDropInObject && m_appState->selectedDropInObject.value() == &object) {
+                        color = glm::vec4(0, 1, 0, 1);
+                    }
+
+                    vkCmdPushConstants(commandBuffer,
+                                       m_pipelineLayout,
+                                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                       sizeof(glm::mat4) * 2,
+                                       sizeof(glm::vec4),
+                                       &color);
+
+                    Primitives::DrawCube(commandBuffer);
                 }
             }
         }

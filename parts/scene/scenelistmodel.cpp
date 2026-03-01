@@ -454,10 +454,10 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
                     dropinItem->type = TreeType::DropInObject;
                     dropinItem->parent = dropinLayerItem;
                     dropinItem->name = i18n("Unknown Object");
+                    dropinItem->id = dropInObject.instanceId;
                     if (std::holds_alternative<DropInGatheringPoint>(dropInObject.data)) {
                         dropinItem->name = i18n("Gathering Point");
                     } else if (auto data = std::get_if<DropInBattleNpc>(&dropInObject.data)) {
-                        // TODO: insert BNpcName
                         dropinItem->name = m_appState->lookupBNpcName(data->nameId);
                     }
                     dropinItem->row = j;

@@ -79,7 +79,12 @@ void MainWindow::setupActions()
     m_centerObjectAction->setIcon(QIcon::fromTheme(QStringLiteral("camera-video-symbolic")));
     KActionCollection::setDefaultShortcut(m_centerObjectAction, QKeySequence(Qt::Modifier::ALT | Qt::Key::Key_C));
     connect(m_centerObjectAction, &QAction::triggered, [this] {
-        m_part->mapView()->centerOn(glm::make_vec3(m_part->sceneState()->selectedObject.value()->transform.translation));
+        if (auto selectedObject = m_part->sceneState()->selectedObject) {
+            m_part->mapView()->centerOn(glm::make_vec3(selectedObject.value()->transform.translation));
+        }
+        if (auto selectedDropInObject = m_part->sceneState()->selectedDropInObject) {
+            m_part->mapView()->centerOn(glm::make_vec3(selectedDropInObject.value()->position));
+        }
     });
     actionCollection()->addAction(QStringLiteral("center_object"), m_centerObjectAction);
 
@@ -219,7 +224,7 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
 
 void MainWindow::updateActionState()
 {
-    m_centerObjectAction->setEnabled(m_part->sceneState()->selectedObject.has_value());
+    m_centerObjectAction->setEnabled(m_part->sceneState()->selectedObject.has_value() || m_part->sceneState()->selectedDropInObject.has_value());
 }
 
 #include "moc_mainwindow.cpp"
