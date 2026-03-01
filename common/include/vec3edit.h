@@ -17,6 +17,7 @@ class NOVUSCOMMON_EXPORT Vector3Edit : public EditWidget
 
 public:
     explicit Vector3Edit(glm::vec3 &vec, QWidget *parent = nullptr);
+    ~Vector3Edit() override = default;
 
     void setVector(glm::vec3 &vec);
     void setReadOnly(bool readOnly);

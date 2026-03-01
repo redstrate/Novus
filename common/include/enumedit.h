@@ -27,6 +27,7 @@ public:
             comboBox->addItem(QString::fromLatin1(name.data()));
         }
     }
+    ~EnumEdit() override = default;
 
     void setValue(const E &value)
     {

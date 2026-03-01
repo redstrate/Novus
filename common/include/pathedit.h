@@ -33,6 +33,7 @@ class NOVUSCOMMON_EXPORT PathEdit : public EditWidget
 
 public:
     explicit PathEdit(QWidget *parent = nullptr);
+    ~PathEdit() override = default;
 
     void setPath(const QString &path);
     void setReadOnly(bool readOnly);

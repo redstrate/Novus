@@ -13,6 +13,7 @@ class NOVUSCOMMON_EXPORT UIntEdit : public EditWidget
     Q_OBJECT
 public:
     explicit UIntEdit(uint32_t &value, QWidget *parent = nullptr);
+    ~UIntEdit() override = default;
 
 private:
     QSpinBox *spinBox = nullptr;

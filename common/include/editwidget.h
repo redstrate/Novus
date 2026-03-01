@@ -12,6 +12,7 @@ class NOVUSCOMMON_EXPORT EditWidget : public QWidget
     Q_OBJECT
 public:
     explicit EditWidget(QWidget *parent = nullptr);
+    ~EditWidget() override = default;
 
 Q_SIGNALS:
     void onValueChanged();

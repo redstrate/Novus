@@ -14,6 +14,7 @@ class NOVUSCOMMON_EXPORT BoolEdit : public EditWidget
 public:
     explicit BoolEdit(QWidget *parent = nullptr);
     explicit BoolEdit(bool &value, QWidget *parent = nullptr);
+    ~BoolEdit() override = default;
 
     void setValue(bool &value);
     void resetValue();
