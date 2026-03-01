@@ -8,7 +8,7 @@
 
 #include "editwidget.h"
 
-class UIntEdit : public EditWidget
+class NOVUSCOMMON_EXPORT UIntEdit : public EditWidget
 {
     Q_OBJECT
 public:
