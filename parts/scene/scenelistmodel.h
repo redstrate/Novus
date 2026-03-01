@@ -8,7 +8,7 @@
 struct DropInObject;
 struct ScnSGActionControllerDescriptor;
 struct physis_ScnTimeline;
-struct ObjectScene;
+class ObjectScene;
 struct physis_Sgb;
 struct physis_Layer;
 struct physis_InstanceObject;

@@ -5,7 +5,7 @@
 
 #include <vulkan/vulkan.h>
 
-class Camera;
+struct Camera;
 
 class RendererPass
 {

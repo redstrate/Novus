@@ -16,9 +16,8 @@
 class Renderer;
 struct DrawObjectInstance;
 struct Camera;
-struct Texture;
+class Texture;
 struct Scene;
-class Pass;
 class Device;
 
 /// Base class for all rendering implementations
