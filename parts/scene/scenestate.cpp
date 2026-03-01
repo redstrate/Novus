@@ -45,6 +45,21 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
             }
         }
     }
+
+    // BNPC
+    {
+        const auto exhFile = physis_sqpack_read(resource, "exd/bnpcname.exh");
+        if (exhFile.size == 0) {
+            qWarning() << "Failed to read exd/bnpcname.exh";
+        } else {
+            const auto exh = physis_exh_parse(resource->platform, exhFile);
+            if (!exh.p_ptr) {
+                qWarning() << "Failed to parse exd/bnpcname.exh";
+            } else {
+                m_bnpcNameSheet = physis_sqpack_read_excel_sheet(resource, "BNpcName", &exh, Language::English);
+            }
+        }
+    }
 }
 
 void ObjectScene::clear()
@@ -296,6 +311,15 @@ QString SceneState::lookupEObjName(const uint32_t id) const
         return QString::fromLatin1(row.columns[0].string._0);
     }
     return i18n("Event Object");
+}
+
+QString SceneState::lookupBNpcName(uint32_t id) const
+{
+    auto row = physis_excel_get_row(&m_bnpcNameSheet, id);
+    if (row.columns && strlen(row.columns[0].string._0) > 0) {
+        return QString::fromLatin1(row.columns[0].string._0);
+    }
+    return i18n("Battle NPC");
 }
 
 float SceneState::longestAnimationTime() const

@@ -456,9 +456,9 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
                     dropinItem->name = i18n("Unknown Object");
                     if (std::holds_alternative<DropInGatheringPoint>(dropInObject.data)) {
                         dropinItem->name = i18n("Gathering Point");
-                    } else if (std::holds_alternative<DropInBattleNpc>(dropInObject.data)) {
+                    } else if (auto data = std::get_if<DropInBattleNpc>(&dropInObject.data)) {
                         // TODO: insert BNpcName
-                        dropinItem->name = i18n("Battle NPC");
+                        dropinItem->name = m_appState->lookupBNpcName(data->nameId);
                     }
                     dropinItem->row = j;
                     dropinItem->data = QVariant::fromValue(&dropInObject);

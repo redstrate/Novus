@@ -115,6 +115,11 @@ public:
      */
     QString lookupEObjName(uint32_t id) const;
 
+    /**
+     * @return The name for this Battle NPC. If not found, then a generic one.
+     */
+    QString lookupBNpcName(uint32_t id) const;
+
     float longestAnimationTime() const;
 
     void updateAllAnimations(float time);
@@ -133,5 +138,6 @@ private:
 
     physis_ExcelSheet m_enpcResidentSheet;
     physis_ExcelSheet m_eobjNameSheet;
+    physis_ExcelSheet m_bnpcNameSheet;
     float m_longestAnimationTime = 0.0f;
 };
