@@ -12,7 +12,7 @@
 #include <magic_enum.hpp>
 
 template<class E>
-class NOVUSCOMMON_EXPORT EnumEdit : public EditWidget
+class EnumEdit : public EditWidget
 {
 public:
     explicit EnumEdit()
