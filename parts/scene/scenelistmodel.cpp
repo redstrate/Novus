@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "scenelistmodel.h"
+
+#include "magic_enum.hpp"
 #include "scenestate.h"
 
 #include <KLocalizedString>
@@ -308,6 +310,24 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
         case physis_LayerEntry::Tag::EnvLocation:
             objectName = i18n("Env Location");
             break;
+        case physis_LayerEntry::Tag::Sound:
+            objectName = i18n("Sound");
+            break;
+        case physis_LayerEntry::Tag::CollisionBox:
+            objectName = i18n("Collision Box");
+            break;
+        case physis_LayerEntry::Tag::DoorRange:
+            objectName = i18n("Door Range");
+            break;
+        case physis_LayerEntry::Tag::LineVFX:
+            objectName = i18n("Line VFX");
+            break;
+        case physis_LayerEntry::Tag::Treasure:
+            objectName = i18n("Treasure");
+            break;
+        case physis_LayerEntry::Tag::TargetMarker:
+            objectName = i18n("Target Marker");
+            break;
         default:
             break;
         }
@@ -364,7 +384,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
             auto timelineItem = new SceneTreeInformation();
             timelineItem->type = TreeType::Timeline;
             timelineItem->parent = timelinesItem;
-            timelineItem->name = i18n("Timeline");
+            timelineItem->name = i18n("Timeline %1").arg(scene.embeddedTimelines[i].sub_id);
             timelineItem->row = i;
             timelineItem->data = QVariant::fromValue(&scene.embeddedTimelines[i]);
             timelinesItem->children.push_back(timelineItem);
@@ -383,7 +403,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
             auto actionItem = new SceneTreeInformation();
             actionItem->type = TreeType::Action;
             actionItem->parent = actionsItem;
-            actionItem->name = i18n("Action");
+            actionItem->name = i18n("%1 Action").arg(magic_enum::enum_name(scene.actionDescriptors[i].tag));
             actionItem->row = i;
             actionItem->data = QVariant::fromValue(&scene.actionDescriptors[i]);
             actionsItem->children.push_back(actionItem);

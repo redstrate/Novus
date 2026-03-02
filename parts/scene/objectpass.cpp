@@ -35,129 +35,7 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
-        // TODO: support nested scenes
-        for (const auto &[_, lgb] : m_appState->rootScene.lgbFiles) {
-            for (uint32_t i = 0; i < lgb.num_chunks; i++) {
-                const auto &chunk = lgb.chunks[i];
-                for (uint32_t j = 0; j < chunk.num_layers; j++) {
-                    const auto &layer = chunk.layers[j];
-                    if (!m_appState->visibleLayerIds.contains(layer.id)) {
-                        continue;
-                    }
-
-                    for (uint32_t z = 0; z < layer.num_objects; z++) {
-                        const auto &object = layer.objects[z];
-
-                        glm::mat4 vp = camera.perspective * camera.view;
-
-                        vkCmdPushConstants(commandBuffer,
-                                           m_pipelineLayout,
-                                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                                           0,
-                                           sizeof(glm::mat4),
-                                           &vp);
-
-                        auto m = glm::mat4(1.0f);
-                        m = glm::translate(m, {object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]});
-                        m *= glm::mat4_cast(glm::quat(glm::vec3(object.transform.rotation[0], object.transform.rotation[1], object.transform.rotation[2])));
-                        m = glm::scale(m, {object.transform.scale[0], object.transform.scale[1], object.transform.scale[2]});
-
-                        vkCmdPushConstants(commandBuffer,
-                                           m_pipelineLayout,
-                                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                                           sizeof(glm::mat4),
-                                           sizeof(glm::mat4),
-                                           &m);
-
-                        glm::vec4 color = glm::vec4(1, 0, 0, 1);
-                        if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
-                            color = glm::vec4(0, 1, 0, 1);
-                        }
-
-                        vkCmdPushConstants(commandBuffer,
-                                           m_pipelineLayout,
-                                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                                           sizeof(glm::mat4) * 2,
-                                           sizeof(glm::vec4),
-                                           &color);
-
-                        const auto decideBasedOnTrigger = [commandBuffer](const physis_TriggerBoxInstanceObject &trigger) {
-                            switch (trigger.trigger_box_shape) {
-                            case TriggerBoxShape::Box:
-                                Primitives::DrawCube(commandBuffer);
-                                break;
-                            case TriggerBoxShape::Sphere:
-                                Primitives::DrawSphere(commandBuffer);
-                                break;
-                            case TriggerBoxShape::Cylinder:
-                                Primitives::DrawCylinder(commandBuffer);
-                                break;
-                            case TriggerBoxShape::Plane:
-                                Primitives::DrawPlane(commandBuffer);
-                                break;
-                                // Unsupported ones
-                            case TriggerBoxShape::None:
-                            case TriggerBoxShape::Mesh:
-                            case TriggerBoxShape::PlaneTwoSided:
-                                break;
-                            }
-                        };
-
-                        switch (object.data.tag) {
-                        case physis_LayerEntry::Tag::MapRange:
-                            decideBasedOnTrigger(object.data.map_range._0.parent_data);
-                            break;
-                        case physis_LayerEntry::Tag::EventRange:
-                            decideBasedOnTrigger(object.data.event_range._0.parent_data);
-                            break;
-                        case physis_LayerEntry::Tag::ExitRange:
-                            decideBasedOnTrigger(object.data.exit_range._0.parent_data);
-                            break;
-                        case physis_LayerEntry::Tag::PrefetchRange:
-                            decideBasedOnTrigger(object.data.prefetch_range._0.parent_data);
-                            break;
-                        default:
-                            Primitives::DrawSphere(commandBuffer);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        for (const auto &[_, dropIn] : m_appState->rootScene.dropIns) {
-            for (const auto &layer : dropIn.layers) {
-                for (const auto &object : layer.objects) {
-                    glm::mat4 vp = camera.perspective * camera.view;
-
-                    vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
-
-                    auto m = glm::mat4(1.0f);
-                    m = glm::translate(m, glm::make_vec3(object.position));
-
-                    vkCmdPushConstants(commandBuffer,
-                                       m_pipelineLayout,
-                                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                                       sizeof(glm::mat4),
-                                       sizeof(glm::mat4),
-                                       &m);
-
-                    glm::vec4 color = glm::vec4(1, 0, 0, 1);
-                    if (m_appState->selectedDropInObject && m_appState->selectedDropInObject.value() == &object) {
-                        color = glm::vec4(0, 1, 0, 1);
-                    }
-
-                    vkCmdPushConstants(commandBuffer,
-                                       m_pipelineLayout,
-                                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                                       sizeof(glm::mat4) * 2,
-                                       sizeof(glm::vec4),
-                                       &color);
-
-                    Primitives::DrawCube(commandBuffer);
-                }
-            }
-        }
+        addScene(commandBuffer, camera, m_appState->rootScene);
 
         m_renderer->device().endDebugMarker(commandBuffer);
     } else {
@@ -265,4 +143,145 @@ void ObjectPass::createPipeline()
     pipelineInfo.renderPass = renderer->renderPass();
 
     vkCreateGraphicsPipelines(m_device.device, nullptr, 1, &pipelineInfo, nullptr, &m_pipeline);
+}
+
+void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const ObjectScene &scene)
+{
+    for (const auto &[_, lgb] : scene.lgbFiles) {
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
+            const auto &chunk = lgb.chunks[i];
+            for (uint32_t j = 0; j < chunk.num_layers; j++) {
+                const auto &layer = chunk.layers[j];
+                if (!m_appState->visibleLayerIds.contains(layer.id)) {
+                    continue;
+                }
+
+                addLayer(commandBuffer, camera, layer);
+            }
+        }
+    }
+
+    for (const auto &lgb : scene.embeddedLgbs) {
+        for (uint32_t j = 0; j < lgb.layer_count; j++) {
+            const auto &layer = lgb.layers[j];
+            if (!m_appState->visibleLayerIds.contains(layer.id)) {
+                continue;
+            }
+
+            addLayer(commandBuffer, camera, layer);
+        }
+    }
+
+    for (const auto &[_, dropIn] : scene.dropIns) {
+        for (const auto &layer : dropIn.layers) {
+            for (const auto &object : layer.objects) {
+                glm::mat4 vp = camera.perspective * camera.view;
+
+                vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
+
+                auto m = glm::mat4(1.0f);
+                m = glm::translate(m, glm::make_vec3(object.position));
+
+                vkCmdPushConstants(commandBuffer,
+                                   m_pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                   sizeof(glm::mat4),
+                                   sizeof(glm::mat4),
+                                   &m);
+
+                glm::vec4 color = glm::vec4(1, 0, 0, 1);
+                if (m_appState->selectedDropInObject && m_appState->selectedDropInObject.value() == &object) {
+                    color = glm::vec4(0, 1, 0, 1);
+                }
+
+                vkCmdPushConstants(commandBuffer,
+                                   m_pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                   sizeof(glm::mat4) * 2,
+                                   sizeof(glm::vec4),
+                                   &color);
+
+                Primitives::DrawCube(commandBuffer);
+            }
+        }
+    }
+
+    for (const auto &lgb : scene.nestedScenes) {
+        addScene(commandBuffer, camera, lgb);
+    }
+}
+
+void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, const physis_Layer &layer)
+{
+    for (uint32_t z = 0; z < layer.num_objects; z++) {
+        const auto &object = layer.objects[z];
+
+        glm::mat4 vp = camera.perspective * camera.view;
+
+        vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
+
+        auto m = glm::mat4(1.0f);
+        m = glm::translate(m, {object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]});
+        m *= glm::mat4_cast(glm::quat(glm::vec3(object.transform.rotation[0], object.transform.rotation[1], object.transform.rotation[2])));
+        m = glm::scale(m, {object.transform.scale[0], object.transform.scale[1], object.transform.scale[2]});
+
+        vkCmdPushConstants(commandBuffer,
+                           m_pipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           sizeof(glm::mat4),
+                           sizeof(glm::mat4),
+                           &m);
+
+        glm::vec4 color = glm::vec4(1, 0, 0, 1);
+        if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
+            color = glm::vec4(0, 1, 0, 1);
+        }
+
+        vkCmdPushConstants(commandBuffer,
+                           m_pipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           sizeof(glm::mat4) * 2,
+                           sizeof(glm::vec4),
+                           &color);
+
+        const auto decideBasedOnTrigger = [commandBuffer](const physis_TriggerBoxInstanceObject &trigger) {
+            switch (trigger.trigger_box_shape) {
+            case TriggerBoxShape::Box:
+                Primitives::DrawCube(commandBuffer);
+                break;
+            case TriggerBoxShape::Sphere:
+                Primitives::DrawSphere(commandBuffer);
+                break;
+            case TriggerBoxShape::Cylinder:
+                Primitives::DrawCylinder(commandBuffer);
+                break;
+            case TriggerBoxShape::Plane:
+                Primitives::DrawPlane(commandBuffer);
+                break;
+                // Unsupported ones
+            case TriggerBoxShape::None:
+            case TriggerBoxShape::Mesh:
+            case TriggerBoxShape::PlaneTwoSided:
+                break;
+            }
+        };
+
+        switch (object.data.tag) {
+        case physis_LayerEntry::Tag::MapRange:
+            decideBasedOnTrigger(object.data.map_range._0.parent_data);
+            break;
+        case physis_LayerEntry::Tag::EventRange:
+            decideBasedOnTrigger(object.data.event_range._0.parent_data);
+            break;
+        case physis_LayerEntry::Tag::ExitRange:
+            decideBasedOnTrigger(object.data.exit_range._0.parent_data);
+            break;
+        case physis_LayerEntry::Tag::PrefetchRange:
+            decideBasedOnTrigger(object.data.prefetch_range._0.parent_data);
+            break;
+        default:
+            Primitives::DrawCube(commandBuffer);
+            break;
+        }
+    }
 }

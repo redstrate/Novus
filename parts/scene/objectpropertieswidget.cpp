@@ -118,6 +118,24 @@ void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &obje
     case physis_LayerEntry::Tag::EnvLocation:
         addEnvLocationSection(object.data.env_location._0);
         break;
+    case physis_LayerEntry::Tag::Sound:
+        addSoundSection(object.data.sound._0);
+        break;
+    case physis_LayerEntry::Tag::CollisionBox:
+        addCollisionBox(object.data.collision_box._0);
+        break;
+    case physis_LayerEntry::Tag::DoorRange:
+        addDoorRange(object.data.door_range._0);
+        break;
+    case physis_LayerEntry::Tag::LineVFX:
+        addLineVFX(object.data.line_vfx._0);
+        break;
+    case physis_LayerEntry::Tag::Treasure:
+        addTreasure(object.data.treasure._0);
+        break;
+    case physis_LayerEntry::Tag::TargetMarker:
+        addTargetMarker(object.data.target_marker._0);
+        break;
     default:
         break;
     }
@@ -186,22 +204,61 @@ void ObjectPropertiesWidget::refreshActionData(const ScnSGActionControllerDescri
     layout->addRow(i18n("Type"), typeEdit);
 
     switch (action.tag) {
+    case ScnSGActionControllerDescriptor::Tag::Door: {
+        const auto &door = action.door._0;
+
+        auto doorObjectId0Edit = new ObjectIdEdit(m_appState);
+        doorObjectId0Edit->setObjectId(door.door_object_0);
+        layout->addRow(i18n("Door Object 0"), doorObjectId0Edit);
+
+        auto doorObjectId1Edit = new ObjectIdEdit(m_appState);
+        doorObjectId1Edit->setObjectId(door.door_object_1);
+        layout->addRow(i18n("Doro Object 1"), doorObjectId1Edit);
+
+        auto doorTypeEdit = new QLineEdit();
+        doorTypeEdit->setText(QString::number(door.door_type));
+        doorTypeEdit->setReadOnly(true);
+        layout->addRow(i18n("Door Type"), doorTypeEdit);
+
+        auto maxRotationEdit = new QLineEdit();
+        maxRotationEdit->setText(QString::number(door.max_rotation));
+        maxRotationEdit->setReadOnly(true);
+        layout->addRow(i18n("Max Rotation"), maxRotationEdit);
+
+        auto maxTranslationEdit = new QLineEdit();
+        maxTranslationEdit->setText(QString::number(door.max_translation));
+        maxTranslationEdit->setReadOnly(true);
+        layout->addRow(i18n("Max Translation"), maxTranslationEdit);
+
+        auto sound0IdEdit = new ObjectIdEdit(m_appState);
+        sound0IdEdit->setObjectId(door.sound_0);
+        layout->addRow(i18n("Sound Id 0"), sound0IdEdit);
+
+        auto sound1IdEdit = new ObjectIdEdit(m_appState);
+        sound1IdEdit->setObjectId(door.sound_1);
+        layout->addRow(i18n("Sound Id 1"), sound1IdEdit);
+
+        auto doorObjectId2Edit = new ObjectIdEdit(m_appState);
+        doorObjectId2Edit->setObjectId(door.door_object_2);
+        layout->addRow(i18n("Door Object 2"), doorObjectId2Edit);
+
+        auto doorObjectId3Edit = new ObjectIdEdit(m_appState);
+        doorObjectId3Edit->setObjectId(door.door_object_3);
+        layout->addRow(i18n("Door Object 3"), doorObjectId3Edit);
+    } break;
     case ScnSGActionControllerDescriptor::Tag::Rotation: {
         const auto &rotation = action.rotation._0;
 
-        auto bgPartIdEdit = new QLineEdit();
-        bgPartIdEdit->setText(QString::number(rotation.bg_part_id));
-        bgPartIdEdit->setReadOnly(true);
+        auto bgPartIdEdit = new ObjectIdEdit(m_appState);
+        bgPartIdEdit->setObjectId(rotation.bg_part_id);
         layout->addRow(i18n("BG Part ID"), bgPartIdEdit);
 
-        auto vfxChildId1Edit = new QLineEdit();
-        vfxChildId1Edit->setText(QString::number(rotation.vfx_child1_id));
-        vfxChildId1Edit->setReadOnly(true);
+        auto vfxChildId1Edit = new ObjectIdEdit(m_appState);
+        vfxChildId1Edit->setObjectId(rotation.vfx_child1_id);
         layout->addRow(i18n("VFX Child 2 ID"), vfxChildId1Edit);
 
-        auto vfxChildId2Edit = new QLineEdit();
-        vfxChildId2Edit->setText(QString::number(rotation.vfx_child_2_id));
-        vfxChildId2Edit->setReadOnly(true);
+        auto vfxChildId2Edit = new ObjectIdEdit(m_appState);
+        vfxChildId2Edit->setObjectId(rotation.vfx_child_2_id);
         layout->addRow(i18n("VFX Child 1 ID"), vfxChildId2Edit);
 
         auto rotationAxisEdit = new EnumEdit<RotationAxis>();
@@ -712,6 +769,102 @@ void ObjectPropertiesWidget::addEnvLocationSection(const physis_EnvLocationObjec
     envMapAssetPath->setPath(QString::fromLatin1(envLocation.env_map_asset_path));
     envMapAssetPath->setReadOnly(true);
     layout->addRow(i18n("Env Map Asset Path"), envMapAssetPath);
+}
+
+void ObjectPropertiesWidget::addSoundSection(const physis_SoundInstanceObject &sound)
+{
+    auto section = new CollapseSection(i18n("Sound"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto soundEffectParamEdit = new QLineEdit();
+    soundEffectParamEdit->setText(QString::number(sound.sound_effect_param));
+    soundEffectParamEdit->setReadOnly(true);
+    layout->addRow(i18n("Sound Effect Param"), soundEffectParamEdit);
+
+    auto soundAssetPathEdit = new PathEdit();
+    soundAssetPathEdit->setPath(QString::fromLatin1(sound.asset_path));
+    soundAssetPathEdit->setReadOnly(true);
+    layout->addRow(i18n("Asset Path"), soundAssetPathEdit);
+}
+
+void ObjectPropertiesWidget::addCollisionBox(const physis_CollisionBoxInstanceObject &collisionBox)
+{
+    addTriggerBoxSection(collisionBox.parent_data);
+
+    auto section = new CollapseSection(i18n("Collision Box"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto assetPathEdit = new PathEdit();
+    assetPathEdit->setPath(QString::fromLatin1(collisionBox.collision_asset_path));
+    assetPathEdit->setReadOnly(true);
+    layout->addRow(i18n("Asset Path"), assetPathEdit);
+}
+
+void ObjectPropertiesWidget::addDoorRange(const physis_DoorRangeInstanceObject &doorRange)
+{
+    addTriggerBoxSection(doorRange.parent_data);
+
+    auto section = new CollapseSection(i18n("Door Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+}
+
+void ObjectPropertiesWidget::addLineVFX(const physis_LineVFXInstanceObject &lineVfx)
+{
+    auto section = new CollapseSection(i18n("Line VFX"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto lineStyleEdit = new EnumEdit<LineStyle>();
+    lineStyleEdit->setValue(lineVfx.line_style);
+    lineStyleEdit->setEnabled(false);
+    layout->addRow(i18n("Line Style"), lineStyleEdit);
+}
+
+void ObjectPropertiesWidget::addTreasure(const physis_TreasureInstanceObject &treasure)
+{
+    auto section = new CollapseSection(i18n("Treasure"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto nonpopInitZoneEdit = new QLineEdit();
+    nonpopInitZoneEdit->setText(QString::number(treasure.nonpop_init_zone));
+    nonpopInitZoneEdit->setReadOnly(true);
+    layout->addRow(i18n("Nonpop Init Zone(?)"), nonpopInitZoneEdit);
+}
+
+void ObjectPropertiesWidget::addTargetMarker(const physis_TargetMarkerInstanceObject &targetMarker)
+{
+    auto section = new CollapseSection(i18n("Target Marker"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto nameplateOffsetYEdit = new QLineEdit();
+    nameplateOffsetYEdit->setText(QString::number(targetMarker.nameplate_offset_y));
+    nameplateOffsetYEdit->setReadOnly(true);
+    layout->addRow(i18n("Nameplate Offset Y(?)"), nameplateOffsetYEdit);
+
+    auto targetMarkerTypeEdit = new EnumEdit<TargetMarkerType>();
+    targetMarkerTypeEdit->setValue(targetMarker.target_market_type);
+    targetMarkerTypeEdit->setEnabled(false);
+    layout->addRow(i18n("Type"), targetMarkerTypeEdit);
 }
 
 #include "moc_objectpropertieswidget.cpp"

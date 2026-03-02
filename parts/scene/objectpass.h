@@ -8,6 +8,8 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
+struct physis_Layer;
+class ObjectScene;
 class RenderManager;
 class Device;
 class SceneState;
@@ -21,6 +23,8 @@ public:
 
 private:
     void createPipeline();
+    void addScene(VkCommandBuffer commandBuffer, Camera &camera, const ObjectScene &scene);
+    void addLayer(VkCommandBuffer commandBuffer, const Camera &camera, const physis_Layer &layer);
 
     VkPipeline m_pipeline = nullptr;
     VkPipelineLayout m_pipelineLayout = nullptr;

@@ -5,6 +5,12 @@
 
 #include <QWidget>
 
+struct physis_TargetMarkerInstanceObject;
+struct physis_TreasureInstanceObject;
+struct physis_LineVFXInstanceObject;
+struct physis_DoorRangeInstanceObject;
+struct physis_CollisionBoxInstanceObject;
+struct physis_SoundInstanceObject;
 struct physis_EnvLocationObject;
 struct physis_EnvSetInstanceObject;
 struct DropInObject;
@@ -68,6 +74,12 @@ private:
     void addVfxSection(const physis_VfxInstanceObject &vfx);
     void addEnvSetSection(const physis_EnvSetInstanceObject &envSet);
     void addEnvLocationSection(const physis_EnvLocationObject &envLocation);
+    void addSoundSection(const physis_SoundInstanceObject &sound);
+    void addCollisionBox(const physis_CollisionBoxInstanceObject &collisionBox);
+    void addDoorRange(const physis_DoorRangeInstanceObject &doorRange);
+    void addLineVFX(const physis_LineVFXInstanceObject &lineVfx);
+    void addTreasure(const physis_TreasureInstanceObject &treasure);
+    void addTargetMarker(const physis_TargetMarkerInstanceObject &targetMarker);
 
     SceneState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;
