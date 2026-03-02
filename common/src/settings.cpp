@@ -30,6 +30,7 @@ QList<GameInstall> getGameInstalls()
                 .uuid = uuid,
                 .label = kgroup.readEntry(QStringLiteral("Label")),
                 .path = kgroup.readEntry(QStringLiteral("Path")),
+                .language = static_cast<Language>(kgroup.readEntry(QStringLiteral("Language")).toInt()),
             });
         }
     }
@@ -45,6 +46,7 @@ void saveGameInstalls(QList<GameInstall> installs)
         auto group = config.group(QStringLiteral("install-%1").arg(install.uuid.toString()));
         group.writeEntry(QStringLiteral("Path"), install.path);
         group.writeEntry(QStringLiteral("Label"), install.label);
+        group.writeEntry(QStringLiteral("Language"), static_cast<int>(install.language));
     }
 
     config.sync();
@@ -98,8 +100,27 @@ bool addNewInstall()
     KConfigGroup newGameInstall = config.group(QStringLiteral("install-%1").arg(uuid.toString()));
     newGameInstall.writeEntry(QStringLiteral("Path"), dir);
     newGameInstall.writeEntry(QStringLiteral("Label"), label);
+    newGameInstall.writeEntry(QStringLiteral("Language"), static_cast<int>(Language::English)); // TODO: don't assume English
 
     config.sync();
 
     return true;
+}
+
+Language getLanguage()
+{
+    KConfig config(QStringLiteral("novusrc"));
+
+    const KConfigGroup game = config.group(QStringLiteral("Game"));
+    if (game.hasKey(QStringLiteral("CurrentInstall"))) {
+        const auto uuid = game.readEntry(QStringLiteral("CurrentInstall"));
+        const auto installs = getGameInstalls();
+        for (auto install : installs) {
+            if (install.uuid == QUuid::fromString(uuid)) {
+                return install.language;
+            }
+        }
+    }
+
+    Q_UNREACHABLE(); // if you hit this, you did something wrong
 }

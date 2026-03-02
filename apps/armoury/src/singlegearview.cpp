@@ -105,7 +105,7 @@ SingleGearView::SingleGearView(physis_SqPackResource *data, FileCache &cache, QW
         QString path = QStringLiteral("%1/%2/%3/%4")
                            .arg(sourceDirectory)
                            .arg(QString::fromStdString(magic_enum::enum_name(currentGear->slot).data()))
-                           .arg(QString::fromStdString(currentGear->name))
+                           .arg(currentGear->name)
                            .arg(QStringLiteral("3D"));
 
         if (!QDir().exists(path))
@@ -144,7 +144,7 @@ SingleGearView::SingleGearView(physis_SqPackResource *data, FileCache &cache, QW
             QString path = QStringLiteral("%1/%2/%3/%4")
                                .arg(sourceDirectory)
                                .arg(QString::fromStdString(magic_enum::enum_name(currentGear->slot).data()))
-                               .arg(QString::fromStdString(currentGear->name))
+                               .arg(currentGear->name)
                                .arg(QStringLiteral("3D"));
 
             if (!QDir().exists(path))
@@ -175,7 +175,7 @@ SingleGearView::SingleGearView(physis_SqPackResource *data, FileCache &cache, QW
             QString path = QStringLiteral("%1/%2/%3/%4")
                                .arg(sourceDirectory)
                                .arg(QString::fromStdString(magic_enum::enum_name(currentGear->slot).data()))
-                               .arg(QString::fromStdString(currentGear->name))
+                               .arg(currentGear->name)
                                .arg(QStringLiteral("3D"));
 
             if (!QDir().exists(path))

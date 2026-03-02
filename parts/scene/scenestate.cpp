@@ -6,6 +6,7 @@
 #include <KLocalizedString>
 
 #include "animation.h"
+#include "settings.h"
 
 #include <QFile>
 #include <QJsonArray>
@@ -26,7 +27,7 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/enpcresident.exh";
             } else {
-                m_enpcResidentSheet = physis_sqpack_read_excel_sheet(resource, "ENpcResident", &exh, Language::English);
+                m_enpcResidentSheet = physis_sqpack_read_excel_sheet(resource, "ENpcResident", &exh, getLanguage());
             }
         }
     }
@@ -41,7 +42,7 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/eobjname.exh";
             } else {
-                m_eobjNameSheet = physis_sqpack_read_excel_sheet(resource, "EObjName", &exh, Language::English);
+                m_eobjNameSheet = physis_sqpack_read_excel_sheet(resource, "EObjName", &exh, getLanguage());
             }
         }
     }
@@ -56,7 +57,7 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/bnpcname.exh";
             } else {
-                m_bnpcNameSheet = physis_sqpack_read_excel_sheet(resource, "BNpcName", &exh, Language::English);
+                m_bnpcNameSheet = physis_sqpack_read_excel_sheet(resource, "BNpcName", &exh, getLanguage());
             }
         }
     }

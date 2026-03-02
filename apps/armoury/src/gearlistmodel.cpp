@@ -3,6 +3,8 @@
 
 #include "gearlistmodel.h"
 
+#include "settings.h"
+
 #include <KLocalizedString>
 #include <QtConcurrent>
 #include <magic_enum.hpp>
@@ -14,7 +16,7 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
     // smallclothes body
     {
         GearInfo info = {};
-        info.name = "SmallClothes Body";
+        info.name = i18n("SmallClothes Body");
         info.slot = Slot::Body;
 
         gears.push_back(info);
@@ -23,14 +25,14 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
     // smallclothes legs
     {
         GearInfo info = {};
-        info.name = "SmallClothes Legs";
+        info.name = i18n("SmallClothes Legs");
         info.slot = Slot::Legs;
 
         gears.push_back(info);
     }
 
     m_exh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/item.exh"));
-    m_sheet = physis_sqpack_read_excel_sheet(data, "Item", &m_exh, Language::English);
+    m_sheet = physis_sqpack_read_excel_sheet(data, "Item", &m_exh, getLanguage());
 
     for (unsigned int i = 0; i < m_sheet.page_count; i++) {
         for (unsigned int j = m_exh.pages[i].start_id; j < m_exh.pages[i].start_id + m_sheet.pages[i].entry_count; j++) {
@@ -48,7 +50,7 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
                 }
 
                 GearInfo info = {};
-                info.name = row.columns[9].string._0;
+                info.name = QString::fromStdString(row.columns[9].string._0);
                 info.icon = row.columns[10].u_int16._0;
                 info.slot = slot;
                 info.modelInfo.primaryID = parts[0];
@@ -160,7 +162,7 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
         }
     } else if (item->type == TreeType::Item) {
         if (role == Qt::DisplayRole) {
-            return QLatin1String(item->gear->name.data());
+            return item->gear->name;
         } else if (role == Qt::DecorationRole) {
             // TODO: cache these images in memory
             const QString iconName = QString::number(item->gear->icon);

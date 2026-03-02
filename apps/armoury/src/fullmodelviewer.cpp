@@ -216,7 +216,7 @@ void FullModelViewer::reloadGear()
     } else {
         // smallclothes body
         GearInfo info = {};
-        info.name = "SmallClothes Body";
+        info.name = i18n("SmallClothes Body");
         info.slot = Slot::Body;
 
         gearView->addGear(info);
@@ -227,7 +227,7 @@ void FullModelViewer::reloadGear()
     } else {
         // smallclothes legs
         GearInfo info = {};
-        info.name = "SmallClothes Legs";
+        info.name = i18n("SmallClothes Legs");
         info.slot = Slot::Legs;
 
         gearView->addGear(info);
@@ -236,7 +236,7 @@ void FullModelViewer::reloadGear()
     // smallclothes hands
     {
         GearInfo info = {};
-        info.name = "SmallClothes Hands";
+        info.name = i18n("SmallClothes Hands");
         info.slot = Slot::Hands;
 
         gearView->addGear(info);
@@ -245,7 +245,7 @@ void FullModelViewer::reloadGear()
     // smallclothes hands
     {
         GearInfo info = {};
-        info.name = "SmallClothes Feet";
+        info.name = i18n("SmallClothes Feet");
         info.slot = Slot::Feet;
 
         gearView->addGear(info);

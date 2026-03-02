@@ -26,6 +26,8 @@ public:
         for (auto [type, name] : magic_enum::enum_entries<E>()) {
             comboBox->addItem(QString::fromLatin1(name.data()));
         }
+
+        connect(comboBox, &QComboBox::currentIndexChanged, this, &EnumEdit::editingFinished);
     }
     ~EnumEdit() override = default;
 
@@ -38,6 +40,11 @@ public:
     void resetValue()
     {
         comboBox->setCurrentIndex(-1);
+    }
+
+    E value() const
+    {
+        return static_cast<E>(comboBox->currentIndex());
     }
 
 private:

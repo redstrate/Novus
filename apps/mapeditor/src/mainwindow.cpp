@@ -19,6 +19,7 @@
 #include "mapview.h"
 #include "scenepart.h"
 #include "scenestate.h"
+#include "settings.h"
 
 #include <KConfig>
 #include <KConfigGroup>
@@ -197,7 +198,7 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
         qInfo() << "This map contains a duty! CF:" << contentFinderCondition;
 
         auto cfcExh = physis_exh_parse(m_data.platform, physis_sqpack_read(&m_data, "exd/ContentFinderCondition.exh"));
-        auto cfcSheet = physis_sqpack_read_excel_sheet(&m_data, "ContentFinderCondition", &cfcExh, Language::English);
+        auto cfcSheet = physis_sqpack_read_excel_sheet(&m_data, "ContentFinderCondition", &cfcExh, getLanguage());
 
         auto cfcRow = physis_excel_get_row(&cfcSheet, contentFinderCondition);
         auto instanceContentId = cfcRow.columns[3].u_int16._0;

@@ -260,7 +260,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
         const auto &object = layer.objects[z];
 
         QString objectName;
-        if (object.name) {
+        if (strlen(object.name) > 0) {
             objectName = QString::fromLatin1(object.name);
         } else {
             objectName = i18n("Unknown Object");

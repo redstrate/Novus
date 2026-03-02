@@ -18,6 +18,7 @@
 
 #include "magic_enum.hpp"
 #include "schema.h"
+#include "settings.h"
 
 #include <QActionGroup>
 #include <QMenu>
@@ -27,6 +28,7 @@
 EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent)
     : QWidget(parent)
     , data(data)
+    , m_preferredLanguage(getLanguage())
     , m_resolver(resolver)
 {
     auto layout = new QVBoxLayout();
@@ -198,8 +200,8 @@ Language EXDPart::getSuitableLanguage(const physis_EXH &pExh) const
         }
     }
 
-    // Then English
-    return Language::English;
+    // Then the default language
+    return getLanguage();
 }
 
 #include "moc_exdpart.cpp"

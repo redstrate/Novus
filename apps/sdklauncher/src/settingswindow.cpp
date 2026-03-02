@@ -53,6 +53,13 @@ SettingsWindow::SettingsWindow(QWidget *parent)
     });
     configureWidgetLayout->addRow(i18n("Game Path:"), m_pathEdit);
 
+    m_languageEdit = new EnumEdit<Language>();
+    connect(m_languageEdit, &EnumEdit<Language>::editingFinished, this, [this] {
+        auto &install = currentInstall();
+        install.language = m_languageEdit->value();
+    });
+    configureWidgetLayout->addRow(i18n("Language:"), m_languageEdit);
+
     // TODO: port to QDialogButtonBox
     auto bottomButtonLayout = new QHBoxLayout();
     layout->addLayout(bottomButtonLayout);
@@ -107,6 +114,7 @@ void SettingsWindow::refreshConfigureWidget(const QUuid uuid)
         if (install.uuid == uuid) {
             m_labelEdit->setText(install.label);
             m_pathEdit->setText(install.path);
+            m_languageEdit->setValue(install.language);
 
             valid = true;
         }
@@ -114,6 +122,7 @@ void SettingsWindow::refreshConfigureWidget(const QUuid uuid)
 
     m_labelEdit->setEnabled(valid);
     m_pathEdit->setEnabled(valid);
+    m_languageEdit->setEnabled(valid);
     m_removeButton->setEnabled(m_installs.size() > 1);
 }
 

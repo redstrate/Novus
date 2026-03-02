@@ -3,6 +3,8 @@
 
 #include "maplistwidget.h"
 
+#include "settings.h"
+
 #include <KLocalizedString>
 #include <QDialogButtonBox>
 #include <QLineEdit>
@@ -39,7 +41,7 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
     auto nameExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/PlaceName.exh"));
     auto territoryExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/TerritoryType.exh"));
 
-    auto nameSheet = physis_sqpack_read_excel_sheet(data, "PlaceName", &nameExh, Language::English);
+    auto nameSheet = physis_sqpack_read_excel_sheet(data, "PlaceName", &nameExh, getLanguage());
     auto territorySheet = physis_sqpack_read_excel_sheet(data, "TerritoryType", &territoryExh, Language::None);
 
     // TODO: figure out why row_count in EXH is wrong?!

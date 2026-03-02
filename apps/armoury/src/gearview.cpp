@@ -104,7 +104,7 @@ void GearView::exportModel(const QString &fileName)
 
 void GearView::addGear(GearInfo &gear)
 {
-    qDebug() << "Adding gear" << gear.name.c_str();
+    qDebug() << "Adding gear" << gear.name;
 
     queuedGearAdditions.emplace_back(gear);
 
@@ -121,7 +121,7 @@ void GearView::addGear(GearInfo &gear)
 
 void GearView::removeGear(GearInfo &gear)
 {
-    qDebug() << "Removing gear" << gear.name.c_str();
+    qDebug() << "Removing gear" << gear.name;
 
     queuedGearRemovals.emplace_back(gear);
     gearDirty = true;

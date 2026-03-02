@@ -40,7 +40,7 @@ private:
     QFormLayout *headerFormLayout = nullptr;
 
     Language getSuitableLanguage(const physis_EXH &pExh) const;
-    Language m_preferredLanguage = Language::English;
+    Language m_preferredLanguage;
     physis_EXH exh;
     QString m_name;
     AbstractExcelResolver *m_resolver = nullptr;

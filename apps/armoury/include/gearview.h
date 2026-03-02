@@ -15,7 +15,7 @@ struct ModelInfo {
 };
 
 struct GearInfo {
-    std::string name;
+    QString name;
     Slot slot;
     ModelInfo modelInfo;
     uint16_t icon;

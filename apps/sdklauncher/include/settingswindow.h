@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "enumedit.h"
 #include "settings.h"
 
 #include <QLineEdit>
@@ -28,6 +29,7 @@ private:
     QListWidget *m_installWidget;
     QLineEdit *m_labelEdit;
     QLineEdit *m_pathEdit;
+    EnumEdit<Language> *m_languageEdit;
     QList<GameInstall> m_installs;
     QPushButton *m_addButton;
     QPushButton *m_removeButton;
