@@ -342,6 +342,22 @@ void ObjectPropertiesWidget::refreshDropInData(DropInObject *object)
 
         const auto nonPopEdit = new BoolEdit(data->nonpop);
         layout->addRow(i18n("Nonpop"), nonPopEdit);
+
+        const auto aggressionModeEdit = new UIntEdit(data->aggressionMode);
+        layout->addRow(i18n("Aggression Mode"), aggressionModeEdit);
+
+        const auto gimmickId = new ObjectIdEdit(m_appState);
+        gimmickId->setObjectId(data->gimmickId);
+        layout->addRow(i18n("Gimmick Id"), gimmickId);
+
+        const auto maxLinksEdit = new UIntEdit(data->maxLinks);
+        layout->addRow(i18n("Max Links"), maxLinksEdit);
+
+        const auto linkFamilyEdit = new UIntEdit(data->linkFamily);
+        layout->addRow(i18n("Link Family"), linkFamilyEdit);
+
+        const auto linkRangeEdit = new UIntEdit(data->linkRange);
+        layout->addRow(i18n("Link Range"), linkRangeEdit);
     }
 }
 

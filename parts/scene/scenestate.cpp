@@ -203,6 +203,11 @@ void SceneState::loadDropIn(const QString &path)
                                 battleNpc.hp = jsonData["hp"_L1].toInteger();
                                 battleNpc.level = jsonData["level"_L1].toInt();
                                 battleNpc.nonpop = jsonData["nonpop"_L1].toBool();
+                                battleNpc.aggressionMode = jsonData["aggression_mode"_L1].toInteger();
+                                battleNpc.gimmickId = jsonData["gimmick_id"_L1].toInteger();
+                                battleNpc.maxLinks = jsonData["max_links"_L1].toInteger();
+                                battleNpc.linkFamily = jsonData["link_family"_L1].toInteger();
+                                battleNpc.linkRange = jsonData["link_range"_L1].toInteger();
 
                                 obj.data = battleNpc;
                             } else {
@@ -259,6 +264,11 @@ void SceneState::saveDropIns()
                         {"hp"_L1, (qint64)data->hp},
                         {"level"_L1, (qint64)data->level},
                         {"nonpop"_L1, data->nonpop},
+                        {"aggression_mode"_L1, (qint64)data->aggressionMode},
+                        {"gimmick_id"_L1, (qint64)data->gimmickId},
+                        {"max_links"_L1, (qint64)data->maxLinks},
+                        {"link_family"_L1, (qint64)data->linkFamily},
+                        {"link_range"_L1, (qint64)data->linkRange},
                     };
                 }
 

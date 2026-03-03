@@ -21,6 +21,11 @@ struct DropInBattleNpc {
     uint32_t hp;
     uint32_t level;
     bool nonpop;
+    uint32_t aggressionMode;
+    uint32_t gimmickId;
+    uint32_t maxLinks;
+    uint32_t linkFamily;
+    uint32_t linkRange;
 };
 
 struct DropInObject {
