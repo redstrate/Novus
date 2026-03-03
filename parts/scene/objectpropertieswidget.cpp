@@ -20,6 +20,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "enumedit.h"
+#include "exceledit.h"
 #include "objectidedit.h"
 #include "uintedit.h"
 
@@ -484,14 +485,12 @@ void ObjectPropertiesWidget::addMapRangeSection(const physis_MapRangeInstanceObj
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto placeNameBlock = new QLineEdit();
-    placeNameBlock->setText(QString::number(mapRange.place_name_block));
-    placeNameBlock->setReadOnly(true);
+    auto placeNameBlock = new ExcelEdit(m_appState, QStringLiteral("PlaceName"));
+    placeNameBlock->setRowId(mapRange.place_name_block);
     layout->addRow(i18n("PlaceName Block"), placeNameBlock);
 
-    auto placeNameSpot = new QLineEdit();
-    placeNameSpot->setReadOnly(true);
-    placeNameSpot->setText(QString::number(mapRange.place_name_spot));
+    auto placeNameSpot = new ExcelEdit(m_appState, QStringLiteral("PlaceName"));
+    placeNameSpot->setRowId(mapRange.place_name_spot);
     layout->addRow(i18n("PlaceName Spot"), placeNameSpot);
 
     auto restBonusEffectiveCheckbox = new QCheckBox();

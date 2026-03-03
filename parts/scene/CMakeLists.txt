@@ -16,6 +16,7 @@ target_sources(scenepart
         primitives.h
         animation.h
         objectidedit.h
+        exceledit.h
 
         scenelistwidget.cpp
         scenelistmodel.cpp
@@ -27,7 +28,8 @@ target_sources(scenepart
         objectpass.cpp
         primitives.cpp
         animation.cpp
-        objectidedit.cpp)
+        objectidedit.cpp
+        exceledit.cpp)
 target_link_libraries(scenepart
         PUBLIC
         Novus::Renderer

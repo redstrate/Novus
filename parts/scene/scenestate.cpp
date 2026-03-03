@@ -16,6 +16,7 @@ using namespace Qt::StringLiterals;
 
 SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
     : QObject(parent)
+    , m_resource(resource)
 {
     // ENPC
     {
@@ -341,6 +342,11 @@ float SceneState::longestAnimationTime() const
 void SceneState::updateAllAnimations(const float time)
 {
     processUpdateAnimation(rootScene, time);
+}
+
+physis_SqPackResource *SceneState::resource() const
+{
+    return m_resource;
 }
 
 void SceneState::processLongestAnimationTime(const ObjectScene &scene)

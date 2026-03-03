@@ -130,6 +130,8 @@ public:
 
     void updateAllAnimations(float time);
 
+    physis_SqPackResource *resource() const;
+
 Q_SIGNALS:
     void mapLoaded();
     void visibleLayerIdsChanged();
@@ -146,4 +148,5 @@ private:
     physis_ExcelSheet m_eobjNameSheet;
     physis_ExcelSheet m_bnpcNameSheet;
     float m_longestAnimationTime = 0.0f;
+    physis_SqPackResource *m_resource;
 };
