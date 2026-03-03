@@ -33,7 +33,7 @@ public:
 
 private:
     /**
-     * @brief Returns a nice display for a given column data, including resolving other sheets..
+     * @brief Returns a nice display for a given column data, including resolving other sheets.
      */
     QVariant displayForColumn(uint32_t column, const physis_Field &data) const;
 
