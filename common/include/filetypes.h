@@ -44,6 +44,7 @@ enum class FileType {
     EnvironmentSoundScapeBinary,
     AmbientSet,
     ObjectBehaviorSetBinary,
+    Pap, // TODO: what would this be called?
 };
 
 class NOVUSCOMMON_EXPORT FileTypes

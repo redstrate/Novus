@@ -40,7 +40,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("envb"), FileType::EnvironmentBinary},
                                                      {QStringLiteral("essb"), FileType::EnvironmentSoundScapeBinary},
                                                      {QStringLiteral("amb"), FileType::AmbientSet},
-                                                     {QStringLiteral("obsb"), FileType::ObjectBehaviorSetBinary}};
+                                                     {QStringLiteral("obsb"), FileType::ObjectBehaviorSetBinary},
+                                                     {QStringLiteral("pap"), FileType::Pap}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -75,7 +76,8 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::EnvironmentBinary, i18n("Environment Binary")},
                                                 {FileType::EnvironmentSoundScapeBinary, i18n("Environment Sound Scape Binary")},
                                                 {FileType::AmbientSet, i18n("Ambient Set")},
-                                                {FileType::ObjectBehaviorSetBinary, i18n("Object Behavior Set Binary")}};
+                                                {FileType::ObjectBehaviorSetBinary, i18n("Object Behavior Set Binary")},
+                                                {FileType::Pap, i18n("PAP")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -121,7 +123,8 @@ const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>
                                                                                               {FileType::EnvironmentBinary, physis_envb_debug},
                                                                                               {FileType::EnvironmentSoundScapeBinary, physis_essb_debug},
                                                                                               {FileType::AmbientSet, physis_amb_debug},
-                                                                                              {FileType::ObjectBehaviorSetBinary, physis_obsb_debug}};
+                                                                                              {FileType::ObjectBehaviorSetBinary, physis_obsb_debug},
+                                                                                              {FileType::Pap, physis_pap_debug}};
 
 FileType FileTypes::getFileType(const QString &extension)
 {
