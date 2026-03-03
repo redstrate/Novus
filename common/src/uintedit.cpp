@@ -15,8 +15,8 @@ UIntEdit::UIntEdit(uint32_t &value, QWidget *parent)
 
     spinBox = new QSpinBox();
 
-    spinBox->setMinimum(-10000);
-    spinBox->setMaximum(10000);
+    spinBox->setMinimum(0);
+    spinBox->setMaximum(std::numeric_limits<int>::max());
 
     itemsLayout->addWidget(spinBox);
 
