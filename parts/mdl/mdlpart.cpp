@@ -461,15 +461,12 @@ void MDLPart::calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const 
 
 void MDLPart::removeModel(const physis_MDL &mdl)
 {
-    // TODO: restore this functionality
-    qWarning() << "MDLPart::removeModel needs to be reimplemented!";
-    Q_UNUSED(mdl)
-    /*vkWindow->models.erase(std::remove_if(vkWindow->models.begin(),
-                                vkWindow->models.end(),
-                                [mdl](const DrawObject &other) {
-                                    return mdl.p_ptr == other.model.p_ptr;
-                                }),
-                 vkWindow->models.end());*/
+    vkWindow->models.erase(std::remove_if(vkWindow->models.begin(),
+                                          vkWindow->models.end(),
+                                          [mdl](const DrawObjectInstance &other) {
+                                              return mdl.p_ptr == other.sourceObject->model.p_ptr;
+                                          }),
+                           vkWindow->models.end());
     Q_EMIT modelChanged();
 }
 
