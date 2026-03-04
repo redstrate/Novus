@@ -160,9 +160,15 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         return;
     }
 
-    const FileType type = FileTypes::getFileType(info.completeSuffix());
+    QString source;
+    FileType type = FileTypes::getFileType(info.completeSuffix());
+    // Try to guess from magic as a fallback
+    if (type == FileType::Unknown) {
+        source = i18n(" (Guessed)");
+        type = FileTypes::guessFileType(file);
+    }
 
-    m_fileTypeLabel->setText(i18n("File Type: %1", FileTypes::getFiletypeName(type)));
+    m_fileTypeLabel->setText(i18n("File Type: %1%2", FileTypes::getFiletypeName(type), source));
 
     m_fileActionsMenu->clear();
 

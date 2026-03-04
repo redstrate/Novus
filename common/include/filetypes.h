@@ -55,4 +55,5 @@ public:
     static QString getFiletypeName(FileType fileType);
     static QString getFiletypeIcon(FileType fileType);
     static QString printDebugInformation(FileType fileType, Platform platform, physis_Buffer buffer);
+    static FileType guessFileType(physis_Buffer buffer);
 };

@@ -126,6 +126,17 @@ const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>
                                                                                               {FileType::ObjectBehaviorSetBinary, physis_obsb_debug},
                                                                                               {FileType::Pap, physis_pap_debug}};
 
+const static QMap<std::array<uint8_t, 4>, FileType> magicToType{
+    {{0x70, 0x61, 0x70, 0x20}, FileType::Pap},
+    {{0x43, 0x55, 0x54, 0x42}, FileType::CutsceneBinary},
+    {{0x53, 0x45, 0x44, 0x42}, FileType::SoundCompressedData},
+    {{0x53, 0x47, 0x42, 0x31}, FileType::SharedGroup},
+    {{0x58, 0x46, 0x56, 0x41}, FileType::AnimatedVisualEffect},
+    {{0x45, 0x4E, 0x56, 0x42}, FileType::EnvironmentBinary},
+    {{0x4F, 0x42, 0x53, 0x42}, FileType::ObjectBehaviorSetBinary},
+    {{0x62, 0x6C, 0x6B, 0x73}, FileType::Skeleton},
+};
+
 FileType FileTypes::getFileType(const QString &extension)
 {
     return extensionToType.value(extension, FileType::Unknown);
@@ -156,4 +167,17 @@ QString FileTypes::printDebugInformation(FileType fileType, Platform platform, p
         }
     }
     return i18n("No debug information available. If this is unexpected, please report this a bug (and include the file path!)");
+}
+
+FileType FileTypes::guessFileType(physis_Buffer buffer)
+{
+    std::array<uint8_t, 4> magic{};
+    if (buffer.size >= 4) {
+        std::memcpy(magic.data(), buffer.data, 4);
+
+        if (magicToType.contains(magic)) {
+            return magicToType[magic];
+        }
+    }
+    return FileType::Unknown;
 }
