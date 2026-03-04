@@ -311,6 +311,11 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         shcdPart->load(file);
         addTab(shcdPart);
     } break;
+    case FileType::LayerVariableBinary: {
+        auto scenePart = new ScenePart(&m_data);
+        scenePart->loadLvb(file);
+        addTab(scenePart);
+    } break;
     default:
         m_fileActions->setVisible(false);
         break;

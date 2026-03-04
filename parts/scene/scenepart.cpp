@@ -93,6 +93,17 @@ void ScenePart::loadSgb(physis_Buffer file)
     }
 }
 
+void ScenePart::loadLvb(physis_Buffer file)
+{
+    auto lvb = physis_lvb_parse(m_data->platform, file);
+    if (lvb.sections) {
+        // TODO: read all sections?
+        m_appState->load(m_data, lvb.sections[0]);
+    } else {
+        qWarning() << "Failed to parse lvb";
+    }
+}
+
 void ScenePart::focusSearchField()
 {
     m_sceneListWidget->focusSearchField();

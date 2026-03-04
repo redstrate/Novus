@@ -165,23 +165,17 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
 
     auto lvbFile = physis_sqpack_read(&m_data, lvbPathStd.c_str());
     if (lvbFile.size > 0) {
-        auto lvb = physis_lvb_parse(m_data.platform, lvbFile);
-        if (lvb.sections) {
-            // TODO: read all sections?
-            m_part->sceneState()->load(&m_data, lvb.sections[0]);
+        m_part->loadLvb(lvbFile);
 
-            KConfig config(QStringLiteral("novusrc"));
-            KConfigGroup game = config.group(QStringLiteral("MapEditor"));
+        KConfig config(QStringLiteral("novusrc"));
+        KConfigGroup game = config.group(QStringLiteral("MapEditor"));
 
-            const auto dropInsPath = game.readEntry("DropInsPath");
-            if (!dropInsPath.isEmpty()) {
-                QDirIterator it(dropInsPath);
-                while (it.hasNext()) {
-                    m_part->sceneState()->loadDropIn(it.next());
-                }
+        const auto dropInsPath = game.readEntry("DropInsPath");
+        if (!dropInsPath.isEmpty()) {
+            QDirIterator it(dropInsPath);
+            while (it.hasNext()) {
+                m_part->sceneState()->loadDropIn(it.next());
             }
-        } else {
-            qWarning() << "Failed to parse lvb" << lvbPath;
         }
     } else {
         qWarning() << "Failed to find lvb" << lvbPath;

@@ -27,6 +27,7 @@ public:
     explicit ScenePart(physis_SqPackResource *data, bool fixedSize = false, QWidget *parent = nullptr);
 
     void loadSgb(physis_Buffer file);
+    void loadLvb(physis_Buffer file);
     void focusSearchField();
     void selectObject(uint32_t objectId);
     QString lookupObjectName(uint32_t objectId);
