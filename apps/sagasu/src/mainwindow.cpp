@@ -217,7 +217,12 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         transformation.scale[2] = 1;
 
         auto mdlWidget = new MDLPart(&m_data, fileCache);
-        mdlWidget->addModel(physis_mdl_parse(m_data.platform, file), false, transformation, QStringLiteral("mdl"), {}, 0);
+        auto mdl = physis_mdl_parse(m_data.platform, file);
+        std::vector<std::pair<std::string, physis_Material>> materials(mdl.num_material_names);
+        for (uint32_t i = 0; i < mdl.num_material_names; i++) {
+            materials[i] = {mdl.material_names[i], physis_material_parse(m_data.platform, physis_sqpack_read(&m_data, mdl.material_names[i]))};
+        }
+        mdlWidget->addModel(mdl, false, transformation, QStringLiteral("mdl"), materials, 0);
         addTab(mdlWidget);
 
         auto importAction = m_fileActionsMenu->addAction(QStringLiteral("Import glTF"));
