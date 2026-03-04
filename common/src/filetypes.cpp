@@ -135,6 +135,15 @@ const static QMap<std::array<uint8_t, 4>, FileType> magicToType{
     {{0x45, 0x4E, 0x56, 0x42}, FileType::EnvironmentBinary},
     {{0x4F, 0x42, 0x53, 0x42}, FileType::ObjectBehaviorSetBinary},
     {{0x62, 0x6C, 0x6B, 0x73}, FileType::Skeleton},
+    {{0x45, 0x58, 0x44, 0x46}, FileType::ExcelData},
+    {{0x45, 0x58, 0x48, 0x46}, FileType::ExcelHeader},
+    {{0x53, 0x68, 0x43, 0x64}, FileType::Shader},
+    {{0x53, 0x68, 0x50, 0x6B}, FileType::ShaderPackage},
+    {{0x1B, 0x4C, 0x75, 0x61}, FileType::LuaBytecode},
+};
+
+const static QMap<std::array<uint8_t, 2>, FileType> shortMagicToType{
+    {{0x4D, 0x53}, FileType::StainingTemplate},
 };
 
 FileType FileTypes::getFileType(const QString &extension)
@@ -177,6 +186,12 @@ FileType FileTypes::guessFileType(physis_Buffer buffer)
 
         if (magicToType.contains(magic)) {
             return magicToType[magic];
+        }
+
+        std::array<uint8_t, 2> shortMagic{};
+        std::memcpy(shortMagic.data(), magic.data(), 2);
+        if (shortMagicToType.contains(shortMagic)) {
+            return shortMagicToType[shortMagic];
         }
     }
     return FileType::Unknown;
