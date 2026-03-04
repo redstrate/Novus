@@ -301,7 +301,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
                     } else if (x == 2) {
                         color = glm::vec4{row.emissive_color[0], row.emissive_color[1], row.emissive_color[2], row.tile_set};
                     } else if (x == 3) {
-                        color = glm::vec4{row.material_repeat[0], row.material_repeat[1], row.material_skew[0], row.material_skew[1]};
+                        color = glm::vec4{row.material_repeat_x, row.material_repeat_y, row.material_skew[0], row.material_skew[1]};
                     }
 
                     rgbaData[offset] = color.x;
