@@ -97,8 +97,6 @@ int32_t Track::tmfcId() const
 Animation::Animation(const ObjectScene &scene)
 {
     processScene(scene);
-
-    qInfo() << "Processed" << m_tracks.size() << "timelines with" << m_actorTracks.size() << "actors!";
 }
 
 void Animation::update(ObjectScene &scene, const float time)

@@ -83,8 +83,6 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
     if (tera_buffer.size > 0) {
         terrain = physis_terrain_parse(data->platform, tera_buffer);
         terrainPath = QString::fromStdString(bgPathStd);
-    } else {
-        qWarning() << "Failed to load terrain" << bgPathStd;
     }
 
     const auto loadLgb = [this, data](const char *path) {
@@ -436,8 +434,6 @@ Transformation ObjectScene::locateGameObjectByBaseId(const uint32_t baseId) cons
 
 void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path)
 {
-    qInfo() << "Processing" << path;
-
     const auto sgbFile = physis_sqpack_read(data, path);
     if (sgbFile.size == 0) {
         qWarning() << "Failed to find" << path;
