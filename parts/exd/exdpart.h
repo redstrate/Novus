@@ -30,6 +30,7 @@ public:
 
     QList<QPair<QString, Language>> availableLanguages() const;
     QAction *selectLanguageAction() const;
+    QAction *saveCsvAction();
 
 private:
     void loadTables();
@@ -47,4 +48,5 @@ private:
     QAction *m_selectLanguage = nullptr;
     QMenu *m_languageMenu = nullptr;
     QActionGroup *m_languageGroup = nullptr;
+    QAction *m_saveCsvAction = nullptr;
 };

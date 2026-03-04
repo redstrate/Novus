@@ -21,6 +21,8 @@
 #include "settings.h"
 
 #include <QActionGroup>
+#include <QFileDialog>
+#include <QHeaderView>
 #include <QMenu>
 #include <QSortFilterProxyModel>
 #include <QStandardPaths>
@@ -49,6 +51,47 @@ EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, Q
 
     m_languageGroup = new QActionGroup(this);
     m_languageGroup->setExclusive(true);
+
+    m_saveCsvAction = new QAction(i18n("Save CSV…"));
+    connect(m_saveCsvAction, &QAction::triggered, this, [this] {
+        const QString savePath = QFileDialog::getSaveFileName(this, i18nc("@title:window", "Save CSV"), QDir::homePath(), QStringLiteral("*.csv"));
+        if (!savePath.isEmpty()) {
+            QString csvString;
+
+            for (uint32_t i = 0; i < exh.page_count; i++) {
+                const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
+                Q_ASSERT(tableWidget);
+
+                const auto model = tableWidget->model();
+                const int rows = model->rowCount();
+                const int columns = model->columnCount();
+
+                // Header
+                if (i == 0) {
+                    for (int j = 0; j < columns; j++) {
+                        csvString += model->headerData(j, Qt::Horizontal).toString();
+                        csvString += QStringLiteral(", ");
+                    }
+                    csvString += QStringLiteral("\n");
+                }
+
+                // Data
+                for (int k = 0; k < rows; k++) {
+                    for (int j = 0; j < columns; j++) {
+                        csvString += model->data(model->index(k, j)).toString();
+                        csvString += QStringLiteral(", ");
+                    }
+                    csvString += QStringLiteral("\n");
+                }
+            }
+
+            QFile csvFile(savePath);
+            if (csvFile.open(QIODevice::WriteOnly)) {
+                QTextStream out(&csvFile);
+                out << csvString;
+            }
+        }
+    });
 }
 
 void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
@@ -144,6 +187,11 @@ QList<QPair<QString, Language>> EXDPart::availableLanguages() const
 QAction *EXDPart::selectLanguageAction() const
 {
     return m_selectLanguage;
+}
+
+QAction *EXDPart::saveCsvAction()
+{
+    return m_saveCsvAction;
 }
 
 void EXDPart::loadTables()

@@ -187,6 +187,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         addTab(exdWidget);
 
         m_fileActionsMenu->addAction(exdWidget->selectLanguageAction());
+        m_fileActionsMenu->addAction(exdWidget->saveCsvAction());
     } break;
     case FileType::ExcelData: {
         auto exdLayout = new QVBoxLayout();

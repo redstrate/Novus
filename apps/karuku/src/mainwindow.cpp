@@ -190,6 +190,7 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("goto_row"), goToRow);
 
     actionCollection()->addAction(QStringLiteral("select_language"), m_exdPart->selectLanguageAction());
+    actionCollection()->addAction(QStringLiteral("save_csv"), m_exdPart->saveCsvAction());
 
     auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"));
     focusSearch->setIcon(QIcon::fromTheme(QStringLiteral("search-symbolic")));

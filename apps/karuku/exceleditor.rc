@@ -11,6 +11,8 @@
       <Action name="import_list" />
       <Action name="download_list" />
       <Separator/>
+      <Action name="save_csv" />
+      <Separator/>
       <Action name="quit"/>
     </Menu>
     <Menu name="edit" >
