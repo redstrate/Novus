@@ -253,6 +253,8 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto texWidget = new TexPart(&m_data);
         texWidget->loadTex(file);
         addTab(texWidget);
+
+        m_fileActionsMenu->addAction(texWidget->saveImageAction());
     } break;
     case FileType::ShaderPackage: {
         auto shpkWidget = new SHPKPart(&m_data);

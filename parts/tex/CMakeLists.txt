@@ -12,6 +12,7 @@ target_sources(texpart
 target_link_libraries(texpart
         PUBLIC
         Physis::Physis
+        KF6::I18n
         Qt6::Core
         Qt6::Widgets)
 target_include_directories(texpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

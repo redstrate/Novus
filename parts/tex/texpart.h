@@ -25,8 +25,11 @@ public:
      */
     void loadHwc(physis_Buffer file);
 
+    QAction *saveImageAction();
+
 private:
     physis_SqPackResource *data = nullptr;
 
     ImageLabel *m_label = nullptr;
+    QAction *m_saveImage = nullptr;
 };
