@@ -9,6 +9,7 @@
 #include <KLocalizedString>
 #include <QLabel>
 #include <QLineEdit>
+#include <QScrollArea>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <spirv_glsl.hpp>
@@ -48,21 +49,45 @@ SHPKPart::SHPKPart(physis_SqPackResource *resource, QWidget *parent)
     shadersTabWidget->addTab(shadersTextureListWidget, i18n("Textures"));
     shadersLayout->addWidget(shadersTabWidget);
 
-    systemTab = new QWidget();
+    // System
+    systemTab = new QScrollArea();
+    systemTab->setWidgetResizable(true);
+
+    auto systemTabLayoutHolder = new QWidget();
+    systemTab->setWidget(systemTabLayoutHolder);
+
     systemLayout = new QVBoxLayout();
-    systemTab->setLayout(systemLayout);
+    systemTabLayoutHolder->setLayout(systemLayout);
 
-    sceneTab = new QWidget();
+    // Scene
+    sceneTab = new QScrollArea();
+    sceneTab->setWidgetResizable(true);
+
+    auto sceneTabLayoutHolder = new QWidget();
+    sceneTab->setWidget(sceneTabLayoutHolder);
+
     sceneLayout = new QVBoxLayout();
-    sceneTab->setLayout(sceneLayout);
+    sceneTabLayoutHolder->setLayout(sceneLayout);
 
-    materialTab = new QWidget();
+    // Material
+    materialTab = new QScrollArea();
+    materialTab->setWidgetResizable(true);
+
+    auto materialTabLayoutHolder = new QWidget();
+    materialTab->setWidget(materialTabLayoutHolder);
+
     materialLayout = new QVBoxLayout();
-    materialTab->setLayout(materialLayout);
+    materialTabLayoutHolder->setLayout(materialLayout);
 
-    subViewTab = new QWidget();
+    // Sub view
+    subViewTab = new QScrollArea();
+    subViewTab->setWidgetResizable(true);
+
+    auto subViewTabLayoutHolder = new QWidget();
+    subViewTab->setWidget(subViewTabLayoutHolder);
+
     subViewLayout = new QVBoxLayout();
-    subViewTab->setLayout(subViewLayout);
+    subViewTabLayoutHolder->setLayout(subViewLayout);
 
     keysTab = new QTabWidget();
     keysTab->addTab(systemTab, i18n("System"));
@@ -105,21 +130,45 @@ SHPKPart::SHPKPart(physis_SqPackResource *resource, QWidget *parent)
 
     nodesPassesTabLayout->addLayout(nodesPassesFormLayout);
 
-    nodesSystemTab = new QWidget();
+    // System
+    nodesSystemTab = new QScrollArea();
+    nodesSystemTab->setWidgetResizable(true);
+
+    auto systemTabLayoutNodeHolder = new QWidget();
+    nodesSystemTab->setWidget(systemTabLayoutNodeHolder);
+
     nodesSystemLayout = new QVBoxLayout();
-    nodesSystemTab->setLayout(nodesSystemLayout);
+    systemTabLayoutNodeHolder->setLayout(nodesSystemLayout);
 
-    nodesSceneTab = new QWidget();
+    // Scene
+    nodesSceneTab = new QScrollArea();
+    nodesSceneTab->setWidgetResizable(true);
+
+    auto sceneTabLayoutNodeHolder = new QWidget();
+    nodesSceneTab->setWidget(sceneTabLayoutNodeHolder);
+
     nodesSceneLayout = new QVBoxLayout();
-    nodesSceneTab->setLayout(nodesSceneLayout);
+    sceneTabLayoutNodeHolder->setLayout(nodesSceneLayout);
 
-    nodesMaterialTab = new QWidget();
+    // Material
+    nodesMaterialTab = new QScrollArea();
+    nodesMaterialTab->setWidgetResizable(true);
+
+    auto materialTabLayoutNodeHolder = new QWidget();
+    nodesMaterialTab->setWidget(materialTabLayoutNodeHolder);
+
     nodesMaterialLayout = new QVBoxLayout();
-    nodesMaterialTab->setLayout(nodesMaterialLayout);
+    materialTabLayoutNodeHolder->setLayout(nodesMaterialLayout);
 
-    nodesSubViewTab = new QWidget();
+    // Sub view
+    nodesSubViewTab = new QScrollArea();
+    nodesSubViewTab->setWidgetResizable(true);
+
+    auto subViewTabLayoutNodeHolder = new QWidget();
+    nodesSubViewTab->setWidget(subViewTabLayoutNodeHolder);
+
     nodesSubViewLayout = new QVBoxLayout();
-    nodesSubViewTab->setLayout(nodesSubViewLayout);
+    subViewTabLayoutNodeHolder->setLayout(nodesSubViewLayout);
 
     nodesKeysTabWidget = new QTabWidget();
     nodesKeysTabWidget->addTab(nodesSystemTab, i18n("System"));
@@ -170,7 +219,7 @@ void SHPKPart::load(physis_Buffer buffer)
     // keys
     const auto addKey = [](QLayout *layout, const Key &key) {
         auto label = new QLabel();
-        label->setText(QStringLiteral("Key: %1\nDefault Value: %2").arg(nameFromCrc(key.id)).arg(nameFromCrc(key.default_value)));
+        label->setText(QStringLiteral("<strong>%1</strong><br>Default Value: %2").arg(nameFromCrc(key.id)).arg(nameFromCrc(key.default_value)));
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
         layout->addWidget(label);
     };
@@ -179,16 +228,19 @@ void SHPKPart::load(physis_Buffer buffer)
     for (uint32_t i = 0; i < m_shpk.num_system_keys; i++) {
         addKey(systemLayout, m_shpk.system_keys[i]);
     }
+    systemLayout->addStretch();
 
     clearLayout(sceneLayout);
     for (uint32_t i = 0; i < m_shpk.num_scene_keys; i++) {
         addKey(sceneLayout, m_shpk.scene_keys[i]);
     }
+    sceneLayout->addStretch();
 
     clearLayout(materialLayout);
     for (uint32_t i = 0; i < m_shpk.num_material_keys; i++) {
         addKey(materialLayout, m_shpk.material_keys[i]);
     }
+    materialLayout->addStretch();
 
     clearLayout(subViewLayout);
 
@@ -207,6 +259,7 @@ void SHPKPart::load(physis_Buffer buffer)
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
         subViewLayout->addWidget(label);
     }
+    subViewLayout->addStretch();
 
     // nodes
     nodesListWidget->clear();
@@ -314,32 +367,52 @@ void SHPKPart::loadNode(const QModelIndex &index)
     }
 
     // keys
-    const auto addKey = [](QLayout *layout, const uint32_t key) {
+    const auto addKey = [](QLayout *layout, const Key upstreamKey, const uint32_t key) {
+        QString isDefault;
+        if (upstreamKey.default_value == key) {
+            isDefault = i18n(" (default)");
+        }
         auto label = new QLabel();
-        label->setText(QString::fromStdString(nameFromCrc(key)));
+        label->setText(QStringLiteral("<strong>%1</strong><br>Value: %2%3").arg(nameFromCrc(upstreamKey.id)).arg(nameFromCrc(key)).arg(isDefault));
+        label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
+        layout->addWidget(label);
+    };
+
+    const auto addSubviewKey = [](QLayout *layout, const uint32_t upstreamKeyDefault, const uint32_t key) {
+        QString isDefault;
+        if (upstreamKeyDefault == key) {
+            isDefault = i18n(" (default)");
+        }
+        auto label = new QLabel();
+        label->setText(QStringLiteral("%1%2").arg(nameFromCrc(key)).arg(isDefault));
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
         layout->addWidget(label);
     };
 
     clearLayout(nodesSystemLayout);
     for (uint32_t i = 0; i < node->system_key_count; i++) {
-        addKey(nodesSystemLayout, node->system_keys[i]);
+        addKey(nodesSystemLayout, m_shpk.system_keys[i], node->system_keys[i]);
     }
+    nodesSystemLayout->addStretch();
 
     clearLayout(nodesSceneLayout);
     for (uint32_t i = 0; i < node->scene_key_count; i++) {
-        addKey(nodesSceneLayout, node->scene_keys[i]);
+        addKey(nodesSceneLayout, m_shpk.scene_keys[i], node->scene_keys[i]);
     }
+    nodesSceneLayout->addStretch();
 
     clearLayout(nodesMaterialLayout);
     for (uint32_t i = 0; i < node->material_key_count; i++) {
-        addKey(nodesMaterialLayout, node->material_keys[i]);
+        addKey(nodesMaterialLayout, m_shpk.material_keys[i], node->material_keys[i]);
     }
+    nodesMaterialLayout->addStretch();
 
     clearLayout(nodesSubViewLayout);
+    Q_ASSERT(node->subview_key_count < 3);
     for (uint32_t i = 0; i < node->subview_key_count; i++) {
-        addKey(nodesSubViewLayout, node->subview_keys[i]);
+        addSubviewKey(nodesSubViewLayout, i == 0 ? m_shpk.sub_view_key1_default : m_shpk.sub_view_key2_default, node->subview_keys[i]);
     }
+    nodesSubViewLayout->addStretch();
 }
 
 void SHPKPart::loadPass(const QModelIndex &index)
@@ -390,8 +463,10 @@ void SHPKPart::clearLayout(QLayout *layout)
 {
     QLayoutItem *child = nullptr;
     while ((child = layout->takeAt(0)) != nullptr) {
-        child->widget()->setParent(nullptr);
-        child->widget()->deleteLater();
+        if (child->widget()) {
+            child->widget()->setParent(nullptr);
+            child->widget()->deleteLater();
+        }
     }
 }
 

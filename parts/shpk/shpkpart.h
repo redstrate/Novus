@@ -15,6 +15,7 @@
 #include <QWidget>
 #include <physis.hpp>
 
+class QScrollArea;
 class SHPKPart : public QWidget
 {
     Q_OBJECT
@@ -42,13 +43,13 @@ private:
     QListWidget *shadersTextureListWidget = nullptr;
 
     QTabWidget *keysTab = nullptr;
-    QWidget *systemTab = nullptr;
+    QScrollArea *systemTab = nullptr;
     QVBoxLayout *systemLayout = nullptr;
-    QWidget *sceneTab = nullptr;
+    QScrollArea *sceneTab = nullptr;
     QVBoxLayout *sceneLayout = nullptr;
-    QWidget *materialTab = nullptr;
+    QScrollArea *materialTab = nullptr;
     QVBoxLayout *materialLayout = nullptr;
-    QWidget *subViewTab = nullptr;
+    QScrollArea *subViewTab = nullptr;
     QVBoxLayout *subViewLayout = nullptr;
 
     QWidget *nodesTab = nullptr;
@@ -59,13 +60,13 @@ private:
     QTabWidget *nodesKeysTabWidget = nullptr;
 
     QTabWidget *nodesKeysTab = nullptr;
-    QWidget *nodesSystemTab = nullptr;
+    QScrollArea *nodesSystemTab = nullptr;
     QVBoxLayout *nodesSystemLayout = nullptr;
-    QWidget *nodesSceneTab = nullptr;
+    QScrollArea *nodesSceneTab = nullptr;
     QVBoxLayout *nodesSceneLayout = nullptr;
-    QWidget *nodesMaterialTab = nullptr;
+    QScrollArea *nodesMaterialTab = nullptr;
     QVBoxLayout *nodesMaterialLayout = nullptr;
-    QWidget *nodesSubViewTab = nullptr;
+    QScrollArea *nodesSubViewTab = nullptr;
     QVBoxLayout *nodesSubViewLayout = nullptr;
 
     QWidget *nodesPassesTab = nullptr;
