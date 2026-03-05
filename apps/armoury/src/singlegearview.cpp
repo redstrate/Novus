@@ -248,7 +248,7 @@ void SingleGearView::clear()
     }
     currentGear.reset();
 
-    Q_EMIT gearChanged();
+    Q_EMIT gearChanged(QString());
 }
 
 void SingleGearView::setGear(const GearInfo &info)
@@ -261,7 +261,7 @@ void SingleGearView::setGear(const GearInfo &info)
         currentGear = info;
         gearView->addGear(*currentGear);
 
-        Q_EMIT gearChanged();
+        Q_EMIT gearChanged(info.name);
     }
 }
 

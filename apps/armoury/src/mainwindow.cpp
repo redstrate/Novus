@@ -60,8 +60,9 @@ MainWindow::MainWindow(physis_SqPackResource in_data)
         gearView->setFMVAvailable(!loading);
     });
     connect(gearView, &SingleGearView::addToFullModelViewer, fullModelViewer, &FullModelViewer::addGear);
+    connect(gearView, &SingleGearView::gearChanged, this, &KXmlGuiWindow::setWindowTitle);
 
-    connect(gearView, &SingleGearView::doneLoadingModel, this, [this, in_data] {
+    connect(gearView, &SingleGearView::doneLoadingModel, this, [this] {
         materialsView->clear();
 
         int i = 0;

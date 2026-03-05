@@ -20,7 +20,7 @@ public:
     QList<physis_Material> getLoadedMaterials() const;
 
 Q_SIGNALS:
-    void gearChanged();
+    void gearChanged(const QString &name);
     void gotMDLPath();
 
     void raceChanged();
