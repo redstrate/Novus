@@ -133,6 +133,7 @@ bool MainWindow::selectPath(const QString &path)
 void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString &path)
 {
     partHolder->clear();
+    setWindowTitle(path);
 
     std::string pathStd = path.toStdString();
     if (indexPath.isEmpty()) {
