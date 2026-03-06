@@ -266,7 +266,10 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field 
             const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
 
             if (const auto displayFieldIndex = schema.displayFieldIndex()) {
-                return displayForData(m_resolver->translateSchemaColumn(sheetName, &row, *displayFieldIndex));
+                if (const auto field = m_resolver->translateSchemaColumn(sheetName, &row, *displayFieldIndex)) {
+                    return displayForData(*field);
+                }
+                qWarning() << "Could not fetch displayField! This is a bug in Novus.";
             }
         }
     }
