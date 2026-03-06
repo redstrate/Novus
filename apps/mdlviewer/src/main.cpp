@@ -9,6 +9,8 @@
 #include "mainwindow.h"
 #include "settings.h"
 
+#include <QCommandLineParser>
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -22,7 +24,11 @@ int main(int argc, char *argv[])
         qputenv("QT_MESSAGE_PATTERN", "[%{time yyyy-MM-dd h:mm:ss.zzz}] %{if-category}[%{category}] %{endif}[%{type}] %{message}");
     }
 
-    const QString gameDir{getGameDirectory()};
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addVersionOption();
+
+    const QString gameDir = processCommandLine(parser, app);
     if (gameDir.isEmpty()) {
         return 0;
     }
