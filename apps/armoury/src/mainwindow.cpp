@@ -21,6 +21,7 @@
 #include "cmpeditor.h"
 #include "filecache.h"
 #include "gearlistwidget.h"
+#include "openinwidget.h"
 #include "penumbraapi.h"
 #include "settingswindow.h"
 
@@ -82,6 +83,9 @@ MainWindow::MainWindow(physis_SqPackResource in_data)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+
+    auto openInWidget = new OpenInWidget();
+    menuBar()->setCornerWidget(openInWidget);
 }
 
 void MainWindow::configure()

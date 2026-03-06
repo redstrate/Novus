@@ -45,6 +45,7 @@ target_sources(novus-common
         include/editwidget.h
         include/uintedit.h
         include/booledit.h
+        include/openinwidget.h
 
         src/aboutdata.cpp
         src/filecache.cpp
@@ -57,6 +58,7 @@ target_sources(novus-common
         src/editwidget.cpp
         src/uintedit.cpp
         src/booledit.cpp
+        src/openinwidget.cpp
 
         launcherconfig.h)
 target_include_directories(novus-common

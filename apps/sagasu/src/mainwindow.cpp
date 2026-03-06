@@ -47,6 +47,7 @@
 #endif
 
 #include "mdlimport.h"
+#include "openinwidget.h"
 #include "scenepart.h"
 #include "tmbpart.h"
 
@@ -123,6 +124,9 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     connect(PathEdit::handler(), &OpenPathHandler::pathOpened, this, [this](const QString &path) {
         m_tree->selectPath(path);
     });
+
+    auto openInWidget = new OpenInWidget();
+    menuBar()->setCornerWidget(openInWidget);
 }
 
 bool MainWindow::selectPath(const QString &path)

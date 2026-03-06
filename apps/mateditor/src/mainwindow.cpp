@@ -12,6 +12,7 @@
 
 #include "materialview.h"
 #include "mtrlpart.h"
+#include "openinwidget.h"
 
 MainWindow::MainWindow(physis_SqPackResource data)
     : m_data(data)
@@ -42,6 +43,9 @@ MainWindow::MainWindow(physis_SqPackResource data)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+
+    auto openInWidget = new OpenInWidget();
+    menuBar()->setCornerWidget(openInWidget);
 }
 
 void MainWindow::setupActions()

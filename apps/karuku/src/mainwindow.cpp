@@ -24,6 +24,7 @@
 #include <physis.hpp>
 
 #include "exdpart.h"
+#include "openinwidget.h"
 #include "sheetlistwidget.h"
 
 #include <QLineEdit>
@@ -67,6 +68,9 @@ MainWindow::MainWindow(physis_SqPackResource data)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+
+    auto openInWidget = new OpenInWidget();
+    menuBar()->setCornerWidget(openInWidget);
 }
 
 static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath)

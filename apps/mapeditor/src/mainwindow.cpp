@@ -17,6 +17,7 @@
 
 #include "maplistwidget.h"
 #include "mapview.h"
+#include "openinwidget.h"
 #include "scenepart.h"
 #include "scenestate.h"
 #include "settings.h"
@@ -48,6 +49,9 @@ MainWindow::MainWindow(physis_SqPackResource data)
     connect(m_part->sceneState(), &SceneState::selectionChanged, this, &MainWindow::updateActionState);
 
     updateActionState();
+
+    auto openInWidget = new OpenInWidget();
+    menuBar()->setCornerWidget(openInWidget);
 }
 
 void MainWindow::configure()
