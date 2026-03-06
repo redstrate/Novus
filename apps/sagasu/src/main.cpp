@@ -33,9 +33,7 @@ int main(int argc, char *argv[])
     parser.addVersionOption();
     parser.addPositionalArgument(QStringLiteral("path"), i18n("Initial path to select."));
 
-    parser.process(app);
-
-    const QString gameDir{getGameDirectory()};
+    const QString gameDir = processCommandLine(parser, app);
     if (gameDir.isEmpty()) {
         return 0;
     }

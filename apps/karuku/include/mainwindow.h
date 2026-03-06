@@ -19,6 +19,9 @@ class MainWindow : public KXmlGuiWindow
 public:
     explicit MainWindow(physis_SqPackResource data);
 
+public Q_SLOTS:
+    QString getArgument() const;
+
 private:
     void setupActions();
 

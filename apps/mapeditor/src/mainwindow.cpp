@@ -50,7 +50,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     updateActionState();
 
-    auto openInWidget = new OpenInWidget();
+    auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 }
 

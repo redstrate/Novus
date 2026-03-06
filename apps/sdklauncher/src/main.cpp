@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         qputenv("QT_MESSAGE_PATTERN", "[%{time yyyy-MM-dd h:mm:ss.zzz}] %{if-category}[%{category}] %{endif}[%{type}] %{message}");
     }
 
-    if (getGameDirectory(false).isEmpty()) {
+    if (getGameDirectory().isEmpty()) {
         while (true) {
             QMessageBox msgBox;
             msgBox.setText(i18n("The game directory has not been set, please select it now. Select the 'game' folder."));

@@ -10,9 +10,12 @@
 #include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
+#include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QFileDialog>
 #include <QMessageBox>
+
+Q_GLOBAL_STATIC(QString, currentGameUuid)
 
 QList<GameInstall> getGameInstalls()
 {
@@ -52,30 +55,24 @@ void saveGameInstalls(QList<GameInstall> installs)
     config.sync();
 }
 
-QString getGameDirectory(const bool prompt)
+QString getGameDirectory()
 {
     KConfig config(QStringLiteral("novusrc"));
 
     const KConfigGroup game = config.group(QStringLiteral("Game"));
-    if (game.hasKey(QStringLiteral("CurrentInstall"))) {
-        const auto uuid = game.readEntry(QStringLiteral("CurrentInstall"));
-        const auto installs = getGameInstalls();
-        for (auto install : installs) {
-            if (install.uuid == QUuid::fromString(uuid)) {
-                return install.path;
-            }
+    const auto installs = getGameInstalls();
+    for (auto install : installs) {
+        if (install.uuid == QUuid::fromString(*currentGameUuid)) {
+            return install.path;
         }
     }
 
-    if (prompt) {
-        QMessageBox msgBox;
-        msgBox.setText(i18n("The game directory has not been set. Please open the Novus SDK launcher and set it."));
-        msgBox.exec();
-
-        QCoreApplication::quit();
-    }
-
     return {};
+}
+
+QString getGameUUID()
+{
+    return *currentGameUuid;
 }
 
 bool addNewInstall()
@@ -123,4 +120,42 @@ Language getLanguage()
     }
 
     Q_UNREACHABLE(); // if you hit this, you did something wrong
+}
+
+QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app)
+{
+    QCommandLineOption gameInstallOption(QStringLiteral("game"), i18n("Which installation to use"), QStringLiteral("uuid"));
+    parser.addOption(gameInstallOption);
+
+    parser.process(app);
+
+    if (parser.isSet(gameInstallOption)) {
+        // Load override
+        QString uuid = parser.value(gameInstallOption);
+        *currentGameUuid = uuid;
+    } else {
+        // Load default
+        KConfig config(QStringLiteral("novusrc"));
+
+        const KConfigGroup game = config.group(QStringLiteral("Game"));
+        if (game.hasKey(QStringLiteral("CurrentInstall"))) {
+            const auto uuid = game.readEntry(QStringLiteral("CurrentInstall"));
+            *currentGameUuid = uuid;
+        }
+    }
+
+    const auto installs = getGameInstalls();
+    for (auto install : installs) {
+        if (install.uuid == QUuid::fromString(*currentGameUuid)) {
+            return install.path;
+        }
+    }
+
+    QMessageBox msgBox;
+    msgBox.setText(i18n("The game directory has not been set. Please open the Novus SDK launcher and set it."));
+    msgBox.exec();
+
+    QCoreApplication::quit();
+
+    return {};
 }

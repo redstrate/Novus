@@ -44,7 +44,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 
-    auto openInWidget = new OpenInWidget();
+    auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 }
 

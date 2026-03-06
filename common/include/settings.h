@@ -10,6 +10,9 @@
 #include <QUuid>
 #include <physis.hpp>
 
+class QCoreApplication;
+class QCommandLineParser;
+
 struct GameInstall {
     QUuid uuid;
     QString label;
@@ -19,6 +22,9 @@ struct GameInstall {
 
 NOVUSCOMMON_EXPORT QList<GameInstall> getGameInstalls();
 NOVUSCOMMON_EXPORT void saveGameInstalls(QList<GameInstall> installs);
-NOVUSCOMMON_EXPORT QString getGameDirectory(bool prompt = true);
+NOVUSCOMMON_EXPORT QString getGameDirectory();
+NOVUSCOMMON_EXPORT QString getGameUUID();
 NOVUSCOMMON_EXPORT bool addNewInstall();
 NOVUSCOMMON_EXPORT Language getLanguage();
+
+NOVUSCOMMON_EXPORT QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app);

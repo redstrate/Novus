@@ -194,6 +194,11 @@ QAction *EXDPart::saveCsvAction()
     return m_saveCsvAction;
 }
 
+QString EXDPart::name() const
+{
+    return m_name;
+}
+
 void EXDPart::loadTables()
 {
     const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);

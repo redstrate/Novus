@@ -51,6 +51,9 @@
 #include "scenepart.h"
 #include "tmbpart.h"
 
+#include <KConfig>
+#include <KConfigGroup>
+
 MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     : m_data(data)
     , fileCache(m_data)
@@ -99,6 +102,7 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
         }
     });
     connect(m_tree, &FileTreeWindow::pathSelected, this, [this](const QString &indexPath, Hash hash, const QString &path) {
+        m_currentPath = path;
         refreshParts(indexPath, hash, path);
     });
     m_tree->setMaximumWidth(300);
@@ -125,13 +129,18 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
         m_tree->selectPath(path);
     });
 
-    auto openInWidget = new OpenInWidget();
+    auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 }
 
 bool MainWindow::selectPath(const QString &path)
 {
     return m_tree->selectPath(path);
+}
+
+QString MainWindow::getArguments() const
+{
+    return m_currentPath;
 }
 
 void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString &path)
@@ -514,3 +523,5 @@ void MainWindow::setupActions()
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
+
+#include "moc_mainwindow.cpp"

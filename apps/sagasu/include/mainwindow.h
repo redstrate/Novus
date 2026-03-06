@@ -17,10 +17,14 @@ class AbstractExcelResolver;
 
 class MainWindow : public KXmlGuiWindow
 {
+    Q_OBJECT
 public:
     MainWindow(const QString &gamePath, physis_SqPackResource data);
 
     bool selectPath(const QString &path);
+
+public Q_SLOTS:
+    QString getArguments() const;
 
 private:
     void setupActions();
@@ -37,6 +41,7 @@ private:
     AbstractExcelResolver *m_excelResolver = nullptr;
     QAction *m_fileActions = nullptr;
     QMenu *m_fileActionsMenu = nullptr;
+    QString m_currentPath;
 
     void refreshParts(const QString &indexPath, Hash hash, const QString &path);
 };

@@ -11,23 +11,20 @@
 #include <QCoreApplication>
 #include <QProcess>
 
-OpenInWidget::OpenInWidget()
+OpenInWidget::OpenInWidget(QObject *target)
 {
     QMenu *menu = addMenu(i18n("Open In"));
 
-    const KConfig config(QStringLiteral("novusrc"));
-    const KConfigGroup game = config.group(QStringLiteral("Game"));
-
     const auto installs = getGameInstalls();
     for (const auto &install : installs) {
-        if (install.uuid.toString() == game.readEntry(QStringLiteral("CurrentInstall"))) {
+        if (install.uuid.toString() == getGameUUID()) {
             menu->setTitle(install.label);
         } else {
             QAction *action = menu->addAction(install.label);
-            connect(action, &QAction::triggered, this, [] {
-                // TODO: pass arguments
-                // TODO: pass install
-                QProcess::startDetached(QCoreApplication::applicationFilePath(), {});
+            connect(action, &QAction::triggered, this, [target, install] {
+                QString arguments;
+                QMetaObject::invokeMethod(target, "getArguments", qReturnArg(arguments));
+                QProcess::startDetached(QCoreApplication::applicationFilePath(), {QStringLiteral("--game"), install.uuid.toString(), arguments});
             });
         }
     }

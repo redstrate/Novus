@@ -31,6 +31,7 @@ public:
     QList<QPair<QString, Language>> availableLanguages() const;
     QAction *selectLanguageAction() const;
     QAction *saveCsvAction();
+    QString name() const;
 
 private:
     void loadTables();
