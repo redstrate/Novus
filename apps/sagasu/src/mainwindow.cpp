@@ -170,6 +170,10 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     }
 
     auto file = physis_sqpack_read_from_hash(&m_data, indexPath.toStdString().c_str(), hash);
+    // HACK: Read from path as a fallback, which somehow makes more PS3 files load. I don't know why.
+    if (file.size == 0) {
+        file = physis_sqpack_read(&m_data, path.toStdString().c_str());
+    }
     if (file.size == 0) {
         return;
     }
