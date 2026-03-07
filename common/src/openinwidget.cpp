@@ -14,12 +14,15 @@
 OpenInWidget::OpenInWidget(QObject *target)
 {
     QMenu *menu = addMenu(i18n("Open In"));
+    menu->setEnabled(false);
 
     const auto installs = getGameInstalls();
     for (const auto &install : installs) {
         if (install.uuid.toString() == getGameUUID()) {
             menu->setTitle(install.label);
         } else {
+            menu->setEnabled(true);
+
             QAction *action = menu->addAction(install.label);
             connect(action, &QAction::triggered, this, [target, install] {
                 QString arguments;
