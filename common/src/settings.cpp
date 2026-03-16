@@ -88,6 +88,9 @@ bool addNewInstall()
     if (!resource.p_ptr)
         return false;
 
+    if (!physis_sqpack_exists(&resource, "exd/root.exl"))
+        return false;
+
     KConfig config(QStringLiteral("novusrc"));
     KConfigGroup game = config.group(QStringLiteral("Game"));
 
@@ -122,7 +125,7 @@ Language getLanguage()
     Q_UNREACHABLE(); // if you hit this, you did something wrong
 }
 
-QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app)
+QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bool prompt)
 {
     QCommandLineOption gameInstallOption(QStringLiteral("game"), i18n("Which installation to use"), QStringLiteral("uuid"));
     parser.addOption(gameInstallOption);
@@ -151,11 +154,13 @@ QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app)
         }
     }
 
-    QMessageBox msgBox;
-    msgBox.setText(i18n("The game directory has not been set. Please open the Novus SDK launcher and set it."));
-    msgBox.exec();
+    if (prompt) {
+        QMessageBox msgBox;
+        msgBox.setText(i18n("The game directory has not been set. Please open the Novus SDK launcher and set it."));
+        msgBox.exec();
 
-    QCoreApplication::quit();
+        QCoreApplication::quit();
+    }
 
     return {};
 }

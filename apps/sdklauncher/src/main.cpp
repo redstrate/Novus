@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
 
-    const QString gameDir = processCommandLine(parser, app);
+    const QString gameDir = processCommandLine(parser, app, false);
     if (gameDir.isEmpty()) {
         while (true) {
             QMessageBox msgBox;

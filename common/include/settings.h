@@ -27,4 +27,4 @@ NOVUSCOMMON_EXPORT QString getGameUUID();
 NOVUSCOMMON_EXPORT bool addNewInstall();
 NOVUSCOMMON_EXPORT Language getLanguage();
 
-NOVUSCOMMON_EXPORT QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app);
+NOVUSCOMMON_EXPORT QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bool prompt = true);
