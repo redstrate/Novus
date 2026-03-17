@@ -44,8 +44,8 @@ MtrlPart::MtrlPart(physis_SqPackResource *data, QWidget *parent)
     m_constantsLayout = new QVBoxLayout();
     constantsTab->setLayout(m_constantsLayout);
 
-    m_tabWidget->addTab(propertiesTab, i18n("Parameters"));
     m_tabWidget->addTab(texturesTab, i18n("Textures"));
+    m_tabWidget->addTab(propertiesTab, i18n("Parameters"));
     m_tabWidget->addTab(constantsTab, i18n("Constants"));
 
     setLayout(m_itemsLayout);
