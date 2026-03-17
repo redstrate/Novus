@@ -64,13 +64,23 @@ MainWindow::MainWindow(physis_SqPackResource data)
     menuBar()->setCornerWidget(openInWidget);
 }
 
-QString MainWindow::getArgument() const
+QString MainWindow::getArguments() const
 {
-    return m_exdPart->name();
+    if (m_exdPart) {
+        if (auto query = m_exdPart->selectedRow(); !query.isEmpty()) {
+            return QStringLiteral("%1#%2").arg(m_exdPart->name()).arg(query);
+        }
+        return m_exdPart->name();
+    }
+    return {};
 }
 
 void MainWindow::jumpToSheet(const QString &name)
 {
+    if (name.isEmpty()) {
+        return;
+    }
+
     auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
     auto pathStd = path.toStdString();
 

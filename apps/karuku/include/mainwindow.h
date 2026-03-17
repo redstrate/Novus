@@ -20,7 +20,7 @@ public:
     explicit MainWindow(physis_SqPackResource data);
 
 public Q_SLOTS:
-    QString getArgument() const;
+    QString getArguments() const;
     void jumpToSheet(const QString &name);
     void jumpToSheetAndRow(const QString &name, const QString &rowQuery);
 

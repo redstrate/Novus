@@ -113,10 +113,9 @@ Language getLanguage()
 
     const KConfigGroup game = config.group(QStringLiteral("Game"));
     if (game.hasKey(QStringLiteral("CurrentInstall"))) {
-        const auto uuid = game.readEntry(QStringLiteral("CurrentInstall"));
         const auto installs = getGameInstalls();
         for (auto install : installs) {
-            if (install.uuid == QUuid::fromString(uuid)) {
+            if (install.uuid == QUuid::fromString(*currentGameUuid)) {
                 return install.language;
             }
         }

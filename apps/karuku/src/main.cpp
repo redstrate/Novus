@@ -39,8 +39,14 @@ int main(int argc, char *argv[])
 
     const QStringList args = parser.positionalArguments();
     if (!args.isEmpty()) {
-        const auto query = args.value(0).split(QLatin1Char('#'));
-        window->jumpToSheetAndRow(query.constFirst(), query.constLast());
+        if (args.value(0).contains(QLatin1Char('#'))) {
+            // Sheet + row query
+            const auto query = args.value(0).split(QLatin1Char('#'));
+            window->jumpToSheetAndRow(query.constFirst(), query.constLast());
+        } else {
+            // Only sheet
+            window->jumpToSheet(args.value(0));
+        }
     }
 
     return QApplication::exec();

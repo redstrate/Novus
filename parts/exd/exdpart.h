@@ -33,6 +33,8 @@ public:
     QAction *saveCsvAction();
     QString name() const;
 
+    QString selectedRow() const;
+
 private:
     void loadTables();
 
@@ -43,7 +45,7 @@ private:
 
     Language getSuitableLanguage(const physis_EXH &pExh) const;
     Language m_preferredLanguage;
-    physis_EXH exh;
+    physis_EXH exh{};
     QString m_name;
     AbstractExcelResolver *m_resolver = nullptr;
     QAction *m_selectLanguage = nullptr;

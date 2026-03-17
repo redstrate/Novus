@@ -132,6 +132,8 @@ void EXDPart::goToRow(const QString &query)
     for (uint32_t i = 0; i < exh.page_count; i++) {
         const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
         Q_ASSERT(tableWidget);
+        if (!tableWidget)
+            continue;
 
         for (int row = 0; row < tableWidget->model()->rowCount(); row++) {
             const auto headerItem = tableWidget->model()->headerData(row, Qt::Vertical).toString();
@@ -197,6 +199,22 @@ QAction *EXDPart::saveCsvAction()
 QString EXDPart::name() const
 {
     return m_name;
+}
+
+QString EXDPart::selectedRow() const
+{
+    for (uint32_t i = 0; i < exh.page_count; i++) {
+        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
+        if (!tableWidget) {
+            continue;
+        }
+
+        if (tableWidget->currentIndex().isValid()) {
+            return tableWidget->model()->headerData(tableWidget->currentIndex().row(), Qt::Vertical).toString();
+        }
+    }
+
+    return {};
 }
 
 void EXDPart::loadTables()
