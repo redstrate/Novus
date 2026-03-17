@@ -19,9 +19,15 @@ class ExcelEdit : public QWidget
 public:
     explicit ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t &rowId, QWidget *parent = nullptr);
 
+    void setReadOnly(bool readOnly);
+
 private:
+    void updateRow();
+
     QLineEdit *m_lineEdit = nullptr;
     uint32_t &m_rowId;
     QList<physis_ExcelSheet> m_sheets;
     QList<std::pair<QString, ExcelModel *>> m_models;
+    QMenu *m_menu = nullptr;
+    bool m_readOnly = false;
 };

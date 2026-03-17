@@ -486,9 +486,11 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     section->setLayout(layout);
 
     auto placeNameBlock = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")}, mapRange.place_name_block);
+    placeNameBlock->setReadOnly(true);
     layout->addRow(i18n("PlaceName Block"), placeNameBlock);
 
     auto placeNameSpot = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")}, mapRange.place_name_spot);
+    placeNameSpot->setReadOnly(true);
     layout->addRow(i18n("PlaceName Spot"), placeNameSpot);
 
     auto restBonusEffectiveCheckbox = new QCheckBox();
@@ -564,6 +566,7 @@ void ObjectPropertiesWidget::addGameObjectSection(physis_GameInstanceObject &obj
     section->setLayout(layout);
 
     auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("ENpcResident"), QStringLiteral("ENpcBase"), QStringLiteral("EObj")}, object.base_id);
+    baseIdEdit->setReadOnly(true);
     layout->addRow(i18n("Base ID"), baseIdEdit);
 }
 

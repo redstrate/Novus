@@ -3,15 +3,19 @@
 
 #include "exceledit.h"
 
-#include "../exd/excelmodel.h"
 #include "excelmodel.h"
 #include "excelresolver.h"
+#include "launcherconfig.h"
 #include "scenestate.h"
 #include "schema.h"
 #include "settings.h"
 
+#include <KLocalizedString>
 #include <QDir>
 #include <QHBoxLayout>
+#include <QInputDialog>
+#include <QMenu>
+#include <QProcess>
 #include <QStandardPaths>
 
 ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t &rowId, QWidget *parent)
@@ -63,20 +67,59 @@ ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t
         }
     }
 
+    auto goToButton = new QPushButton();
+    goToButton->setIcon(QIcon::fromTheme(QStringLiteral("overflow-menu")));
+    layout->addWidget(goToButton);
+
+    m_menu = new QMenu();
+    goToButton->setMenu(m_menu);
+
+    updateRow();
+}
+
+void ExcelEdit::setReadOnly(bool readOnly)
+{
+    m_readOnly = readOnly;
+    updateRow();
+}
+
+void ExcelEdit::updateRow()
+{
+    m_menu->clear();
+
+    if (!m_readOnly) {
+        auto editAction = m_menu->addAction(i18n("Edit…"));
+        connect(editAction, &QAction::triggered, this, [this] {
+            m_rowId = QInputDialog::getInt(this, i18n("Enter Row ID"), i18n("Row ID:"), m_rowId, 0, std::numeric_limits<int>::max());
+            updateRow();
+        });
+
+        m_menu->addSeparator();
+    }
+
     for (const auto &[name, model] : m_models) {
-        if (const auto display = model->resolveDisplay(rowId); !display.isNull()) {
-            m_lineEdit->setText(QStringLiteral("%1 (%2#%3)").arg(display.toString()).arg(name).arg(rowId));
+        const auto addResolveAction = [this, name] {
+            auto resolveAction = m_menu->addAction(i18n("Go to %1…").arg(name));
+            connect(resolveAction, &QAction::triggered, this, [this, name] {
+                QProcess::startDetached(EXCELEDITOR_EXECUTABLE, {QStringLiteral("%1#%2").arg(name).arg(m_rowId)});
+            });
+        };
+
+        if (const auto display = model->resolveDisplay(m_rowId); !display.isNull()) {
+            m_lineEdit->setText(QStringLiteral("%1 (%2#%3)").arg(display.toString()).arg(name).arg(m_rowId));
+            addResolveAction();
             return;
         }
 
         // As a fallback, check if it exists on the sheet. Handles cases like ENpcBase which technically doesn't have a display field.
-        if (model->existsOnSheet(rowId)) {
-            m_lineEdit->setText(QStringLiteral("%1#%2").arg(name).arg(rowId));
+        if (model->existsOnSheet(m_rowId)) {
+            m_lineEdit->setText(QStringLiteral("%1#%2").arg(name).arg(m_rowId));
+            addResolveAction();
             return;
         }
     }
 
-    m_lineEdit->setText(QStringLiteral("???#%1").arg(rowId));
+    m_lineEdit->setText(QStringLiteral("???#%1").arg(m_rowId));
 }
 
 #include "moc_exceledit.cpp"
