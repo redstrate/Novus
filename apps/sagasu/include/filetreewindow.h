@@ -24,7 +24,7 @@ public:
     void focusSearchField();
 
 Q_SIGNALS:
-    void extractFile(const QString &path);
+    void extractFile(const QString &path, const QString &indexPath, Hash hash);
     void pathSelected(const QString &indexPath, Hash hash, const QString &path);
 
 private:

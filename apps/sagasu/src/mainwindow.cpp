@@ -82,7 +82,7 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     setCentralWidget(dummyWidget);
 
     m_tree = new FileTreeWindow(m_database, gamePath, &m_data);
-    connect(m_tree, &FileTreeWindow::extractFile, this, [this](const QString &path) {
+    connect(m_tree, &FileTreeWindow::extractFile, this, [this](const QString &path, const QString &indexPath, Hash hash) {
         const QFileInfo info(path);
 
         const QString savePath =
@@ -92,7 +92,15 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
 
             std::string savePathStd = path.toStdString();
 
-            auto fileData = physis_sqpack_read(&m_data, savePathStd.c_str());
+            auto fileData = physis_sqpack_read_from_hash(&m_data, indexPath.toStdString().c_str(), hash);
+            // HACK: Read from path as a fallback, which somehow makes more PS3 files load. I don't know why.
+            if (fileData.size == 0) {
+                fileData = physis_sqpack_read(&m_data, path.toStdString().c_str());
+            }
+            if (fileData.size == 0) {
+                return;
+            }
+
             QFile file(savePath);
             if (file.open(QIODevice::WriteOnly)) {
                 file.write(reinterpret_cast<const char *>(fileData.data), fileData.size);

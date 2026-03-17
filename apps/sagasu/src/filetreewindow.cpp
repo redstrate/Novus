@@ -54,6 +54,8 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
             const auto path = m_searchModel->data(index, FileTreeModel::CustomRoles::PathRole).toString();
             const auto isUnknown = m_searchModel->data(index, FileTreeModel::CustomRoles::IsUnknownRole).toBool();
             const auto isFolder = m_searchModel->data(index, FileTreeModel::CustomRoles::IsFolderRole).toBool();
+            const auto indexPath = m_searchModel->data(index, FileTreeModel::CustomRoles::IndexPathRole).toString();
+            const auto hash = m_searchModel->data(index, FileTreeModel::CustomRoles::HashRole).value<Hash>();
 
             auto menu = new QMenu();
 
@@ -71,8 +73,8 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
             if (!isFolder) {
                 auto extractAction = menu->addAction(i18nc("@action:inmenu", "Extract…"));
                 extractAction->setIcon(QIcon::fromTheme(QStringLiteral("archive-extract-symbolic")));
-                connect(extractAction, &QAction::triggered, this, [this, path] {
-                    Q_EMIT extractFile(path);
+                connect(extractAction, &QAction::triggered, this, [this, path, indexPath, hash] {
+                    Q_EMIT extractFile(path, indexPath, hash);
                 });
             }
 
