@@ -3,6 +3,7 @@
 
 #include "exceledit.h"
 
+#include "../exd/excelmodel.h"
 #include "excelmodel.h"
 #include "excelresolver.h"
 #include "scenestate.h"
@@ -13,9 +14,8 @@
 #include <QHBoxLayout>
 #include <QStandardPaths>
 
-ExcelEdit::ExcelEdit(SceneState *state, const QString &excelSheet, QWidget *parent)
+ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, QWidget *parent)
     : QWidget(parent)
-    , m_excelSheet(excelSheet)
 {
     auto layout = new QHBoxLayout(this);
     setMaximumHeight(35); // FIXME: don't hard-code
@@ -24,26 +24,41 @@ ExcelEdit::ExcelEdit(SceneState *state, const QString &excelSheet, QWidget *pare
     m_lineEdit = new QLineEdit();
     layout->addWidget(m_lineEdit);
 
-    const std::string exhName = excelSheet.toLower().toStdString();
+    auto resolver = new CachingExcelResolver(state->resource());
 
-    const auto exhFile = physis_sqpack_read(state->resource(), (std::string("exd/") + exhName + ".exh").c_str());
-    if (exhFile.size == 0) {
-        qWarning() << "Failed to read exd/" << excelSheet << ".exh";
-    } else {
-        const auto exh = physis_exh_parse(state->resource()->platform, exhFile);
-        if (!exh.p_ptr) {
-            qWarning() << "Failed to parse exd/" << excelSheet << ".exh";
+    m_models.reserve(excelSheets.size());
+    m_sheets.reserve(excelSheets.size());
+    for (const auto &sheetName : excelSheets) {
+        const std::string exhName = sheetName.toLower().toStdString();
+
+        const auto exhFile = physis_sqpack_read(state->resource(), (std::string("exd/") + exhName + ".exh").c_str());
+        if (exhFile.size == 0) {
+            qWarning() << "Failed to read exd/" << sheetName << ".exh";
         } else {
-            m_sheet = physis_sqpack_read_excel_sheet(state->resource(), excelSheet.toStdString().c_str(), &exh, getLanguage());
+            const auto exh = physis_exh_parse(state->resource()->platform, exhFile);
+            if (!exh.p_ptr) {
+                qWarning() << "Failed to parse exd/" << sheetName << ".exh";
+            } else {
+                auto language = Language::None;
+                const Language desiredLanguage = getLanguage();
+                for (uint32_t i = 0; i < exh.language_count; i++) {
+                    if (exh.languages[i] == desiredLanguage) {
+                        language = desiredLanguage;
+                        break;
+                    }
+                }
+                auto sheet = physis_sqpack_read_excel_sheet(state->resource(), sheetName.toStdString().c_str(), &exh, language);
+                m_sheets.push_back(sheet);
 
-            const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-            const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
+                const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+                const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
 
-            const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(excelSheet)));
+                const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
 
-            // TODO: make this more efficient, don't initialize this every time
-            auto resolver = new CachingExcelResolver(state->resource());
-            m_model = new ExcelModel(exh, m_sheet.pages[0], schema, resolver, getLanguage());
+                for (uint32_t i = 0; i < sheet.page_count; i++) {
+                    m_models.push_back({sheetName, new ExcelModel(exh, sheet.pages[i], schema, resolver, language)});
+                }
+            }
         }
     }
 }
@@ -51,7 +66,21 @@ ExcelEdit::ExcelEdit(SceneState *state, const QString &excelSheet, QWidget *pare
 void ExcelEdit::setRowId(const uint32_t rowId)
 {
     m_rowId = rowId;
-    m_lineEdit->setText(m_model->resolveDisplay(rowId).toString());
+
+    for (const auto &[name, model] : m_models) {
+        if (const auto display = model->resolveDisplay(rowId); !display.isNull()) {
+            m_lineEdit->setText(display.toString());
+            return;
+        }
+
+        // As a fallback, check if it exists on the sheet. Handles cases like ENpcBase which technically doesn't have a display field.
+        if (model->existsOnSheet(rowId)) {
+            m_lineEdit->setText(QStringLiteral("%1#%2").arg(name).arg(rowId));
+            return;
+        }
+    }
+
+    m_lineEdit->setText(QStringLiteral("???#%1").arg(rowId));
 }
 
 #include "moc_exceledit.cpp"

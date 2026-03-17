@@ -36,6 +36,11 @@ public:
      */
     QVariant resolveDisplay(uint32_t rowId) const;
 
+    /**
+     * @brief Returns whether this row exists on the sheet or not.
+     */
+    bool existsOnSheet(uint32_t rowId) const;
+
 private:
     /**
      * @brief Returns a nice display for a given column data, including resolving other sheets.

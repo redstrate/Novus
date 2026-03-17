@@ -485,11 +485,11 @@ void ObjectPropertiesWidget::addMapRangeSection(const physis_MapRangeInstanceObj
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto placeNameBlock = new ExcelEdit(m_appState, QStringLiteral("PlaceName"));
+    auto placeNameBlock = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")});
     placeNameBlock->setRowId(mapRange.place_name_block);
     layout->addRow(i18n("PlaceName Block"), placeNameBlock);
 
-    auto placeNameSpot = new ExcelEdit(m_appState, QStringLiteral("PlaceName"));
+    auto placeNameSpot = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")});
     placeNameSpot->setRowId(mapRange.place_name_spot);
     layout->addRow(i18n("PlaceName Spot"), placeNameSpot);
 
@@ -565,9 +565,8 @@ void ObjectPropertiesWidget::addGameObjectSection(const physis_GameInstanceObjec
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto baseIdEdit = new QLineEdit();
-    baseIdEdit->setText(QString::number(object.base_id));
-    baseIdEdit->setReadOnly(true);
+    auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("ENpcBase"), QStringLiteral("EObj")});
+    baseIdEdit->setRowId(object.base_id);
     layout->addRow(i18n("Base ID"), baseIdEdit);
 }
 

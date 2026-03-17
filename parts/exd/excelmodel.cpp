@@ -228,8 +228,16 @@ QVariant ExcelModel::resolveDisplay(const uint32_t rowId) const
         }
     }
 
-    // TODO: Add name here
-    return QStringLiteral("%1#%2").arg(QStringLiteral("TODOADDNAME")).arg(rowId);
+    return {};
+}
+
+bool ExcelModel::existsOnSheet(const uint32_t rowId) const
+{
+    if (const auto field = dataForRowId(rowId, 0); field != nullptr) {
+        return true;
+    }
+
+    return false;
 }
 
 QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field &data) const
