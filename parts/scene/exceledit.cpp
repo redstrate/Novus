@@ -86,6 +86,7 @@ void ExcelEdit::setReadOnly(bool readOnly)
 
 void ExcelEdit::updateRow()
 {
+    m_lineEdit->clear();
     m_menu->clear();
 
     if (!m_readOnly) {
@@ -107,20 +108,24 @@ void ExcelEdit::updateRow()
         };
 
         if (const auto display = model->resolveDisplay(m_rowId); !display.isNull()) {
-            m_lineEdit->setText(QStringLiteral("%1 (%2#%3)").arg(display.toString()).arg(name).arg(m_rowId));
+            if (m_lineEdit->text().isEmpty()) {
+                m_lineEdit->setText(QStringLiteral("%1 (%2#%3)").arg(display.toString()).arg(name).arg(m_rowId));
+            }
             addResolveAction();
-            return;
-        }
-
-        // As a fallback, check if it exists on the sheet. Handles cases like ENpcBase which technically doesn't have a display field.
-        if (model->existsOnSheet(m_rowId)) {
-            m_lineEdit->setText(QStringLiteral("%1#%2").arg(name).arg(m_rowId));
-            addResolveAction();
-            return;
+        } else {
+            // As a fallback, check if it exists on the sheet. Handles cases like ENpcBase which technically doesn't have a display field.
+            if (model->existsOnSheet(m_rowId)) {
+                if (m_lineEdit->text().isEmpty()) {
+                    m_lineEdit->setText(QStringLiteral("%1#%2").arg(name).arg(m_rowId));
+                }
+                addResolveAction();
+            }
         }
     }
 
-    m_lineEdit->setText(QStringLiteral("???#%1").arg(m_rowId));
+    if (m_lineEdit->text().isEmpty()) {
+        m_lineEdit->setText(QStringLiteral("???#%1").arg(m_rowId));
+    }
 }
 
 #include "moc_exceledit.cpp"
