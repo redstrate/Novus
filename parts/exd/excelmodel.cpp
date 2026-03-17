@@ -280,44 +280,44 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field 
 
 QVariant ExcelModel::displayForData(const physis_Field &data)
 {
-    QString columnString;
+    QVariant result;
     switch (data.tag) {
     case physis_Field::Tag::String:
-        columnString = QString::fromStdString(data.string._0);
+        result = QString::fromStdString(data.string._0);
         break;
     case physis_Field::Tag::Bool:
-        columnString = data.bool_._0 ? i18nc("Value is true", "True") : i18nc("Value is false", "False");
+        result = data.bool_._0 ? i18nc("Value is true", "True") : i18nc("Value is false", "False");
         break;
     case physis_Field::Tag::Int8:
-        columnString = QString::number(data.int8._0);
+        result = data.int8._0;
         break;
     case physis_Field::Tag::UInt8:
-        columnString = QString::number(data.u_int8._0);
+        result = data.u_int8._0;
         break;
     case physis_Field::Tag::Int16:
-        columnString = QString::number(data.int16._0);
+        result = data.int16._0;
         break;
     case physis_Field::Tag::UInt16:
-        columnString = QString::number(data.u_int16._0);
+        result = data.u_int16._0;
         break;
     case physis_Field::Tag::Int32:
-        columnString = QString::number(data.int32._0);
+        result = data.int32._0;
         break;
     case physis_Field::Tag::UInt32:
-        columnString = QString::number(data.u_int32._0);
+        result = data.u_int32._0;
         break;
     case physis_Field::Tag::Float32:
-        columnString = QString::number(data.float32._0);
+        result = data.float32._0;
         break;
     case physis_Field::Tag::Int64:
-        columnString = QString::number(data.int64._0);
+        result = static_cast<qint64>(data.int64._0);
         break;
     case physis_Field::Tag::UInt64:
-        columnString = QString::number(data.u_int64._0);
+        result = static_cast<quint64>(data.u_int64._0);
         break;
     }
 
-    return columnString;
+    return result;
 }
 
 physis_Field &ExcelModel::dataForIndex(const QModelIndex &index) const
