@@ -80,7 +80,7 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     QHash<int, QByteArray> roleNames() const override;
 
-    std::optional<physis_InstanceObject const *> objectAt(const QModelIndex &index) const;
+    std::optional<physis_InstanceObject *> objectAt(const QModelIndex &index) const;
     std::optional<physis_Layer const *> layerAt(const QModelIndex &index) const;
     std::optional<physis_ScnTimeline const *> timelineAt(const QModelIndex &index) const;
     std::optional<ScnSGActionControllerDescriptor const *> actionAt(const QModelIndex &index) const;
@@ -90,7 +90,7 @@ public:
 
 private:
     void refresh();
-    void addLayer(uint32_t index, SceneTreeInformation *fileItem, const physis_Layer &layer, ObjectScene &scene);
+    void addLayer(uint32_t index, SceneTreeInformation *fileItem, physis_Layer &layer, ObjectScene &scene);
     void processScene(SceneTreeInformation *parentNode, ObjectScene &scene);
 
     SceneState *m_appState = nullptr;

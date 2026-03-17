@@ -47,7 +47,7 @@ public:
 
 private:
     void resetSections();
-    void refreshObjectData(const physis_InstanceObject &object);
+    void refreshObjectData(physis_InstanceObject &object);
     void refreshLayerData(const physis_Layer &layer);
     void refreshTimelineData(const physis_ScnTimeline &timeline);
     void refreshActionData(const ScnSGActionControllerDescriptor &action);
@@ -57,15 +57,15 @@ private:
 
     void addCommonSection(const physis_InstanceObject &object);
     void addBGSection(const physis_BGInstanceObject &bg);
-    void addEventSection(const physis_EventInstanceObject &eobj);
+    void addEventSection(physis_EventInstanceObject &eobj);
     void addPopRangeSection(const physis_PopRangeInstanceObject &pop);
-    void addEventNPCSection(const physis_ENPCInstanceObject &enpc);
-    void addMapRangeSection(const physis_MapRangeInstanceObject &mapRange);
+    void addEventNPCSection(physis_ENPCInstanceObject &enpc);
+    void addMapRangeSection(physis_MapRangeInstanceObject &mapRange);
     void addTriggerBoxSection(const physis_TriggerBoxInstanceObject &triggerBox);
-    void addNPCSection(const physis_NPCInstanceObject &npc);
-    void addGameObjectSection(const physis_GameInstanceObject &object);
+    void addNPCSection(physis_NPCInstanceObject &npc);
+    void addGameObjectSection(physis_GameInstanceObject &object);
     void addSharedGroupSection(const physis_SharedGroupInstanceObject &sharedGroup);
-    void addAetheryteSection(const physis_AetheryteInstanceObject &aetheryte);
+    void addAetheryteSection(physis_AetheryteInstanceObject &aetheryte);
     void addExitRangeSection(const physis_ExitRangeInstanceObject &exitRange);
     void addEventRangeSection(const physis_EventRangeInstanceObject &eventRange);
     void addChairMarkerSection(const physis_ChairMarkerInstanceObject &chairMarker);

@@ -69,7 +69,7 @@ void ObjectPropertiesWidget::resetSections()
     m_sections.clear();
 }
 
-void ObjectPropertiesWidget::refreshObjectData(const physis_InstanceObject &object)
+void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
 {
     addCommonSection(object);
 
@@ -326,13 +326,13 @@ void ObjectPropertiesWidget::refreshDropInData(DropInObject *object)
     layout->addRow(i18n("Instance ID"), idEdit);
 
     if (auto data = std::get_if<DropInGatheringPoint>(&object->data)) {
-        const auto baseIdEdit = new UIntEdit(data->baseId);
+        const auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("GatheringPoint")}, data->baseId);
         layout->addRow(i18n("Base ID"), baseIdEdit);
     } else if (auto data = std::get_if<DropInBattleNpc>(&object->data)) {
-        const auto baseIdEdit = new UIntEdit(data->baseId);
+        const auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("BNpcBase")}, data->baseId);
         layout->addRow(i18n("Base ID"), baseIdEdit);
 
-        const auto nameIdEdit = new UIntEdit(data->nameId);
+        const auto nameIdEdit = new ExcelEdit(m_appState, {QStringLiteral("BNpcName")}, data->nameId);
         layout->addRow(i18n("Name ID"), nameIdEdit);
 
         const auto hpEdit = new UIntEdit(data->hp);
@@ -412,7 +412,7 @@ void ObjectPropertiesWidget::addBGSection(const physis_BGInstanceObject &bg)
     layout->addRow(i18n("Collision Asset Path"), collisionEdit);
 }
 
-void ObjectPropertiesWidget::addEventSection(const physis_EventInstanceObject &eobj)
+void ObjectPropertiesWidget::addEventSection(physis_EventInstanceObject &eobj)
 {
     addGameObjectSection(eobj.parent_data);
 
@@ -462,7 +462,7 @@ void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObj
     layout->addRow(i18n("Index"), indexEdit);
 }
 
-void ObjectPropertiesWidget::addEventNPCSection(const physis_ENPCInstanceObject &enpc)
+void ObjectPropertiesWidget::addEventNPCSection(physis_ENPCInstanceObject &enpc)
 {
     addNPCSection(enpc.parent_data);
 
@@ -474,7 +474,7 @@ void ObjectPropertiesWidget::addEventNPCSection(const physis_ENPCInstanceObject 
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addMapRangeSection(const physis_MapRangeInstanceObject &mapRange)
+void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &mapRange)
 {
     addTriggerBoxSection(mapRange.parent_data);
 
@@ -485,12 +485,10 @@ void ObjectPropertiesWidget::addMapRangeSection(const physis_MapRangeInstanceObj
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto placeNameBlock = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")});
-    placeNameBlock->setRowId(mapRange.place_name_block);
+    auto placeNameBlock = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")}, mapRange.place_name_block);
     layout->addRow(i18n("PlaceName Block"), placeNameBlock);
 
-    auto placeNameSpot = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")});
-    placeNameSpot->setRowId(mapRange.place_name_spot);
+    auto placeNameSpot = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")}, mapRange.place_name_spot);
     layout->addRow(i18n("PlaceName Spot"), placeNameSpot);
 
     auto restBonusEffectiveCheckbox = new QCheckBox();
@@ -544,7 +542,7 @@ void ObjectPropertiesWidget::addTriggerBoxSection(const physis_TriggerBoxInstanc
     layout->addRow(i18n("Enabled"), enabledCheckBox);
 }
 
-void ObjectPropertiesWidget::addNPCSection(const physis_NPCInstanceObject &npc)
+void ObjectPropertiesWidget::addNPCSection(physis_NPCInstanceObject &npc)
 {
     addGameObjectSection(npc.parent_data);
 
@@ -556,7 +554,7 @@ void ObjectPropertiesWidget::addNPCSection(const physis_NPCInstanceObject &npc)
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addGameObjectSection(const physis_GameInstanceObject &object)
+void ObjectPropertiesWidget::addGameObjectSection(physis_GameInstanceObject &object)
 {
     auto section = new CollapseSection(i18n("Game Object"));
     m_layout->addWidget(section);
@@ -565,8 +563,7 @@ void ObjectPropertiesWidget::addGameObjectSection(const physis_GameInstanceObjec
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("ENpcBase"), QStringLiteral("EObj")});
-    baseIdEdit->setRowId(object.base_id);
+    auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("ENpcResident"), QStringLiteral("ENpcBase"), QStringLiteral("EObj")}, object.base_id);
     layout->addRow(i18n("Base ID"), baseIdEdit);
 }
 
@@ -585,7 +582,7 @@ void ObjectPropertiesWidget::addSharedGroupSection(const physis_SharedGroupInsta
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 }
 
-void ObjectPropertiesWidget::addAetheryteSection(const physis_AetheryteInstanceObject &aetheryte)
+void ObjectPropertiesWidget::addAetheryteSection(physis_AetheryteInstanceObject &aetheryte)
 {
     addGameObjectSection(aetheryte.parent_data);
 

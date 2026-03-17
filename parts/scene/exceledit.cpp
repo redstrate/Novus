@@ -14,8 +14,9 @@
 #include <QHBoxLayout>
 #include <QStandardPaths>
 
-ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, QWidget *parent)
+ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t &rowId, QWidget *parent)
     : QWidget(parent)
+    , m_rowId(rowId)
 {
     auto layout = new QHBoxLayout(this);
     setMaximumHeight(35); // FIXME: don't hard-code
@@ -61,15 +62,10 @@ ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, QWidget 
             }
         }
     }
-}
-
-void ExcelEdit::setRowId(const uint32_t rowId)
-{
-    m_rowId = rowId;
 
     for (const auto &[name, model] : m_models) {
         if (const auto display = model->resolveDisplay(rowId); !display.isNull()) {
-            m_lineEdit->setText(display.toString());
+            m_lineEdit->setText(QStringLiteral("%1 (%2#%3)").arg(display.toString()).arg(name).arg(rowId));
             return;
         }
 

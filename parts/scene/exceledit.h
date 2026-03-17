@@ -17,13 +17,11 @@ class ExcelEdit : public QWidget
     Q_OBJECT
 
 public:
-    explicit ExcelEdit(SceneState *state, const QStringList &excelSheets, QWidget *parent = nullptr);
-
-    void setRowId(uint32_t id);
+    explicit ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t &rowId, QWidget *parent = nullptr);
 
 private:
     QLineEdit *m_lineEdit = nullptr;
-    uint32_t m_rowId = 0;
+    uint32_t &m_rowId;
     QList<physis_ExcelSheet> m_sheets;
     QList<std::pair<QString, ExcelModel *>> m_models;
 };

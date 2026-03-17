@@ -170,11 +170,11 @@ QHash<int, QByteArray> SceneListModel::roleNames() const
     };
 }
 
-std::optional<physis_InstanceObject const *> SceneListModel::objectAt(const QModelIndex &index) const
+std::optional<physis_InstanceObject *> SceneListModel::objectAt(const QModelIndex &index) const
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Object) {
-        return item->data.value<physis_InstanceObject const *>();
+        return item->data.value<physis_InstanceObject *>();
     }
     return std::nullopt;
 }
@@ -245,7 +245,7 @@ void SceneListModel::refresh()
     endResetModel();
 }
 
-void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, const physis_Layer &layer, ObjectScene &scene)
+void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, physis_Layer &layer, ObjectScene &scene)
 {
     auto layerItem = new SceneTreeInformation();
     layerItem->type = TreeType::Layer;
@@ -257,7 +257,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, co
     fileItem->children.push_back(layerItem);
 
     for (uint32_t z = 0; z < layer.num_objects; z++) {
-        const auto &object = layer.objects[z];
+        auto &object = layer.objects[z];
 
         QString objectName;
         if (strlen(object.name) > 0) {
@@ -429,9 +429,10 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         parentNode->children.push_back(fileItem);
 
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
-            const auto &chunk = lgb.chunks[i];
+            auto &chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
-                addLayer(j, fileItem, chunk.layers[j], scene);
+                // TODO: remove the const_cast later
+                addLayer(j, fileItem, const_cast<physis_Layer &>(chunk.layers[j]), scene);
             }
         }
     }
