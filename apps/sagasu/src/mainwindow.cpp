@@ -194,8 +194,6 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         type = FileTypes::guessFileType(file);
     }
 
-    m_fileTypeLabel->setText(i18n("File Type: %1%2", FileTypes::getFiletypeName(type), source));
-
     m_fileActionsMenu->clear();
 
     const auto addTab = [this, type](QWidget *widget) {
@@ -205,6 +203,91 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         m_fileActions->setText(typeName);
         m_fileActions->setVisible(true);
     };
+
+    // Texture files are weird as they don't have an explicit magic, so we basically resort to brute-forcing them for now.
+    if (type == FileType::Unknown || type == FileType::Texture) {
+        auto texWidget = new TexPart(&m_data);
+        if (texWidget->loadTex(file)) {
+            if (type == FileType::Unknown) {
+                type = FileType::Texture;
+                source = i18n(" (Guessed)");
+            }
+
+            addTab(texWidget);
+
+            m_fileActionsMenu->addAction(texWidget->saveImageAction());
+        }
+    }
+
+    // Ditto for material files
+    if (type == FileType::Unknown || type == FileType::Material) {
+        auto mtrl = physis_material_parse(m_data.platform, file);
+        if (mtrl.shpk_name) {
+            auto mtrlWidget = new MtrlPart(&m_data);
+            mtrlWidget->load(mtrl);
+            if (type == FileType::Unknown) {
+                type = FileType::Material;
+                source = i18n(" (Guessed)");
+            }
+
+            addTab(mtrlWidget);
+        }
+    }
+
+    // ... and model files!
+    if (type == FileType::Unknown || type == FileType::Model) {
+        auto mdl = physis_mdl_parse(m_data.platform, file);
+        if (mdl.p_ptr) {
+            if (type == FileType::Unknown) {
+                type = FileType::Model;
+                source = i18n(" (Guessed)");
+            }
+
+            Transformation transformation{};
+            transformation.scale[0] = 1;
+            transformation.scale[1] = 1;
+            transformation.scale[2] = 1;
+
+            auto mdlWidget = new MDLPart(&m_data, fileCache);
+            std::vector<std::pair<std::string, physis_Material>> materials(mdl.num_material_names);
+            for (uint32_t i = 0; i < mdl.num_material_names; i++) {
+                materials[i] = {mdl.material_names[i], physis_material_parse(m_data.platform, physis_sqpack_read(&m_data, mdl.material_names[i]))};
+            }
+            mdlWidget->addModel(mdl, false, transformation, QStringLiteral("mdl"), materials, 0);
+            addTab(mdlWidget);
+
+            auto importAction = m_fileActionsMenu->addAction(QStringLiteral("Import glTF"));
+            connect(importAction, &QAction::triggered, this, [this, mdlWidget](bool) {
+                const QString importFileName =
+                    QFileDialog::getOpenFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
+                const QString exportFileName =
+                    QFileDialog::getSaveFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("Model file (*.mdl)"));
+                if (!importFileName.isEmpty() && !exportFileName.isEmpty()) {
+                    auto mdl = mdlWidget->getModel(0).model;
+                    importModel(mdl, importFileName);
+                    auto buffer = physis_mdl_write(&mdl);
+
+                    QFile file(exportFileName);
+                    if (file.open(QIODevice::WriteOnly)) {
+                        file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
+                    } else {
+                        qFatal() << "Failed to write to" << exportFileName;
+                    }
+                }
+            });
+
+            auto exportAction = m_fileActionsMenu->addAction(QStringLiteral("Export glTF"));
+            connect(exportAction, &QAction::triggered, this, [this, mdlWidget](bool) {
+                const QString fileName =
+                    QFileDialog::getSaveFileName(this, i18nc("@title:window", "Export Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
+                if (!fileName.isEmpty()) {
+                    mdlWidget->exportModel(fileName);
+                }
+            });
+        }
+    }
+
+    m_fileTypeLabel->setText(i18n("File Type: %1%2", FileTypes::getFiletypeName(type), source));
 
     switch (type) {
     case FileType::ExcelList: {
@@ -243,57 +326,6 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
         addTab(exdWidget);
     } break;
-    case FileType::Model: {
-        Transformation transformation{};
-        transformation.scale[0] = 1;
-        transformation.scale[1] = 1;
-        transformation.scale[2] = 1;
-
-        auto mdlWidget = new MDLPart(&m_data, fileCache);
-        auto mdl = physis_mdl_parse(m_data.platform, file);
-        std::vector<std::pair<std::string, physis_Material>> materials(mdl.num_material_names);
-        for (uint32_t i = 0; i < mdl.num_material_names; i++) {
-            materials[i] = {mdl.material_names[i], physis_material_parse(m_data.platform, physis_sqpack_read(&m_data, mdl.material_names[i]))};
-        }
-        mdlWidget->addModel(mdl, false, transformation, QStringLiteral("mdl"), materials, 0);
-        addTab(mdlWidget);
-
-        auto importAction = m_fileActionsMenu->addAction(QStringLiteral("Import glTF"));
-        connect(importAction, &QAction::triggered, this, [this, mdlWidget](bool) {
-            const QString importFileName =
-                QFileDialog::getOpenFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
-            const QString exportFileName =
-                QFileDialog::getSaveFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("Model file (*.mdl)"));
-            if (!importFileName.isEmpty() && !exportFileName.isEmpty()) {
-                auto mdl = mdlWidget->getModel(0).model;
-                importModel(mdl, importFileName);
-                auto buffer = physis_mdl_write(&mdl);
-
-                QFile file(exportFileName);
-                if (file.open(QIODevice::WriteOnly)) {
-                    file.write(reinterpret_cast<char *>(buffer.data), buffer.size);
-                } else {
-                    qFatal() << "Failed to write to" << exportFileName;
-                }
-            }
-        });
-
-        auto exportAction = m_fileActionsMenu->addAction(QStringLiteral("Export glTF"));
-        connect(exportAction, &QAction::triggered, this, [this, mdlWidget](bool) {
-            const QString fileName =
-                QFileDialog::getSaveFileName(this, i18nc("@title:window", "Export Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
-            if (!fileName.isEmpty()) {
-                mdlWidget->exportModel(fileName);
-            }
-        });
-    } break;
-    case FileType::Texture: {
-        auto texWidget = new TexPart(&m_data);
-        texWidget->loadTex(file);
-        addTab(texWidget);
-
-        m_fileActionsMenu->addAction(texWidget->saveImageAction());
-    } break;
     case FileType::ShaderPackage: {
         auto shpkWidget = new SHPKPart(&m_data);
         shpkWidget->load(file);
@@ -313,11 +345,6 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto dicWidget = new DicPart(&m_data);
         dicWidget->load(file);
         addTab(dicWidget);
-    } break;
-    case FileType::Material: {
-        auto mtrlWidget = new MtrlPart(&m_data);
-        mtrlWidget->load(physis_material_parse(m_data.platform, file));
-        addTab(mtrlWidget);
     } break;
     case FileType::LuaBytecode: {
         auto luabWidget = new LuabPart();
@@ -363,32 +390,34 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         break;
     }
 
-    // TODO: this is sort of inefficient as it re-parses the whole file again...
-    auto debugInformation = FileTypes::printDebugInformation(type, m_data.platform, file);
-    constexpr int maxDebugInformationLength = 1000000;
-    if (debugInformation.length() > maxDebugInformationLength) {
-        debugInformation.resize(maxDebugInformationLength);
-        debugInformation.append(i18n("<truncated>"));
-    }
-    const auto debugInformationText = new QTextEdit();
-    debugInformationText->setText(debugInformation);
+    if (type != FileType::Unknown) {
+        // TODO: this is sort of inefficient as it re-parses the whole file again...
+        auto debugInformation = FileTypes::printDebugInformation(type, m_data.platform, file);
+        constexpr int maxDebugInformationLength = 1000000;
+        if (debugInformation.length() > maxDebugInformationLength) {
+            debugInformation.resize(maxDebugInformationLength);
+            debugInformation.append(i18n("<truncated>"));
+        }
+        const auto debugInformationText = new QTextEdit();
+        debugInformationText->setText(debugInformation);
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
-    // Setup highlighting
-    KSyntaxHighlighting::Repository repository;
+        // Setup highlighting
+        KSyntaxHighlighting::Repository repository;
 
-    auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(debugInformationText->document());
-    highlighter->setTheme((debugInformationText->palette().color(QPalette::Base).lightness() < 128)
-                              ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
-                              : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
+        auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(debugInformationText->document());
+        highlighter->setTheme((debugInformationText->palette().color(QPalette::Base).lightness() < 128)
+                                  ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
+                                  : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
 
-    const auto def = repository.definitionForName(QStringLiteral("Rust"));
-    highlighter->setDefinition(def);
+        const auto def = repository.definitionForName(QStringLiteral("Rust"));
+        highlighter->setDefinition(def);
 #endif
-    partHolder->addTab(debugInformationText, i18nc("@title:tab", "Debug"));
+        partHolder->addTab(debugInformationText, i18nc("@title:tab", "Debug"));
+    }
 
     auto hexWidget = new HexPart();
     hexWidget->loadFile(file);
-    partHolder->addTab(hexWidget, i18nc("@title:tab", "Raw Hex"));
+    partHolder->addTab(hexWidget, i18nc("@title:tab", "Raw Data"));
 
     auto propertiesWidget = new FilePropertiesWindow(path, file);
     partHolder->addTab(propertiesWidget, i18nc("@title:tab", "Properties"));
