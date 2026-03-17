@@ -349,6 +349,13 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         scenePart->loadLvb(file);
         addTab(scenePart);
     } break;
+    case FileType::Png: {
+        auto texWidget = new TexPart(&m_data);
+        texWidget->loadPng(file);
+        addTab(texWidget);
+
+        m_fileActionsMenu->addAction(texWidget->saveImageAction());
+    } break;
     default:
         m_fileActions->setVisible(false);
         break;

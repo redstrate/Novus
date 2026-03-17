@@ -18,12 +18,17 @@ public:
     /**
      * @brief Loads a .tex file.
      */
-    void loadTex(physis_Buffer file);
+    bool loadTex(physis_Buffer file);
 
     /**
      * @brief Loads a .hwc file.
      */
     void loadHwc(physis_Buffer file);
+
+    /**
+     * @brief Loads a .png file.
+     */
+    void loadPng(physis_Buffer file);
 
     QAction *saveImageAction();
 

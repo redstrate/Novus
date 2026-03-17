@@ -41,7 +41,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("essb"), FileType::EnvironmentSoundScapeBinary},
                                                      {QStringLiteral("amb"), FileType::AmbientSet},
                                                      {QStringLiteral("obsb"), FileType::ObjectBehaviorSetBinary},
-                                                     {QStringLiteral("pap"), FileType::Pap}};
+                                                     {QStringLiteral("pap"), FileType::Pap},
+                                                     {QStringLiteral("png"), FileType::Png}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -77,7 +78,8 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::EnvironmentSoundScapeBinary, i18n("Environment Sound Scape Binary")},
                                                 {FileType::AmbientSet, i18n("Ambient Set")},
                                                 {FileType::ObjectBehaviorSetBinary, i18n("Object Behavior Set Binary")},
-                                                {FileType::Pap, i18n("PAP")}};
+                                                {FileType::Pap, i18n("PAP")},
+                                                {FileType::Png, i18n("PNG")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -140,6 +142,7 @@ const static QMap<std::array<uint8_t, 4>, FileType> magicToType{
     {{0x53, 0x68, 0x43, 0x64}, FileType::Shader},
     {{0x53, 0x68, 0x50, 0x6B}, FileType::ShaderPackage},
     {{0x1B, 0x4C, 0x75, 0x61}, FileType::LuaBytecode},
+    {{0x89, 0x50, 0x4E, 0x47}, FileType::Png},
 };
 
 const static QMap<std::array<uint8_t, 2>, FileType> shortMagicToType{

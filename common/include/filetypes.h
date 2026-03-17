@@ -45,6 +45,7 @@ enum class FileType {
     AmbientSet,
     ObjectBehaviorSetBinary,
     Pap, // TODO: what would this be called?
+    Png,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes

@@ -28,12 +28,21 @@ TexPart::TexPart(physis_SqPackResource *data, QWidget *parent)
     });
 }
 
-void TexPart::loadTex(physis_Buffer file)
+bool TexPart::loadTex(physis_Buffer file)
 {
+    if (file.size == 0) {
+        return false;
+    }
+
     auto tex = physis_texture_parse(data->platform, file);
+    if (tex.width == 0 && tex.height == 0) {
+        return false;
+    }
 
     QImage image(tex.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
     m_label->setQPixmap(QPixmap::fromImage(image));
+
+    return true;
 }
 
 void TexPart::loadHwc(physis_Buffer file)
@@ -41,6 +50,12 @@ void TexPart::loadHwc(physis_Buffer file)
     auto tex = physis_hwc_parse(data->platform, file);
 
     QImage image(tex.rgba, Hwc_WIDTH, Hwc_HEIGHT, QImage::Format_RGBA8888);
+    m_label->setQPixmap(QPixmap::fromImage(image));
+}
+
+void TexPart::loadPng(physis_Buffer file)
+{
+    QImage image = QImage::fromData(file.data, file.size, "PNG");
     m_label->setQPixmap(QPixmap::fromImage(image));
 }
 
