@@ -220,6 +220,18 @@ QHash<int, QByteArray> ExcelModel::roleNames() const
     };
 }
 
+QVariant ExcelModel::resolveDisplay(const uint32_t rowId) const
+{
+    if (const auto displayFieldIndex = m_schema.displayFieldIndex()) {
+        if (const auto field = dataForRowId(rowId, *displayFieldIndex); field != nullptr) {
+            return displayForData(*field);
+        }
+    }
+
+    // TODO: Add name here
+    return QStringLiteral("%1#%2").arg(QStringLiteral("TODOADDNAME")).arg(rowId);
+}
+
 QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field &data) const
 {
     // Check to see if there's any targets
@@ -284,6 +296,9 @@ QVariant ExcelModel::displayForData(const physis_Field &data)
     switch (data.tag) {
     case physis_Field::Tag::String:
         result = QString::fromStdString(data.string._0);
+        if (result.toString().isEmpty()) {
+            result = i18n("(Intentionally blank)");
+        }
         break;
     case physis_Field::Tag::Bool:
         result = data.bool_._0 ? i18nc("Value is true", "True") : i18nc("Value is false", "False");
@@ -340,6 +355,17 @@ physis_Field &ExcelModel::dataForIndex(const QModelIndex &index) const
     }
     qFatal() << "Requesting entry of index" << row_index << "despite the entry count being" << m_page.entry_count;
     Q_UNREACHABLE();
+}
+
+physis_Field *ExcelModel::dataForRowId(const uint32_t rowId, const uint32_t columnIndex) const
+{
+    for (uint32_t i = 0; i < m_page.entry_count; i++) {
+        if (m_page.entries[i].row_id == rowId) {
+            return &m_page.entries[i].subrows[0].columns[columnIndex];
+        }
+    }
+
+    return nullptr;
 }
 
 #include "moc_excelmodel.cpp"

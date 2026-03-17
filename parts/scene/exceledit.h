@@ -9,6 +9,7 @@
 #include <QPushButton>
 #include <QWidget>
 
+class ExcelModel;
 class SceneState;
 
 class ExcelEdit : public QWidget
@@ -25,4 +26,5 @@ private:
     uint32_t m_rowId = 0;
     physis_ExcelSheet m_sheet;
     QString m_excelSheet;
+    ExcelModel *m_model = nullptr;
 };

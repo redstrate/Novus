@@ -35,6 +35,7 @@ target_link_libraries(scenepart
         Novus::Renderer
         Novus::Common
         Novus::MdlPart
+        Novus::ExdPart
         Physis::Physis
         Qt6::Core
         Qt6::Widgets

@@ -3,10 +3,15 @@
 
 #include "exceledit.h"
 
+#include "excelmodel.h"
+#include "excelresolver.h"
 #include "scenestate.h"
+#include "schema.h"
 #include "settings.h"
 
+#include <QDir>
 #include <QHBoxLayout>
+#include <QStandardPaths>
 
 ExcelEdit::ExcelEdit(SceneState *state, const QString &excelSheet, QWidget *parent)
     : QWidget(parent)
@@ -30,6 +35,15 @@ ExcelEdit::ExcelEdit(SceneState *state, const QString &excelSheet, QWidget *pare
             qWarning() << "Failed to parse exd/" << excelSheet << ".exh";
         } else {
             m_sheet = physis_sqpack_read_excel_sheet(state->resource(), excelSheet.toStdString().c_str(), &exh, getLanguage());
+
+            const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+            const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
+
+            const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(excelSheet)));
+
+            // TODO: make this more efficient, don't initialize this every time
+            auto resolver = new CachingExcelResolver(state->resource());
+            m_model = new ExcelModel(exh, m_sheet.pages[0], schema, resolver, getLanguage());
         }
     }
 }
@@ -37,7 +51,7 @@ ExcelEdit::ExcelEdit(SceneState *state, const QString &excelSheet, QWidget *pare
 void ExcelEdit::setRowId(const uint32_t rowId)
 {
     m_rowId = rowId;
-    m_lineEdit->setText(QStringLiteral("%1#%2").arg(m_excelSheet).arg(rowId));
+    m_lineEdit->setText(m_model->resolveDisplay(rowId).toString());
 }
 
 #include "moc_exceledit.cpp"

@@ -31,6 +31,11 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
+    /**
+     * @brief Returns the display field for this row ID, if found.
+     */
+    QVariant resolveDisplay(uint32_t rowId) const;
+
 private:
     /**
      * @brief Returns a nice display for a given column data, including resolving other sheets.
@@ -46,6 +51,11 @@ private:
      * @brief Returns the column data for a given QModelIndex.
      */
     physis_Field &dataForIndex(const QModelIndex &index) const;
+
+    /**
+     * @brief Returns the column data for a given row id.
+     */
+    physis_Field *dataForRowId(uint32_t rowId, uint32_t columnIndex) const;
 
     physis_EXH m_exh;
     physis_ExcelSheetPage m_page;
