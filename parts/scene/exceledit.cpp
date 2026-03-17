@@ -27,6 +27,7 @@ ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t
     layout->setContentsMargins(0, 0, 0, 0);
 
     m_lineEdit = new QLineEdit();
+    m_lineEdit->setReadOnly(true);
     layout->addWidget(m_lineEdit);
 
     auto resolver = new CachingExcelResolver(state->resource());

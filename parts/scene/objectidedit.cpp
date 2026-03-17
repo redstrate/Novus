@@ -15,6 +15,7 @@ ObjectIdEdit::ObjectIdEdit(SceneState *state, QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 0);
 
     m_lineEdit = new QLineEdit();
+    m_lineEdit->setReadOnly(true);
     layout->addWidget(m_lineEdit);
 
     m_goToButton = new QPushButton();
