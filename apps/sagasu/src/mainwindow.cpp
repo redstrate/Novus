@@ -328,6 +328,8 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         auto texWidget = new TexPart(&m_data);
         texWidget->loadHwc(file);
         addTab(texWidget);
+
+        m_fileActionsMenu->addAction(texWidget->saveImageAction());
     } break;
     case FileType::SharedGroup: {
         auto scenePart = new ScenePart(&m_data);
