@@ -50,16 +50,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     m_exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
     dummyWidget->addWidget(m_exdPart);
 
-    connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, [this](const QString &name) {
-        auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
-        auto pathStd = path.toStdString();
-
-        auto file = physis_sqpack_read(&m_data, pathStd.c_str());
-
-        m_exdPart->loadSheet(name, file);
-
-        setWindowTitle(name);
-    });
+    connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, &MainWindow::jumpToSheet);
 
     setupActions();
     setupGUI(Keys | Save | Create, QStringLiteral("exceleditor.rc"));
@@ -76,6 +67,24 @@ MainWindow::MainWindow(physis_SqPackResource data)
 QString MainWindow::getArgument() const
 {
     return m_exdPart->name();
+}
+
+void MainWindow::jumpToSheet(const QString &name)
+{
+    auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
+    auto pathStd = path.toStdString();
+
+    auto file = physis_sqpack_read(&m_data, pathStd.c_str());
+
+    m_exdPart->loadSheet(name, file);
+
+    setWindowTitle(name);
+}
+
+void MainWindow::jumpToSheetAndRow(const QString &name, const QString &rowQuery)
+{
+    jumpToSheet(name);
+    m_exdPart->goToRow(rowQuery);
 }
 
 static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath)

@@ -21,6 +21,8 @@ public:
 
 public Q_SLOTS:
     QString getArgument() const;
+    void jumpToSheet(const QString &name);
+    void jumpToSheetAndRow(const QString &name, const QString &rowQuery);
 
 private:
     void setupActions();

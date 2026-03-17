@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
+    parser.addPositionalArgument(QStringLiteral("query"), i18n("Initial sheet and row to open."));
 
     const QString gameDir = processCommandLine(parser, app);
     if (gameDir.isEmpty()) {
@@ -35,6 +36,12 @@ int main(int argc, char *argv[])
     const std::string gameDirStd{gameDir.toStdString()};
     const auto window = new MainWindow(physis_sqpack_initialize(gameDirStd.c_str()));
     window->show();
+
+    const QStringList args = parser.positionalArguments();
+    if (!args.isEmpty()) {
+        const auto query = args.value(0).split(QLatin1Char('#'));
+        window->jumpToSheetAndRow(query.constFirst(), query.constLast());
+    }
 
     return QApplication::exec();
 }
