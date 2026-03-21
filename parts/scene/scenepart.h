@@ -31,6 +31,7 @@ public:
     void focusSearchField();
     void selectObject(uint32_t objectId);
     QString lookupObjectName(uint32_t objectId);
+    void clear();
 
     SceneState *sceneState() const;
     MapView *mapView() const;

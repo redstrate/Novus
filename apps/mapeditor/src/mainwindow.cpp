@@ -160,7 +160,7 @@ void MainWindow::setupActions()
 
 void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
 {
-    m_part->sceneState()->clear();
+    m_part->clear();
     m_mapEffects.clear();
     m_lgbEventRange = 0;
 

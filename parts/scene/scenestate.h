@@ -50,7 +50,6 @@ struct DropIn {
 class ObjectScene
 {
 public:
-    void clear();
     void load(physis_SqPackResource *data, const physis_ScnSection &section);
 
     /// Transformation to apply to all subsequent children.

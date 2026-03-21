@@ -64,14 +64,6 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
     }
 }
 
-void ObjectScene::clear()
-{
-    basePath.clear();
-    lgbFiles.clear();
-    terrain = {};
-    embeddedLgbs.clear();
-}
-
 void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &section)
 {
     basePath = QString::fromLatin1(section.general.bg_path);
@@ -291,10 +283,15 @@ void SceneState::saveDropIns()
 
 void SceneState::clear()
 {
-    rootScene.clear();
+    rootScene = {};
     visibleLayerIds.clear();
     selectedObject.reset();
     selectedLayer.reset();
+    selectedTimeline.reset();
+    selectedAction.reset();
+    selectedLgb.reset();
+    selectedTera.reset();
+    selectedDropInObject.reset();
     visibleTerrainPlates.clear();
 }
 

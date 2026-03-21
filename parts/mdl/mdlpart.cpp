@@ -79,6 +79,8 @@ void MDLPart::reloadModel(const int index)
 void MDLPart::clear()
 {
     vkWindow->models.clear();
+    vkWindow->sourceModels.clear();
+    renderMaterialCache.clear();
 
     Q_EMIT modelChanged();
 }

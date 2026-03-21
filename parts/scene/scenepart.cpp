@@ -119,6 +119,12 @@ QString ScenePart::lookupObjectName(const uint32_t objectId)
     return m_sceneListWidget->lookupObjectName(objectId);
 }
 
+void ScenePart::clear()
+{
+    m_appState->clear();
+    m_mapView->clear();
+}
+
 SceneState *ScenePart::sceneState() const
 {
     return m_appState;
