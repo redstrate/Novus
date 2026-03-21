@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 cmake_minimum_required(VERSION 3.25)
-project(Novus VERSION 0.1.0 LANGUAGES CXX)
+project(Novus VERSION 0.1.1 LANGUAGES CXX)
 
 # build options used for distributors
 option(BUILD_FLATPAK "Build for Flatpak." OFF)
