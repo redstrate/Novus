@@ -78,7 +78,7 @@ private:
     void addCollisionBox(const physis_CollisionBoxInstanceObject &collisionBox);
     void addDoorRange(const physis_DoorRangeInstanceObject &doorRange);
     void addLineVFX(const physis_LineVFXInstanceObject &lineVfx);
-    void addTreasure(const physis_TreasureInstanceObject &treasure);
+    void addTreasure(physis_TreasureInstanceObject &treasure);
     void addTargetMarker(const physis_TargetMarkerInstanceObject &targetMarker);
 
     SceneState *m_appState = nullptr;

@@ -846,7 +846,7 @@ void ObjectPropertiesWidget::addLineVFX(const physis_LineVFXInstanceObject &line
     layout->addRow(i18n("Line Style"), lineStyleEdit);
 }
 
-void ObjectPropertiesWidget::addTreasure(const physis_TreasureInstanceObject &treasure)
+void ObjectPropertiesWidget::addTreasure(physis_TreasureInstanceObject &treasure)
 {
     auto section = new CollapseSection(i18n("Treasure"));
     m_layout->addWidget(section);
@@ -855,10 +855,9 @@ void ObjectPropertiesWidget::addTreasure(const physis_TreasureInstanceObject &tr
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto nonpopInitZoneEdit = new QLineEdit();
-    nonpopInitZoneEdit->setText(QString::number(treasure.nonpop_init_zone));
-    nonpopInitZoneEdit->setReadOnly(true);
-    layout->addRow(i18n("Nonpop Init Zone(?)"), nonpopInitZoneEdit);
+    const auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("Treasure")}, treasure.base_id);
+    baseIdEdit->setReadOnly(true);
+    layout->addRow(i18n("Base ID"), baseIdEdit);
 }
 
 void ObjectPropertiesWidget::addTargetMarker(const physis_TargetMarkerInstanceObject &targetMarker)

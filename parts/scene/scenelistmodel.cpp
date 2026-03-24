@@ -328,7 +328,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
                 objectName = i18n("Line VFX");
                 break;
             case physis_LayerEntry::Tag::Treasure:
-                objectName = i18n("Treasure");
+                objectName = i18n("Treasure (%1)").arg(object.data.treasure._0.base_id);
                 break;
             case physis_LayerEntry::Tag::TargetMarker:
                 objectName = i18n("Target Marker");
