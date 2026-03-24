@@ -42,7 +42,8 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("amb"), FileType::AmbientSet},
                                                      {QStringLiteral("obsb"), FileType::ObjectBehaviorSetBinary},
                                                      {QStringLiteral("pap"), FileType::Pap},
-                                                     {QStringLiteral("png"), FileType::Png}};
+                                                     {QStringLiteral("png"), FileType::Png},
+                                                     {QStringLiteral("fdt"), FileType::Fdt}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -79,7 +80,8 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::AmbientSet, i18n("Ambient Set")},
                                                 {FileType::ObjectBehaviorSetBinary, i18n("Object Behavior Set Binary")},
                                                 {FileType::Pap, i18n("PAP")},
-                                                {FileType::Png, i18n("PNG")}};
+                                                {FileType::Png, i18n("PNG")},
+                                                {FileType::Fdt, i18n("FDT")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -126,7 +128,8 @@ const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>
                                                                                               {FileType::EnvironmentSoundScapeBinary, physis_essb_debug},
                                                                                               {FileType::AmbientSet, physis_amb_debug},
                                                                                               {FileType::ObjectBehaviorSetBinary, physis_obsb_debug},
-                                                                                              {FileType::Pap, physis_pap_debug}};
+                                                                                              {FileType::Pap, physis_pap_debug},
+                                                                                              {FileType::Fdt, physis_fdt_debug}};
 
 const static QMap<std::array<uint8_t, 4>, FileType> magicToType{
     {{0x70, 0x61, 0x70, 0x20}, FileType::Pap},

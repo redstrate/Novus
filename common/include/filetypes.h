@@ -46,6 +46,7 @@ enum class FileType {
     ObjectBehaviorSetBinary,
     Pap, // TODO: what would this be called?
     Png,
+    Fdt,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes
