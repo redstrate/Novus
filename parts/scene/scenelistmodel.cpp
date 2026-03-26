@@ -390,7 +390,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
             auto timelineItem = new SceneTreeInformation();
             timelineItem->type = TreeType::Timeline;
             timelineItem->parent = timelinesItem;
-            timelineItem->name = i18n("Timeline %1").arg(scene.embeddedTimelines[i].sub_id);
+            timelineItem->name = i18n("%1 (%2)").arg(scene.embeddedTimelines[i].animation_type).arg(scene.embeddedTimelines[i].sub_id);
             timelineItem->row = i;
             timelineItem->data = QVariant::fromValue(&scene.embeddedTimelines[i]);
             timelinesItem->children.push_back(timelineItem);
