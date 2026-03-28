@@ -1711,3 +1711,8 @@ Device &GameRenderer::device()
 {
     return m_device;
 }
+
+void GameRenderer::freeResources()
+{
+    // TODO: stub
+}

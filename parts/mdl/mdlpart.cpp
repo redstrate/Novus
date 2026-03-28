@@ -168,6 +168,9 @@ bool MDLPart::event(QEvent *event)
 
 void MDLPart::destroyObjects()
 {
+    // If we're destroying all objects, more than likely we're loading a new set of materials and have no use for the old ones.
+    renderer->freeResources();
+
     vkWindow->models.clear();
     for (const auto &[_, model] : vkWindow->sourceModels) {
         renderer->destroyDrawObject(*model);

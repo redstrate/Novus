@@ -856,3 +856,8 @@ BaseRenderer *RenderManager::renderer()
 {
     return m_renderer;
 }
+
+void RenderManager::freeResources()
+{
+    m_renderer->freeResources();
+}

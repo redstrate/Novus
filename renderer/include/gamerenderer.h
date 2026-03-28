@@ -37,6 +37,8 @@ public:
 
     Device &device() override;
 
+    void freeResources() override;
+
 private:
     struct RequestedBinding {
         VkDescriptorType type;

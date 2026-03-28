@@ -667,3 +667,11 @@ VkRenderPass SimpleRenderer::renderPass()
 {
     return m_renderPass;
 }
+
+void SimpleRenderer::freeResources()
+{
+    for (const auto &[_, descriptor] : cachedDescriptors) {
+        vkFreeDescriptorSets(m_device.device, m_device.descriptorPool, 1, &descriptor);
+    }
+    cachedDescriptors.clear();
+}

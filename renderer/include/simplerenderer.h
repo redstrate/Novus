@@ -40,6 +40,8 @@ public:
     VkFramebuffer framebuffer();
     VkRenderPass renderPass();
 
+    void freeResources() override;
+
 private:
     void initRenderPass();
     void initPipeline();

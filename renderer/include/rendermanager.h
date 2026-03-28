@@ -62,6 +62,8 @@ public:
 
     BaseRenderer *renderer();
 
+    void freeResources();
+
 private:
     void updateCamera(Camera &camera);
     void initBlitPipeline();

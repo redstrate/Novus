@@ -36,4 +36,7 @@ public:
     virtual Texture &getCompositeTexture() = 0;
 
     virtual Device &device() = 0;
+
+    /// Ask the renderer to free any transient resources like dynamically created descriptor sets.
+    virtual void freeResources() = 0;
 };
