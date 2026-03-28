@@ -25,6 +25,7 @@ class ScenePart : public QWidget
 public:
     // TODO: eventually remove fixedSize hack used in map editor
     explicit ScenePart(physis_SqPackResource *data, bool fixedSize = false, QWidget *parent = nullptr);
+    ~ScenePart() override;
 
     void loadSgb(physis_Buffer file);
     void loadLvb(physis_Buffer file);
@@ -44,4 +45,6 @@ private:
     MapView *m_mapView = nullptr;
     FileCache m_fileCache;
     QSlider *m_animationTimeSlider = nullptr;
+    physis_Sgb m_sgb{};
+    physis_Lvb m_lvb{};
 };

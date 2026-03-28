@@ -10,11 +10,25 @@
 #include <QFileInfo>
 #include <QIcon>
 
+void deleteTree(SceneTreeInformation *node)
+{
+    for (auto child : node->children) {
+        Q_ASSERT(child->parent == node); // To double-check our own shitty code
+        deleteTree(child);
+        delete child;
+    }
+}
+
 SceneListModel::SceneListModel(SceneState *appState, QObject *parent)
     : QAbstractItemModel(parent)
     , m_appState(appState)
 {
     connect(m_appState, &SceneState::mapLoaded, this, &SceneListModel::refresh);
+}
+
+SceneListModel::~SceneListModel()
+{
+    deleteTree(&m_rootItem);
 }
 
 int SceneListModel::rowCount(const QModelIndex &parent) const
@@ -238,6 +252,7 @@ void SceneListModel::refresh()
     beginResetModel();
 
     // Reset the root item
+    deleteTree(&m_rootItem);
     m_rootItem.children.clear();
 
     processScene(&m_rootItem, m_appState->rootScene);

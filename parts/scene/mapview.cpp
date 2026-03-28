@@ -53,15 +53,15 @@ void MapView::clear()
     mdlPart->clear();
 }
 
-void MapView::addTerrain(QString basePath, physis_Terrain terrain)
+void MapView::addTerrain(ObjectScene &scene)
 {
-    for (int i = 0; i < terrain.num_plates; i++) {
+    for (int i = 0; i < scene.terrain.num_plates; i++) {
         if (!m_appState->visibleTerrainPlates.contains(i)) {
             continue;
         }
 
-        QString base2Path = basePath.left(basePath.lastIndexOf(QStringLiteral("/level/")));
-        QString mdlPath = QStringLiteral("%1/bgplate/%2").arg(base2Path, QString::fromStdString(terrain.plates[i].filename));
+        QString base2Path = scene.basePath.left(scene.basePath.lastIndexOf(QStringLiteral("/level/")));
+        QString mdlPath = QStringLiteral("%1/bgplate/%2").arg(base2Path, QString::fromStdString(scene.terrain.plates[i].filename));
         std::string mdlPathStd = mdlPath.toStdString();
 
         auto plateMdlFile = physis_sqpack_read(m_data, mdlPathStd.c_str());
@@ -71,17 +71,21 @@ void MapView::addTerrain(QString basePath, physis_Terrain terrain)
             for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
                 const char *material_name = plateMdl.material_names[j];
 
-                const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
-                if (matFile.size > 0) {
-                    auto mat = physis_material_parse(m_data->platform, matFile);
-                    materials.push_back(std::make_pair(std::string{material_name}, mat));
-                } else {
-                    qWarning() << "Failed to find terrain material" << material_name;
+                if (!scene.cachedMaterials.contains(material_name)) {
+                    const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
+                    if (matFile.size > 0) {
+                        auto mat = physis_material_parse(m_data->platform, matFile);
+                        scene.cachedMaterials[material_name] = mat;
+                    } else {
+                        qWarning() << "Failed to find terrain material" << material_name;
+                    }
                 }
+
+                materials.push_back(std::make_pair(std::string{material_name}, scene.cachedMaterials[material_name]));
             }
 
             Transformation transformation{
-                .translation = {terrain.plates[i].position[0], 0.0f, terrain.plates[i].position[1]},
+                .translation = {scene.terrain.plates[i].position[0], 0.0f, scene.terrain.plates[i].position[1]},
                 .rotation = {0, 0, 0},
                 .scale = {1, 1, 1},
             };
@@ -159,7 +163,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
 {
     scene.combinedTransformation = addTransformation(rootTransformation, scene.transformation);
 
-    addTerrain(scene.basePath, scene.terrain);
+    addTerrain(scene);
 
     for (const auto &layerGroup : scene.embeddedLgbs) {
         for (uint32_t j = 0; j < layerGroup.layer_count; j++) {
@@ -168,7 +172,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
                 continue;
             }
 
-            processLayer(layer, scene.combinedTransformation);
+            processLayer(scene, layer, scene.combinedTransformation);
         }
     }
     for (const auto &[name, lgb] : scene.lgbFiles) {
@@ -180,17 +184,17 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
                     continue;
                 }
 
-                processLayer(layer, scene.combinedTransformation);
+                processLayer(scene, layer, scene.combinedTransformation);
             }
         }
     }
 
-    for (auto &nestedScene : scene.nestedScenes.values()) {
+    for (auto [_, nestedScene] : scene.nestedScenes.asKeyValueRange()) {
         processScene(nestedScene, scene.combinedTransformation);
     }
 }
 
-void MapView::processLayer(const physis_Layer &layer, const Transformation &rootTransformation)
+void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const Transformation &rootTransformation)
 {
     for (uint32_t z = 0; z < layer.num_objects; z++) {
         const auto object = layer.objects[z];
@@ -213,13 +217,17 @@ void MapView::processLayer(const physis_Layer &layer, const Transformation &root
                         for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
                             const char *material_name = plateMdl.material_names[j];
 
-                            const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
-                            if (matFile.size > 0) {
-                                auto mat = physis_material_parse(m_data->platform, matFile);
-                                materials.push_back(std::make_pair(material_name, mat));
-                            } else {
-                                qWarning() << "Failed to find model material" << material_name;
+                            if (!scene.cachedMaterials.contains(material_name)) {
+                                const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
+                                if (matFile.size > 0) {
+                                    auto mat = physis_material_parse(m_data->platform, matFile);
+                                    scene.cachedMaterials[material_name] = mat;
+                                } else {
+                                    qWarning() << "Failed to find model material" << material_name;
+                                }
                             }
+
+                            materials.push_back(std::make_pair(material_name, scene.cachedMaterials[material_name]));
                         }
 
                         mdlPart->addModel(plateMdl, false, combinedTransform, QString::fromStdString(assetPath), materials, 0);

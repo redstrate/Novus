@@ -317,6 +317,7 @@ RenderManager::~RenderManager()
 
     // Destroy the swapchain first so its command buffers releases its hold on certain resources.
     destroySwapchain(false);
+    delete m_device->swapChain;
 
     destroyBlitPipeline();
 
@@ -859,5 +860,7 @@ BaseRenderer *RenderManager::renderer()
 
 void RenderManager::freeResources()
 {
-    m_renderer->freeResources();
+    if (m_renderer) {
+        m_renderer->freeResources();
+    }
 }

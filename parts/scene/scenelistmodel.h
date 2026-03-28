@@ -62,6 +62,7 @@ class SceneListModel : public QAbstractItemModel
 
 public:
     explicit SceneListModel(SceneState *appState, QObject *parent = nullptr);
+    ~SceneListModel() override;
 
     enum SceneListRoles {
         ObjectIdRole = Qt::UserRole,

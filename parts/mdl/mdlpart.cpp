@@ -294,6 +294,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
 
                 renderer->device().copyToBuffer(newMaterial.materialBuffer, buffer.data(), buffer.size() * sizeof(float));
             }
+            physis_free_file(&shpkData);
         }
     }
 
@@ -323,6 +324,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
                 newMaterial.indexTexture = gameTexture;
             } else {
                 qWarning() << "Unknown texture type" << type;
+                renderer->device().destroyTexture(gameTexture);
             }
 
             physis_tex_free(&texture);

@@ -54,6 +54,11 @@ MainWindow::MainWindow(physis_SqPackResource data)
     menuBar()->setCornerWidget(openInWidget);
 }
 
+MainWindow::~MainWindow()
+{
+    physis_sqpack_free(&m_data);
+}
+
 void MainWindow::configure()
 {
     auto settingsWindow = new SettingsWindow();
@@ -80,7 +85,7 @@ void MainWindow::setupActions()
         },
         actionCollection());
 
-    m_centerObjectAction = new QAction(i18nc("@action:inmenu", "Center on Object"));
+    m_centerObjectAction = new QAction(i18nc("@action:inmenu", "Center on Object"), this);
     m_centerObjectAction->setIcon(QIcon::fromTheme(QStringLiteral("camera-video-symbolic")));
     KActionCollection::setDefaultShortcut(m_centerObjectAction, QKeySequence(Qt::Modifier::ALT | Qt::Key::Key_C));
     connect(m_centerObjectAction, &QAction::triggered, [this] {
@@ -93,13 +98,13 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("center_object"), m_centerObjectAction);
 
-    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"));
+    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"), this);
     focusSearch->setIcon(QIcon::fromTheme(QStringLiteral("search-symbolic")));
     KActionCollection::setDefaultShortcut(focusSearch, QKeySequence(Qt::CTRL | Qt::Key_F));
     connect(focusSearch, &QAction::triggered, m_part, &ScenePart::focusSearchField);
     actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 
-    m_goToEntranceAction = new QAction(i18nc("@action:inmenu", "Go to Entrance"));
+    m_goToEntranceAction = new QAction(i18nc("@action:inmenu", "Go to Entrance"), this);
     m_goToEntranceAction->setEnabled(false);
     connect(m_goToEntranceAction, &QAction::triggered, this, [this] {
         auto entranceTransform = m_part->sceneState()->rootScene.locateGameObject(m_lgbEventRange);
@@ -107,7 +112,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("duty_go_to_entrance"), m_goToEntranceAction);
 
-    m_goToExitAction = new QAction(i18nc("@action:inmenu", "Go to Exit"));
+    m_goToExitAction = new QAction(i18nc("@action:inmenu", "Go to Exit"), this);
     m_goToExitAction->setEnabled(false);
     connect(m_goToExitAction, &QAction::triggered, this, [this] {
         // TODO: what if there are multiple exits, is that a thing?
@@ -117,7 +122,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("duty_go_to_exit"), m_goToExitAction);
 
-    m_gimmickListAction = new QAction(i18nc("@action:inmenu", "Gimmicks"));
+    m_gimmickListAction = new QAction(i18nc("@action:inmenu", "Gimmicks"), this);
     m_gimmickListAction->setEnabled(false);
     connect(m_gimmickListAction, &QAction::triggered, this, [this] {
         // TODO: only pass m_part I guess
@@ -126,7 +131,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("duty_gimmicks"), m_gimmickListAction);
 
-    m_effectListAction = new QAction(i18nc("@action:inmenu", "Effects"));
+    m_effectListAction = new QAction(i18nc("@action:inmenu", "Effects"), this);
     m_effectListAction->setEnabled(false);
     connect(m_effectListAction, &QAction::triggered, this, [this] {
         auto listWidget = new EffectListWidget(m_part->sceneState(), m_mapEffects, this);
@@ -134,7 +139,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("duty_effects"), m_effectListAction);
 
-    m_goToObjectAction = new QAction(i18nc("@action:inmenu", "To Object…"));
+    m_goToObjectAction = new QAction(i18nc("@action:inmenu", "To Object…"), this);
     m_goToObjectAction->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
     KActionCollection::setDefaultShortcut(m_goToObjectAction, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
     connect(m_goToObjectAction, &QAction::triggered, this, [this] {
@@ -181,6 +186,8 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
                 m_part->sceneState()->loadDropIn(it.next());
             }
         }
+
+        physis_free_file(&lvbFile);
     } else {
         qWarning() << "Failed to find lvb" << lvbPath;
     }

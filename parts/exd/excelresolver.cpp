@@ -46,10 +46,10 @@ CachingExcelResolver::CachingExcelResolver(physis_SqPackResource *resource)
 
 CachingExcelResolver::~CachingExcelResolver()
 {
-    for (const auto &exh : m_cachedEXHs.values()) {
+    for (const auto [_, exh] : m_cachedEXHs.asKeyValueRange()) {
         physis_exh_free(&exh);
     }
-    for (const auto &sheet : m_cachedSheets.values()) {
+    for (const auto [_, sheet] : m_cachedSheets.asKeyValueRange()) {
         physis_sqpack_free_excel_sheet(&sheet);
     }
 }

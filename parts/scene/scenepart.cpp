@@ -15,7 +15,7 @@
 
 ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *parent)
     : QWidget(parent)
-    , m_appState(new SceneState(data))
+    , m_appState(new SceneState(data, this))
     , m_data(data)
     , m_fileCache(*data) // TODO: re-use FileCache
 {
@@ -76,12 +76,19 @@ ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *paren
     connect(m_appState, &SceneState::selectObject, this, &ScenePart::selectObject);
 }
 
+ScenePart::~ScenePart()
+{
+    physis_lvb_free(&m_lvb);
+    physis_sgb_free(&m_sgb);
+}
+
 void ScenePart::loadSgb(physis_Buffer file)
 {
-    auto sgb = physis_sgb_parse(m_data->platform, file);
-    if (sgb.sections) {
+    physis_sgb_free(&m_sgb); // free any previous ones
+    m_sgb = physis_sgb_parse(m_data->platform, file);
+    if (m_sgb.sections) {
         // TODO: load more than one section?
-        m_appState->load(m_data, sgb.sections[0]);
+        m_appState->load(m_data, m_sgb.sections[0]);
 
         // Expand the first level of the SGB
         m_sceneListWidget->expandToDepth(1);
@@ -95,10 +102,11 @@ void ScenePart::loadSgb(physis_Buffer file)
 
 void ScenePart::loadLvb(physis_Buffer file)
 {
-    auto lvb = physis_lvb_parse(m_data->platform, file);
-    if (lvb.sections) {
+    physis_lvb_free(&m_lvb); // free any previous ones
+    m_lvb = physis_lvb_parse(m_data->platform, file);
+    if (m_lvb.sections) {
         // TODO: read all sections?
-        m_appState->load(m_data, lvb.sections[0]);
+        m_appState->load(m_data, m_lvb.sections[0]);
     } else {
         qWarning() << "Failed to parse lvb";
     }

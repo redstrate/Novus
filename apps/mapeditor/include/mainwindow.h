@@ -20,6 +20,7 @@ class MainWindow : public KXmlGuiWindow
 
 public:
     explicit MainWindow(physis_SqPackResource data);
+    ~MainWindow() override;
 
 public Q_SLOTS:
     void configure();

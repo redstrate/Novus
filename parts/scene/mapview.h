@@ -26,12 +26,12 @@ public:
     void clear();
 
 public Q_SLOTS:
-    void addTerrain(QString basePath, physis_Terrain terrain);
+    void addTerrain(ObjectScene &scene);
 
 private:
     void reloadMap();
     void processScene(ObjectScene &scene, const Transformation &rootTransformation);
-    void processLayer(const physis_Layer &layer, const Transformation &rootTransformation);
+    void processLayer(ObjectScene &scene, const physis_Layer &layer, const Transformation &rootTransformation);
 
     MDLPart *mdlPart = nullptr;
 

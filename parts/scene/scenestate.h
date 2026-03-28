@@ -50,6 +50,8 @@ struct DropIn {
 class ObjectScene
 {
 public:
+    ~ObjectScene();
+
     void load(physis_SqPackResource *data, const physis_ScnSection &section);
 
     /// Transformation to apply to all subsequent children.
@@ -73,6 +75,8 @@ public:
     std::vector<ScnSGActionControllerDescriptor> actionDescriptors;
     bool isSgb = false; // Currently only used to skip visibility checks.
     std::vector<std::pair<QString, DropIn>> dropIns;
+    physis_Sgb sgb{}; // so it can be freed later
+    std::unordered_map<std::string, physis_Material> cachedMaterials;
 
     /// Key is the ID of the SGB instance.
     QHash<uint32_t, ObjectScene> nestedScenes;
@@ -91,6 +95,7 @@ class SceneState : public QObject
 
 public:
     explicit SceneState(physis_SqPackResource *resource, QObject *parent = nullptr);
+    ~SceneState() override;
 
     void load(physis_SqPackResource *data, const physis_ScnSection &section);
     void loadDropIn(const QString &path);

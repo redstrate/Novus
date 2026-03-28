@@ -22,7 +22,7 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     layout->setSpacing(0);
     setLayout(layout);
 
-    m_searchModel = new QSortFilterProxyModel();
+    m_searchModel = new QSortFilterProxyModel(this);
     m_searchModel->setRecursiveFilteringEnabled(true);
     m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 

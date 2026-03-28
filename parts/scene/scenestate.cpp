@@ -30,7 +30,9 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
             } else {
                 m_enpcResidentSheet = physis_sqpack_read_excel_sheet(resource, "ENpcResident", &exh, getLanguage());
             }
+            physis_exh_free(&exh);
         }
+        physis_free_file(&exhFile);
     }
 
     // EOBJ
@@ -45,7 +47,9 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
             } else {
                 m_eobjNameSheet = physis_sqpack_read_excel_sheet(resource, "EObjName", &exh, getLanguage());
             }
+            physis_exh_free(&exh);
         }
+        physis_free_file(&exhFile);
     }
 
     // BNPC
@@ -60,7 +64,32 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
             } else {
                 m_bnpcNameSheet = physis_sqpack_read_excel_sheet(resource, "BNpcName", &exh, getLanguage());
             }
+            physis_exh_free(&exh);
         }
+        physis_free_file(&exhFile);
+    }
+}
+
+SceneState::~SceneState()
+{
+    physis_sqpack_free_excel_sheet(&m_bnpcNameSheet);
+    physis_sqpack_free_excel_sheet(&m_eobjNameSheet);
+    physis_sqpack_free_excel_sheet(&m_enpcResidentSheet);
+}
+
+ObjectScene::~ObjectScene()
+{
+    delete animation;
+    animation = nullptr;
+
+    for (const auto &[_, lgb] : lgbFiles) {
+        physis_lgb_free(&lgb);
+    }
+    for (const auto &[_, scene] : nestedScenes.asKeyValueRange()) {
+        physis_sgb_free(&scene.sgb);
+    }
+    for (const auto &[_, material] : cachedMaterials) {
+        physis_mtrl_free(&material);
     }
 }
 
@@ -74,6 +103,7 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
     auto tera_buffer = physis_sqpack_read(data, bgPathStd.c_str());
     if (tera_buffer.size > 0) {
         terrain = physis_terrain_parse(data->platform, tera_buffer);
+        physis_free_file(&tera_buffer);
         terrainPath = QString::fromStdString(bgPathStd);
     }
 
@@ -85,6 +115,7 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
                 lgbFiles.emplace_back(QString::fromLatin1(path), lgb);
             }
         }
+        physis_free_file(&bg_buffer);
     };
 
     for (uint32_t i = 0; i < section.num_lgb_paths; i++) {
@@ -306,8 +337,11 @@ QString SceneState::lookupENpcName(const uint32_t id) const
 {
     auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
     if (row.columns && strlen(row.columns[0].string._0) > 0) {
-        return QString::fromLatin1(row.columns[0].string._0);
+        QString name = QString::fromLatin1(row.columns[0].string._0);
+        physis_free_row(&row, m_enpcResidentSheet.pages[0].column_count);
+        return name;
     }
+    physis_free_row(&row, m_enpcResidentSheet.pages[0].column_count);
     return i18n("Event NPC");
 }
 
@@ -315,16 +349,22 @@ QString SceneState::lookupEObjName(const uint32_t id) const
 {
     auto row = physis_excel_get_row(&m_eobjNameSheet, id);
     if (row.columns && strlen(row.columns[0].string._0) > 0) {
-        return QString::fromLatin1(row.columns[0].string._0);
+        QString name = QString::fromLatin1(row.columns[0].string._0);
+        physis_free_row(&row, m_eobjNameSheet.pages[0].column_count);
+        return name;
     }
+    physis_free_row(&row, m_eobjNameSheet.pages[0].column_count);
     return i18n("Event Object");
 }
 
 QString SceneState::lookupBNpcName(uint32_t id) const
 {
     auto row = physis_excel_get_row(&m_bnpcNameSheet, id);
+    physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
     if (row.columns && strlen(row.columns[0].string._0) > 0) {
-        return QString::fromLatin1(row.columns[0].string._0);
+        QString name = QString::fromLatin1(row.columns[0].string._0);
+        physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
+        return name;
     }
     return i18n("Battle NPC");
 }
@@ -348,7 +388,7 @@ void SceneState::processLongestAnimationTime(const ObjectScene &scene)
 {
     m_longestAnimationTime = std::max(m_longestAnimationTime, scene.animation->duration());
 
-    for (const auto &nestedScene : scene.nestedScenes.values()) {
+    for (const auto [_, nestedScene] : std::as_const(scene.nestedScenes).asKeyValueRange()) {
         processLongestAnimationTime(nestedScene);
     }
 }
@@ -357,7 +397,7 @@ void SceneState::processUpdateAnimation(ObjectScene &scene, float time)
 {
     scene.animation->update(scene, time);
 
-    for (auto &nestedScene : scene.nestedScenes.values()) {
+    for (auto [_, nestedScene] : scene.nestedScenes.asKeyValueRange()) {
         processUpdateAnimation(nestedScene, time);
     }
 }
@@ -438,6 +478,7 @@ void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t insta
     }
 
     const auto sgb = physis_sgb_parse(data->platform, sgbFile);
+    physis_free_file(&sgbFile);
     if (!sgb.sections) {
         qWarning() << "Failed to parse" << path;
         return;
@@ -447,6 +488,7 @@ void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t insta
     nestedScenes[instanceId].load(data, sgb.sections[0]);
     nestedScenes[instanceId].transformation = transformation;
     nestedScenes[instanceId].isSgb = true;
+    nestedScenes[instanceId].sgb = sgb;
 }
 
 void ObjectScene::processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group)

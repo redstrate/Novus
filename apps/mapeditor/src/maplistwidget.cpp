@@ -23,7 +23,7 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
     auto layout = new QVBoxLayout();
     setLayout(layout);
 
-    m_searchModel = new QSortFilterProxyModel();
+    m_searchModel = new QSortFilterProxyModel(this);
     m_searchModel->setRecursiveFilteringEnabled(true);
     m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
@@ -35,34 +35,40 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
     });
     layout->addWidget(searchEdit);
 
-    auto originalModel = new QStandardItemModel();
+    auto originalModel = new QStandardItemModel(this);
     m_searchModel->setSourceModel(originalModel);
 
-    auto nameExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/PlaceName.exh"));
-    auto territoryExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/TerritoryType.exh"));
+    auto nameExhFile = physis_sqpack_read(data, "exd/PlaceName.exh");
+    auto nameExh = physis_exh_parse(data->platform, nameExhFile);
+    physis_free_file(&nameExhFile);
+
+    auto territoryExhFile = physis_sqpack_read(data, "exd/TerritoryType.exh");
+    auto territoryExh = physis_exh_parse(data->platform, territoryExhFile);
+    physis_free_file(&territoryExhFile);
 
     auto nameSheet = physis_sqpack_read_excel_sheet(data, "PlaceName", &nameExh, getLanguage());
     auto territorySheet = physis_sqpack_read_excel_sheet(data, "TerritoryType", &territoryExh, Language::None);
 
     // TODO: figure out why row_count in EXH is wrong?!
     for (uint32_t i = 0; i < territoryExh.pages[0].row_count; i++) {
-        auto territoryExdRow = physis_excel_get_row(&territorySheet, i); // TODO: free, use all rows
+        auto territoryExdRow = physis_excel_get_row(&territorySheet, i);
         if (territoryExdRow.columns) {
             const char *bg = territoryExdRow.columns[1].string._0;
             if (strlen(bg) == 0) {
+                physis_free_row(&territoryExdRow, territoryExh.column_count);
                 continue;
             }
 
             int placeRegionKey = territoryExdRow.columns[3].u_int16._0;
-            auto regionExdRow = physis_excel_get_row(&nameSheet, placeRegionKey); // TODO: free, use all rows
+            auto regionExdRow = physis_excel_get_row(&nameSheet, placeRegionKey);
             const char *placeRegion = regionExdRow.columns[0].string._0;
 
             int placeZoneKey = territoryExdRow.columns[4].u_int16._0;
-            auto zoneExdRow = physis_excel_get_row(&nameSheet, placeZoneKey); // TODO: free, use all rows
+            auto zoneExdRow = physis_excel_get_row(&nameSheet, placeZoneKey);
             const char *placeZone = zoneExdRow.columns[0].string._0;
 
             int placeNameKey = territoryExdRow.columns[5].u_int16._0;
-            auto nameExdRow = physis_excel_get_row(&nameSheet, placeNameKey); // TODO: free, use all rows
+            auto nameExdRow = physis_excel_get_row(&nameSheet, placeNameKey);
             const char *placeName = nameExdRow.columns[0].string._0;
 
             int contentFinderCondition = territoryExdRow.columns[10].u_int16._0;
@@ -266,8 +272,19 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
                                    QString::fromStdString(placeName)));
 
             originalModel->insertRow(originalModel->rowCount(), item);
+
+            physis_free_row(&regionExdRow, nameExh.column_count);
+            physis_free_row(&zoneExdRow, nameExh.column_count);
+            physis_free_row(&nameExdRow, nameExh.column_count);
         }
+        physis_free_row(&territoryExdRow, territoryExh.column_count);
     }
+
+    physis_sqpack_free_excel_sheet(&territorySheet);
+    physis_sqpack_free_excel_sheet(&nameSheet);
+
+    physis_exh_free(&nameExh);
+    physis_exh_free(&territoryExh);
 
     listWidget = new QListView();
     listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
