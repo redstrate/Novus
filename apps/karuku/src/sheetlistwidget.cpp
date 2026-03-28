@@ -18,7 +18,7 @@ SheetListWidget::SheetListWidget(physis_SqPackResource *data, QWidget *parent)
     layout->setSpacing(0);
     setLayout(layout);
 
-    auto searchModel = new QSortFilterProxyModel();
+    auto searchModel = new QSortFilterProxyModel(this);
     searchModel->setRecursiveFilteringEnabled(true);
     searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
@@ -32,7 +32,7 @@ SheetListWidget::SheetListWidget(physis_SqPackResource *data, QWidget *parent)
     });
     layout->addWidget(m_searchEdit);
 
-    auto originalModel = new QStringListModel();
+    auto originalModel = new QStringListModel(this);
     searchModel->setSourceModel(originalModel);
 
     QStringList list;
@@ -41,6 +41,7 @@ SheetListWidget::SheetListWidget(physis_SqPackResource *data, QWidget *parent)
     for (uint32_t i = 0; i < names.name_count; i++) {
         list.push_back(QString::fromStdString(names.names[i]));
     }
+    physis_sqpack_free_all_sheet_names(names);
 
     originalModel->setStringList(list);
 

@@ -42,17 +42,17 @@ EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, Q
     pageTabWidget->setDocumentMode(true); // hide borders
     layout->addWidget(pageTabWidget);
 
-    m_selectLanguage = new QAction(i18nc("@action:inmenu", "Language"));
+    m_selectLanguage = new QAction(i18nc("@action:inmenu", "Language"), this);
     m_selectLanguage->setEnabled(false);
     m_selectLanguage->setIcon(QIcon::fromTheme(QStringLiteral("languages-symbolic")));
 
-    m_languageMenu = new QMenu();
+    m_languageMenu = new QMenu(this);
     m_selectLanguage->setMenu(m_languageMenu);
 
     m_languageGroup = new QActionGroup(this);
     m_languageGroup->setExclusive(true);
 
-    m_saveCsvAction = new QAction(i18n("Save CSV…"));
+    m_saveCsvAction = new QAction(i18n("Save CSV…"), this);
     connect(m_saveCsvAction, &QAction::triggered, this, [this] {
         const QString savePath = QFileDialog::getSaveFileName(this, i18nc("@title:window", "Save CSV"), QDir::homePath(), QStringLiteral("*.csv"));
         if (!savePath.isEmpty()) {
@@ -94,9 +94,17 @@ EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, Q
     });
 }
 
+EXDPart::~EXDPart()
+{
+    physis_sqpack_free_excel_sheet(&sheet);
+    physis_exh_free(&exh);
+}
+
 void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 {
     m_name = name;
+
+    physis_exh_free(&exh); // Free existing
     exh = physis_exh_parse(data->platform, buffer);
 
     loadTables();
@@ -110,7 +118,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 
         m_languageMenu->clear();
         for (const auto &[name, language] : languages) {
-            auto languageAction = new QAction(name);
+            auto languageAction = new QAction(name, this);
             languageAction->setActionGroup(m_languageGroup);
             languageAction->setData(static_cast<int>(language));
             languageAction->setCheckable(true);
@@ -226,15 +234,16 @@ void EXDPart::loadTables()
 
     pageTabWidget->clear();
 
-    auto sheet = physis_sqpack_read_excel_sheet(data, m_name.toStdString().c_str(), &exh, getSuitableLanguage(exh));
+    physis_sqpack_free_excel_sheet(&sheet); // Free existing
+    sheet = physis_sqpack_read_excel_sheet(data, m_name.toStdString().c_str(), &exh, getSuitableLanguage(exh));
 
     for (uint32_t i = 0; i < sheet.page_count; i++) {
         auto tableWidget = new QTableView();
 
-        auto excelModel = new ExcelModel(exh, sheet.pages[i], schema, m_resolver, getSuitableLanguage(exh));
+        auto excelModel = new ExcelModel(exh, sheet.pages[i], schema, m_resolver, getSuitableLanguage(exh), this);
 
         // Wrap it in a sortfilterproxy so we get column sorting for free
-        auto proxyModel = new QSortFilterProxyModel();
+        auto proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setSourceModel(excelModel);
 
         tableWidget->setModel(proxyModel);

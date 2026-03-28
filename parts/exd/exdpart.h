@@ -20,6 +20,7 @@ class EXDPart : public QWidget
 
 public:
     explicit EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent = nullptr);
+    ~EXDPart() override;
 
     void loadSheet(const QString &name, physis_Buffer buffer);
     void goToRow(const QString &query);
@@ -52,4 +53,5 @@ private:
     QMenu *m_languageMenu = nullptr;
     QActionGroup *m_languageGroup = nullptr;
     QAction *m_saveCsvAction = nullptr;
+    physis_ExcelSheet sheet{};
 };

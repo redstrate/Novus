@@ -6,6 +6,7 @@
 #include <physis.hpp>
 
 #include "novus-version.h"
+#include "utility.h"
 
 #ifdef Q_OS_WIN
 #include <BreezeIcons>
@@ -50,7 +51,7 @@ void customizeAboutData(const QString &componentName, const QString &desktopFile
     about.setHomepage(QStringLiteral("https://xiv.zone/novus"));
     about.addComponent(QStringLiteral("Physis"),
                        QStringLiteral("Library for reading and writing FFXIV data"),
-                       QStringLiteral("%1 (libphysis: %2)").arg(QLatin1String(physis_get_physis_version()), QLatin1String(physis_get_libphysis_version())),
+                       QStringLiteral("%1 (libphysis: %2)").arg(fromCString(physis_get_physis_version()), fromCString(physis_get_libphysis_version())),
                        QStringLiteral("https://xiv.zone/physis"),
                        KAboutLicense::GPL_V3);
     about.addComponent(QStringLiteral("Vulkan"),

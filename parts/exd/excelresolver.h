@@ -9,6 +9,41 @@
 #include "physis.hpp"
 
 class Schema;
+
+/**
+ * Wraps physis_ExcelRow with RAII so it can be freed.
+ */
+class ScopedExelRow
+{
+public:
+    explicit ScopedExelRow(const physis_ExcelRow &row, uint32_t columnCount);
+    ~ScopedExelRow();
+
+    // force move, not copies
+    ScopedExelRow(ScopedExelRow &&rhs) noexcept
+    {
+        m_row = std::exchange(rhs.m_row, {});
+        m_columnCount = std::exchange(rhs.m_columnCount, 0);
+    }
+
+    ScopedExelRow &operator=(ScopedExelRow &&rhs) noexcept
+    {
+        m_row = std::exchange(rhs.m_row, {});
+        m_columnCount = std::exchange(rhs.m_columnCount, 0);
+
+        return *this;
+    }
+
+    ScopedExelRow(const ScopedExelRow &rhs) = delete;
+    ScopedExelRow &operator=(const ScopedExelRow &rhs) = delete;
+
+    physis_ExcelRow const &row() const;
+
+private:
+    physis_ExcelRow m_row{};
+    uint32_t m_columnCount = 0;
+};
+
 /**
  * @brief Handles resolving and caching Excel sheets. This is meant for quickly looking up sheet data.
  *
@@ -25,7 +60,7 @@ public:
      *
      * The first sheet that contains said row ID will be returned.
      */
-    virtual std::optional<std::pair<QString, physis_ExcelRow>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language);
+    virtual std::optional<std::pair<QString, ScopedExelRow>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language);
 
     virtual physis_Field *translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column);
 };
@@ -49,8 +84,9 @@ class CachingExcelResolver : public AbstractExcelResolver
 {
 public:
     explicit CachingExcelResolver(physis_SqPackResource *resource);
+    ~CachingExcelResolver() override;
 
-    std::optional<std::pair<QString, physis_ExcelRow>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language) override;
+    std::optional<std::pair<QString, ScopedExelRow>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language) override;
 
     physis_Field *translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column) override;
 

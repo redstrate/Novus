@@ -18,6 +18,7 @@ class MainWindow : public KXmlGuiWindow
 
 public:
     explicit MainWindow(physis_SqPackResource data);
+    ~MainWindow() override;
 
 public Q_SLOTS:
     QString getArguments() const;
@@ -30,6 +31,6 @@ private:
     physis_SqPackResource m_data;
     QNetworkAccessManager *mgr = nullptr;
     EXDPart *m_exdPart = nullptr;
-    CachingExcelResolver *m_excelResolver = nullptr;
+    std::unique_ptr<CachingExcelResolver> m_excelResolver;
     SheetListWidget *m_sheetListWidget = nullptr;
 };

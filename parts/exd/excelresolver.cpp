@@ -7,7 +7,23 @@
 
 #include <KLocalizedString>
 
-std::optional<std::pair<QString, physis_ExcelRow>> AbstractExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
+ScopedExelRow::ScopedExelRow(const physis_ExcelRow &row, uint32_t columnCount)
+    : m_row(row)
+    , m_columnCount(columnCount)
+{
+}
+
+ScopedExelRow::~ScopedExelRow()
+{
+    physis_free_row(&m_row, m_columnCount);
+}
+
+physis_ExcelRow const &ScopedExelRow::row() const
+{
+    return m_row;
+}
+
+std::optional<std::pair<QString, ScopedExelRow>> AbstractExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
 {
     Q_UNUSED(sheetNames)
     Q_UNUSED(row)
@@ -28,7 +44,17 @@ CachingExcelResolver::CachingExcelResolver(physis_SqPackResource *resource)
 {
 }
 
-std::optional<std::pair<QString, physis_ExcelRow>> CachingExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
+CachingExcelResolver::~CachingExcelResolver()
+{
+    for (const auto &exh : m_cachedEXHs.values()) {
+        physis_exh_free(&exh);
+    }
+    for (const auto &sheet : m_cachedSheets.values()) {
+        physis_sqpack_free_excel_sheet(&sheet);
+    }
+}
+
+std::optional<std::pair<QString, ScopedExelRow>> CachingExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
 {
     for (const auto &sheetName : sheetNames) {
         const auto exh = getCachedEXH(sheetName);
@@ -42,7 +68,7 @@ std::optional<std::pair<QString, physis_ExcelRow>> CachingExcelResolver::resolve
                                             });
             if (exd.p_ptr) {
                 const auto exdRow = physis_excel_get_row(&exd, row);
-                return std::pair{sheetName, exdRow};
+                return std::pair{sheetName, ScopedExelRow(exdRow, exh.column_count)};
             }
 
             qWarning() << "Failed to fetch resolved row" << sheetName << row << "???";
@@ -82,6 +108,7 @@ physis_EXH &CachingExcelResolver::getCachedEXH(const QString &sheetName)
         const auto file = physis_sqpack_read(m_resource, pathStd.c_str());
         const auto exh = physis_exh_parse(m_resource->platform, file);
         m_cachedEXHs.insert(sheetName, exh);
+        physis_free_file(&file);
     }
 
     return m_cachedEXHs[sheetName];

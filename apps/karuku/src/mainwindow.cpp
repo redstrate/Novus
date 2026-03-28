@@ -44,9 +44,9 @@ MainWindow::MainWindow(physis_SqPackResource data)
     m_sheetListWidget->setMaximumWidth(200);
     dummyWidget->addWidget(m_sheetListWidget);
 
-    m_excelResolver = new CachingExcelResolver(&m_data);
+    m_excelResolver = std::make_unique<CachingExcelResolver>(&m_data);
 
-    m_exdPart = new EXDPart(&m_data, m_excelResolver);
+    m_exdPart = new EXDPart(&m_data, m_excelResolver.get());
     m_exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
     dummyWidget->addWidget(m_exdPart);
 
@@ -62,6 +62,11 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
+}
+
+MainWindow::~MainWindow()
+{
+    physis_sqpack_free(&m_data);
 }
 
 QString MainWindow::getArguments() const
@@ -85,8 +90,8 @@ void MainWindow::jumpToSheet(const QString &name)
     auto pathStd = path.toStdString();
 
     auto file = physis_sqpack_read(&m_data, pathStd.c_str());
-
     m_exdPart->loadSheet(name, file);
+    physis_free_file(&file);
 
     setWindowTitle(name);
 }
@@ -121,7 +126,7 @@ static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath
 
 void MainWindow::setupActions()
 {
-    auto openList = new QAction(i18nc("@action:inmenu", "Import Schema…"));
+    auto openList = new QAction(i18nc("@action:inmenu", "Import Schema…"), this);
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
         auto fileName = QFileDialog::getExistingDirectory(nullptr, i18nc("@title:window", "Open Schema Directory"), QStringLiteral("~"));
@@ -142,7 +147,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("import_list"), openList);
 
-    auto downloadList = new QAction(i18nc("@action:inmenu", "Download Schema…"));
+    auto downloadList = new QAction(i18nc("@action:inmenu", "Download Schema…"), this);
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
         const int ret = QMessageBox::information(
@@ -205,7 +210,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
 
-    auto goToRow = new QAction(i18nc("@action:inmenu", "To Row…"));
+    auto goToRow = new QAction(i18nc("@action:inmenu", "To Row…"), this);
     goToRow->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
     KActionCollection::setDefaultShortcut(goToRow, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
     connect(goToRow, &QAction::triggered, [this] {
@@ -220,7 +225,7 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("select_language"), m_exdPart->selectLanguageAction());
     actionCollection()->addAction(QStringLiteral("save_csv"), m_exdPart->saveCsvAction());
 
-    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"));
+    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"), this);
     focusSearch->setIcon(QIcon::fromTheme(QStringLiteral("search-symbolic")));
     KActionCollection::setDefaultShortcut(focusSearch, QKeySequence(Qt::CTRL | Qt::Key_F));
     connect(focusSearch, &QAction::triggered, m_sheetListWidget, &SheetListWidget::focusSearchField);

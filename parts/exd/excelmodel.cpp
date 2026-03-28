@@ -12,8 +12,14 @@
 #include <QStandardPaths>
 #include <magic_enum.hpp>
 
-ExcelModel::ExcelModel(const physis_EXH &exh, const physis_ExcelSheetPage &page, Schema schema, AbstractExcelResolver *resolver, Language language)
-    : m_exh(exh)
+ExcelModel::ExcelModel(const physis_EXH &exh,
+                       const physis_ExcelSheetPage &page,
+                       Schema schema,
+                       AbstractExcelResolver *resolver,
+                       Language language,
+                       QObject *parent)
+    : QAbstractTableModel(parent)
+    , m_exh(exh)
     , m_page(page)
     , m_schema(schema)
     , m_resolver(resolver)
@@ -277,7 +283,7 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field 
         }
 
         if (const auto value = m_resolver->resolveRow(targetSheets, targetRowId, m_language)) {
-            const auto [sheetName, row] = *value;
+            const auto &[sheetName, row] = *value;
 
             // Load schema for this sheet
             const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
@@ -286,7 +292,7 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field 
             const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
 
             if (const auto displayFieldIndex = schema.displayFieldIndex()) {
-                if (const auto field = m_resolver->translateSchemaColumn(sheetName, &row, *displayFieldIndex)) {
+                if (const auto field = m_resolver->translateSchemaColumn(sheetName, &row.row(), *displayFieldIndex)) {
                     return displayForData(*field);
                 }
                 qWarning() << "Could not fetch displayField! This is a bug in Novus.";

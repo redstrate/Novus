@@ -16,7 +16,12 @@ class ExcelModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    ExcelModel(const physis_EXH &exh, const physis_ExcelSheetPage &page, Schema schema, AbstractExcelResolver *resolver, Language language);
+    ExcelModel(const physis_EXH &exh,
+               const physis_ExcelSheetPage &page,
+               Schema schema,
+               AbstractExcelResolver *resolver,
+               Language language,
+               QObject *parent = nullptr);
 
     enum ExcelRoles {
         ResolvedSheetRole = Qt::UserRole,
