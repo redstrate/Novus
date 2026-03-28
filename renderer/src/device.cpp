@@ -531,3 +531,11 @@ void Device::insertDebugLabel(VkCommandBuffer command_buffer, VkDebugUtilsLabelE
     if (func != nullptr)
         func(command_buffer, &label_info);
 }
+
+void Device::waitForIdle()
+{
+    // Wait until everything is done...
+    vkDeviceWaitIdle(device);
+    vkQueueWaitIdle(graphicsQueue);
+    vkQueueWaitIdle(presentQueue);
+}

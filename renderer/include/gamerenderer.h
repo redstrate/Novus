@@ -67,7 +67,7 @@ private:
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
         std::vector<VkDescriptorSetLayout> setLayouts;
-        std::map<uint64_t, VkDescriptorSet> cachedDescriptors;
+        std::map<size_t, VkDescriptorSet> cachedDescriptors;
         std::vector<RequestedSet> requestedSets;
         physis_Shader vertexShader, pixelShader;
     };

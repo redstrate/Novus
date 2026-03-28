@@ -109,7 +109,6 @@ private:
     RenderMaterial createMaterial(const std::string &path, const physis_Material &mat);
     RenderMaterial createOrCacheMaterial(const std::string &path, const physis_Material &mat);
     void destroyMaterial(RenderMaterial &material);
-    uint64_t getMaterialHash(const physis_Material &mat);
 
     void calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone);
     void calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone);
@@ -117,7 +116,7 @@ private:
     physis_SqPackResource *data = nullptr;
     FileCache &cache;
 
-    std::unordered_map<uint64_t, RenderMaterial> renderMaterialCache;
+    std::unordered_map<size_t, RenderMaterial> renderMaterialCache;
 
     std::unique_ptr<RenderManager> renderer;
     VulkanWindow *vkWindow = nullptr;

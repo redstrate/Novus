@@ -54,7 +54,6 @@ private:
     void destroyRenderPass();
 
     VkDescriptorSet createDescriptorFor(const DrawObject &model, const RenderMaterial &material);
-    uint64_t hash(const DrawObject &model, const RenderMaterial &material);
 
     Texture m_dummyTex;
     VkSampler m_sampler = VK_NULL_HANDLE;
@@ -72,7 +71,7 @@ private:
 
     VkDescriptorSetLayout m_setLayout = VK_NULL_HANDLE;
 
-    std::map<uint64_t, VkDescriptorSet> cachedDescriptors;
+    std::map<size_t, VkDescriptorSet> cachedDescriptors;
 
     Texture m_depthTexture;
     Texture m_compositeTexture;

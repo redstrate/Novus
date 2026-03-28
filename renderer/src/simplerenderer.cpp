@@ -130,26 +130,23 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
         }
 
         for (const auto &part : model.sourceObject->parts) {
-            RenderMaterial defaultMaterial = {};
-
-            RenderMaterial *material = nullptr;
-
-            if (static_cast<size_t>(part.materialIndex) >= model.sourceObject->materials.size()) {
-                material = &defaultMaterial;
-            } else {
-                material = &model.sourceObject->materials[part.materialIndex];
+            RenderMaterial material = {};
+            if (static_cast<size_t>(part.materialIndex) < model.sourceObject->materials.size()) {
+                material = model.sourceObject->materials[part.materialIndex];
             }
 
-            const auto h = hash(*model.sourceObject, *material);
-            if (!cachedDescriptors.count(h)) {
-                if (auto descriptor = createDescriptorFor(*model.sourceObject, *material); descriptor != VK_NULL_HANDLE) {
+            const auto h = std::hash<std::string>{}(material.path);
+            if (!cachedDescriptors.contains(h)) {
+                if (const auto descriptor = createDescriptorFor(*model.sourceObject, material); descriptor != VK_NULL_HANDLE) {
                     cachedDescriptors[h] = descriptor;
                 } else {
+                    qWarning() << "Failed to create descriptor?!";
                     continue;
                 }
             }
 
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &cachedDescriptors[h], 0, nullptr);
+            const auto descriptor = cachedDescriptors[h];
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &descriptor, 0, nullptr);
 
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &part.vertexBuffer.buffer, offsets);
@@ -171,7 +168,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
                                sizeof(glm::mat4),
                                &m);
 
-            int test = 0;
+            const int test = 0;
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -179,7 +176,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
                                sizeof(int),
                                &test);
 
-            int type = (int)material->type;
+            const int type = static_cast<int>(material.type);
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -508,21 +505,6 @@ void SimpleRenderer::destroyRenderPass()
     }
 }
 
-uint64_t SimpleRenderer::hash(const DrawObject &model, const RenderMaterial &material)
-{
-    uint64_t hash = 0;
-    hash += reinterpret_cast<intptr_t>((void *)model.model.p_ptr);
-    if (material.diffuseTexture)
-        hash += reinterpret_cast<intptr_t>(material.diffuseTexture->image);
-    if (material.normalTexture)
-        hash += reinterpret_cast<intptr_t>(material.normalTexture->image);
-    if (material.specularTexture)
-        hash += reinterpret_cast<intptr_t>(material.specularTexture->image);
-    if (material.maskTexture)
-        hash += reinterpret_cast<intptr_t>(material.maskTexture->image);
-    return hash;
-}
-
 VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, const RenderMaterial &material)
 {
     VkDescriptorSet set;
@@ -535,7 +517,7 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
 
     vkAllocateDescriptorSets(m_device.device, &allocateInfo, &set);
     if (set == VK_NULL_HANDLE) {
-        // qFatal("Failed to create descriptor set!");
+        qWarning("Failed to allocate a new descriptor set!");
         return VK_NULL_HANDLE;
     }
 
@@ -670,6 +652,8 @@ VkRenderPass SimpleRenderer::renderPass()
 
 void SimpleRenderer::freeResources()
 {
+    m_device.waitForIdle();
+
     for (const auto &[_, descriptor] : cachedDescriptors) {
         vkFreeDescriptorSets(m_device.device, m_device.descriptorPool, 1, &descriptor);
     }

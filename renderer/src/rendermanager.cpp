@@ -276,23 +276,23 @@ RenderManager::RenderManager(physis_SqPackResource *data)
 
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    poolSize.descriptorCount = 150;
+    poolSize.descriptorCount = 2000;
 
     VkDescriptorPoolSize poolSize2 = {};
     poolSize2.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSize2.descriptorCount = 150;
+    poolSize2.descriptorCount = 2000;
 
     VkDescriptorPoolSize poolSize3 = {};
     poolSize3.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-    poolSize3.descriptorCount = 150;
+    poolSize3.descriptorCount = 2000;
 
     VkDescriptorPoolSize poolSize4 = {};
     poolSize4.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize4.descriptorCount = 150;
+    poolSize4.descriptorCount = 2000;
 
     VkDescriptorPoolSize poolSize5 = {};
     poolSize5.type = VK_DESCRIPTOR_TYPE_SAMPLER;
-    poolSize5.descriptorCount = 150;
+    poolSize5.descriptorCount = 2000;
 
     const std::array poolSizes = {poolSize, poolSize2, poolSize3, poolSize4, poolSize5};
 
@@ -301,7 +301,7 @@ RenderManager::RenderManager(physis_SqPackResource *data)
     poolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     poolCreateInfo.poolSizeCount = poolSizes.size();
     poolCreateInfo.pPoolSizes = poolSizes.data();
-    poolCreateInfo.maxSets = 150;
+    poolCreateInfo.maxSets = 2000;
 
     vkCreateDescriptorPool(m_device->device, &poolCreateInfo, nullptr, &m_device->descriptorPool);
 
@@ -504,6 +504,16 @@ void RenderManager::render(const std::vector<DrawObjectInstance> &models)
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
     vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+    VkViewport viewport{};
+    viewport.width = m_device->swapChain->extent.width;
+    viewport.height = m_device->swapChain->extent.height;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.extent = m_device->swapChain->extent;
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     updateCamera(camera);
 

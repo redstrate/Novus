@@ -430,7 +430,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
 
 RenderMaterial MDLPart::createOrCacheMaterial(const std::string &path, const physis_Material &mat)
 {
-    const auto hash = getMaterialHash(mat);
+    const auto hash = std::hash<std::string>{}(path);
     if (!renderMaterialCache.contains(hash)) {
         renderMaterialCache[hash] = createMaterial(path, mat);
     }
@@ -463,18 +463,6 @@ void MDLPart::destroyMaterial(RenderMaterial &material)
     }
 
     renderer->device().destroyBuffer(material.materialBuffer);
-}
-
-uint64_t MDLPart::getMaterialHash(const physis_Material &mat)
-{
-    // TODO: this hash is terrible
-    uint64_t hash = mat.shpk_name ? strlen(mat.shpk_name) : 0;
-    hash += mat.num_constants;
-    hash += mat.num_samplers;
-    hash += mat.num_shader_keys;
-    hash += mat.num_textures;
-
-    return hash;
 }
 
 void MDLPart::calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone)

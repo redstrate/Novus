@@ -69,4 +69,6 @@ public:
     void beginDebugMarker(VkCommandBuffer command_buffer, VkDebugUtilsLabelEXT marker_info);
     void endDebugMarker(VkCommandBuffer command_buffer);
     void insertDebugLabel(VkCommandBuffer command_buffer, VkDebugUtilsLabelEXT label_info);
+
+    void waitForIdle();
 };
