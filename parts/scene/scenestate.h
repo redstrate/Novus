@@ -11,6 +11,7 @@
 #include <glm/vec3.hpp>
 #include <physis.hpp>
 
+class FileCache;
 class Animation;
 
 struct DropInGatheringPoint {
@@ -54,7 +55,7 @@ class ObjectScene
 public:
     ~ObjectScene();
 
-    void load(physis_SqPackResource *data, const physis_ScnSection &section);
+    void load(FileCache &cache, const physis_ScnSection &section);
 
     /// Transformation to apply to all subsequent children.
     Transformation transformation = {
@@ -75,9 +76,9 @@ public:
     std::vector<physis_ScnLayerGroup> embeddedLgbs;
     Animation animation;
     std::vector<ScnSGActionControllerDescriptor> actionDescriptors;
-    bool isSgb = false; // Currently only used to skip visibility checks.
     std::vector<std::pair<QString, DropIn>> dropIns;
     physis_Sgb sgb{}; // so it can be freed later
+    uint32_t originatingSgbLayerId = 0;
     std::unordered_map<std::string, physis_Material> cachedMaterials;
 
     /// Key is the ID of the SGB instance.
@@ -86,9 +87,11 @@ public:
     Transformation locateGameObject(uint32_t instanceId) const;
     Transformation locateGameObjectByBaseId(uint32_t baseId) const;
 
+    bool isSgb() const;
+
 private:
-    void processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path);
-    void processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group);
+    void processSharedGroup(FileCache &cache, uint32_t instanceId, uint32_t layerId, const Transformation &transformation, const char *path);
+    void processScnLayerGroup(FileCache &cache, const physis_ScnLayerGroup &group);
 };
 
 class SceneState : public QObject
@@ -96,10 +99,10 @@ class SceneState : public QObject
     Q_OBJECT
 
 public:
-    explicit SceneState(physis_SqPackResource *resource, QObject *parent = nullptr);
+    explicit SceneState(FileCache &cache, QObject *parent = nullptr);
     ~SceneState() override;
 
-    void load(physis_SqPackResource *data, const physis_ScnSection &section);
+    void load(FileCache &cache, const physis_ScnSection &section);
     void loadDropIn(const QString &path);
     void saveDropIns();
     void clear();
@@ -136,7 +139,7 @@ public:
 
     void updateAllAnimations(float time);
 
-    physis_SqPackResource *resource() const;
+    FileCache &cache() const;
 
 Q_SIGNALS:
     void mapLoaded();
@@ -154,5 +157,5 @@ private:
     physis_ExcelSheet m_eobjNameSheet;
     physis_ExcelSheet m_bnpcNameSheet;
     float m_longestAnimationTime = 0.0f;
-    physis_SqPackResource *m_resource;
+    FileCache &m_cache;
 };

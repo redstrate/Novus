@@ -5,6 +5,7 @@
 
 #include "excelmodel.h"
 #include "excelresolver.h"
+#include "filecache.h"
 #include "launcherconfig.h"
 #include "scenestate.h"
 #include "schema.h"
@@ -30,18 +31,18 @@ ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t
     m_lineEdit->setReadOnly(true);
     layout->addWidget(m_lineEdit);
 
-    auto resolver = new CachingExcelResolver(state->resource());
+    auto resolver = new CachingExcelResolver(&state->cache().resource());
 
     m_models.reserve(excelSheets.size());
     m_sheets.reserve(excelSheets.size());
     for (const auto &sheetName : excelSheets) {
         const std::string exhName = sheetName.toLower().toStdString();
 
-        const auto exhFile = physis_sqpack_read(state->resource(), (std::string("exd/") + exhName + ".exh").c_str());
+        const auto exhFile = physis_sqpack_read(&state->cache().resource(), (std::string("exd/") + exhName + ".exh").c_str());
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/" << sheetName << ".exh";
         } else {
-            const auto exh = physis_exh_parse(state->resource()->platform, exhFile);
+            const auto exh = physis_exh_parse(state->cache().resource().platform, exhFile);
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/" << sheetName << ".exh";
             } else {
@@ -53,7 +54,7 @@ ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t
                         break;
                     }
                 }
-                auto sheet = physis_sqpack_read_excel_sheet(state->resource(), sheetName.toStdString().c_str(), &exh, language);
+                auto sheet = physis_sqpack_read_excel_sheet(&state->cache().resource(), sheetName.toStdString().c_str(), &exh, language);
                 m_sheets.push_back(sheet);
 
                 const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);

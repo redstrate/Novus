@@ -117,6 +117,7 @@ private:
     FileCache &cache;
 
     std::unordered_map<size_t, RenderMaterial> renderMaterialCache;
+    std::unordered_map<size_t, physis_SHPK> shaderPackageCache;
 
     std::unique_ptr<RenderManager> renderer;
     VulkanWindow *vkWindow = nullptr;

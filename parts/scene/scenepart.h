@@ -38,12 +38,12 @@ public:
     MapView *mapView() const;
 
 private:
-    SceneState *m_appState = nullptr;
     physis_SqPackResource *m_data = nullptr;
+    FileCache m_fileCache;
+    SceneState *m_appState = nullptr;
     SceneListWidget *m_sceneListWidget = nullptr;
     ObjectPropertiesWidget *m_objectPropertiesWidget = nullptr;
     MapView *m_mapView = nullptr;
-    FileCache m_fileCache;
     QSlider *m_animationTimeSlider = nullptr;
     physis_Sgb m_sgb{};
     physis_Lvb m_lvb{};

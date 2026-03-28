@@ -22,6 +22,11 @@ public:
     bool fileExists(const QString &path);
     physis_Buffer &lookupFile(const QString &path);
 
+    Platform platform() const;
+
+    // NOTE: This is only a porting aid, and usages should eventually be removed!
+    physis_SqPackResource &resource() const;
+
 private:
     QMap<QString, physis_Buffer> cachedBuffers;
     QHash<QString, bool> cachedExist;

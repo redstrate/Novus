@@ -36,7 +36,6 @@ MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
             qWarning() << "Failed to parse chara/xls/bonedeformer/human.pbd";
         }
     }
-    physis_free_file(&pbdFile);
 
     renderer = std::make_unique<RenderManager>(data);
 
@@ -181,6 +180,10 @@ void MDLPart::destroyObjects()
         destroyMaterial(material);
     }
     renderMaterialCache.clear();
+    for (auto &[_, shpk] : shaderPackageCache) {
+        physis_shpk_free(&shpk);
+    }
+    shaderPackageCache.clear();
 }
 
 void MDLPart::reloadBoneData()
@@ -258,40 +261,46 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
     newMaterial.mat = material;
 
     if (material.shpk_name != nullptr) {
-        auto shpkData = cache.lookupFile(QStringLiteral("shader/sm5/shpk/%1").arg(QString::fromStdString(material.shpk_name)));
-        if (shpkData.data != nullptr) {
-            newMaterial.shaderPackage = physis_shpk_parse(data->platform, shpkData);
-            if (newMaterial.shaderPackage.p_ptr) {
-                // create the material parameters for this shader package
-                newMaterial.materialBuffer =
-                    renderer->device().createBuffer(newMaterial.shaderPackage.material_parameters_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-                renderer->device().nameBuffer(newMaterial.materialBuffer, "g_MaterialParameter"); // TODO: add material name
+        QString shpkPath = QStringLiteral("shader/sm5/shpk/%1").arg(QString::fromStdString(material.shpk_name));
+        auto h = std::hash<std::string>{}(shpkPath.toStdString());
+        if (!shaderPackageCache.contains(h)) {
+            auto shpkData = cache.lookupFile(shpkPath);
+            if (shpkData.data != nullptr) {
+                shaderPackageCache[h] = physis_shpk_parse(data->platform, shpkData);
+            }
+        }
 
-                // assumed to be floats, maybe not always true?
-                std::vector<float> buffer(newMaterial.shaderPackage.material_parameters_size / sizeof(float));
+        newMaterial.shaderPackage = shaderPackageCache[h];
+        if (newMaterial.shaderPackage.p_ptr) {
+            // create the material parameters for this shader package
+            newMaterial.materialBuffer =
+                renderer->device().createBuffer(newMaterial.shaderPackage.material_parameters_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+            renderer->device().nameBuffer(newMaterial.materialBuffer, "g_MaterialParameter"); // TODO: add material name
 
-                // we need to fill it with the defaults from the shader package. These are then either filled in/overwritten by the material
-                for (uint32_t i = 0; i < newMaterial.shaderPackage.material_default_parameters_size; i++) {
-                    buffer[i] = newMaterial.shaderPackage.material_default_parameters[i];
-                }
+            // assumed to be floats, maybe not always true?
+            std::vector<float> buffer(newMaterial.shaderPackage.material_parameters_size / sizeof(float));
 
-                // copy the material data
-                for (uint32_t i = 0; i < newMaterial.shaderPackage.num_material_parameters; i++) {
-                    auto param = newMaterial.shaderPackage.material_parameters[i];
+            // we need to fill it with the defaults from the shader package. These are then either filled in/overwritten by the material
+            for (uint32_t i = 0; i < newMaterial.shaderPackage.material_default_parameters_size; i++) {
+                buffer[i] = newMaterial.shaderPackage.material_default_parameters[i];
+            }
 
-                    for (uint32_t j = 0; j < newMaterial.mat.num_constants; j++) {
-                        auto constant = newMaterial.mat.constants[j];
+            // copy the material data
+            for (uint32_t i = 0; i < newMaterial.shaderPackage.num_material_parameters; i++) {
+                auto param = newMaterial.shaderPackage.material_parameters[i];
 
-                        if (constant.id == param.id) {
-                            for (uint32_t z = 0; z < constant.num_values; z++) {
-                                buffer[(param.byte_offset / sizeof(float)) + z] = constant.values[z];
-                            }
+                for (uint32_t j = 0; j < newMaterial.mat.num_constants; j++) {
+                    auto constant = newMaterial.mat.constants[j];
+
+                    if (constant.id == param.id) {
+                        for (uint32_t z = 0; z < constant.num_values; z++) {
+                            buffer[(param.byte_offset / sizeof(float)) + z] = constant.values[z];
                         }
                     }
                 }
-
-                renderer->device().copyToBuffer(newMaterial.materialBuffer, buffer.data(), buffer.size() * sizeof(float));
             }
+
+            renderer->device().copyToBuffer(newMaterial.materialBuffer, buffer.data(), buffer.size() * sizeof(float));
         }
     }
 
@@ -302,31 +311,33 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
             newMaterial.type = MaterialType::Skin;
         }
 
-        const auto type = t.substr(t.find_last_of('_') + 1, t.find_last_of('.') - t.find_last_of('_') - 1);
-        auto texture = physis_texture_parse(data->platform, cache.lookupFile(QLatin1String(t)));
-        if (texture.rgba != nullptr) {
-            auto gameTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
-            renderer->device().nameTexture(gameTexture, "Game Texture " + t);
+        const auto loadTexture = [this, t] {
+            auto texture = physis_texture_parse(data->platform, cache.lookupFile(QLatin1String(t)));
+            if (texture.rgba != nullptr) {
+                auto gameTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
+                renderer->device().nameTexture(gameTexture, "Game Texture " + t);
 
-            if (type == "m" && !newMaterial.maskTexture.has_value()) {
-                newMaterial.maskTexture = gameTexture;
-            } else if (type == "d" && !newMaterial.diffuseTexture.has_value()) {
-                newMaterial.diffuseTexture = gameTexture;
-                newMaterial.diffuseTexturePath = t;
-            } else if (type == "n" && !newMaterial.normalTexture.has_value()) {
-                newMaterial.normalTexture = gameTexture;
-            } else if (type == "s" && !newMaterial.specularTexture.has_value()) {
-                newMaterial.specularTexture = gameTexture;
-            } else if (type == "id" && !newMaterial.indexTexture.has_value()) {
-                newMaterial.indexTexture = gameTexture;
-            } else {
-                qWarning() << "Unknown texture type" << type;
-                renderer->device().destroyTexture(gameTexture);
+                physis_tex_free(&texture);
+
+                return std::optional{gameTexture};
             }
 
-            physis_tex_free(&texture);
-        } else {
-            qInfo() << "Failed to load" << t;
+            qWarning() << "Failed to load" << t;
+            return std::optional<Texture>{std::nullopt};
+        };
+
+        const auto type = t.substr(t.find_last_of('_') + 1, t.find_last_of('.') - t.find_last_of('_') - 1);
+        if (type == "m" && !newMaterial.maskTexture.has_value()) {
+            newMaterial.maskTexture = loadTexture();
+        } else if (type == "d" && !newMaterial.diffuseTexture.has_value()) {
+            newMaterial.diffuseTexture = loadTexture();
+            newMaterial.diffuseTexturePath = t;
+        } else if (type == "n" && !newMaterial.normalTexture.has_value()) {
+            newMaterial.normalTexture = loadTexture();
+        } else if (type == "s" && !newMaterial.specularTexture.has_value()) {
+            newMaterial.specularTexture = loadTexture();
+        } else if (type == "id" && !newMaterial.indexTexture.has_value()) {
+            newMaterial.indexTexture = loadTexture();
         }
     }
 
@@ -437,9 +448,6 @@ RenderMaterial MDLPart::createOrCacheMaterial(const std::string &path, const phy
 
 void MDLPart::destroyMaterial(RenderMaterial &material)
 {
-    // NOTE: The SHPK is created internally in this part - but the material should be freed by the caller.
-    physis_shpk_free(&material.shaderPackage);
-
     if (auto &texture = material.diffuseTexture) {
         renderer->device().destroyTexture(texture.value());
     }

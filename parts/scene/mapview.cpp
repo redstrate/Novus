@@ -93,8 +93,6 @@ void MapView::addTerrain(ObjectScene &scene)
 
             // We don't need this, and it will just take up memory
             physis_mdl_free(&plateMdl);
-
-            physis_free_file(&plateMdlFile);
         } else {
             qWarning() << "Failed to load plate mdl" << mdlPath;
         }
@@ -167,7 +165,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
     for (const auto &layerGroup : scene.embeddedLgbs) {
         for (uint32_t j = 0; j < layerGroup.layer_count; j++) {
             const auto layer = layerGroup.layers[j];
-            if (!scene.isSgb && !m_appState->visibleLayerIds.contains(layer.id)) {
+            if (!scene.isSgb() && m_appState->visibleLayerIds.contains(layer.id)) {
                 continue;
             }
 
@@ -179,7 +177,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
             const auto chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
                 const auto layer = chunk.layers[j];
-                if (!scene.isSgb && !m_appState->visibleLayerIds.contains(layer.id)) {
+                if (!scene.isSgb() && !m_appState->visibleLayerIds.contains(layer.id)) {
                     continue;
                 }
 
@@ -189,7 +187,9 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
     }
 
     for (auto &[_, nestedScene] : scene.nestedScenes) {
-        processScene(nestedScene, scene.combinedTransformation);
+        if (!scene.isSgb() && m_appState->visibleLayerIds.contains(nestedScene.originatingSgbLayerId)) {
+            processScene(nestedScene, scene.combinedTransformation);
+        }
     }
 }
 
@@ -236,8 +236,6 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                     } else {
                         qWarning() << "Failed to load" << assetPath;
                     }
-
-                    physis_free_file(&plateMdlFile);
                 } else {
                     mdlPart->addExistingModel(QString::fromStdString(assetPath), combinedTransform);
                 }

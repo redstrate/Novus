@@ -22,11 +22,21 @@ physis_Buffer &FileCache::lookupFile(const QString &path)
     QMutexLocker locker(&bufferMutex);
 
     if (!cachedBuffers.contains(path)) {
-        std::string pathstd = path.toStdString();
+        const std::string pathstd = path.toStdString();
         cachedBuffers[path] = physis_sqpack_read(&data, pathstd.c_str());
     }
 
     return cachedBuffers[path];
+}
+
+Platform FileCache::platform() const
+{
+    return data.platform;
+}
+
+physis_SqPackResource &FileCache::resource() const
+{
+    return data;
 }
 
 bool FileCache::fileExists(const QString &path)

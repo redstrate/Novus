@@ -6,6 +6,7 @@
 #include <KLocalizedString>
 
 #include "animation.h"
+#include "filecache.h"
 #include "settings.h"
 
 #include <QFile>
@@ -14,21 +15,21 @@
 
 using namespace Qt::StringLiterals;
 
-SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
+SceneState::SceneState(FileCache &cache, QObject *parent)
     : QObject(parent)
-    , m_resource(resource)
+    , m_cache(cache)
 {
     // ENPC
     {
-        const auto exhFile = physis_sqpack_read(resource, "exd/enpcresident.exh");
+        const auto exhFile = physis_sqpack_read(&cache.resource(), "exd/enpcresident.exh");
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/epncresident.exh";
         } else {
-            const auto exh = physis_exh_parse(resource->platform, exhFile);
+            const auto exh = physis_exh_parse(cache.platform(), exhFile);
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/enpcresident.exh";
             } else {
-                m_enpcResidentSheet = physis_sqpack_read_excel_sheet(resource, "ENpcResident", &exh, getLanguage());
+                m_enpcResidentSheet = physis_sqpack_read_excel_sheet(&cache.resource(), "ENpcResident", &exh, getLanguage());
             }
             physis_exh_free(&exh);
         }
@@ -37,15 +38,15 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
 
     // EOBJ
     {
-        const auto exhFile = physis_sqpack_read(resource, "exd/eobjname.exh");
+        const auto exhFile = physis_sqpack_read(&cache.resource(), "exd/eobjname.exh");
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/eobjname.exh";
         } else {
-            const auto exh = physis_exh_parse(resource->platform, exhFile);
+            const auto exh = physis_exh_parse(cache.platform(), exhFile);
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/eobjname.exh";
             } else {
-                m_eobjNameSheet = physis_sqpack_read_excel_sheet(resource, "EObjName", &exh, getLanguage());
+                m_eobjNameSheet = physis_sqpack_read_excel_sheet(&cache.resource(), "EObjName", &exh, getLanguage());
             }
             physis_exh_free(&exh);
         }
@@ -54,15 +55,15 @@ SceneState::SceneState(physis_SqPackResource *resource, QObject *parent)
 
     // BNPC
     {
-        const auto exhFile = physis_sqpack_read(resource, "exd/bnpcname.exh");
+        const auto exhFile = physis_sqpack_read(&cache.resource(), "exd/bnpcname.exh");
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/bnpcname.exh";
         } else {
-            const auto exh = physis_exh_parse(resource->platform, exhFile);
+            const auto exh = physis_exh_parse(cache.platform(), exhFile);
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/bnpcname.exh";
             } else {
-                m_bnpcNameSheet = physis_sqpack_read_excel_sheet(resource, "BNpcName", &exh, getLanguage());
+                m_bnpcNameSheet = physis_sqpack_read_excel_sheet(&cache.resource(), "BNpcName", &exh, getLanguage());
             }
             physis_exh_free(&exh);
         }
@@ -88,29 +89,26 @@ ObjectScene::~ObjectScene()
     }
 }
 
-void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &section)
+void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
 {
     basePath = QString::fromLatin1(section.general.bg_path);
 
     QString bgPath = QStringLiteral("%1/bgplate/").arg(section.general.bg_path);
-    std::string bgPathStd = bgPath.toStdString() + "terrain.tera";
 
-    auto tera_buffer = physis_sqpack_read(data, bgPathStd.c_str());
+    terrainPath = bgPath + QStringLiteral("terrain.tera");
+    auto tera_buffer = cache.lookupFile(terrainPath);
     if (tera_buffer.size > 0) {
-        terrain = physis_terrain_parse(data->platform, tera_buffer);
-        physis_free_file(&tera_buffer);
-        terrainPath = QString::fromStdString(bgPathStd);
+        terrain = physis_terrain_parse(cache.platform(), tera_buffer);
     }
 
-    const auto loadLgb = [this, data](const char *path) {
-        const auto bg_buffer = physis_sqpack_read(data, path);
+    const auto loadLgb = [this, &cache](const char *path) {
+        const auto bg_buffer = cache.lookupFile(QString::fromStdString(path));
         if (bg_buffer.size > 0) {
-            const auto lgb = physis_lgb_parse(data->platform, bg_buffer);
+            const auto lgb = physis_lgb_parse(cache.platform(), bg_buffer);
             if (lgb.num_chunks > 0) {
                 lgbFiles.emplace_back(QString::fromLatin1(path), lgb);
             }
         }
-        physis_free_file(&bg_buffer);
     };
 
     for (uint32_t i = 0; i < section.num_lgb_paths; i++) {
@@ -136,7 +134,11 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
                 auto layer = lgb.chunks[i].layers[j];
                 for (uint32_t h = 0; h < layer.num_objects; h++) {
                     if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
-                        processSharedGroup(data, layer.objects[h].instance_id, layer.objects[h].transform, layer.objects[h].data.shared_group._0.asset_path);
+                        processSharedGroup(cache,
+                                           layer.objects[h].instance_id,
+                                           layer.id,
+                                           layer.objects[h].transform,
+                                           layer.objects[h].data.shared_group._0.asset_path);
                     }
                 }
             }
@@ -144,15 +146,15 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
     }
 
     for (const auto layerGroup : embeddedLgbs) {
-        processScnLayerGroup(data, layerGroup);
+        processScnLayerGroup(cache, layerGroup);
     }
 
     animation = Animation(*this);
 }
 
-void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &section)
+void SceneState::load(FileCache &cache, const physis_ScnSection &section)
 {
-    rootScene.load(data, section);
+    rootScene.load(cache, section);
 
     // Load terrain and bg by default
     for (int i = 0; i < rootScene.terrain.num_plates; i++) {
@@ -370,9 +372,9 @@ void SceneState::updateAllAnimations(const float time)
     processUpdateAnimation(rootScene, time);
 }
 
-physis_SqPackResource *SceneState::resource() const
+FileCache &SceneState::cache() const
 {
-    return m_resource;
+    return m_cache;
 }
 
 void SceneState::processLongestAnimationTime(const ObjectScene &scene)
@@ -460,35 +462,39 @@ Transformation ObjectScene::locateGameObjectByBaseId(const uint32_t baseId) cons
     return {};
 }
 
-void ObjectScene::processSharedGroup(physis_SqPackResource *data, uint32_t instanceId, const Transformation &transformation, const char *path)
+bool ObjectScene::isSgb() const
 {
-    const auto sgbFile = physis_sqpack_read(data, path);
+    return sgb.section_count > 0;
+}
+
+void ObjectScene::processSharedGroup(FileCache &cache, uint32_t instanceId, uint32_t layerId, const Transformation &transformation, const char *path)
+{
+    const auto sgbFile = cache.lookupFile(QString::fromStdString(path));
     if (sgbFile.size == 0) {
-        qWarning() << "Failed to find" << path;
+        // NOTE: this silently fails for now because korean festival SGBs triggers this way too easily
         return;
     }
 
-    const auto sgb = physis_sgb_parse(data->platform, sgbFile);
-    physis_free_file(&sgbFile);
+    const auto sgb = physis_sgb_parse(cache.platform(), sgbFile);
     if (!sgb.sections) {
         qWarning() << "Failed to parse" << path;
         return;
     }
 
     // TODO: load more than one section?
-    nestedScenes[instanceId].load(data, sgb.sections[0]);
+    nestedScenes[instanceId].load(cache, sgb.sections[0]);
     nestedScenes[instanceId].transformation = transformation;
-    nestedScenes[instanceId].isSgb = true;
     nestedScenes[instanceId].sgb = sgb;
+    nestedScenes[instanceId].originatingSgbLayerId = layerId;
 }
 
-void ObjectScene::processScnLayerGroup(physis_SqPackResource *data, const physis_ScnLayerGroup &group)
+void ObjectScene::processScnLayerGroup(FileCache &cache, const physis_ScnLayerGroup &group)
 {
     for (uint32_t j = 0; j < group.layer_count; j++) {
         const auto layer = group.layers[j];
         for (uint32_t h = 0; h < layer.num_objects; h++) {
             if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
-                processSharedGroup(data, layer.objects[h].instance_id, layer.objects[h].transform, layer.objects[h].data.shared_group._0.asset_path);
+                processSharedGroup(cache, layer.objects[h].instance_id, layer.id, layer.objects[h].transform, layer.objects[h].data.shared_group._0.asset_path);
             }
         }
     }

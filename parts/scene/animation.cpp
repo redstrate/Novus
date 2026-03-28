@@ -198,8 +198,6 @@ void Animation::processScene(const ObjectScene &scene)
                                 } else {
                                     qWarning() << "Failed to find track associated with TMFC" << c013.tmfc_id;
                                 }
-                            } else {
-                                qWarning() << "Couldn't find C013 for" << tmtr.animation_ids[z];
                             }
                         }
                     } else {

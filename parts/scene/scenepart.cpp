@@ -15,9 +15,9 @@
 
 ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *parent)
     : QWidget(parent)
-    , m_appState(new SceneState(data, this))
     , m_data(data)
     , m_fileCache(*data) // TODO: re-use FileCache
+    , m_appState(new SceneState(m_fileCache, this))
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -69,8 +69,6 @@ ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *paren
             // Update animation slider maximum
             m_animationTimeSlider->setMaximum(m_appState->longestAnimationTime());
             m_animationTimeSlider->setEnabled(true);
-
-            qInfo() << "Longest animation time:" << m_appState->longestAnimationTime();
         },
         Qt::SingleShotConnection);
     connect(m_appState, &SceneState::selectObject, this, &ScenePart::selectObject);
@@ -88,7 +86,7 @@ void ScenePart::loadSgb(physis_Buffer file)
     m_sgb = physis_sgb_parse(m_data->platform, file);
     if (m_sgb.sections) {
         // TODO: load more than one section?
-        m_appState->load(m_data, m_sgb.sections[0]);
+        m_appState->load(m_fileCache, m_sgb.sections[0]);
 
         // Expand the first level of the SGB
         m_sceneListWidget->expandToDepth(1);
@@ -106,7 +104,7 @@ void ScenePart::loadLvb(physis_Buffer file)
     m_lvb = physis_lvb_parse(m_data->platform, file);
     if (m_lvb.sections) {
         // TODO: read all sections?
-        m_appState->load(m_data, m_lvb.sections[0]);
+        m_appState->load(m_fileCache, m_lvb.sections[0]);
     } else {
         qWarning() << "Failed to parse lvb";
     }
