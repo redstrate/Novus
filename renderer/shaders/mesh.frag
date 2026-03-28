@@ -60,7 +60,7 @@ void main() {
 
     vec3 norm = normalize(inNormal);
 
-    vec3 lightFactor = vec3(0);
+    vec3 lightFactor = vec3(0.25);
     for (int i = 0; i < MAX_LIGHTS; i++) {
         int lightType = int(lights[i].directionOrPos.w);
         if (lightType == LIGHT_TYPE_DIRECTIONAL) {

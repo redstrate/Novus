@@ -11,7 +11,7 @@ struct SceneLight {
     LightType type;
     glm::vec3 position;
     glm::vec3 color{1.0f};
-    float intensity = 1.0f;
+    float intensity = 2.0f;
 };
 
 class Scene
