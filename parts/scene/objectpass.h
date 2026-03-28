@@ -18,6 +18,7 @@ class ObjectPass : public RendererPass
 {
 public:
     ObjectPass(RenderManager *renderer, SceneState *appState);
+    ~ObjectPass() override;
 
     void render(VkCommandBuffer commandBuffer, Camera &camera) override;
 

@@ -320,6 +320,8 @@ RenderManager::~RenderManager()
 
     destroyBlitPipeline();
 
+    qDeleteAll(m_passes);
+
     vkDestroyDescriptorPool(m_device->device, m_device->descriptorPool, nullptr);
     vkDestroyCommandPool(m_device->device, m_device->commandPool, nullptr);
     vkDestroyDevice(m_device->device, nullptr);

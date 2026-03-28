@@ -25,6 +25,14 @@ ObjectPass::ObjectPass(RenderManager *renderer, SceneState *appState)
     Primitives::Initialize(m_renderer);
 }
 
+ObjectPass::~ObjectPass()
+{
+    Primitives::Cleanup(m_renderer);
+
+    vkDestroyPipelineLayout(m_device.device, m_pipelineLayout, nullptr);
+    vkDestroyPipeline(m_device.device, m_pipeline, nullptr);
+}
+
 void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
 {
     if (dynamic_cast<SimpleRenderer *>(m_renderer->renderer())) {
@@ -45,16 +53,19 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera)
 
 void ObjectPass::createPipeline()
 {
+    auto debugVertexShader = m_device.loadShaderFromDisk(":/shaders/debug.vert.spv");
+    auto debugFragmentShader = m_device.loadShaderFromDisk(":/shaders/debug.frag.spv");
+
     VkPipelineShaderStageCreateInfo vertexShaderStageInfo = {};
     vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertexShaderStageInfo.module = m_device.loadShaderFromDisk(":/shaders/debug.vert.spv");
+    vertexShaderStageInfo.module = debugVertexShader;
     vertexShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo fragmentShaderStageInfo = {};
     fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragmentShaderStageInfo.module = m_device.loadShaderFromDisk(":/shaders/debug.frag.spv");
+    fragmentShaderStageInfo.module = debugFragmentShader;
     fragmentShaderStageInfo.pName = "main";
 
     const std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
@@ -143,6 +154,9 @@ void ObjectPass::createPipeline()
     pipelineInfo.renderPass = renderer->renderPass();
 
     vkCreateGraphicsPipelines(m_device.device, nullptr, 1, &pipelineInfo, nullptr, &m_pipeline);
+
+    vkDestroyShaderModule(m_device.device, debugVertexShader, nullptr);
+    vkDestroyShaderModule(m_device.device, debugFragmentShader, nullptr);
 }
 
 void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const ObjectScene &scene)

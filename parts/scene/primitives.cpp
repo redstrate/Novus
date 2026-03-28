@@ -230,8 +230,15 @@ void Primitives::Initialize(RenderManager *renderer)
 
 void Primitives::Cleanup(RenderManager *renderer)
 {
-    // TODO: stub
-    Q_UNUSED(renderer)
+    renderer->device().destroyBuffer(sphere.vertexBuffer);
+    renderer->device().destroyBuffer(sphere.indexBuffer);
+
+    renderer->device().destroyBuffer(cube.vertexBuffer);
+    renderer->device().destroyBuffer(cube.indexBuffer);
+
+    renderer->device().destroyBuffer(cylinder.vertexBuffer);
+
+    renderer->device().destroyBuffer(plane.vertexBuffer);
 }
 
 void Primitives::DrawSphere(VkCommandBuffer commandBuffer)
