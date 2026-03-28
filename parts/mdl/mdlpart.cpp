@@ -36,18 +36,19 @@ MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
             qWarning() << "Failed to parse chara/xls/bonedeformer/human.pbd";
         }
     }
+    physis_free_file(&pbdFile);
 
     renderer = new RenderManager(data);
 
-    auto inst = new QVulkanInstance();
-    inst->setVkInstance(renderer->device().instance);
-    inst->setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
-    if (!inst->create()) {
+    m_instance = std::make_unique<QVulkanInstance>();
+    m_instance->setVkInstance(renderer->device().instance);
+    m_instance->setFlags(QVulkanInstance::Flag::NoDebugOutputRedirect);
+    if (!m_instance->create()) {
         qWarning() << "Failed to create QVulkanInstance!";
     }
 
-    vkWindow = new VulkanWindow(this, renderer, inst);
-    vkWindow->setVulkanInstance(inst);
+    vkWindow = new VulkanWindow(this, renderer, m_instance.get());
+    vkWindow->setVulkanInstance(m_instance.get());
 
     auto widget = QWidget::createWindowContainer(vkWindow);
     widget->installEventFilter(vkWindow);
@@ -56,6 +57,12 @@ MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
 
     connect(this, &MDLPart::modelChanged, this, &MDLPart::reloadRenderer);
     connect(this, &MDLPart::skeletonChanged, this, &MDLPart::reloadBoneData);
+}
+
+MDLPart::~MDLPart()
+{
+    physis_pbd_free(&pbd);
+    destroyObjects();
 }
 
 void MDLPart::exportModel(const QString &fileName)
@@ -78,10 +85,7 @@ void MDLPart::reloadModel(const int index)
 
 void MDLPart::clear()
 {
-    vkWindow->models.clear();
-    vkWindow->sourceModels.clear();
-    renderMaterialCache.clear();
-
+    destroyObjects();
     Q_EMIT modelChanged();
 }
 
@@ -160,6 +164,20 @@ bool MDLPart::event(QEvent *event)
         break;
     }
     return QWidget::event(event);
+}
+
+void MDLPart::destroyObjects()
+{
+    vkWindow->models.clear();
+    for (const auto &[_, model] : vkWindow->sourceModels) {
+        delete model;
+    }
+    vkWindow->sourceModels.clear();
+    for (const auto &[_, material] : renderMaterialCache) {
+        // The SHPK is created internally in this part - but the material should be freed by the caller.
+        physis_shpk_free(&material.shaderPackage);
+    }
+    renderMaterialCache.clear();
 }
 
 void MDLPart::reloadBoneData()
@@ -394,6 +412,8 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
             } else {
                 qWarning() << "Unknown texture type" << type;
             }
+
+            physis_tex_free(&texture);
         } else {
             qInfo() << "Failed to load" << t;
         }

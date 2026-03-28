@@ -35,6 +35,12 @@ public:
 
     DrawObject *addDrawObject(const physis_MDL &model, int lod);
     void reloadDrawObject(DrawObject &model, uint32_t lod);
+
+    /**
+     * @brief Converts the @p gameTexture to the renderable kind.
+     *
+     * @note The physis_Texture is not used internally by RenderManager, can be freed as soon as the call returns.
+     */
     Texture addGameTexture(VkFormat format, physis_Texture gameTexture);
 
     void render(const std::vector<DrawObjectInstance> &models);

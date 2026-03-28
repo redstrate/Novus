@@ -10,6 +10,7 @@
 #include "mdlexport.h"
 #include "rendermanager.h"
 
+class QVulkanInstance;
 struct physis_SqPackResource;
 
 class VulkanWindow;
@@ -21,6 +22,7 @@ class MDLPart : public QWidget
 
 public:
     explicit MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
+    ~MDLPart() override;
 
     void exportModel(const QString &fileName);
     DrawObject &getModel(int index);
@@ -69,6 +71,11 @@ public Q_SLOTS:
     // TODO: all of this API is terrible and should be redone
     bool modelExists(const QString &name);
 
+    /**
+     * @brief Adds a new model to the scene.
+     *
+     * @note The @p mdl and @p materials must be freed by the caller, but only when you are completely done with the MDLPart.
+     */
     void addModel(physis_MDL mdl,
                   bool skinned,
                   Transformation transformation,
@@ -97,6 +104,8 @@ protected:
     bool event(QEvent *event) override;
 
 private:
+    void destroyObjects();
+
     RenderMaterial createMaterial(const std::string &path, const physis_Material &mat);
     RenderMaterial createOrCacheMaterial(const std::string &path, const physis_Material &mat);
     uint64_t getMaterialHash(const physis_Material &mat);
@@ -112,4 +121,5 @@ private:
     RenderManager *renderer = nullptr;
     VulkanWindow *vkWindow = nullptr;
     bool firstTimeSkeletonDataCalculated = false;
+    std::unique_ptr<QVulkanInstance> m_instance;
 };

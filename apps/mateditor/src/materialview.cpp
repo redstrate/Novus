@@ -26,10 +26,18 @@ MaterialView::MaterialView(physis_SqPackResource *data, FileCache &cache, QWidge
         qWarning() << "Failed to parse MDL:" << mdlPath;
     }
 
+    physis_free_file(&plateMdlFile);
+
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mdlPart);
     setLayout(layout);
+}
+
+MaterialView::~MaterialView()
+{
+    physis_skeleton_free(&m_skeleton);
+    physis_mdl_free(&m_mdl);
 }
 
 MDLPart &MaterialView::part() const
@@ -45,7 +53,13 @@ void MaterialView::addSphere(physis_Material material)
 
     QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
     std::string skelNameStd = skelName.toStdString();
-    mdlPart->setSkeleton(physis_skeleton_parse(data->platform, physis_sqpack_read(data, skelNameStd.c_str())));
+
+    auto file = physis_sqpack_read(data, skelNameStd.c_str());
+
+    m_skeleton = physis_skeleton_parse(data->platform, file);
+    mdlPart->setSkeleton(m_skeleton);
+
+    physis_free_file(&file);
 
     Transformation transformation{};
     transformation.scale[0] = 1;

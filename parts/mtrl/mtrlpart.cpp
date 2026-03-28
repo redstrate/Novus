@@ -53,6 +53,11 @@ MtrlPart::MtrlPart(physis_SqPackResource *data, QWidget *parent)
     rebuild();
 }
 
+MtrlPart::~MtrlPart()
+{
+    physis_shpk_free(&m_shpk);
+}
+
 void MtrlPart::load(physis_Material file)
 {
     m_material = file;
@@ -62,8 +67,10 @@ void MtrlPart::load(physis_Material file)
 
         auto shpkData = physis_sqpack_read(m_data, shpkPath.c_str());
         if (shpkData.data != nullptr) {
+            physis_shpk_free(&m_shpk);
             m_shpk = physis_shpk_parse(m_data->platform, shpkData);
         }
+        physis_free_file(&shpkData);
     }
     rebuild();
 }
@@ -127,9 +134,13 @@ void MtrlPart::rebuild()
         auto layout = new QFormLayout();
         groupBox->setLayout(layout);
 
+        auto file = physis_sqpack_read(m_data, m_material.textures[sampler.texture_index]);
+
         auto texWidget = new TexPart(m_data);
-        texWidget->loadTex(physis_sqpack_read(m_data, m_material.textures[sampler.texture_index]));
+        texWidget->loadTex(file);
         layout->addWidget(texWidget);
+
+        physis_free_file(&file);
 
         auto texturePath = new PathEdit();
         texturePath->setPath(QString::fromLatin1(m_material.textures[sampler.texture_index]));

@@ -19,6 +19,7 @@ class MtrlPart : public QWidget
 
 public:
     explicit MtrlPart(physis_SqPackResource *data, QWidget *parent = nullptr);
+    ~MtrlPart() override;
 
     void load(physis_Material file);
 

@@ -22,6 +22,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     auto matFile = physis_sqpack_read(&m_data, "chara/equipment/e0028/material/v0001/mt_c0101e0028_top_a.mtrl");
     m_material = physis_material_parse(m_data.platform, matFile);
+    physis_free_file(&matFile);
 
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
@@ -46,6 +47,12 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
+}
+
+MainWindow::~MainWindow()
+{
+    physis_mtrl_free(&m_material);
+    physis_sqpack_free(&m_data);
 }
 
 void MainWindow::setupActions()

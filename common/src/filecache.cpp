@@ -10,6 +10,13 @@ FileCache::FileCache(physis_SqPackResource &data)
 {
 }
 
+FileCache::~FileCache()
+{
+    for (const auto &buffer : cachedBuffers) {
+        physis_free_file(&buffer);
+    }
+}
+
 physis_Buffer &FileCache::lookupFile(const QString &path)
 {
     QMutexLocker locker(&bufferMutex);

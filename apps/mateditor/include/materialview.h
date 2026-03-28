@@ -17,6 +17,7 @@ class MaterialView : public QWidget
 
 public:
     explicit MaterialView(physis_SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
+    ~MaterialView() override;
 
     MDLPart &part() const;
 
@@ -30,4 +31,5 @@ private:
     FileCache &cache;
 
     physis_MDL m_mdl;
+    physis_Skeleton m_skeleton;
 };

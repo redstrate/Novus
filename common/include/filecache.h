@@ -17,6 +17,7 @@ class NOVUSCOMMON_EXPORT FileCache
 {
 public:
     explicit FileCache(physis_SqPackResource &data);
+    ~FileCache();
 
     bool fileExists(const QString &path);
     physis_Buffer &lookupFile(const QString &path);
