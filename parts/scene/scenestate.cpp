@@ -79,14 +79,9 @@ SceneState::~SceneState()
 
 ObjectScene::~ObjectScene()
 {
-    delete animation;
-    animation = nullptr;
-
+    physis_sgb_free(&sgb);
     for (const auto &[_, lgb] : lgbFiles) {
         physis_lgb_free(&lgb);
-    }
-    for (const auto &[_, scene] : nestedScenes.asKeyValueRange()) {
-        physis_sgb_free(&scene.sgb);
     }
     for (const auto &[_, material] : cachedMaterials) {
         physis_mtrl_free(&material);
@@ -152,7 +147,7 @@ void ObjectScene::load(physis_SqPackResource *data, const physis_ScnSection &sec
         processScnLayerGroup(data, layerGroup);
     }
 
-    animation = new Animation(*this);
+    animation = Animation(*this);
 }
 
 void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &section)
@@ -314,7 +309,7 @@ void SceneState::saveDropIns()
 
 void SceneState::clear()
 {
-    rootScene = {};
+    rootScene = ObjectScene{};
     visibleLayerIds.clear();
     selectedObject.reset();
     selectedLayer.reset();
@@ -360,12 +355,12 @@ QString SceneState::lookupEObjName(const uint32_t id) const
 QString SceneState::lookupBNpcName(uint32_t id) const
 {
     auto row = physis_excel_get_row(&m_bnpcNameSheet, id);
-    physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
     if (row.columns && strlen(row.columns[0].string._0) > 0) {
         QString name = QString::fromLatin1(row.columns[0].string._0);
         physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
         return name;
     }
+    physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
     return i18n("Battle NPC");
 }
 
@@ -386,18 +381,18 @@ physis_SqPackResource *SceneState::resource() const
 
 void SceneState::processLongestAnimationTime(const ObjectScene &scene)
 {
-    m_longestAnimationTime = std::max(m_longestAnimationTime, scene.animation->duration());
+    m_longestAnimationTime = std::max(m_longestAnimationTime, scene.animation.duration());
 
-    for (const auto [_, nestedScene] : std::as_const(scene.nestedScenes).asKeyValueRange()) {
+    for (const auto &[_, nestedScene] : scene.nestedScenes) {
         processLongestAnimationTime(nestedScene);
     }
 }
 
 void SceneState::processUpdateAnimation(ObjectScene &scene, float time)
 {
-    scene.animation->update(scene, time);
+    scene.animation.update(scene, time);
 
-    for (auto [_, nestedScene] : scene.nestedScenes.asKeyValueRange()) {
+    for (auto &[_, nestedScene] : scene.nestedScenes) {
         processUpdateAnimation(nestedScene, time);
     }
 }
@@ -418,7 +413,7 @@ void SceneState::showAllInScene(const ObjectScene &scene)
         }
     }
 
-    for (const auto &nestedScene : scene.nestedScenes) {
+    for (const auto &[_, nestedScene] : scene.nestedScenes) {
         showAllInScene(nestedScene);
     }
 }

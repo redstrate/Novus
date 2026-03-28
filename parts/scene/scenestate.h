@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "animation.h"
+
 #include <QObject>
 
 #include <QHash>
@@ -71,7 +73,7 @@ public:
     QString terrainPath;
     std::vector<std::pair<QString, physis_LayerGroup>> lgbFiles;
     std::vector<physis_ScnLayerGroup> embeddedLgbs;
-    Animation *animation = nullptr;
+    Animation animation;
     std::vector<ScnSGActionControllerDescriptor> actionDescriptors;
     bool isSgb = false; // Currently only used to skip visibility checks.
     std::vector<std::pair<QString, DropIn>> dropIns;
@@ -79,7 +81,7 @@ public:
     std::unordered_map<std::string, physis_Material> cachedMaterials;
 
     /// Key is the ID of the SGB instance.
-    QHash<uint32_t, ObjectScene> nestedScenes;
+    std::unordered_map<uint32_t, ObjectScene> nestedScenes;
 
     Transformation locateGameObject(uint32_t instanceId) const;
     Transformation locateGameObjectByBaseId(uint32_t baseId) const;

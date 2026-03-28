@@ -94,6 +94,8 @@ int32_t Track::tmfcId() const
     return m_tmfcId;
 }
 
+Animation::Animation() = default;
+
 Animation::Animation(const ObjectScene &scene)
 {
     processScene(scene);

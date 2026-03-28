@@ -189,7 +189,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
         }
     }
 
-    for (auto [_, nestedScene] : scene.nestedScenes.asKeyValueRange()) {
+    for (auto &[_, nestedScene] : scene.nestedScenes) {
         processScene(nestedScene, scene.combinedTransformation);
     }
 }

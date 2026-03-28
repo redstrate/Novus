@@ -220,8 +220,8 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
         }
     }
 
-    for (const auto &lgb : scene.nestedScenes) {
-        addScene(commandBuffer, camera, lgb);
+    for (const auto &[_, scene] : scene.nestedScenes) {
+        addScene(commandBuffer, camera, scene);
     }
 }
 

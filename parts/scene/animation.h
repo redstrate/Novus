@@ -44,6 +44,7 @@ private:
 class Animation
 {
 public:
+    Animation();
     explicit Animation(const ObjectScene &scene);
 
     void update(ObjectScene &scene, float time);
