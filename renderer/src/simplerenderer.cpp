@@ -474,7 +474,13 @@ void SimpleRenderer::initDescriptors()
     multiBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     multiBinding.binding = 6;
 
-    const std::array bindings = {boneInfoBufferBinding, textureBinding, normalBinding, specularBinding, multiBinding};
+    VkDescriptorSetLayoutBinding lightInfoBinding = {};
+    lightInfoBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    lightInfoBinding.descriptorCount = 1;
+    lightInfoBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    lightInfoBinding.binding = 7;
+
+    const std::array bindings = {boneInfoBufferBinding, textureBinding, normalBinding, specularBinding, multiBinding, lightInfoBinding};
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
