@@ -18,7 +18,7 @@ TexPart::TexPart(physis_SqPackResource *data, QWidget *parent)
     m_label = new ImageLabel();
     layout->addWidget(m_label);
 
-    m_saveImage = new QAction(i18n("Save PNG…"));
+    m_saveImage = new QAction(i18n("Save PNG…"), this);
     m_saveImage->setIcon(QIcon::fromTheme(QStringLiteral("document-save")));
     connect(m_saveImage, &QAction::triggered, this, [this] {
         const QString savePath = QFileDialog::getSaveFileName(this, i18nc("@title:window", "Save Texture"), QDir::homePath(), QStringLiteral("*.png"));

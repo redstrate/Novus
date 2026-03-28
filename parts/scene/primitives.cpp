@@ -59,11 +59,13 @@ void Primitives::Initialize(RenderManager *renderer)
         VkDeviceSize vertexSize = sizeof(glm::vec3) * vertices.size();
         sphere.vertexBuffer = renderer->device().createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         renderer->device().copyToBuffer(sphere.vertexBuffer, vertices.data(), vertexSize);
+        renderer->device().nameBuffer(sphere.vertexBuffer, "Sphere Vertex Buffer");
 
         // INDICES
         VkDeviceSize indexSize = sizeof(unsigned int) * indices.size();
         sphere.indexBuffer = renderer->device().createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
         renderer->device().copyToBuffer(sphere.indexBuffer, indices.data(), indexSize);
+        renderer->device().nameBuffer(sphere.indexBuffer, "Sphere Index Buffer");
     }
 
     // cube
@@ -133,11 +135,13 @@ void Primitives::Initialize(RenderManager *renderer)
         VkDeviceSize vertexSize = sizeof(glm::vec3) * 8;
         cube.vertexBuffer = renderer->device().createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         renderer->device().copyToBuffer(cube.vertexBuffer, (void *)cube_vertices.data(), vertexSize);
+        renderer->device().nameBuffer(cube.vertexBuffer, "Cube Vertex Buffer");
 
         // INDICES
         VkDeviceSize indexSize = sizeof(unsigned int) * cube_indices.size();
         cube.indexBuffer = renderer->device().createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
         renderer->device().copyToBuffer(cube.indexBuffer, (void *)cube_indices.data(), indexSize);
+        renderer->device().nameBuffer(cube.indexBuffer, "Cube Index Buffer");
     }
 
     // Cylinder
@@ -189,6 +193,7 @@ void Primitives::Initialize(RenderManager *renderer)
         VkDeviceSize vertexSize = sizeof(glm::vec3) * 189;
         cylinder.vertexBuffer = renderer->device().createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         renderer->device().copyToBuffer(cylinder.vertexBuffer, (void *)vertices, vertexSize);
+        renderer->device().nameBuffer(cylinder.vertexBuffer, "Cylinder Vertex Buffer");
     }
 
     // Plane
@@ -219,6 +224,7 @@ void Primitives::Initialize(RenderManager *renderer)
         VkDeviceSize vertexSize = sizeof(glm::vec3) * 6;
         plane.vertexBuffer = renderer->device().createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         renderer->device().copyToBuffer(plane.vertexBuffer, (void *)vertices, vertexSize);
+        renderer->device().nameBuffer(plane.vertexBuffer, "Plane Vertex Buffer");
     }
 }
 

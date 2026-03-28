@@ -26,15 +26,17 @@ class RendererPass;
 class RenderManager
 {
 public:
-    RenderManager(physis_SqPackResource *data);
+    explicit RenderManager(physis_SqPackResource *data);
+    ~RenderManager();
 
     bool initSwapchain(VkSurfaceKHR surface, int width, int height);
     void resize(VkSurfaceKHR surface, int width, int height);
 
-    void destroySwapchain();
+    void destroySwapchain(bool keepSwapchainObject);
 
     DrawObject *addDrawObject(const physis_MDL &model, int lod);
     void reloadDrawObject(DrawObject &model, uint32_t lod);
+    void destroyDrawObject(DrawObject &model);
 
     /**
      * @brief Converts the @p gameTexture to the renderable kind.
@@ -63,6 +65,7 @@ public:
 private:
     void updateCamera(Camera &camera);
     void initBlitPipeline();
+    void destroyBlitPipeline();
 
     std::array<VkCommandBuffer, 3> m_commandBuffers;
 
@@ -76,7 +79,7 @@ private:
     std::vector<VkFramebuffer> m_framebuffers;
 
     ImGuiPass *m_imGuiPass = nullptr;
-    Device *m_device = nullptr;
+    std::unique_ptr<Device> m_device;
     BaseRenderer *m_renderer = nullptr;
     physis_SqPackResource *m_data = nullptr;
     std::vector<RendererPass *> m_passes;

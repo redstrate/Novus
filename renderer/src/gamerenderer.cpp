@@ -61,8 +61,13 @@ GameRenderer::GameRenderer(Device &device, physis_SqPackResource *data)
     , m_shaderManager(device)
 {
     m_dummyTex = m_device.createDummyTexture();
+    m_device.nameTexture(m_dummyTex, "Dummy Texture");
+
     m_blackTex = m_device.createDummyTexture({0, 0, 0, 0});
+    m_device.nameTexture(m_blackTex, "Black Dummy Texture");
+
     m_dummyBuffer = m_device.createDummyBuffer();
+    m_device.nameBuffer(m_dummyBuffer, "Dummy Buffer");
 
     const size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);

@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include "buffer.h"
+#include "texture.h"
+
 #include <map>
 #include <vulkan/vulkan.h>
 
@@ -20,21 +23,15 @@ private:
     void createDescriptorSetLayout();
     void createPipeline();
     void createFontImage();
-    void createBuffer(VkBuffer &buffer, VkDeviceMemory &memory, VkDeviceSize size, VkBufferUsageFlagBits bufferUsage);
 
     VkDescriptorSetLayout setLayout_ = nullptr;
 
     VkPipelineLayout pipelineLayout_ = nullptr;
     VkPipeline pipeline_ = nullptr;
 
-    VkImage fontImage_ = nullptr;
-    VkDeviceMemory fontMemory_ = nullptr;
-    VkImageView fontImageView_ = nullptr;
-    VkSampler fontSampler_ = nullptr;
+    Texture fontAtlas;
 
-    VkBuffer vertexBuffer = VK_NULL_HANDLE, indexBuffer = VK_NULL_HANDLE;
-    VkDeviceMemory vertexMemory = VK_NULL_HANDLE, indexMemory = VK_NULL_HANDLE;
-    size_t vertexSize = 0, indexSize = 0;
+    Buffer vertexBuffer, indexBuffer;
 
     std::map<VkImageView, VkDescriptorSet> descriptorSets_ = {};
 

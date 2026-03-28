@@ -36,6 +36,16 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
     }
 }
 
+void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT messenger, const VkAllocationCallbacks *pAllocator)
+{
+    // Note: It seems that static_cast<...> doesn't work. Use the C-style forced
+    // cast.
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        func(instance, messenger, pAllocator);
+    }
+}
+
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                              VkDebugUtilsMessageTypeFlagsEXT messageType,
                                              const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
@@ -55,7 +65,7 @@ RenderManager::RenderManager(physis_SqPackResource *data)
 {
     Q_INIT_RESOURCE(shaders);
 
-    m_device = new Device();
+    m_device = std::make_unique<Device>();
 
     ctx = ImGui::CreateContext();
     ImGui::SetCurrentContext(ctx);
@@ -117,8 +127,7 @@ RenderManager::RenderManager(physis_SqPackResource *data)
 
     vkCreateInstance(&createInfo, nullptr, &m_device->instance);
 
-    VkDebugUtilsMessengerEXT callback;
-    CreateDebugUtilsMessengerEXT(m_device->instance, &debugCreateInfo, nullptr, &callback);
+    CreateDebugUtilsMessengerEXT(m_device->instance, &debugCreateInfo, nullptr, &m_device->callback);
 
     // pick physical device
     uint32_t deviceCount = 0;
@@ -289,6 +298,7 @@ RenderManager::RenderManager(physis_SqPackResource *data)
 
     VkDescriptorPoolCreateInfo poolCreateInfo = {};
     poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     poolCreateInfo.poolSizeCount = poolSizes.size();
     poolCreateInfo.pPoolSizes = poolSizes.data();
     poolCreateInfo.maxSets = 150;
@@ -298,11 +308,32 @@ RenderManager::RenderManager(physis_SqPackResource *data)
     qInfo() << "Initialized renderer!";
 }
 
+RenderManager::~RenderManager()
+{
+    // Wait until everything is done...
+    vkDeviceWaitIdle(m_device->device);
+    vkQueueWaitIdle(m_device->graphicsQueue);
+    vkQueueWaitIdle(m_device->presentQueue);
+
+    // Destroy the swapchain first so its command buffers releases its hold on certain resources.
+    destroySwapchain(false);
+
+    destroyBlitPipeline();
+
+    vkDestroyDescriptorPool(m_device->device, m_device->descriptorPool, nullptr);
+    vkDestroyCommandPool(m_device->device, m_device->commandPool, nullptr);
+    vkDestroyDevice(m_device->device, nullptr);
+    DestroyDebugUtilsMessengerEXT(m_device->instance, m_device->callback, nullptr);
+    vkDestroyInstance(m_device->instance, nullptr);
+}
+
 bool RenderManager::initSwapchain(VkSurfaceKHR surface, int width, int height)
 {
     if (m_device->swapChain == nullptr) {
         m_device->swapChain = new SwapChain(*m_device, surface, width, height);
     } else {
+        // TODO: eventually we want to reuse more resources...
+        destroySwapchain(true); // we want to keep the VkSwapchainKHR since it can be reused
         m_device->swapChain->resize(surface, width, height);
     }
 
@@ -368,6 +399,7 @@ bool RenderManager::initSwapchain(VkSurfaceKHR surface, int width, int height)
     }
 
     m_renderer->resize();
+    destroyBlitPipeline();
     initBlitPipeline(); // this creates a desc set for the renderer's offscreen texture. need to make sure we regen it
 
     m_framebuffers.resize(m_device->swapChain->swapchainImages.size());
@@ -392,15 +424,53 @@ void RenderManager::resize(VkSurfaceKHR surface, int width, int height)
     initSwapchain(surface, width, height);
 }
 
-void RenderManager::destroySwapchain()
+void RenderManager::destroySwapchain(bool keepSwapchainObject)
 {
     if (!m_device || !m_device->swapChain) {
         return;
     }
 
     if (m_device->swapChain->swapchain != VK_NULL_HANDLE) {
-        vkDestroySwapchainKHR(m_device->device, m_device->swapChain->swapchain, nullptr);
-        m_device->swapChain->swapchain = VK_NULL_HANDLE;
+        // Wait until everything is done...
+        vkDeviceWaitIdle(m_device->device);
+        vkQueueWaitIdle(m_device->graphicsQueue);
+        vkQueueWaitIdle(m_device->presentQueue);
+
+        // NOTE: Images are destroyed with vkDestroySwapchainKHR
+
+        vkFreeCommandBuffers(m_device->device, m_device->commandPool, m_commandBuffers.size(), m_commandBuffers.data());
+
+        for (const auto &framebuffer : m_framebuffers) {
+            vkDestroyFramebuffer(m_device->device, framebuffer, nullptr);
+        }
+
+        for (const auto &imageView : m_device->swapChain->swapchainViews) {
+            vkDestroyImageView(m_device->device, imageView, nullptr);
+        }
+
+        for (const auto &fence : m_device->swapChain->inFlightFences) {
+            vkDestroyFence(m_device->device, fence, nullptr);
+        }
+
+        for (const auto &semaphore : m_device->swapChain->imageAvailableSemaphores) {
+            vkDestroySemaphore(m_device->device, semaphore, nullptr);
+        }
+        for (const auto &semaphore : m_device->swapChain->renderFinishedSemaphores) {
+            vkDestroySemaphore(m_device->device, semaphore, nullptr);
+        }
+
+        vkDestroyRenderPass(m_device->device, m_renderPass, nullptr);
+
+        delete m_imGuiPass;
+        m_imGuiPass = nullptr;
+
+        delete m_renderer;
+        m_renderer = nullptr;
+
+        if (!keepSwapchainObject) {
+            vkDestroySwapchainKHR(m_device->device, m_device->swapChain->swapchain, nullptr);
+            m_device->swapChain->swapchain = VK_NULL_HANDLE; // Ensure this doesn't run again!
+        }
     }
 }
 
@@ -550,6 +620,7 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
                 size_t size = part.stream_sizes[j];
                 auto buffer = m_device->createBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
                 m_device->copyToBuffer(buffer, (void *)part.streams[j], size);
+                m_device->nameBuffer(buffer, "Stream Buffer for MDL");
 
                 renderPart.streamBuffer[j] = buffer;
             }
@@ -558,6 +629,7 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
                 size_t vertexSize = part.num_vertices * sizeof(Vertex);
                 renderPart.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
                 m_device->copyToBuffer(renderPart.vertexBuffer, (void *)part.vertices, vertexSize);
+                m_device->nameBuffer(renderPart.vertexBuffer, "Vertex Buffer for MDL");
             } else {
                 qWarning() << "Got a model part with zero vertices, is that supposed to happen?";
             }
@@ -567,6 +639,7 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
             size_t indexSize = part.num_indices * sizeof(uint16_t);
             renderPart.indexBuffer = m_device->createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
             m_device->copyToBuffer(renderPart.indexBuffer, (void *)part.indices, indexSize);
+            m_device->nameBuffer(renderPart.indexBuffer, "Index Buffer for MDL");
 
             renderPart.numIndices = part.num_indices;
         } else {
@@ -578,6 +651,20 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
 
     const size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
     DrawObject.boneInfoBuffer = m_device->createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    m_device->nameBuffer(DrawObject.boneInfoBuffer, "Bone Info Buffer for MDL");
+}
+
+void RenderManager::destroyDrawObject(DrawObject &model)
+{
+    for (auto &part : model.parts) {
+        m_device->destroyBuffer(part.vertexBuffer);
+        m_device->destroyBuffer(part.indexBuffer);
+        for (auto &stream : part.streamBuffer) {
+            m_device->destroyBuffer(stream);
+        }
+    }
+
+    m_device->destroyBuffer(model.boneInfoBuffer);
 }
 
 Texture RenderManager::addGameTexture(VkFormat format, physis_Texture gameTexture)
@@ -616,16 +703,19 @@ void RenderManager::initBlitPipeline()
 
     vkCreateDescriptorSetLayout(m_device->device, &layoutInfo, nullptr, &m_setLayout);
 
+    auto blitVertexShader = m_device->loadShaderFromDisk(":/shaders/blit.vert.spv");
+    auto blitFragmentShader = m_device->loadShaderFromDisk(":/shaders/blit.frag.spv");
+
     VkPipelineShaderStageCreateInfo vertexShaderStageInfo = {};
     vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertexShaderStageInfo.module = m_device->loadShaderFromDisk(":/shaders/blit.vert.spv");
+    vertexShaderStageInfo.module = blitVertexShader;
     vertexShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo fragmentShaderStageInfo = {};
     fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragmentShaderStageInfo.module = m_device->loadShaderFromDisk(":/shaders/blit.frag.spv");
+    fragmentShaderStageInfo.module = blitFragmentShader;
     fragmentShaderStageInfo.pName = "main";
 
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
@@ -738,6 +828,21 @@ void RenderManager::initBlitPipeline()
     multiDescriptorWrite2.dstBinding = 0;
 
     vkUpdateDescriptorSets(m_device->device, 1, &multiDescriptorWrite2, 0, nullptr);
+
+    vkDestroyShaderModule(m_device->device, blitVertexShader, nullptr);
+    vkDestroyShaderModule(m_device->device, blitFragmentShader, nullptr);
+}
+void RenderManager::destroyBlitPipeline()
+{
+    if (m_pipeline == VK_NULL_HANDLE) {
+        return;
+    }
+
+    vkFreeDescriptorSets(m_device->device, m_device->descriptorPool, 1, &m_descriptorSet);
+    vkDestroySampler(m_device->device, m_sampler, nullptr);
+    vkDestroyPipeline(m_device->device, m_pipeline, nullptr);
+    vkDestroyPipelineLayout(m_device->device, m_pipelineLayout, nullptr);
+    vkDestroyDescriptorSetLayout(m_device->device, m_setLayout, nullptr);
 }
 
 void RenderManager::addPass(RendererPass *pass)

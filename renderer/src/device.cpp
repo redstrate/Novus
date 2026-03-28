@@ -44,6 +44,18 @@ void Device::copyToBuffer(Buffer &buffer, void *data, const size_t size)
     vkUnmapMemory(device, buffer.memory);
 }
 
+void Device::destroyBuffer(Buffer &buffer)
+{
+    if (buffer.buffer != VK_NULL_HANDLE) {
+        vkDestroyBuffer(device, buffer.buffer, nullptr);
+        buffer.buffer = VK_NULL_HANDLE;
+    }
+    if (buffer.memory != VK_NULL_HANDLE) {
+        vkFreeMemory(device, buffer.memory, nullptr);
+        buffer.memory = VK_NULL_HANDLE;
+    }
+}
+
 uint32_t Device::findMemoryType(const uint32_t typeFilter, const VkMemoryPropertyFlags properties)
 {
     VkPhysicalDeviceMemoryProperties memProperties;
@@ -63,7 +75,7 @@ VkShaderModule Device::createShaderModule(const uint32_t *code, const int length
     VkShaderModuleCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = length;
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(code);
+    createInfo.pCode = code;
 
     VkShaderModule shaderModule;
     vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
@@ -131,6 +143,22 @@ Texture Device::createTexture(const int width, const int height, const VkFormat 
     vkCreateImageView(device, &viewCreateInfo, nullptr, &imageView);
 
     return {format, viewCreateInfo.subresourceRange, image, imageView, imageMemory};
+}
+
+void Device::destroyTexture(Texture &texture)
+{
+    if (texture.imageView != VK_NULL_HANDLE) {
+        vkDestroyImageView(device, texture.imageView, nullptr);
+        texture.imageView = VK_NULL_HANDLE;
+    }
+    if (texture.image != VK_NULL_HANDLE) {
+        vkDestroyImage(device, texture.image, nullptr);
+        texture.image = VK_NULL_HANDLE;
+    }
+    if (texture.imageMemory != VK_NULL_HANDLE) {
+        vkFreeMemory(device, texture.imageMemory, nullptr);
+        texture.imageMemory = VK_NULL_HANDLE;
+    }
 }
 
 Texture Device::createDummyTexture(std::array<uint8_t, 4> values)
@@ -204,12 +232,17 @@ Texture Device::createDummyTexture(std::array<uint8_t, 4> values)
 
     endSingleTimeCommands(commandBuffer);
 
+    // free staging resources
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);
+
     return texture;
 }
 
 Buffer Device::createDummyBuffer()
 {
     auto buffer = createBuffer(655360, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    nameBuffer(buffer, "Dummy Buffer");
 
     // TODO: fill with data?
 
@@ -449,6 +482,10 @@ Texture Device::addGameTexture(VkFormat format, physis_Texture gameTexture)
                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     endSingleTimeCommands(commandBuffer);
+
+    // free staging resources
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);
 
     range = {};
     range.levelCount = 1;

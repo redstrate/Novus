@@ -38,7 +38,7 @@ MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
     }
     physis_free_file(&pbdFile);
 
-    renderer = new RenderManager(data);
+    renderer = std::make_unique<RenderManager>(data);
 
     m_instance = std::make_unique<QVulkanInstance>();
     m_instance->setVkInstance(renderer->device().instance);
@@ -47,7 +47,7 @@ MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
         qWarning() << "Failed to create QVulkanInstance!";
     }
 
-    vkWindow = new VulkanWindow(this, renderer, m_instance.get());
+    vkWindow = new VulkanWindow(this, renderer.get(), m_instance.get());
     vkWindow->setVulkanInstance(m_instance.get());
 
     auto widget = QWidget::createWindowContainer(vkWindow);
@@ -170,12 +170,12 @@ void MDLPart::destroyObjects()
 {
     vkWindow->models.clear();
     for (const auto &[_, model] : vkWindow->sourceModels) {
+        renderer->destroyDrawObject(*model);
         delete model;
     }
     vkWindow->sourceModels.clear();
-    for (const auto &[_, material] : renderMaterialCache) {
-        // The SHPK is created internally in this part - but the material should be freed by the caller.
-        physis_shpk_free(&material.shaderPackage);
+    for (auto &[_, material] : renderMaterialCache) {
+        destroyMaterial(material);
     }
     renderMaterialCache.clear();
 }
@@ -301,102 +301,11 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
             newMaterial.type = MaterialType::Skin;
         }
 
-        if (material.legacy_color_table.num_rows > 0) {
-            int width = 4;
-            int height = material.legacy_color_table.num_rows;
-
-            qInfo() << "Creating legacy color table" << width << "X" << height;
-
-            std::vector<float> rgbaData(width * height * 4);
-            int offset = 0;
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    const auto row = material.legacy_color_table.rows[y];
-
-                    glm::vec4 color;
-                    if (x == 0) {
-                        color = glm::vec4{row.diffuse_color[0], row.diffuse_color[1], row.diffuse_color[2], row.specular_strength};
-                    } else if (x == 1) {
-                        color = glm::vec4{row.specular_color[0], row.specular_color[1], row.specular_color[2], row.gloss_strength};
-                    } else if (x == 2) {
-                        color = glm::vec4{row.emissive_color[0], row.emissive_color[1], row.emissive_color[2], row.tile_set};
-                    } else if (x == 3) {
-                        color = glm::vec4{row.material_repeat_x, row.material_repeat_y, row.material_skew[0], row.material_skew[1]};
-                    }
-
-                    rgbaData[offset] = color.x;
-                    rgbaData[offset + 1] = color.y;
-                    rgbaData[offset + 2] = color.z;
-                    rgbaData[offset + 3] = color.a;
-
-                    offset += 4;
-                }
-            }
-
-            physis_Texture textureConfig;
-            textureConfig.texture_type = TextureType::TwoDimensional;
-            textureConfig.width = width;
-            textureConfig.height = height;
-            textureConfig.depth = 1;
-            textureConfig.rgba = reinterpret_cast<uint8_t *>(rgbaData.data());
-            textureConfig.rgba_size = rgbaData.size() * sizeof(float);
-
-            // TODO: use 16-bit floating points like the game
-            newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
-            renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
-        } else {
-            constexpr int width = 8;
-            const uint32_t height = material.dawntrail_color_table.num_rows;
-            if (height > 0) {
-                qInfo() << "Creating DT color table" << width << "X" << height;
-
-                // NOTE: this is just a copy of the legacy color table gen, it's probably all wrong!
-                std::vector<float> rgbaData(width * height * 4);
-                int offset = 0;
-                for (uint32_t y = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++) {
-                        const auto row = material.dawntrail_color_table.rows[y];
-
-                        glm::vec4 color{};
-                        if (x == 0) {
-                            color = glm::vec4{row.diffuse_color[0], row.diffuse_color[1], row.diffuse_color[2], 0.0f};
-                        } else if (x == 1) {
-                            color = glm::vec4{row.specular_color[0], row.specular_color[1], row.specular_color[2], 0.0f};
-                        } else if (x == 2) {
-                            color = glm::vec4{row.emissive_color[0], row.emissive_color[1], row.emissive_color[2], row.tile_set};
-                        } else if (x == 3) {
-                            color = glm::vec4{row.material_repeat[0], row.material_repeat[1], row.material_skew[0], row.material_skew[1]};
-                        }
-                        // TOOD: fill out with other DT values
-
-                        rgbaData[offset] = color.x;
-                        rgbaData[offset + 1] = color.y;
-                        rgbaData[offset + 2] = color.z;
-                        rgbaData[offset + 3] = color.a;
-
-                        offset += 4;
-                    }
-                }
-
-                physis_Texture textureConfig{};
-                textureConfig.texture_type = TextureType::TwoDimensional;
-                textureConfig.width = width;
-                textureConfig.height = height;
-                textureConfig.depth = 1;
-                textureConfig.rgba = reinterpret_cast<uint8_t *>(rgbaData.data());
-                textureConfig.rgba_size = rgbaData.size() * sizeof(float);
-
-                // TODO: use 16-bit floating points like the game
-                newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
-                renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
-            }
-        }
-
         const auto type = t.substr(t.find_last_of('_') + 1, t.find_last_of('.') - t.find_last_of('_') - 1);
         auto texture = physis_texture_parse(data->platform, cache.lookupFile(QLatin1String(t)));
         if (texture.rgba != nullptr) {
             auto gameTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
-            renderer->device().nameTexture(gameTexture, t);
+            renderer->device().nameTexture(gameTexture, "Game Texture " + t);
 
             if (type == "m" && !newMaterial.maskTexture.has_value()) {
                 newMaterial.maskTexture = gameTexture;
@@ -419,17 +328,136 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
         }
     }
 
+    // Create dye table
+    if (material.legacy_color_table.num_rows > 0) {
+        int width = 4;
+        int height = material.legacy_color_table.num_rows;
+
+        qInfo() << "Creating legacy color table" << width << "X" << height;
+
+        std::vector<float> rgbaData(width * height * 4);
+        int offset = 0;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                const auto row = material.legacy_color_table.rows[y];
+
+                glm::vec4 color;
+                if (x == 0) {
+                    color = glm::vec4{row.diffuse_color[0], row.diffuse_color[1], row.diffuse_color[2], row.specular_strength};
+                } else if (x == 1) {
+                    color = glm::vec4{row.specular_color[0], row.specular_color[1], row.specular_color[2], row.gloss_strength};
+                } else if (x == 2) {
+                    color = glm::vec4{row.emissive_color[0], row.emissive_color[1], row.emissive_color[2], row.tile_set};
+                } else if (x == 3) {
+                    color = glm::vec4{row.material_repeat_x, row.material_repeat_y, row.material_skew[0], row.material_skew[1]};
+                }
+
+                rgbaData[offset] = color.x;
+                rgbaData[offset + 1] = color.y;
+                rgbaData[offset + 2] = color.z;
+                rgbaData[offset + 3] = color.a;
+
+                offset += 4;
+            }
+        }
+
+        physis_Texture textureConfig;
+        textureConfig.texture_type = TextureType::TwoDimensional;
+        textureConfig.width = width;
+        textureConfig.height = height;
+        textureConfig.depth = 1;
+        textureConfig.rgba = reinterpret_cast<uint8_t *>(rgbaData.data());
+        textureConfig.rgba_size = rgbaData.size() * sizeof(float);
+
+        // TODO: use 16-bit floating points like the game
+        newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
+        renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
+    } else {
+        constexpr int width = 8;
+        const uint32_t height = material.dawntrail_color_table.num_rows;
+        if (height > 0) {
+            qInfo() << "Creating DT color table" << width << "X" << height;
+
+            // NOTE: this is just a copy of the legacy color table gen, it's probably all wrong!
+            std::vector<float> rgbaData(width * height * 4);
+            int offset = 0;
+            for (uint32_t y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    const auto row = material.dawntrail_color_table.rows[y];
+
+                    glm::vec4 color{};
+                    if (x == 0) {
+                        color = glm::vec4{row.diffuse_color[0], row.diffuse_color[1], row.diffuse_color[2], 0.0f};
+                    } else if (x == 1) {
+                        color = glm::vec4{row.specular_color[0], row.specular_color[1], row.specular_color[2], 0.0f};
+                    } else if (x == 2) {
+                        color = glm::vec4{row.emissive_color[0], row.emissive_color[1], row.emissive_color[2], row.tile_set};
+                    } else if (x == 3) {
+                        color = glm::vec4{row.material_repeat[0], row.material_repeat[1], row.material_skew[0], row.material_skew[1]};
+                    }
+                    // TOOD: fill out with other DT values
+
+                    rgbaData[offset] = color.x;
+                    rgbaData[offset + 1] = color.y;
+                    rgbaData[offset + 2] = color.z;
+                    rgbaData[offset + 3] = color.a;
+
+                    offset += 4;
+                }
+            }
+
+            physis_Texture textureConfig{};
+            textureConfig.texture_type = TextureType::TwoDimensional;
+            textureConfig.width = width;
+            textureConfig.height = height;
+            textureConfig.depth = 1;
+            textureConfig.rgba = reinterpret_cast<uint8_t *>(rgbaData.data());
+            textureConfig.rgba_size = rgbaData.size() * sizeof(float);
+
+            // TODO: use 16-bit floating points like the game
+            newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
+            renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
+        }
+    }
+
     return newMaterial;
 }
 
 RenderMaterial MDLPart::createOrCacheMaterial(const std::string &path, const physis_Material &mat)
 {
-    auto hash = getMaterialHash(mat);
+    const auto hash = getMaterialHash(mat);
     if (!renderMaterialCache.contains(hash)) {
         renderMaterialCache[hash] = createMaterial(path, mat);
     }
 
     return renderMaterialCache[hash];
+}
+
+void MDLPart::destroyMaterial(RenderMaterial &material)
+{
+    // NOTE: The SHPK is created internally in this part - but the material should be freed by the caller.
+    physis_shpk_free(&material.shaderPackage);
+
+    if (auto &texture = material.diffuseTexture) {
+        renderer->device().destroyTexture(texture.value());
+    }
+    if (auto &texture = material.normalTexture) {
+        renderer->device().destroyTexture(texture.value());
+    }
+    if (auto &texture = material.specularTexture) {
+        renderer->device().destroyTexture(texture.value());
+    }
+    if (auto &texture = material.maskTexture) {
+        renderer->device().destroyTexture(texture.value());
+    }
+    if (auto &texture = material.indexTexture) {
+        renderer->device().destroyTexture(texture.value());
+    }
+    if (auto &texture = material.tableTexture) {
+        renderer->device().destroyTexture(texture.value());
+    }
+
+    renderer->device().destroyBuffer(material.materialBuffer);
 }
 
 uint64_t MDLPart::getMaterialHash(const physis_Material &mat)
@@ -511,7 +539,7 @@ int MDLPart::numModels() const
 
 RenderManager *MDLPart::manager() const
 {
-    return renderer;
+    return renderer.get();
 }
 
 bool MDLPart::modelExists(const QString &name)

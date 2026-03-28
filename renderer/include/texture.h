@@ -8,9 +8,9 @@
 class Texture
 {
 public:
-    VkFormat format;
-    VkImageSubresourceRange range;
-    VkImage image;
-    VkImageView imageView;
-    VkDeviceMemory imageMemory;
+    VkFormat format = VK_FORMAT_UNDEFINED;
+    VkImageSubresourceRange range{};
+    VkImage image = VK_NULL_HANDLE;
+    VkImageView imageView = VK_NULL_HANDLE;
+    VkDeviceMemory imageMemory = VK_NULL_HANDLE;
 };

@@ -27,6 +27,7 @@ class SimpleRenderer : public BaseRenderer
 {
 public:
     explicit SimpleRenderer(Device &device);
+    ~SimpleRenderer();
 
     void resize() override;
 
@@ -45,6 +46,11 @@ private:
     void initDescriptors();
     void initTextures(int width, int height);
 
+    void destroyTextures();
+    void destroyPipelines();
+    void destroyDescriptors();
+    void destroyRenderPass();
+
     VkDescriptorSet createDescriptorFor(const DrawObject &model, const RenderMaterial &material);
     uint64_t hash(const DrawObject &model, const RenderMaterial &material);
 
@@ -58,7 +64,7 @@ private:
     VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
     bool m_wireframe = false;
 
-    VkFramebuffer m_framebuffer;
+    VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
 
     VkRenderPass m_renderPass = VK_NULL_HANDLE;
 

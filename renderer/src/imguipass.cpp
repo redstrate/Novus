@@ -20,10 +20,10 @@ ImGuiPass::ImGuiPass(RenderManager &renderer)
 
 ImGuiPass::~ImGuiPass()
 {
-    vkDestroySampler(renderer_.device().device, fontSampler_, nullptr);
-    vkDestroyImageView(renderer_.device().device, fontImageView_, nullptr);
-    vkFreeMemory(renderer_.device().device, fontMemory_, nullptr);
-    vkDestroyImage(renderer_.device().device, fontImage_, nullptr);
+    renderer_.device().destroyBuffer(indexBuffer);
+    renderer_.device().destroyBuffer(vertexBuffer);
+
+    renderer_.device().destroyTexture(fontAtlas);
 
     vkDestroyPipeline(renderer_.device().device, pipeline_, nullptr);
     vkDestroyPipelineLayout(renderer_.device().device, pipelineLayout_, nullptr);
@@ -39,24 +39,26 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
     }
 
     const size_t newVertexSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
-    if (newVertexSize > vertexSize) {
-        createBuffer(vertexBuffer, vertexMemory, newVertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-        vertexSize = newVertexSize;
+    if (newVertexSize > vertexBuffer.size) {
+        renderer_.device().destroyBuffer(vertexBuffer);
+        vertexBuffer = renderer_.device().createBuffer(newVertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        renderer_.device().nameBuffer(vertexBuffer, "ImGui Vertex Buffer");
     }
 
     const size_t newIndexSize = drawData->TotalIdxCount * sizeof(ImDrawIdx);
-    if (newIndexSize > indexSize) {
-        createBuffer(indexBuffer, indexMemory, newIndexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-        indexSize = newIndexSize;
+    if (newIndexSize > indexBuffer.size) {
+        renderer_.device().destroyBuffer(indexBuffer);
+        indexBuffer = renderer_.device().createBuffer(newIndexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+        renderer_.device().nameBuffer(indexBuffer, "ImGui Index Buffer");
     }
 
-    if (vertexSize == 0 || indexSize == 0)
+    if (vertexBuffer.size == 0 || indexBuffer.size == 0)
         return;
 
     ImDrawVert *vertexData = nullptr;
     ImDrawIdx *indexData = nullptr;
-    vkMapMemory(renderer_.device().device, vertexMemory, 0, vertexSize, 0, reinterpret_cast<void **>(&vertexData));
-    vkMapMemory(renderer_.device().device, indexMemory, 0, indexSize, 0, reinterpret_cast<void **>(&indexData));
+    vkMapMemory(renderer_.device().device, vertexBuffer.memory, 0, vertexBuffer.size, 0, reinterpret_cast<void **>(&vertexData));
+    vkMapMemory(renderer_.device().device, indexBuffer.memory, 0, indexBuffer.size, 0, reinterpret_cast<void **>(&indexData));
 
     for (int i = 0; i < drawData->CmdListsCount; i++) {
         const ImDrawList *cmd_list = drawData->CmdLists[i];
@@ -68,14 +70,14 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
         indexData += cmd_list->IdxBuffer.Size;
     }
 
-    vkUnmapMemory(renderer_.device().device, vertexMemory);
-    vkUnmapMemory(renderer_.device().device, indexMemory);
+    vkUnmapMemory(renderer_.device().device, vertexBuffer.memory);
+    vkUnmapMemory(renderer_.device().device, indexBuffer.memory);
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
 
     VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
-    vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer.buffer, &offset);
+    vkCmdBindIndexBuffer(commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
     float scale[2];
     scale[0] = 2.0f / drawData->DisplaySize.x;
@@ -116,8 +118,8 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
 
                 VkDescriptorImageInfo imageInfo = {};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo.imageView = (VkImageView)pcmd->TextureId;
-                imageInfo.sampler = fontSampler_;
+                imageInfo.imageView = static_cast<VkImageView>(pcmd->TextureId);
+                imageInfo.sampler = renderer_.defaultSampler();
 
                 VkWriteDescriptorSet descriptorWrite = {};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -130,7 +132,7 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
 
                 vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout_, 0, 1, &set, 0, nullptr);
 
-                descriptorSets_[(VkImageView)pcmd->TextureId] = set;
+                descriptorSets_[static_cast<VkImageView>(pcmd->TextureId)] = set;
             }
 
             if (pcmd->UserCallback) {
@@ -303,7 +305,7 @@ void ImGuiPass::createFontImage()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
     // TODO: haha, no
-    physis_Texture texture;
+    physis_Texture texture{};
     texture.texture_type = TextureType::TwoDimensional;
     texture.width = width;
     texture.height = height;
@@ -311,38 +313,8 @@ void ImGuiPass::createFontImage()
     texture.rgba = pixels;
     texture.rgba_size = width * height * 4;
 
-    auto tex = renderer_.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
-    fontImageView_ = tex.imageView;
-    fontSampler_ = renderer_.defaultSampler();
+    fontAtlas = renderer_.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
+    renderer_.device().nameTexture(fontAtlas, "ImGui Font Atlas");
 
-    io.Fonts->SetTexID(static_cast<ImTextureID>(fontImageView_));
-}
-
-void ImGuiPass::createBuffer(VkBuffer &buffer, VkDeviceMemory &memory, VkDeviceSize size, VkBufferUsageFlagBits bufferUsage)
-{
-    if (buffer != nullptr)
-        vkDestroyBuffer(renderer_.device().device, buffer, nullptr);
-
-    if (memory != nullptr)
-        vkFreeMemory(renderer_.device().device, memory, nullptr);
-
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = bufferUsage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    vkCreateBuffer(renderer_.device().device, &bufferInfo, nullptr, &buffer);
-
-    VkMemoryRequirements memRequirements = {};
-    vkGetBufferMemoryRequirements(renderer_.device().device, buffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex =
-        renderer_.device().findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    vkAllocateMemory(renderer_.device().device, &allocInfo, nullptr, &memory);
-    vkBindBufferMemory(renderer_.device().device, buffer, memory, 0);
+    io.Fonts->SetTexID(static_cast<ImTextureID>(fontAtlas.imageView));
 }

@@ -24,7 +24,7 @@ public:
     std::array<VkFence, 3> inFlightFences;
     std::array<VkSemaphore, 3> imageAvailableSemaphores, renderFinishedSemaphores;
     uint32_t currentFrame = 0;
-    VkFormat surfaceFormat;
+    VkFormat surfaceFormat = VK_FORMAT_UNDEFINED;
 
 private:
     Device &m_device;

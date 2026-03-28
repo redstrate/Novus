@@ -15,6 +15,7 @@ SimpleRenderer::SimpleRenderer(Device &device)
     : m_device(device)
 {
     m_dummyTex = m_device.createDummyTexture();
+    m_device.nameTexture(m_dummyTex, "Dummy Texture");
 
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -29,8 +30,30 @@ SimpleRenderer::SimpleRenderer(Device &device)
     vkCreateSampler(m_device.device, &samplerInfo, nullptr, &m_sampler);
 }
 
+SimpleRenderer::~SimpleRenderer()
+{
+    for (const auto &[_, descriptor] : cachedDescriptors) {
+        vkFreeDescriptorSets(m_device.device, m_device.descriptorPool, 1, &descriptor);
+    }
+
+    vkDestroyFramebuffer(m_device.device, m_framebuffer, nullptr);
+
+    destroyRenderPass();
+    destroyDescriptors();
+    destroyPipelines();
+    destroyTextures();
+
+    vkDestroySampler(m_device.device, m_sampler, nullptr);
+    m_device.destroyTexture(m_dummyTex);
+}
+
 void SimpleRenderer::resize()
 {
+    destroyRenderPass();
+    destroyDescriptors();
+    destroyPipelines();
+    destroyTextures();
+
     initRenderPass();
     initDescriptors();
     initPipeline();
@@ -47,6 +70,7 @@ void SimpleRenderer::resize()
     framebufferInfo.height = m_device.swapChain->extent.height;
     framebufferInfo.layers = 1;
 
+    vkDestroyFramebuffer(m_device.device, m_framebuffer, nullptr); // free previous framebuffer
     vkCreateFramebuffer(m_device.device, &framebufferInfo, nullptr, &m_framebuffer);
     m_device.nameObject(VK_OBJECT_TYPE_FRAMEBUFFER, reinterpret_cast<uint64_t>(m_framebuffer), "simple renderer framebuffer");
 }
@@ -230,22 +254,26 @@ void SimpleRenderer::initRenderPass()
 
 void SimpleRenderer::initPipeline()
 {
+    auto meshVertexModule = m_device.loadShaderFromDisk(":/shaders/mesh.vert.spv");
+    auto skinnedVertexModule = m_device.loadShaderFromDisk(":/shaders/skinned.vert.spv");
+    auto meshFragmentModule = m_device.loadShaderFromDisk(":/shaders/mesh.frag.spv");
+
     VkPipelineShaderStageCreateInfo vertexShaderStageInfo = {};
     vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertexShaderStageInfo.module = m_device.loadShaderFromDisk(":/shaders/mesh.vert.spv");
+    vertexShaderStageInfo.module = meshVertexModule;
     vertexShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo skinnedVertexShaderStageInfo = {};
     skinnedVertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     skinnedVertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    skinnedVertexShaderStageInfo.module = m_device.loadShaderFromDisk(":/shaders/skinned.vert.spv");
+    skinnedVertexShaderStageInfo.module = skinnedVertexModule;
     skinnedVertexShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo fragmentShaderStageInfo = {};
     fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragmentShaderStageInfo.module = m_device.loadShaderFromDisk(":/shaders/mesh.frag.spv");
+    fragmentShaderStageInfo.module = meshFragmentModule;
     fragmentShaderStageInfo.pName = "main";
 
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
@@ -390,6 +418,10 @@ void SimpleRenderer::initPipeline()
     shaderStages[0] = vertexShaderStageInfo;
 
     vkCreateGraphicsPipelines(m_device.device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &m_pipelineWireframe);
+
+    vkDestroyShaderModule(m_device.device, meshFragmentModule, nullptr);
+    vkDestroyShaderModule(m_device.device, meshVertexModule, nullptr);
+    vkDestroyShaderModule(m_device.device, skinnedVertexModule, nullptr);
 }
 
 void SimpleRenderer::initDescriptors()
@@ -437,7 +469,43 @@ void SimpleRenderer::initDescriptors()
 void SimpleRenderer::initTextures(int width, int height)
 {
     m_compositeTexture = m_device.createTexture(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    m_device.nameTexture(m_compositeTexture, "Composite Texture");
+
     m_depthTexture = m_device.createTexture(width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    m_device.nameTexture(m_depthTexture, "Depth Texture");
+}
+
+void SimpleRenderer::destroyTextures()
+{
+    m_device.destroyTexture(m_depthTexture);
+    m_device.destroyTexture(m_compositeTexture);
+}
+
+void SimpleRenderer::destroyPipelines()
+{
+    if (m_pipelineWireframe == VK_NULL_HANDLE) {
+        return;
+    }
+    vkDestroyPipeline(m_device.device, m_pipelineWireframe, nullptr);
+    vkDestroyPipeline(m_device.device, m_skinnedPipelineWireframe, nullptr);
+    vkDestroyPipeline(m_device.device, m_skinnedPipeline, nullptr);
+    vkDestroyPipeline(m_device.device, m_pipeline, nullptr);
+
+    vkDestroyPipelineLayout(m_device.device, m_pipelineLayout, nullptr);
+}
+
+void SimpleRenderer::destroyDescriptors()
+{
+    if (m_setLayout != VK_NULL_HANDLE) {
+        vkDestroyDescriptorSetLayout(m_device.device, m_setLayout, nullptr);
+    }
+}
+
+void SimpleRenderer::destroyRenderPass()
+{
+    if (m_renderPass != VK_NULL_HANDLE) {
+        vkDestroyRenderPass(m_device.device, m_renderPass, nullptr);
+    }
 }
 
 uint64_t SimpleRenderer::hash(const DrawObject &model, const RenderMaterial &material)
@@ -473,7 +541,7 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
 
     m_device.nameObject(VK_OBJECT_TYPE_DESCRIPTOR_SET, reinterpret_cast<uint64_t>(set), material.path.c_str());
 
-    const size_t bufferSize = sizeof(glm::mat4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
+    const size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
 
     std::vector<VkWriteDescriptorSet> writes;
 

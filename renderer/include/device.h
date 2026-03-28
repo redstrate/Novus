@@ -20,6 +20,7 @@ class Device
 {
 public:
     VkInstance instance = VK_NULL_HANDLE;
+    VkDebugUtilsMessengerEXT callback = VK_NULL_HANDLE;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device = VK_NULL_HANDLE;
     VkQueue graphicsQueue = VK_NULL_HANDLE, presentQueue = VK_NULL_HANDLE;
@@ -29,6 +30,7 @@ public:
 
     Buffer createBuffer(size_t size, VkBufferUsageFlags usageFlags);
     void copyToBuffer(Buffer &buffer, void *data, size_t size);
+    void destroyBuffer(Buffer &buffer);
 
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
@@ -37,6 +39,7 @@ public:
     VkShaderModule loadShaderFromDisk(std::string_view path);
 
     Texture createTexture(int width, int height, VkFormat format, VkImageUsageFlags usage);
+    void destroyTexture(Texture &texture);
 
     Texture createDummyTexture(std::array<uint8_t, 4> values = {255, 255, 255, 255});
     Buffer createDummyBuffer();
