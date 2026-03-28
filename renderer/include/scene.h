@@ -3,7 +3,23 @@
 
 #pragma once
 
-struct Scene {
-    glm::vec3 sunDirection;
-    glm::vec3 pointLightPosition;
+#include <glm/vec3.hpp>
+#include <physis.hpp>
+#include <vector>
+
+struct SceneLight {
+    LightType type;
+    glm::vec3 position;
+    glm::vec3 color{1.0f};
+    float intensity = 1.0f;
+};
+
+class Scene
+{
+public:
+    Scene();
+
+    void resetLights();
+
+    std::vector<SceneLight> lights;
 };

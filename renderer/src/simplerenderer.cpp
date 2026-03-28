@@ -8,8 +8,16 @@
 #include "camera.h"
 #include "device.h"
 #include "drawobject.h"
+#include "scene.h"
 #include "shaderstructs.h"
 #include "swapchain.h"
+
+const size_t MAX_LIGHTS = 1024;
+
+struct ShaderLight {
+    glm::vec4 directionOrPos;
+    glm::vec4 colorIntensity;
+};
 
 SimpleRenderer::SimpleRenderer(Device &device)
     : m_device(device)
@@ -28,6 +36,8 @@ SimpleRenderer::SimpleRenderer(Device &device)
     samplerInfo.maxLod = 1.0f;
 
     vkCreateSampler(m_device.device, &samplerInfo, nullptr, &m_sampler);
+
+    m_lightsBuffer = m_device.createBuffer(MAX_LIGHTS * sizeof(ShaderLight), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 }
 
 SimpleRenderer::~SimpleRenderer()
@@ -77,8 +87,6 @@ void SimpleRenderer::resize()
 
 void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObjectInstance> &models)
 {
-    Q_UNUSED(scene)
-
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = m_renderPass;
@@ -96,6 +104,19 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
     renderPassInfo.renderArea.extent = m_device.swapChain->extent;
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    // update lights
+    std::array<ShaderLight, MAX_LIGHTS> lights{};
+    size_t lightCount = scene.lights.size();
+    if (lightCount > MAX_LIGHTS) {
+        qWarning() << "Too many lights, please raise the limit to include" << lightCount;
+        lightCount = MAX_LIGHTS;
+    }
+    for (size_t i = 0; i < lightCount; i++) {
+        lights[i].directionOrPos = glm::vec4(scene.lights[i].position, static_cast<float>(scene.lights[i].type));
+        lights[i].colorIntensity = glm::vec4(scene.lights[i].color, scene.lights[i].intensity);
+    }
+    m_device.copyToBuffer(m_lightsBuffer, lights.data(), m_lightsBuffer.size);
 
     for (const auto &model : models) {
         if (model.sourceObject->skinned) {
@@ -624,6 +645,20 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     multiDescriptorWrite2.dstBinding = 6;
 
     writes.push_back(multiDescriptorWrite2);
+
+    VkDescriptorBufferInfo lightBufferInfo = {};
+    lightBufferInfo.buffer = m_lightsBuffer.buffer;
+    lightBufferInfo.range = m_lightsBuffer.size;
+
+    VkWriteDescriptorSet lightBufferDescriptorWrite = {};
+    lightBufferDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    lightBufferDescriptorWrite.dstSet = set;
+    lightBufferDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    lightBufferDescriptorWrite.descriptorCount = 1;
+    lightBufferDescriptorWrite.pBufferInfo = &lightBufferInfo;
+    lightBufferDescriptorWrite.dstBinding = 7;
+
+    writes.push_back(lightBufferDescriptorWrite);
 
     vkUpdateDescriptorSets(m_device.device, writes.size(), writes.data(), 0, nullptr);
 

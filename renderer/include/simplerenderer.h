@@ -14,6 +14,7 @@
 #include <vulkan/vulkan.h>
 
 #include "baserenderer.h"
+#include "buffer.h"
 #include "texture.h"
 
 class Renderer;
@@ -75,6 +76,8 @@ private:
 
     Texture m_depthTexture;
     Texture m_compositeTexture;
+
+    Buffer m_lightsBuffer;
 
     Device &m_device;
 };

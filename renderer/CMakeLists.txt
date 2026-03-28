@@ -35,7 +35,8 @@ target_sources(renderer
         src/rendermanager.cpp
         src/shadermanager.cpp
         src/simplerenderer.cpp
-        src/swapchain.cpp)
+        src/swapchain.cpp
+        src/scene.cpp)
 qt_add_resources(renderer
         "shaders"
         PREFIX "/"

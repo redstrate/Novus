@@ -24,6 +24,8 @@
 #include "objectidedit.h"
 #include "uintedit.h"
 
+#include <QLabel>
+
 ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *parent)
     : QWidget(parent)
     , m_appState(appState)
@@ -689,6 +691,14 @@ void ObjectPropertiesWidget::addLightSection(const physis_LightInstanceObject &l
     lightTypeEdit->setValue(light.light_type);
     lightTypeEdit->setEnabled(false);
     layout->addRow(i18n("Light Type"), lightTypeEdit);
+
+    auto diffuseColorLabel = new QLabel();
+    diffuseColorLabel->setText(QStringLiteral("%1 %2 %3 %4")
+                                   .arg(light.diffuse_color_hdri.red)
+                                   .arg(light.diffuse_color_hdri.green)
+                                   .arg(light.diffuse_color_hdri.blue)
+                                   .arg(light.diffuse_color_hdri.intensity));
+    layout->addRow(i18n("Color"), diffuseColorLabel);
 }
 
 void ObjectPropertiesWidget::addVfxSection(const physis_VfxInstanceObject &vfx)

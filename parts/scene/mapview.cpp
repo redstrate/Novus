@@ -13,6 +13,8 @@
 #include "objectpass.h"
 #include "scenestate.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 MapView::MapView(physis_SqPackResource *data, FileCache &cache, SceneState *appState, QWidget *parent)
     : QWidget(parent)
     , m_data(data)
@@ -240,6 +242,17 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                     mdlPart->addExistingModel(QString::fromStdString(assetPath), combinedTransform);
                 }
             }
+        } break;
+        case physis_LayerEntry::Tag::LayLight: {
+            SceneLight sceneLight;
+            sceneLight.position = glm::make_vec3(object.transform.translation);
+            sceneLight.type = object.data.lay_light._0.light_type;
+            sceneLight.color = glm::vec3(static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.red) / 255.0f,
+                                         static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.green) / 255.0f,
+                                         static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.blue) / 255.0f);
+            sceneLight.intensity = object.data.lay_light._0.diffuse_color_hdri.intensity;
+
+            mdlPart->addLight(sceneLight);
         } break;
         default:
             break;

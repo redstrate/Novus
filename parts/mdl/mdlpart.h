@@ -89,6 +89,8 @@ public Q_SLOTS:
 
     void removeModel(const physis_MDL &mdl);
 
+    void addLight(const SceneLight &light);
+
     /// Sets the skeleton any skinned MDLs should bind to.
     void setSkeleton(physis_Skeleton skeleton);
 

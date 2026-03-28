@@ -170,6 +170,8 @@ void MDLPart::destroyObjects()
     // If we're destroying all objects, more than likely we're loading a new set of materials and have no use for the old ones.
     renderer->freeResources();
 
+    renderer->scene.resetLights();
+
     vkWindow->models.clear();
     for (const auto &[_, model] : vkWindow->sourceModels) {
         renderer->destroyDrawObject(*model);
@@ -516,6 +518,11 @@ void MDLPart::removeModel(const physis_MDL &mdl)
                                           }),
                            vkWindow->models.end());
     Q_EMIT modelChanged();
+}
+
+void MDLPart::addLight(const SceneLight &light)
+{
+    renderer->scene.lights.push_back(light);
 }
 
 void MDLPart::setWireframe(bool wireframe)
