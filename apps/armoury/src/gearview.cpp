@@ -267,8 +267,7 @@ void GearView::reloadRaceDeforms()
     const int raceCode = physis_get_race_code(currentRace, currentTribe, currentGender);
 
     QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
-    std::string skelNameStd = skelName.toStdString();
-    mdlPart->setSkeleton(physis_skeleton_parse(data->platform, physis_sqpack_read(data, skelNameStd.c_str())));
+    mdlPart->setSkeleton(physis_skeleton_parse(data->platform, cache.lookupFile(skelName)));
 }
 
 MDLPart &GearView::part() const

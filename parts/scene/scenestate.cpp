@@ -174,8 +174,6 @@ void SceneState::load(physis_SqPackResource *data, const physis_ScnSection &sect
     }
 
     processLongestAnimationTime(rootScene);
-
-    Q_EMIT mapLoaded();
 }
 
 void SceneState::loadDropIn(const QString &path)
@@ -242,8 +240,6 @@ void SceneState::loadDropIn(const QString &path)
             }
         }
     }
-
-    Q_EMIT mapLoaded();
 }
 
 void SceneState::saveDropIns()

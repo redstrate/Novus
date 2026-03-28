@@ -27,7 +27,7 @@ MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
     viewportLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(viewportLayout);
 
-    auto pbdFile = physis_sqpack_read(data, "chara/xls/bonedeformer/human.pbd");
+    auto pbdFile = cache.lookupFile(QStringLiteral("chara/xls/bonedeformer/human.pbd"));
     if (pbdFile.size == 0) {
         qWarning() << "Failed to read chara/xls/bonedeformer/human.pbd";
     } else {
@@ -258,9 +258,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
     newMaterial.mat = material;
 
     if (material.shpk_name != nullptr) {
-        std::string shpkPath = "shader/sm5/shpk/" + std::string(material.shpk_name);
-
-        auto shpkData = physis_sqpack_read(data, shpkPath.c_str());
+        auto shpkData = cache.lookupFile(QStringLiteral("shader/sm5/shpk/%1").arg(QString::fromStdString(material.shpk_name)));
         if (shpkData.data != nullptr) {
             newMaterial.shaderPackage = physis_shpk_parse(data->platform, shpkData);
             if (newMaterial.shaderPackage.p_ptr) {
@@ -294,7 +292,6 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
 
                 renderer->device().copyToBuffer(newMaterial.materialBuffer, buffer.data(), buffer.size() * sizeof(float));
             }
-            physis_free_file(&shpkData);
         }
     }
 

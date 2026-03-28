@@ -62,9 +62,8 @@ void MapView::addTerrain(ObjectScene &scene)
 
         QString base2Path = scene.basePath.left(scene.basePath.lastIndexOf(QStringLiteral("/level/")));
         QString mdlPath = QStringLiteral("%1/bgplate/%2").arg(base2Path, QString::fromStdString(scene.terrain.plates[i].filename));
-        std::string mdlPathStd = mdlPath.toStdString();
 
-        auto plateMdlFile = physis_sqpack_read(m_data, mdlPathStd.c_str());
+        auto plateMdlFile = m_cache.lookupFile(mdlPath);
         auto plateMdl = physis_mdl_parse(m_data->platform, plateMdlFile);
         if (plateMdl.p_ptr != nullptr) {
             std::vector<std::pair<std::string, physis_Material>> materials;
@@ -206,7 +205,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
             std::string assetPath = object.data.bg._0.asset_path;
             if (!assetPath.empty()) {
                 if (!mdlPart->modelExists(QString::fromStdString(assetPath))) {
-                    auto plateMdlFile = physis_sqpack_read(m_data, assetPath.c_str());
+                    auto plateMdlFile = m_cache.lookupFile(QString::fromStdString(assetPath));
                     if (plateMdlFile.size == 0) {
                         continue;
                     }

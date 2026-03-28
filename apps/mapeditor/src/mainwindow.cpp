@@ -188,6 +188,8 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
         }
 
         physis_free_file(&lvbFile);
+
+        Q_EMIT m_part->sceneState()->mapLoaded();
     } else {
         qWarning() << "Failed to find lvb" << lvbPath;
     }

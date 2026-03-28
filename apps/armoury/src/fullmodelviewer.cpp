@@ -54,7 +54,7 @@ FullModelViewer::FullModelViewer(physis_SqPackResource *data, FileCache &cache, 
         updateHeightScaling((float)charDat.customize.height / 100.0f);
     });
 
-    cmp = physis_cmp_parse(data->platform, physis_sqpack_read(data, "chara/xls/charamake/human.cmp"));
+    cmp = physis_cmp_parse(data->platform, cache.lookupFile(QStringLiteral("chara/xls/charamake/human.cmp")));
 
     gearView = new GearView(data, cache);
 

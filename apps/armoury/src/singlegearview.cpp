@@ -188,7 +188,7 @@ SingleGearView::SingleGearView(physis_SqPackResource *data, FileCache &cache, QW
         }
     });
     auto mdlAction = testMenu->addAction(i18nc("@action:inmenu", "MDL"));
-    connect(mdlAction, &QAction::triggered, this, [this, data](bool) {
+    connect(mdlAction, &QAction::triggered, this, [this, data, &cache](bool) {
         if (currentGear.has_value()) {
             // TODO: deduplicate
             const auto sanitizeMdlPath = [](const QString &mdlPath) -> QString {
@@ -200,7 +200,7 @@ SingleGearView::SingleGearView(physis_SqPackResource *data, FileCache &cache, QW
                                                                   sanitizeMdlPath(gearView->getLoadedGearPath()),
                                                                   i18n("MDL File (*.mdl)"));
 
-            auto buffer = physis_sqpack_read(data, gearView->getLoadedGearPath().toStdString().c_str());
+            auto buffer = cache.lookupFile(gearView->getLoadedGearPath());
 
             QFile file(fileName);
             if (file.open(QIODevice::WriteOnly)) {

@@ -49,6 +49,7 @@
 #include "mdlimport.h"
 #include "openinwidget.h"
 #include "scenepart.h"
+#include "scenestate.h"
 #include "tmbpart.h"
 
 #include <KConfig>
@@ -361,6 +362,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     case FileType::SharedGroup: {
         auto scenePart = new ScenePart(&m_data);
         scenePart->loadSgb(file);
+        Q_EMIT scenePart->sceneState()->mapLoaded();
         addTab(scenePart);
     } break;
     case FileType::TimelineMotion: {
@@ -376,6 +378,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     case FileType::LayerVariableBinary: {
         auto scenePart = new ScenePart(&m_data);
         scenePart->loadLvb(file);
+        Q_EMIT scenePart->sceneState()->mapLoaded();
         addTab(scenePart);
     } break;
     case FileType::Png: {
