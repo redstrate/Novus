@@ -572,7 +572,7 @@ void RenderManager::render(const std::vector<DrawObjectInstance> &models)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    VkSemaphore signalSemaphores[] = {m_device->swapChain->renderFinishedSemaphores[m_device->swapChain->currentFrame]};
+    VkSemaphore signalSemaphores[] = {m_device->swapChain->renderFinishedSemaphores[imageIndex]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -845,6 +845,7 @@ void RenderManager::initBlitPipeline()
     vkDestroyShaderModule(m_device->device, blitVertexShader, nullptr);
     vkDestroyShaderModule(m_device->device, blitFragmentShader, nullptr);
 }
+
 void RenderManager::destroyBlitPipeline()
 {
     if (m_pipeline == VK_NULL_HANDLE) {

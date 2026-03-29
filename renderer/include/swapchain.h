@@ -22,7 +22,8 @@ public:
     std::vector<VkImage> swapchainImages;
     std::vector<VkImageView> swapchainViews;
     std::array<VkFence, 3> inFlightFences;
-    std::array<VkSemaphore, 3> imageAvailableSemaphores, renderFinishedSemaphores;
+    std::vector<VkSemaphore> imageAvailableSemaphores, renderFinishedSemaphores;
+    uint32_t maxImages = 0;
     uint32_t currentFrame = 0;
     VkFormat surfaceFormat = VK_FORMAT_UNDEFINED;
 

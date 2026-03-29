@@ -97,6 +97,8 @@ void SwapChain::resize(VkSurfaceKHR surface, int width, int height)
 
     swapchainViews.resize(swapchainImages.size());
 
+    maxImages = swapchainImages.size();
+
     for (size_t i = 0; i < swapchainImages.size(); i++) {
         VkImageViewCreateInfo view_create_info = {};
         view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -123,9 +125,14 @@ void SwapChain::resize(VkSurfaceKHR surface, int width, int height)
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < 3; i++) {
+    imageAvailableSemaphores.resize(maxImages);
+    renderFinishedSemaphores.resize(maxImages);
+    for (size_t i = 0; i < maxImages; i++) {
         vkCreateSemaphore(m_device.device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
         vkCreateSemaphore(m_device.device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
+    }
+
+    for (size_t i = 0; i < 3; i++) {
         vkCreateFence(m_device.device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
     }
 }
