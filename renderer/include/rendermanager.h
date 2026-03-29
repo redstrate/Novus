@@ -43,7 +43,7 @@ public:
      *
      * @note The physis_Texture is not used internally by RenderManager, can be freed as soon as the call returns.
      */
-    Texture addGameTexture(VkFormat format, physis_Texture gameTexture);
+    Texture addGameTexture(physis_Texture gameTexture);
 
     void render(const std::vector<DrawObjectInstance> &models);
 

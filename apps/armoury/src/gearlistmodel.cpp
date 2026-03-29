@@ -176,8 +176,9 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
             auto texFile = physis_sqpack_read(gameData, iconFilename.c_str());
             if (texFile.data != nullptr) {
                 auto tex = physis_texture_parse(gameData->platform, texFile);
-                if (tex.rgba != nullptr) {
-                    QImage image(tex.rgba, static_cast<int>(tex.width), static_cast<int>(tex.height), QImage::Format_RGBA8888);
+                if (tex.p_ptr != nullptr) {
+                    auto rgba = physis_texture_to_rgba(tex);
+                    QImage image(rgba.rgba, static_cast<int>(tex.width), static_cast<int>(tex.height), QImage::Format_RGBA8888);
 
                     QPixmap pixmap;
                     pixmap.convertFromImage(image);

@@ -3,6 +3,7 @@
 
 #include "device.h"
 
+#include <QDebug>
 #include <QFile>
 
 Buffer Device::createBuffer(const size_t size, const VkBufferUsageFlags usageFlags)
@@ -377,26 +378,118 @@ void Device::nameBuffer(Buffer &buffer, std::string_view name)
     nameObject(VK_OBJECT_TYPE_DEVICE_MEMORY, reinterpret_cast<uint64_t>(buffer.memory), name.data());
 }
 
-Texture Device::addGameTexture(VkFormat format, physis_Texture gameTexture)
+Texture Device::addGameTexture(physis_Texture gameTexture)
 {
     Texture newTexture = {};
 
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    switch (gameTexture.texture_type) {
-    case TextureType::TwoDimensional:
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = gameTexture.mip_levels;
+    imageInfo.arrayLayers = 1;
+
+    if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE1_D) {
+        imageInfo.imageType = VK_IMAGE_TYPE_1D;
+    }
+    if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE2_D) {
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        break;
-    case TextureType::ThreeDimensional:
+    }
+    if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE3_D) {
         imageInfo.imageType = VK_IMAGE_TYPE_3D;
-        break;
+        imageInfo.extent.depth = gameTexture.depth;
+    }
+    if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE2_D_ARRAY) {
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.arrayLayers = gameTexture.depth; // just a guess
     }
     imageInfo.extent.width = gameTexture.width;
     imageInfo.extent.height = gameTexture.height;
-    imageInfo.extent.depth = gameTexture.depth;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.format = format;
+    switch (gameTexture.format) {
+    case TextureFormat::A8_UNORM:
+        imageInfo.format = VK_FORMAT_A8_UNORM;
+        break;
+    case TextureFormat::R8_UNORM:
+        imageInfo.format = VK_FORMAT_R8_UNORM;
+        break;
+    case TextureFormat::R8_UINT:
+        imageInfo.format = VK_FORMAT_R8_UINT;
+        break;
+    case TextureFormat::R16_UINT:
+        imageInfo.format = VK_FORMAT_R16_UINT;
+        break;
+    case TextureFormat::R32_UINT:
+        imageInfo.format = VK_FORMAT_R32_UINT;
+        break;
+    case TextureFormat::R8G8_UNORM:
+        imageInfo.format = VK_FORMAT_R8G8_UNORM;
+        break;
+    case TextureFormat::B4G4R4A4_UNORM:
+        imageInfo.format = VK_FORMAT_B4G4R4A4_UNORM_PACK16;
+        break;
+    case TextureFormat::B8G8R8A8_UNORM:
+        imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
+        break;
+    case TextureFormat::R16_FLOAT:
+        imageInfo.format = VK_FORMAT_R16_SFLOAT;
+        break;
+    case TextureFormat::R32_FLOAT:
+        imageInfo.format = VK_FORMAT_R32_SFLOAT;
+        break;
+    case TextureFormat::R16G16_FLOAT:
+        imageInfo.format = VK_FORMAT_R16G16_SFLOAT;
+        break;
+    case TextureFormat::R32G32_FLOAT:
+        imageInfo.format = VK_FORMAT_R32G32_SFLOAT;
+        break;
+    case TextureFormat::R16G16B16A16_FLOAT:
+        imageInfo.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        break;
+    case TextureFormat::R32G32B32A32_FLOAT:
+        imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        break;
+    case TextureFormat::BC1_UNORM:
+        imageInfo.format = VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+        break;
+    case TextureFormat::BC2_UNORM:
+        imageInfo.format = VK_FORMAT_BC2_UNORM_BLOCK;
+        break;
+    case TextureFormat::BC3_UNORM:
+        imageInfo.format = VK_FORMAT_BC3_UNORM_BLOCK;
+        break;
+    case TextureFormat::D16_UNORM:
+        imageInfo.format = VK_FORMAT_D16_UNORM;
+        break;
+    case TextureFormat::D24_UNORM_S8_UINT:
+        imageInfo.format = VK_FORMAT_D24_UNORM_S8_UINT;
+        break;
+    case TextureFormat::D16_UNORM_2:
+        imageInfo.format = VK_FORMAT_D16_UNORM;
+        break;
+    case TextureFormat::D24_UNORM_S8_UINT_2:
+        imageInfo.format = VK_FORMAT_D24_UNORM_S8_UINT;
+        break;
+    case TextureFormat::BC4_UNORM:
+        imageInfo.format = VK_FORMAT_BC4_UNORM_BLOCK;
+        break;
+    case TextureFormat::BC5_UNORM:
+        imageInfo.format = VK_FORMAT_BC5_UNORM_BLOCK;
+        break;
+    case TextureFormat::BC6H_SF16:
+        imageInfo.format = VK_FORMAT_BC6H_SFLOAT_BLOCK;
+        break;
+    case TextureFormat::BC7_UNORM:
+        imageInfo.format = VK_FORMAT_BC7_UNORM_BLOCK;
+        break;
+    case TextureFormat::R16_UNORM:
+        imageInfo.format = VK_FORMAT_R16_UNORM;
+        break;
+    case TextureFormat::R16G16_UNORM:
+        imageInfo.format = VK_FORMAT_R16G16_UNORM;
+        break;
+    default:
+        qWarning() << "Unknown texture format:" << static_cast<int>(gameTexture.format);
+        break;
+    }
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -423,7 +516,7 @@ Texture Device::addGameTexture(VkFormat format, physis_Texture gameTexture)
 
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = gameTexture.rgba_size;
+    bufferInfo.size = gameTexture.data_size;
     bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -443,8 +536,8 @@ Texture Device::addGameTexture(VkFormat format, physis_Texture gameTexture)
 
     // copy to staging buffer
     void *mapped_data;
-    vkMapMemory(device, stagingBufferMemory, 0, gameTexture.rgba_size, 0, &mapped_data);
-    memcpy(mapped_data, gameTexture.rgba, gameTexture.rgba_size);
+    vkMapMemory(device, stagingBufferMemory, 0, gameTexture.data_size, 0, &mapped_data);
+    memcpy(mapped_data, gameTexture.data, gameTexture.data_size);
     vkUnmapMemory(device, stagingBufferMemory);
 
     // copy staging buffer to image
@@ -469,7 +562,7 @@ Texture Device::addGameTexture(VkFormat format, physis_Texture gameTexture)
     region.imageSubresource.mipLevel = 0;
     region.imageSubresource.baseArrayLayer = 0;
     region.imageSubresource.layerCount = 1;
-    region.imageExtent = {(uint32_t)gameTexture.width, (uint32_t)gameTexture.height, (uint32_t)gameTexture.depth};
+    region.imageExtent = {static_cast<uint32_t>(gameTexture.width), static_cast<uint32_t>(gameTexture.height), static_cast<uint32_t>(gameTexture.depth)};
 
     vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, newTexture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
@@ -495,13 +588,17 @@ Texture Device::addGameTexture(VkFormat format, physis_Texture gameTexture)
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = newTexture.image;
-    switch (gameTexture.texture_type) {
-    case TextureType::TwoDimensional:
+    if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE1_D) {
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_1D;
+    }
+    if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE2_D) {
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        break;
-    case TextureType::ThreeDimensional:
+    }
+    if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE3_D) {
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
-        break;
+    }
+    if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE2_D_ARRAY) {
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     }
     viewInfo.format = imageInfo.format;
     viewInfo.subresourceRange = range;

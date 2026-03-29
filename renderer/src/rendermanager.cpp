@@ -680,9 +680,9 @@ void RenderManager::destroyDrawObject(DrawObject &model)
     m_device->destroyBuffer(model.boneInfoBuffer);
 }
 
-Texture RenderManager::addGameTexture(VkFormat format, physis_Texture gameTexture)
+Texture RenderManager::addGameTexture(physis_Texture gameTexture)
 {
-    return m_device->addGameTexture(format, gameTexture);
+    return m_device->addGameTexture(gameTexture);
 }
 
 Device &RenderManager::device()

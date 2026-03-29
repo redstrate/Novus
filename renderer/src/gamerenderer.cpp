@@ -74,11 +74,9 @@ GameRenderer::GameRenderer(Device &device, physis_SqPackResource *data)
     m_device.copyToBuffer(m_planeVertexBuffer, (void *)planeVertices.data(), vertexSize);
 
     // TODO: they switched from 3D images from ARR to 2D arrays here, not yet supported
-    m_tileNormal = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM,
-                                           physis_texture_parse(m_data->platform, physis_sqpack_read(m_data, "chara/common/texture/tile_norm_array.tex")));
+    m_tileNormal = m_device.addGameTexture(physis_texture_parse(m_data->platform, physis_sqpack_read(m_data, "chara/common/texture/tile_norm_array.tex")));
     m_device.nameTexture(m_tileNormal, "chara/common/texture/tile_norm_array.tex");
-    m_tileOrb = m_device.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM,
-                                        physis_texture_parse(m_data->platform, physis_sqpack_read(m_data, "chara/common/texture/tile_orb_array.tex")));
+    m_tileOrb = m_device.addGameTexture(physis_texture_parse(m_data->platform, physis_sqpack_read(m_data, "chara/common/texture/tile_orb_array.tex")));
     m_device.nameTexture(m_tileOrb, "chara/common/texture/tile_orb_array.tex");
 
     directionalLightningShpk = physis_shpk_parse(m_data->platform, physis_sqpack_read(m_data, "shader/sm5/shpk/directionallighting.shpk"));

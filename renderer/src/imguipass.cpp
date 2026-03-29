@@ -306,14 +306,16 @@ void ImGuiPass::createFontImage()
 
     // TODO: haha, no
     physis_Texture texture{};
-    texture.texture_type = TextureType::TwoDimensional;
+    texture.attribute = TextureAttribute_TEXTURE_TYPE2_D;
+    texture.format = TextureFormat::B8G8R8A8_UNORM; // TDOO: this means we put in the wrong data..
     texture.width = width;
     texture.height = height;
     texture.depth = 1;
-    texture.rgba = pixels;
-    texture.rgba_size = width * height * 4;
+    texture.data = pixels;
+    texture.data_size = width * height * 4;
+    texture.mip_levels = 1;
 
-    fontAtlas = renderer_.addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
+    fontAtlas = renderer_.addGameTexture(texture);
     renderer_.device().nameTexture(fontAtlas, "ImGui Font Atlas");
 
     io.Fonts->SetTexID(static_cast<ImTextureID>(fontAtlas.imageView));

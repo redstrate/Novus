@@ -186,6 +186,10 @@ void MDLPart::destroyObjects()
         physis_shpk_free(&shpk);
     }
     shaderPackageCache.clear();
+    for (auto &[_, texture] : textureCache) {
+        destroyTexture(texture);
+    }
+    textureCache.clear();
 }
 
 void MDLPart::reloadBoneData()
@@ -313,33 +317,18 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
             newMaterial.type = MaterialType::Skin;
         }
 
-        const auto loadTexture = [this, t] {
-            auto texture = physis_texture_parse(data->platform, cache.lookupFile(QLatin1String(t)));
-            if (texture.rgba != nullptr) {
-                auto gameTexture = renderer->addGameTexture(VK_FORMAT_R8G8B8A8_UNORM, texture);
-                renderer->device().nameTexture(gameTexture, "Game Texture " + t);
-
-                physis_tex_free(&texture);
-
-                return std::optional{gameTexture};
-            }
-
-            qWarning() << "Failed to load" << t;
-            return std::optional<Texture>{std::nullopt};
-        };
-
         const auto type = t.substr(t.find_last_of('_') + 1, t.find_last_of('.') - t.find_last_of('_') - 1);
         if (type == "m" && !newMaterial.maskTexture.has_value()) {
-            newMaterial.maskTexture = loadTexture();
+            newMaterial.maskTexture = createOrCacheTexture(t);
         } else if (type == "d" && !newMaterial.diffuseTexture.has_value()) {
-            newMaterial.diffuseTexture = loadTexture();
+            newMaterial.diffuseTexture = createOrCacheTexture(t);
             newMaterial.diffuseTexturePath = t;
         } else if (type == "n" && !newMaterial.normalTexture.has_value()) {
-            newMaterial.normalTexture = loadTexture();
+            newMaterial.normalTexture = createOrCacheTexture(t);
         } else if (type == "s" && !newMaterial.specularTexture.has_value()) {
-            newMaterial.specularTexture = loadTexture();
+            newMaterial.specularTexture = createOrCacheTexture(t);
         } else if (type == "id" && !newMaterial.indexTexture.has_value()) {
-            newMaterial.indexTexture = loadTexture();
+            newMaterial.indexTexture = createOrCacheTexture(t);
         }
     }
 
@@ -377,15 +366,16 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
         }
 
         physis_Texture textureConfig;
-        textureConfig.texture_type = TextureType::TwoDimensional;
+        textureConfig.attribute = TextureAttribute_TEXTURE_TYPE2_D;
+        textureConfig.format = TextureFormat::R32G32B32A32_FLOAT;
         textureConfig.width = width;
         textureConfig.height = height;
         textureConfig.depth = 1;
-        textureConfig.rgba = reinterpret_cast<uint8_t *>(rgbaData.data());
-        textureConfig.rgba_size = rgbaData.size() * sizeof(float);
+        textureConfig.data = reinterpret_cast<uint8_t *>(rgbaData.data());
+        textureConfig.data_size = rgbaData.size() * sizeof(float);
 
         // TODO: use 16-bit floating points like the game
-        newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
+        newMaterial.tableTexture = renderer->addGameTexture(textureConfig);
         renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
     } else {
         constexpr int width = 8;
@@ -421,16 +411,17 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
                 }
             }
 
-            physis_Texture textureConfig{};
-            textureConfig.texture_type = TextureType::TwoDimensional;
+            physis_Texture textureConfig;
+            textureConfig.attribute = TextureAttribute_TEXTURE_TYPE2_D;
+            textureConfig.format = TextureFormat::R32G32B32A32_FLOAT;
             textureConfig.width = width;
             textureConfig.height = height;
             textureConfig.depth = 1;
-            textureConfig.rgba = reinterpret_cast<uint8_t *>(rgbaData.data());
-            textureConfig.rgba_size = rgbaData.size() * sizeof(float);
+            textureConfig.data = reinterpret_cast<uint8_t *>(rgbaData.data());
+            textureConfig.data_size = rgbaData.size() * sizeof(float);
 
             // TODO: use 16-bit floating points like the game
-            newMaterial.tableTexture = renderer->addGameTexture(VK_FORMAT_R32G32B32A32_SFLOAT, textureConfig);
+            newMaterial.tableTexture = renderer->addGameTexture(textureConfig);
             renderer->device().nameTexture(*newMaterial.tableTexture, "g_SamplerTable"); // TODO: add material name
         }
     }
@@ -450,26 +441,40 @@ RenderMaterial MDLPart::createOrCacheMaterial(const std::string &path, const phy
 
 void MDLPart::destroyMaterial(RenderMaterial &material)
 {
-    if (auto &texture = material.diffuseTexture) {
-        renderer->device().destroyTexture(texture.value());
-    }
-    if (auto &texture = material.normalTexture) {
-        renderer->device().destroyTexture(texture.value());
-    }
-    if (auto &texture = material.specularTexture) {
-        renderer->device().destroyTexture(texture.value());
-    }
-    if (auto &texture = material.maskTexture) {
-        renderer->device().destroyTexture(texture.value());
-    }
-    if (auto &texture = material.indexTexture) {
-        renderer->device().destroyTexture(texture.value());
-    }
-    if (auto &texture = material.tableTexture) {
-        renderer->device().destroyTexture(texture.value());
-    }
+    // NOTE: textures are cached so we don't want to destroy them here! (maybe in the future if we remove them from the cache...)
 
     renderer->device().destroyBuffer(material.materialBuffer);
+}
+
+Texture MDLPart::createTexture(const std::string &path)
+{
+    auto texture = physis_texture_parse(data->platform, cache.lookupFile(QLatin1String(path)));
+    if (texture.p_ptr != nullptr) {
+        auto gameTexture = renderer->addGameTexture(texture);
+        renderer->device().nameTexture(gameTexture, "Game Texture " + path);
+
+        physis_tex_free(&texture);
+
+        return gameTexture;
+    }
+
+    qWarning() << "Failed to load" << path;
+    return {};
+}
+
+Texture MDLPart::createOrCacheTexture(const std::string &path)
+{
+    const auto hash = std::hash<std::string>{}(path);
+    if (!textureCache.contains(hash)) {
+        textureCache[hash] = createTexture(path);
+    }
+
+    return textureCache[hash];
+}
+
+void MDLPart::destroyTexture(Texture &texture)
+{
+    renderer->device().destroyTexture(texture);
 }
 
 void MDLPart::calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone)

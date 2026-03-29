@@ -39,7 +39,9 @@ bool TexPart::loadTex(physis_Buffer file)
         return false;
     }
 
-    QImage image(tex.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
+    auto rgba = physis_texture_to_rgba(tex);
+
+    QImage image(rgba.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
     m_label->setQPixmap(QPixmap::fromImage(image));
 
     physis_tex_free(&tex);

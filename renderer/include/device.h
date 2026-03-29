@@ -64,7 +64,7 @@ public:
     void nameTexture(Texture &texture, std::string_view name);
     void nameBuffer(Buffer &buffer, std::string_view name);
 
-    Texture addGameTexture(VkFormat format, physis_Texture gameTexture);
+    Texture addGameTexture(physis_Texture gameTexture);
 
     void beginDebugMarker(VkCommandBuffer command_buffer, VkDebugUtilsLabelEXT marker_info);
     void endDebugMarker(VkCommandBuffer command_buffer);
