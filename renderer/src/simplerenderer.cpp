@@ -488,7 +488,20 @@ void SimpleRenderer::initDescriptors()
     lightInfoBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     lightInfoBinding.binding = 7;
 
-    const std::array bindings = {boneInfoBufferBinding, textureBinding, normalBinding, specularBinding, multiBinding, lightInfoBinding};
+    VkDescriptorSetLayoutBinding indexBinding = {};
+    indexBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    indexBinding.descriptorCount = 1;
+    indexBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    indexBinding.binding = 8;
+
+    VkDescriptorSetLayoutBinding tableBinding = {};
+    tableBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    tableBinding.descriptorCount = 1;
+    tableBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    tableBinding.binding = 9;
+
+    const std::array bindings =
+        {boneInfoBufferBinding, textureBinding, normalBinding, specularBinding, multiBinding, lightInfoBinding, indexBinding, tableBinding};
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -673,6 +686,48 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
     lightBufferDescriptorWrite.dstBinding = 7;
 
     writes.push_back(lightBufferDescriptorWrite);
+
+    VkDescriptorImageInfo indexImageInfo = {};
+    indexImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    if (material.indexTexture) {
+        indexImageInfo.imageView = material.indexTexture->imageView;
+        indexImageInfo.sampler = m_sampler;
+    } else {
+        indexImageInfo.imageView = m_dummyTex.imageView;
+        indexImageInfo.sampler = m_sampler;
+    }
+
+    VkWriteDescriptorSet indexDescriptorWrite = {};
+    indexDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    indexDescriptorWrite.dstSet = set;
+    indexDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    indexDescriptorWrite.descriptorCount = 1;
+    indexDescriptorWrite.pImageInfo = &indexImageInfo;
+    indexDescriptorWrite.dstBinding = 8;
+
+    writes.push_back(indexDescriptorWrite);
+
+    VkDescriptorImageInfo tableImageInfo = {};
+    tableImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    if (material.tableTexture) {
+        tableImageInfo.imageView = material.tableTexture->imageView;
+        tableImageInfo.sampler = m_sampler;
+    } else {
+        tableImageInfo.imageView = m_dummyTex.imageView;
+        tableImageInfo.sampler = m_sampler;
+    }
+
+    VkWriteDescriptorSet tableDescriptorWrite = {};
+    tableDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    tableDescriptorWrite.dstSet = set;
+    tableDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    tableDescriptorWrite.descriptorCount = 1;
+    tableDescriptorWrite.pImageInfo = &tableImageInfo;
+    tableDescriptorWrite.dstBinding = 9;
+
+    writes.push_back(tableDescriptorWrite);
 
     vkUpdateDescriptorSets(m_device.device, writes.size(), writes.data(), 0, nullptr);
 

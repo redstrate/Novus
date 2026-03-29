@@ -13,6 +13,8 @@ layout(binding = 3) uniform sampler2D diffuseTexture;
 layout(binding = 4) uniform sampler2D normalTexture;
 layout(binding = 5) uniform sampler2D specularTexture;
 layout(binding = 6) uniform sampler2D multiTexture;
+layout(binding = 8) uniform sampler2D indexTexture;
+layout(binding = 9) uniform sampler2D tableTexture;
 
 const int MAX_LIGHTS = 1024; // NOTE: Keep in sync with SimpleRenderer's MAX_LIGHTS!
 
@@ -41,16 +43,22 @@ layout(std430, push_constant) uniform PushConstant {
 };
 
 void main() {
-    vec3 diffuse;
-    if (textureSize(diffuseTexture, 0).x == 1) {
-        diffuse = vec3(1);
-    } else {
+    vec3 diffuse = vec3(1);
+    if (textureSize(indexTexture, 0).x == 1) {
         vec4 tex = texture(diffuseTexture, inUV);
         diffuse = tex.rgb;
+
         // TODO: use alpha threshold from the material
-        if (tex.a <= 0.1) {
+        if (tex.a <= 0.1)
             discard;
-        }
+    } else {
+        vec2 index = texture(indexTexture, inUV).rg;
+        vec4 mask = texture(multiTexture, inUV);
+        diffuse = texture(tableTexture, vec2(0, index.x)).rgb * mask.rgb;
+
+        // TODO: use alpha threshold from the material
+        if (mask.a <= 0.1)
+            discard;
     }
     if(type == 1) {
         const float skinInfluence = texture(specularTexture, inUV).r;
