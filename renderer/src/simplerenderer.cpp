@@ -189,29 +189,21 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
                                sizeof(glm::mat4),
                                &m);
 
-            const int test = 0;
+            glm::vec4 viewPos = glm::vec4(-camera.position, 0.0f);
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                sizeof(glm::mat4) * 2,
-                               sizeof(int),
-                               &test);
+                               sizeof(glm::vec4),
+                               &viewPos);
 
             const int type = static_cast<int>(material.type);
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                               sizeof(glm::mat4) * 2 + sizeof(int),
+                               sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
                                sizeof(int),
                                &type);
-
-            glm::vec3 viewPos = -camera.position;
-            vkCmdPushConstants(commandBuffer,
-                               m_pipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                               sizeof(glm::mat4) * 2 + sizeof(int) * 2,
-                               sizeof(glm::vec3),
-                               &viewPos);
 
             vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
         }
@@ -397,7 +389,7 @@ void SimpleRenderer::initPipeline()
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 
     VkPushConstantRange pushConstantRange = {};
-    pushConstantRange.size = (sizeof(glm::mat4) * 2) + sizeof(int) * 2 + sizeof(glm::vec3);
+    pushConstantRange.size = (sizeof(glm::mat4) * 2) + sizeof(glm::vec4) + sizeof(int);
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};

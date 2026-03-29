@@ -23,9 +23,8 @@ layout(binding = 6) uniform sampler2D multiTexture;
 
 layout(std430, push_constant) uniform PushConstant {
     mat4 vp, model;
-    int boneOffset;
+    vec4 viewPos;
     int type;
-    vec3 viewPos;
 };
 
 layout(binding = 2) uniform BoneInformation {
@@ -33,10 +32,10 @@ layout(binding = 2) uniform BoneInformation {
 };
 
 void main() {
-    mat4 BoneTransform = mat4(bones[boneOffset + inBoneIds[0]]) * inBoneWeights[0];
-    BoneTransform += mat4(bones[boneOffset + inBoneIds[1]]) * inBoneWeights[1];
-    BoneTransform += mat4(bones[boneOffset + inBoneIds[2]]) * inBoneWeights[2];
-    BoneTransform += mat4(bones[boneOffset + inBoneIds[3]]) * inBoneWeights[3];
+    mat4 BoneTransform = mat4(bones[inBoneIds[0]]) * inBoneWeights[0];
+    BoneTransform += mat4(bones[inBoneIds[1]]) * inBoneWeights[1];
+    BoneTransform += mat4(bones[inBoneIds[2]]) * inBoneWeights[2];
+    BoneTransform += mat4(bones[inBoneIds[3]]) * inBoneWeights[3];
 
     BoneTransform = model * BoneTransform;
 

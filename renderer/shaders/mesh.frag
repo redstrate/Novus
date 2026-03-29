@@ -37,9 +37,8 @@ layout(binding = 7) buffer readonly LightInformation {
 
 layout(std430, push_constant) uniform PushConstant {
     mat4 vp, model;
-    int boneOffset;
+    vec4 viewPos;
     int type;
-    vec3 viewPos;
 };
 
 void main() {
@@ -90,7 +89,7 @@ void main() {
                 		    quadratic * (distance * distance));
             lightFactor += lights[i].colorIntensity.rgb * (attenuation * diff) * lights[i].colorIntensity.a * INTENSITY_FACTOR;
 
-            vec3 viewDir = normalize(viewPos - inFragPos);
+            vec3 viewDir = normalize(viewPos.xyz - inFragPos);
             vec3 reflectDir = reflect(-lightDir, norm);
 
             float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
