@@ -373,6 +373,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
         textureConfig.depth = 1;
         textureConfig.data = reinterpret_cast<uint8_t *>(rgbaData.data());
         textureConfig.data_size = rgbaData.size() * sizeof(float);
+        textureConfig.mip_levels = 1;
 
         // TODO: use 16-bit floating points like the game
         newMaterial.tableTexture = renderer->addGameTexture(textureConfig);
@@ -419,6 +420,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
             textureConfig.depth = 1;
             textureConfig.data = reinterpret_cast<uint8_t *>(rgbaData.data());
             textureConfig.data_size = rgbaData.size() * sizeof(float);
+            textureConfig.mip_levels = 1;
 
             // TODO: use 16-bit floating points like the game
             newMaterial.tableTexture = renderer->addGameTexture(textureConfig);
