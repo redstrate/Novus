@@ -443,7 +443,10 @@ RenderMaterial MDLPart::createOrCacheMaterial(const std::string &path, const phy
 
 void MDLPart::destroyMaterial(RenderMaterial &material)
 {
-    // NOTE: textures are cached so we don't want to destroy them here! (maybe in the future if we remove them from the cache...)
+    // NOTE: the other textures are cached so we don't want to destroy them here! (maybe in the future if we remove them from the cache...)
+    if (auto &texture = material.tableTexture) {
+        renderer->device().destroyTexture(texture.value());
+    }
 
     renderer->device().destroyBuffer(material.materialBuffer);
 }
