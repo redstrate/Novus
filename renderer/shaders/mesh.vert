@@ -22,9 +22,10 @@ layout(binding = 5) uniform sampler2D specularTexture;
 layout(binding = 6) uniform sampler2D multiTexture;
 
 layout(std430, push_constant) uniform PushConstant {
-	mat4 vp, model;
-	int boneOffset;
+    mat4 vp, model;
+    int boneOffset;
     int type;
+    vec3 viewPos;
 };
 
 layout(std430, binding = 2) buffer readonly BoneInformation {

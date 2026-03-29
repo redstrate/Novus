@@ -58,6 +58,8 @@ GearView::GearView(physis_SqPackResource *data, FileCache &cache, QWidget *paren
             }))
         }
     };
+
+    resetMdlPart();
 }
 
 std::vector<std::pair<Race, Tribe>> GearView::supportedRaces() const
@@ -280,7 +282,7 @@ void GearView::updatePart()
     if (raceDirty) {
         // if race changes, all of the models need to be reloaded.
         // TODO: in the future, we can be a bit smarter about this, lots of races use the same model (hyur)
-        mdlPart->clear();
+        resetMdlPart();
         queuedGearAdditions = loadedGears;
         loadedGears.clear();
         gearDirty = true;
@@ -464,6 +466,34 @@ void GearView::changeEvent(QEvent *event)
         break;
     }
     QFrame::changeEvent(event);
+}
+
+void GearView::resetMdlPart()
+{
+    mdlPart->clear();
+
+    // Setup some basic three-point lighting
+    mdlPart->manager()->scene.lights.clear();
+
+    SceneLight keyLight;
+    keyLight.type = LightType::Point;
+    keyLight.position = glm::vec3(-5, 5, 5);
+    keyLight.intensity = 5.0f;
+    mdlPart->manager()->scene.lights.push_back(keyLight);
+
+    SceneLight backLight;
+    backLight.type = LightType::Point;
+    backLight.position = glm::vec3(-5, 5, -5);
+    backLight.color = glm::vec3(1, 0, 0);
+    backLight.intensity = 2.0f;
+    mdlPart->manager()->scene.lights.push_back(backLight);
+
+    SceneLight fillLight;
+    fillLight.type = LightType::Point;
+    fillLight.position = glm::vec3(5, 5, 5);
+    fillLight.color = glm::vec3(0, 0, 1);
+    fillLight.intensity = 3.0f;
+    mdlPart->manager()->scene.lights.push_back(fillLight);
 }
 
 #include "moc_gearview.cpp"

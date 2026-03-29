@@ -37,6 +37,7 @@ layout(std430, push_constant) uniform PushConstant {
     mat4 vp, model;
     int boneOffset;
     int type;
+    vec3 viewPos;
 };
 
 void main() {
@@ -61,6 +62,7 @@ void main() {
     vec3 norm = normalize(inNormal);
 
     vec3 lightFactor = vec3(0.25);
+    vec3 specular = vec3(0);
     for (int i = 0; i < MAX_LIGHTS; i++) {
         int lightType = int(lights[i].directionOrPos.w);
         if (lightType == LIGHT_TYPE_DIRECTIONAL) {
@@ -79,6 +81,12 @@ void main() {
             float attenuation = 1.0 / (constant + linear * distance +
                 		    quadratic * (distance * distance));
             lightFactor += lights[i].colorIntensity.rgb * (attenuation * diff) * lights[i].colorIntensity.a * INTENSITY_FACTOR;
+
+            vec3 viewDir = normalize(viewPos - inFragPos);
+            vec3 reflectDir = reflect(-lightDir, norm);
+
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+            specular += 0.25 * (spec * lights[i].colorIntensity.rgb * attenuation * lights[i].colorIntensity.a * INTENSITY_FACTOR * texture(specularTexture, inUV).r);
         } else if (lightType == LIGHT_TYPE_SPOT) {
              // TODO: actually implement spot lights
 
@@ -95,5 +103,5 @@ void main() {
          }
     }
 
-    outColor = vec4(diffuse * lightFactor, 1.0);
+    outColor = vec4((lightFactor + specular) * diffuse, 1.0);
 }

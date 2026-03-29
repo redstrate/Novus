@@ -94,6 +94,8 @@ protected:
     void changeEvent(QEvent *) override;
 
 private:
+    void resetMdlPart();
+
     int currentLod = 0;
 
     uint32_t maxLod = 0;
