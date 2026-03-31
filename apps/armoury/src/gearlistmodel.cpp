@@ -17,7 +17,7 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
     {
         GearInfo info = {};
         info.name = i18n("SmallClothes Body");
-        info.slot = Slot::Body;
+        info.slot = EquipSlotCategory::Body;
 
         gears.push_back(info);
     }
@@ -26,7 +26,7 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
     {
         GearInfo info = {};
         info.name = i18n("SmallClothes Legs");
-        info.slot = Slot::Legs;
+        info.slot = EquipSlotCategory::Legs;
 
         gears.push_back(info);
     }
@@ -45,7 +45,7 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
                 memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
 
                 const auto slot = physis_slot_from_id(row.columns[17].u_int8._0);
-                if (slot == Slot::Invalid) {
+                if (slot == EquipSlotCategory::Invalid) {
                     continue;
                 }
 
@@ -66,8 +66,8 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
     rootItem->type = TreeType::Root;
 
     int i = 0;
-    for (auto slot : magic_enum::enum_values<Slot>()) {
-        if (slot == Slot::Invalid) {
+    for (auto slot : magic_enum::enum_values<EquipSlotCategory>()) {
+        if (slot == EquipSlotCategory::Invalid || slot == EquipSlotCategory::Waist) {
             continue;
         }
 
@@ -91,10 +91,6 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
         }
     }
     endResetModel();
-
-    for (auto slotName : magic_enum::enum_names<Slot>()) {
-        slotNames.push_back(QLatin1String(slotName.data()));
-    }
 }
 
 int GearListModel::rowCount(const QModelIndex &parent) const

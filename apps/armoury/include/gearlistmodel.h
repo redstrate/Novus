@@ -12,7 +12,7 @@ enum class TreeType { Root, Category, Item };
 
 struct SceneTreeInformation {
     TreeType type;
-    std::optional<Slot> slotType;
+    std::optional<EquipSlotCategory> slotType;
     SceneTreeInformation *parent = nullptr;
     std::optional<GearInfo> gear;
     int row = 0;
@@ -43,7 +43,6 @@ private:
     physis_ExcelSheet m_sheet;
 
     std::vector<GearInfo> gears;
-    QStringList slotNames;
 
     physis_SqPackResource *gameData = nullptr;
     SceneTreeInformation *rootItem = nullptr;

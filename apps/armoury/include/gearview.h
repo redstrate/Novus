@@ -16,7 +16,7 @@ struct ModelInfo {
 
 struct GearInfo {
     QString name;
-    Slot slot;
+    EquipSlotCategory slot;
     ModelInfo modelInfo;
     uint16_t icon;
 

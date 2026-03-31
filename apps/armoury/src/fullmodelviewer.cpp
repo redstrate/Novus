@@ -192,12 +192,12 @@ void FullModelViewer::clear()
 void FullModelViewer::addGear(GearInfo &info)
 {
     switch (info.slot) {
-    case Slot::Body:
+    case EquipSlotCategory::Body:
         if (!topSlot || *topSlot != info) {
             topSlot = info;
         }
         break;
-    case Slot::Legs:
+    case EquipSlotCategory::Legs:
         if (!bottomSlot || *bottomSlot != info) {
             bottomSlot = info;
         }
@@ -217,7 +217,7 @@ void FullModelViewer::reloadGear()
         // smallclothes body
         GearInfo info = {};
         info.name = i18n("SmallClothes Body");
-        info.slot = Slot::Body;
+        info.slot = EquipSlotCategory::Body;
 
         gearView->addGear(info);
     }
@@ -228,7 +228,7 @@ void FullModelViewer::reloadGear()
         // smallclothes legs
         GearInfo info = {};
         info.name = i18n("SmallClothes Legs");
-        info.slot = Slot::Legs;
+        info.slot = EquipSlotCategory::Legs;
 
         gearView->addGear(info);
     }
@@ -237,7 +237,7 @@ void FullModelViewer::reloadGear()
     {
         GearInfo info = {};
         info.name = i18n("SmallClothes Hands");
-        info.slot = Slot::Hands;
+        info.slot = EquipSlotCategory::Hands;
 
         gearView->addGear(info);
     }
@@ -246,7 +246,7 @@ void FullModelViewer::reloadGear()
     {
         GearInfo info = {};
         info.name = i18n("SmallClothes Feet");
-        info.slot = Slot::Feet;
+        info.slot = EquipSlotCategory::Feet;
 
         gearView->addGear(info);
     }

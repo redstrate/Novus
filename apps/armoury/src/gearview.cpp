@@ -266,9 +266,7 @@ void GearView::reloadRaceDeforms()
 {
     qDebug() << "Loading race deform matrices for " << magic_enum::enum_name(currentRace).data() << magic_enum::enum_name(currentTribe).data()
              << magic_enum::enum_name(currentGender).data();
-    const int raceCode = physis_get_race_code(currentRace, currentTribe, currentGender);
-
-    QString skelName = QStringLiteral("chara/human/c%1/skeleton/base/b0001/skl_c%1b0001.sklb").arg(raceCode, 4, 10, QLatin1Char{'0'});
+    QString skelName = QString::fromStdString(physis_skeleton_path(currentRace, currentTribe, currentGender));
     mdlPart->setSkeleton(physis_skeleton_parse(data->platform, cache.lookupFile(skelName)));
 }
 
