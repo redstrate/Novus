@@ -28,6 +28,7 @@ SHCDPart::SHCDPart(physis_SqPackResource *resource, QWidget *parent)
     setLayout(layout);
 
     m_shaderTextEdit = new QTextEdit();
+    m_shaderTextEdit->setFontFamily(QStringLiteral("monospace"));
     layout->addWidget(m_shaderTextEdit);
 }
 

@@ -39,6 +39,7 @@ SHPKPart::SHPKPart(physis_SqPackResource *resource, QWidget *parent)
 
     shadersTextEdit = new QTextEdit();
     shadersTextEdit->setReadOnly(true);
+    shadersTextEdit->setFontFamily(QStringLiteral("monospace"));
 
     shadersScalarListWidget = new QListWidget();
     shadersTextureListWidget = new QListWidget();

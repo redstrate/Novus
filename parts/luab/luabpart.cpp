@@ -29,6 +29,7 @@ LuabPart::LuabPart(QWidget *parent)
 
     m_codeEdit = new QTextEdit();
     m_codeEdit->setReadOnly(true);
+    m_codeEdit->setFontFamily(QStringLiteral("monospace"));
     layout->addWidget(m_codeEdit);
 
     setLayout(layout);
