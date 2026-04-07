@@ -13,6 +13,8 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
+#include "scriptprocessor.h"
+
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
 #include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/FoldingRegion>
@@ -52,7 +54,8 @@ void LuabPart::load(physis_Buffer buffer)
         luaDecProcess.start();
         luaDecProcess.waitForFinished();
 
-        m_codeEdit->setText(QString::fromUtf8(luaDecProcess.readAllStandardOutput()));
+        ScriptProcessor processor;
+        m_codeEdit->setText(processor.process(QString::fromUtf8(luaDecProcess.readAllStandardOutput())));
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting

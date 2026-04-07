@@ -3,7 +3,7 @@
 
 add_library(luabpart STATIC)
 set_common_properties(luabpart)
-target_sources(luabpart PRIVATE luabpart.cpp)
+target_sources(luabpart PRIVATE luabpart.cpp scriptprocessor.cpp)
 target_link_libraries(luabpart
         PUBLIC
         KF6::I18n
