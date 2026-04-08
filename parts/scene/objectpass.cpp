@@ -234,17 +234,21 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
 
         vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
 
-        auto m = glm::mat4(1.0f);
-        m = glm::translate(m, {object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]});
-        m *= glm::mat4_cast(glm::quat(glm::vec3(object.transform.rotation[0], object.transform.rotation[1], object.transform.rotation[2])));
-        m = glm::scale(m, {object.transform.scale[0], object.transform.scale[1], object.transform.scale[2]});
+        const auto setModel = [this, &object, &commandBuffer](const glm::vec3 relativePosition) {
+            auto m = glm::mat4(1.0f);
+            m = glm::translate(m,
+                               glm::vec3{object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]} + relativePosition);
+            m *= glm::mat4_cast(glm::quat(glm::vec3(object.transform.rotation[0], object.transform.rotation[1], object.transform.rotation[2])));
+            m = glm::scale(m, {object.transform.scale[0], object.transform.scale[1], object.transform.scale[2]});
 
-        vkCmdPushConstants(commandBuffer,
-                           m_pipelineLayout,
-                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                           sizeof(glm::mat4),
-                           sizeof(glm::mat4),
-                           &m);
+            vkCmdPushConstants(commandBuffer,
+                               m_pipelineLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                               sizeof(glm::mat4),
+                               sizeof(glm::mat4),
+                               &m);
+        };
+        setModel({});
 
         glm::vec4 color = glm::vec4(1, 0, 0, 1);
         if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
@@ -293,7 +297,15 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
         case physis_LayerEntry::Tag::PrefetchRange:
             decideBasedOnTrigger(object.data.prefetch_range._0.parent_data);
             break;
+        case physis_LayerEntry::Tag::PopRange:
+            for (uint32_t i = 0; i < object.data.pop_range._0.position_count; i++) {
+                setModel({object.data.pop_range._0.positions[i][0], object.data.pop_range._0.positions[i][1], object.data.pop_range._0.positions[i][2]});
+                Primitives::DrawSphere(commandBuffer);
+            }
+            setModel({}); // reset position
+            [[fallthrough]]; // draw it normally too
         default:
+
             Primitives::DrawCube(commandBuffer);
             break;
         }

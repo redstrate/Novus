@@ -462,6 +462,11 @@ void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObj
     indexEdit->setText(QString::number(pop.index));
     indexEdit->setReadOnly(true);
     layout->addRow(i18n("Index"), indexEdit);
+
+    auto innerRadiusRatioEdit = new QLineEdit();
+    innerRadiusRatioEdit->setText(QString::number(pop.inner_radius_ratio));
+    innerRadiusRatioEdit->setReadOnly(true);
+    layout->addRow(i18n("Inner Radius Ratio"), innerRadiusRatioEdit);
 }
 
 void ObjectPropertiesWidget::addEventNPCSection(physis_ENPCInstanceObject &enpc)
