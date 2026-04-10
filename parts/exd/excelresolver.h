@@ -106,7 +106,7 @@ private:
      */
     std::optional<uint32_t> hasRow(const physis_EXH &exh, uint32_t row) const;
 
-    Language getSuitableLanguage(const physis_EXH &pExh, Language preferredLanguage) const;
+    static Language getSuitableLanguage(const physis_EXH &pExh, Language preferredLanguage);
 
     physis_SqPackResource *m_resource = nullptr;
     QHash<QString, physis_EXH> m_cachedEXHs;

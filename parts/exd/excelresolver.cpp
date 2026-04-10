@@ -64,7 +64,7 @@ CachingExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t r
         const auto exh = getCachedEXH(sheetName);
         Q_ASSERT(exh.p_ptr);
 
-        if (const auto page = hasRow(exh, row)) {
+        if (hasRow(exh, row).has_value()) {
             const auto exd = getCachedSheet(exh,
                                             EXDSelector{
                                                 .name = sheetName,
@@ -137,7 +137,7 @@ std::optional<uint32_t> CachingExcelResolver::hasRow(const physis_EXH &exh, cons
 {
     for (uint32_t i = 0; i < exh.page_count; i++) {
         const auto page = exh.pages[i];
-        if (row >= page.start_id && row < page.row_count) {
+        if (row >= page.start_id && row < page.row_count + page.start_id) {
             return i;
         }
     }
@@ -145,7 +145,7 @@ std::optional<uint32_t> CachingExcelResolver::hasRow(const physis_EXH &exh, cons
     return std::nullopt;
 }
 
-Language CachingExcelResolver::getSuitableLanguage(const physis_EXH &pExh, Language preferredLanguage) const
+Language CachingExcelResolver::getSuitableLanguage(const physis_EXH &pExh, Language preferredLanguage)
 {
     // Find the preferred language first (if not None, to handle none->localized sheet cases)
     if (preferredLanguage != Language::None) {
