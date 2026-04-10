@@ -91,7 +91,7 @@ void ExcelEdit::updateRow()
     m_menu->clear();
 
     if (!m_readOnly) {
-        auto editAction = m_menu->addAction(i18n("Edit…"));
+        auto editAction = m_menu->addAction(QIcon::fromTheme(QStringLiteral("document-edit-symbolic")), i18n("Edit…"));
         connect(editAction, &QAction::triggered, this, [this] {
             m_rowId = QInputDialog::getInt(this, i18n("Enter Row ID"), i18n("Row ID:"), m_rowId, 0, std::numeric_limits<int>::max());
             updateRow();
@@ -102,7 +102,7 @@ void ExcelEdit::updateRow()
 
     for (const auto &[name, model] : m_models) {
         const auto addResolveAction = [this, name] {
-            auto resolveAction = m_menu->addAction(i18n("Go to %1…").arg(name));
+            auto resolveAction = m_menu->addAction(QIcon::fromTheme(QStringLiteral("open-link-symbolic")), i18n("Go To %1…").arg(name));
             connect(resolveAction, &QAction::triggered, this, [this, name] {
                 QProcess::startDetached(EXCELEDITOR_EXECUTABLE, {QStringLiteral("%1#%2").arg(name).arg(m_rowId)});
             });
