@@ -25,9 +25,12 @@
 #include <QMenu>
 #include <QSortFilterProxyModel>
 #include <QStandardPaths>
+#include <qevent.h>
 
 class SearchSettingsPopup : public QDialog
 {
+    Q_OBJECT
+
 public:
     SearchSettingsPopup(EXDPart::SearchSettings settings, QAbstractItemModel *columnModel, QWidget *parent)
         : QDialog(parent, Qt::Popup)
@@ -67,6 +70,43 @@ private:
     QComboBox *m_columnBox;
     QCheckBox *m_caseSensitiveCheck;
     QCheckBox *m_regexCheck;
+};
+
+class ExcelTableView : public QTableView
+{
+    Q_OBJECT
+
+public:
+    explicit ExcelTableView()
+    {
+        setMouseTracking(true);
+    }
+
+protected:
+    void mouseMoveEvent(QMouseEvent *event) override
+    {
+        const auto index = indexAt(event->pos());
+        if (!index.data(ExcelModel::ResolvedSheetRole).isNull()) {
+            setCursor(Qt::PointingHandCursor);
+        } else {
+            unsetCursor();
+        }
+
+        QTableView::mouseMoveEvent(event);
+    }
+
+    void mousePressEvent(QMouseEvent *event) override
+    {
+        QTableView::mousePressEvent(event);
+
+        const auto index = indexAt(event->pos());
+        if (!index.data(ExcelModel::ResolvedSheetRole).isNull()) {
+            Q_EMIT requestJump(index.data(ExcelModel::ResolvedSheetRole).toString(), QString::number(index.data(ExcelModel::ResolvedRowRole).toInt()));
+        }
+    }
+
+Q_SIGNALS:
+    void requestJump(const QString &name, const QString &rowQuery);
 };
 
 EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent)
@@ -321,7 +361,8 @@ void EXDPart::loadTables()
     sheet = physis_sqpack_read_excel_sheet(data, m_name.toStdString().c_str(), &exh, getSuitableLanguage(exh));
 
     for (uint32_t i = 0; i < sheet.page_count; i++) {
-        auto tableWidget = new QTableView();
+        auto tableWidget = new ExcelTableView();
+        connect(tableWidget, &ExcelTableView::requestJump, this, &EXDPart::requestJump);
 
         auto excelModel = new ExcelModel(exh, sheet.pages[i], schema, m_resolver, getSuitableLanguage(exh), this);
 
@@ -404,4 +445,5 @@ Language EXDPart::getSuitableLanguage(const physis_EXH &pExh) const
     return getLanguage();
 }
 
+#include "exdpart.moc"
 #include "moc_exdpart.cpp"

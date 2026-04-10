@@ -44,6 +44,9 @@ public:
         bool enableRegex = false;
     };
 
+Q_SIGNALS:
+    void requestJump(const QString &name, const QString &rowQuery);
+
 private:
     void loadTables();
     void filterData(const QString &pattern);

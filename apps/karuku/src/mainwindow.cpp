@@ -48,6 +48,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     m_exdPart = new EXDPart(&m_data, m_excelResolver.get());
     m_exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
+    connect(m_exdPart, &EXDPart::requestJump, this, &MainWindow::jumpToSheetAndRow);
     dummyWidget->addWidget(m_exdPart);
 
     connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, &MainWindow::jumpToSheet);
