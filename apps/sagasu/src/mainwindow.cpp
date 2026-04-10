@@ -196,6 +196,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     }
 
     m_fileActionsMenu->clear();
+    m_fileActions->setVisible(false);
 
     const auto addTab = [this, type](QWidget *widget) {
         const QString typeName = FileTypes::getFiletypeName(type);
@@ -389,7 +390,6 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         m_fileActionsMenu->addAction(texWidget->saveImageAction());
     } break;
     default:
-        m_fileActions->setVisible(false);
         break;
     }
 
