@@ -3,7 +3,9 @@
 
 #include "excelresolver.h"
 
+#include "magic_enum.hpp"
 #include "schema.h"
+#include "settings.h"
 
 #include <KLocalizedString>
 
@@ -23,11 +25,12 @@ physis_ExcelRow const &ScopedExelRow::row() const
     return m_row;
 }
 
-std::optional<std::pair<QString, ScopedExelRow>> AbstractExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
+std::optional<std::pair<QString, ScopedExelRow>>
+AbstractExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language preferredLanguage)
 {
     Q_UNUSED(sheetNames)
     Q_UNUSED(row)
-    Q_UNUSED(language)
+    Q_UNUSED(preferredLanguage)
     return std::nullopt;
 }
 
@@ -54,7 +57,8 @@ CachingExcelResolver::~CachingExcelResolver()
     }
 }
 
-std::optional<std::pair<QString, ScopedExelRow>> CachingExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language language)
+std::optional<std::pair<QString, ScopedExelRow>>
+CachingExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t row, const Language preferredLanguage)
 {
     for (const auto &sheetName : sheetNames) {
         const auto exh = getCachedEXH(sheetName);
@@ -64,7 +68,7 @@ std::optional<std::pair<QString, ScopedExelRow>> CachingExcelResolver::resolveRo
             const auto exd = getCachedSheet(exh,
                                             EXDSelector{
                                                 .name = sheetName,
-                                                .language = language,
+                                                .preferredLanguage = preferredLanguage,
                                             });
             if (exd.p_ptr) {
                 const auto exdRow = physis_excel_get_row(&exd, row);
@@ -74,7 +78,7 @@ std::optional<std::pair<QString, ScopedExelRow>> CachingExcelResolver::resolveRo
             qWarning() << "Failed to fetch resolved row" << sheetName << row << "???";
         }
     }
-    return AbstractExcelResolver::resolveRow(sheetNames, row, language);
+    return AbstractExcelResolver::resolveRow(sheetNames, row, preferredLanguage);
 }
 
 physis_Field *CachingExcelResolver::translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, const uint32_t column)
@@ -117,8 +121,13 @@ physis_EXH &CachingExcelResolver::getCachedEXH(const QString &sheetName)
 physis_ExcelSheet &CachingExcelResolver::getCachedSheet(const physis_EXH &exh, const EXDSelector &selector)
 {
     if (!m_cachedSheets.contains(selector)) {
-        const auto exd = physis_sqpack_read_excel_sheet(m_resource, selector.name.toStdString().c_str(), &exh, selector.language);
-        m_cachedSheets.insert(selector, exd);
+        const auto language = getSuitableLanguage(exh, selector.preferredLanguage);
+        const auto exd = physis_sqpack_read_excel_sheet(m_resource, selector.name.toStdString().c_str(), &exh, language);
+        if (exd.p_ptr) {
+            m_cachedSheets.insert(selector, exd);
+        } else {
+            qWarning() << "Failed to load" << selector.name << "with language" << magic_enum::enum_name(language);
+        }
     }
 
     return m_cachedSheets[selector];
@@ -134,4 +143,33 @@ std::optional<uint32_t> CachingExcelResolver::hasRow(const physis_EXH &exh, cons
     }
 
     return std::nullopt;
+}
+
+Language CachingExcelResolver::getSuitableLanguage(const physis_EXH &pExh, Language preferredLanguage) const
+{
+    // Find the preferred language first (if not None, to handle none->localized sheet cases)
+    if (preferredLanguage != Language::None) {
+        for (uint32_t i = 0; i < pExh.language_count; i++) {
+            if (pExh.languages[i] == preferredLanguage) {
+                return preferredLanguage;
+            }
+        }
+    }
+
+    // Fallback to None or the default language
+    for (uint32_t i = 0; i < pExh.language_count; i++) {
+        if (pExh.languages[i] == getLanguage()) {
+            return pExh.languages[i];
+        }
+    }
+
+    // Fallback to None if that fails
+    for (uint32_t i = 0; i < pExh.language_count; i++) {
+        if (pExh.languages[i] == Language::None) {
+            return pExh.languages[i];
+        }
+    }
+
+    // This should never happen, Excel sheets *always* have a language.
+    Q_UNREACHABLE();
 }

@@ -60,24 +60,24 @@ public:
      *
      * The first sheet that contains said row ID will be returned.
      */
-    virtual std::optional<std::pair<QString, ScopedExelRow>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language);
+    virtual std::optional<std::pair<QString, ScopedExelRow>> resolveRow(const QStringList &sheetNames, uint32_t row, Language preferredLanguage);
 
     virtual physis_Field *translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column);
 };
 
 struct EXDSelector {
     QString name;
-    Language language;
+    Language preferredLanguage;
 };
 
 inline bool operator==(const EXDSelector &a, const EXDSelector &b)
 {
-    return a.name == b.name && a.language == b.language;
+    return a.name == b.name && a.preferredLanguage == b.preferredLanguage;
 }
 
 inline size_t qHash(const EXDSelector &selector, const size_t seed)
 {
-    return qHashMulti(seed, selector.name, selector.language);
+    return qHashMulti(seed, selector.name, selector.preferredLanguage);
 }
 
 class CachingExcelResolver : public AbstractExcelResolver
@@ -86,7 +86,7 @@ public:
     explicit CachingExcelResolver(physis_SqPackResource *resource);
     ~CachingExcelResolver() override;
 
-    std::optional<std::pair<QString, ScopedExelRow>> resolveRow(const QStringList &sheetNames, uint32_t row, Language language) override;
+    std::optional<std::pair<QString, ScopedExelRow>> resolveRow(const QStringList &sheetNames, uint32_t row, Language preferredLanguage) override;
 
     physis_Field *translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column) override;
 
@@ -105,6 +105,8 @@ private:
      * @brief Checks whether this sheet contains said row ID. Returns the page it can be found on, if found.
      */
     std::optional<uint32_t> hasRow(const physis_EXH &exh, uint32_t row) const;
+
+    Language getSuitableLanguage(const physis_EXH &pExh, Language preferredLanguage) const;
 
     physis_SqPackResource *m_resource = nullptr;
     QHash<QString, physis_EXH> m_cachedEXHs;
