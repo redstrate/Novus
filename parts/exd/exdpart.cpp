@@ -6,11 +6,9 @@
 #include "excelmodel.h"
 
 #include <KLocalizedString>
-#include <QDir>
+#include <QCheckBox>
 #include <QFile>
 #include <QGroupBox>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QLabel>
 #include <QTableWidget>
 #include <QVBoxLayout>
@@ -23,9 +21,53 @@
 #include <QActionGroup>
 #include <QFileDialog>
 #include <QHeaderView>
+#include <QLineEdit>
 #include <QMenu>
 #include <QSortFilterProxyModel>
 #include <QStandardPaths>
+
+class SearchSettingsPopup : public QDialog
+{
+public:
+    SearchSettingsPopup(EXDPart::SearchSettings settings, QAbstractItemModel *columnModel, QWidget *parent)
+        : QDialog(parent, Qt::Popup)
+    {
+        auto layout = new QFormLayout();
+        setLayout(layout);
+
+        m_columnBox = new QComboBox();
+        m_columnBox->addItem(i18n("All Columns"), -1);
+        for (int i = 0; i < columnModel->columnCount(); i++) {
+            auto name = columnModel->headerData(i, Qt::Orientation::Horizontal, Qt::DisplayRole).toString();
+            auto decoration = columnModel->headerData(i, Qt::Orientation::Horizontal, Qt::DecorationRole).value<QIcon>();
+            m_columnBox->addItem(decoration, name, i);
+        }
+        m_columnBox->setCurrentIndex(m_columnBox->findData(settings.column));
+        layout->addRow(i18nc("@info:label", "Search In"), m_columnBox);
+
+        m_caseSensitiveCheck = new QCheckBox();
+        m_caseSensitiveCheck->setChecked(settings.caseSensitive);
+        layout->addRow(i18nc("@info:label", "Case Sensitive"), m_caseSensitiveCheck);
+
+        m_regexCheck = new QCheckBox();
+        m_regexCheck->setChecked(settings.enableRegex);
+        layout->addRow(i18nc("@info:label", "Enable Regex"), m_regexCheck);
+    }
+
+    EXDPart::SearchSettings settings() const
+    {
+        return EXDPart::SearchSettings{
+            .column = m_columnBox->currentData().toInt(),
+            .caseSensitive = m_caseSensitiveCheck->isChecked(),
+            .enableRegex = m_regexCheck->isChecked(),
+        };
+    }
+
+private:
+    QComboBox *m_columnBox;
+    QCheckBox *m_caseSensitiveCheck;
+    QCheckBox *m_regexCheck;
+};
 
 EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent)
     : QWidget(parent)
@@ -35,7 +77,38 @@ EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, Q
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     setLayout(layout);
+
+    m_filterEdit = new QLineEdit();
+    m_filterEdit->setPlaceholderText(i18nc("@info:placeholder", "Filter data…"));
+    m_filterEdit->setClearButtonEnabled(true);
+    m_filterEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
+    connect(m_filterEdit, &QLineEdit::textEdited, this, &EXDPart::filterData);
+    layout->addWidget(m_filterEdit);
+
+    auto searchSettingsAction = new QAction(QIcon::fromTheme(QStringLiteral("settings-configure-symbolic")), i18n("Search Settings"), this);
+    connect(searchSettingsAction, &QAction::triggered, this, [this] {
+        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(0));
+        if (!tableWidget) {
+            return;
+        }
+
+        auto popup = new SearchSettingsPopup(m_searchSettings, tableWidget->horizontalHeader()->model(), this);
+        connect(popup, &QDialog::finished, this, [this, popup] {
+            setSearchSettings(popup->settings());
+            popup->deleteLater();
+        });
+
+        // Move to bottom-right of the filter bar
+        auto position = m_filterEdit->mapToGlobal(m_filterEdit->pos());
+        position.setY(position.y() + m_filterEdit->height());
+        position.setX(position.x() + m_filterEdit->width() - popup->width());
+        popup->move(position);
+
+        popup->show();
+    });
+    m_filterEdit->addAction(searchSettingsAction, QLineEdit::TrailingPosition);
 
     pageTabWidget = new QTabWidget();
     pageTabWidget->setTabPosition(QTabWidget::TabPosition::South);
@@ -52,7 +125,7 @@ EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, Q
     m_languageGroup = new QActionGroup(this);
     m_languageGroup->setExclusive(true);
 
-    m_saveCsvAction = new QAction(i18n("Save CSV…"), this);
+    m_saveCsvAction = new QAction(QIcon::fromTheme(QStringLiteral("text-csv")), i18n("Save CSV…"), this);
     connect(m_saveCsvAction, &QAction::triggered, this, [this] {
         const QString savePath = QFileDialog::getSaveFileName(this, i18nc("@title:window", "Save CSV"), QDir::homePath(), QStringLiteral("*.csv"));
         if (!savePath.isEmpty()) {
@@ -162,6 +235,16 @@ void EXDPart::resetSorting()
     tableWidget->sortByColumn(-1, Qt::AscendingOrder);
 }
 
+void EXDPart::clear()
+{
+    pageTabWidget->clear();
+}
+
+void EXDPart::focusFilterField()
+{
+    m_filterEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
+}
+
 void EXDPart::setPreferredLanguage(const Language language)
 {
     if (language != m_preferredLanguage) {
@@ -232,7 +315,7 @@ void EXDPart::loadTables()
 
     const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(m_name)));
 
-    pageTabWidget->clear();
+    clear();
 
     physis_sqpack_free_excel_sheet(&sheet); // Free existing
     sheet = physis_sqpack_read_excel_sheet(data, m_name.toStdString().c_str(), &exh, getSuitableLanguage(exh));
@@ -259,10 +342,46 @@ void EXDPart::loadTables()
         pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1", i));
     }
 
+    setSearchSettings(m_searchSettings); // Apply to new models
+
     // Expand the tabs and hide the tab bar if there's only one page
     // (it effectively makes the tab bar useless, so why show it?)
     pageTabWidget->tabBar()->setExpanding(true);
     pageTabWidget->tabBar()->setVisible(exh.page_count > 1);
+}
+
+void EXDPart::filterData(const QString &pattern)
+{
+    for (uint32_t i = 0; i < exh.page_count; i++) {
+        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
+        if (!tableWidget) {
+            continue;
+        }
+
+        auto model = qobject_cast<QSortFilterProxyModel *>(tableWidget->model());
+
+        if (m_searchSettings.enableRegex) {
+            model->setFilterRegularExpression(pattern);
+        } else {
+            model->setFilterFixedString(pattern);
+        }
+    }
+}
+
+void EXDPart::setSearchSettings(const SearchSettings newSettings)
+{
+    m_searchSettings = newSettings;
+
+    for (uint32_t i = 0; i < exh.page_count; i++) {
+        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
+        if (!tableWidget) {
+            continue;
+        }
+
+        auto model = qobject_cast<QSortFilterProxyModel *>(tableWidget->model());
+        model->setFilterKeyColumn(m_searchSettings.column);
+        model->setFilterCaseSensitivity(m_searchSettings.caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+    }
 }
 
 Language EXDPart::getSuitableLanguage(const physis_EXH &pExh) const

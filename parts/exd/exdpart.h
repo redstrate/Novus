@@ -25,6 +25,8 @@ public:
     void loadSheet(const QString &name, physis_Buffer buffer);
     void goToRow(const QString &query);
     void resetSorting();
+    void clear();
+    void focusFilterField();
 
     void setPreferredLanguage(Language language);
     Language preferredLanguage() const;
@@ -36,8 +38,16 @@ public:
 
     QString selectedRow() const;
 
+    struct SearchSettings {
+        int column = -1;
+        bool caseSensitive = false;
+        bool enableRegex = false;
+    };
+
 private:
     void loadTables();
+    void filterData(const QString &pattern);
+    void setSearchSettings(SearchSettings newSettings);
 
     physis_SqPackResource *data = nullptr;
 
@@ -54,4 +64,7 @@ private:
     QActionGroup *m_languageGroup = nullptr;
     QAction *m_saveCsvAction = nullptr;
     physis_ExcelSheet sheet{};
+    QLineEdit *m_filterEdit = nullptr;
+
+    SearchSettings m_searchSettings;
 };

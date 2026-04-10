@@ -46,6 +46,11 @@ public:
      */
     bool existsOnSheet(uint32_t rowId) const;
 
+    /**
+     * @brief The column that holds the display field, if any.
+     */
+    int displayFieldColumn() const;
+
 private:
     /**
      * @brief Returns a nice display for a given column data, including resolving other sheets.

@@ -246,6 +246,11 @@ bool ExcelModel::existsOnSheet(const uint32_t rowId) const
     return false;
 }
 
+int ExcelModel::displayFieldColumn() const
+{
+    return m_schema.displayFieldIndex().value_or(-1);
+}
+
 QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field &data) const
 {
     // Check to see if there's any targets

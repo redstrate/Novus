@@ -83,6 +83,8 @@ QString MainWindow::getArguments() const
 void MainWindow::jumpToSheet(const QString &name)
 {
     if (name.isEmpty()) {
+        m_exdPart->clear();
+        setWindowTitle({});
         return;
     }
 
@@ -231,7 +233,19 @@ void MainWindow::setupActions()
     connect(focusSearch, &QAction::triggered, m_sheetListWidget, &SheetListWidget::focusSearchField);
     actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 
+    auto focusFilter = new QAction(i18nc("@action:inmenu", "Filter"), this);
+    focusFilter->setIcon(QIcon::fromTheme(QStringLiteral("view-filter-symbolic")));
+    KActionCollection::setDefaultShortcut(focusFilter, QKeySequence(Qt::CTRL | Qt::Key_I));
+    connect(focusFilter, &QAction::triggered, m_exdPart, &EXDPart::focusFilterField);
+    actionCollection()->addAction(QStringLiteral("filter"), focusFilter);
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
+    KStandardAction::close(
+        qApp,
+        [this] {
+            jumpToSheet({});
+        },
+        actionCollection());
 }
 
 #include "moc_mainwindow.cpp"

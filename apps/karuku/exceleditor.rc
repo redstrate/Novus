@@ -18,6 +18,7 @@
     <Menu name="edit" >
       <text>Edit</text>
       <Action name="search" />
+      <Action name="filter" />
     </Menu>
     <Menu name="View" >
       <Text>View</Text>
