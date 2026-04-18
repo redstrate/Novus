@@ -205,27 +205,29 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
         qInfo() << "This map contains a duty! CF:" << contentFinderCondition;
 
         auto cfcExh = physis_exh_parse(m_data.platform, physis_sqpack_read(&m_data, "exd/ContentFinderCondition.exh"));
-        auto cfcSheet = physis_sqpack_read_excel_sheet(&m_data, "ContentFinderCondition", &cfcExh, getLanguage());
+        if (cfcExh.p_ptr) {
+            auto cfcSheet = physis_sqpack_read_excel_sheet(&m_data, "ContentFinderCondition", &cfcExh, getLanguage());
 
-        auto cfcRow = physis_excel_get_row(&cfcSheet, contentFinderCondition);
-        auto instanceContentId = cfcRow.columns[3].u_int16._0;
+            auto cfcRow = physis_excel_get_row(&cfcSheet, contentFinderCondition);
+            auto instanceContentId = cfcRow.columns[3].u_int16._0;
 
-        auto instanceContentExh = physis_exh_parse(m_data.platform, physis_sqpack_read(&m_data, "exd/InstanceContent.exh"));
-        auto instanceContentSheet = physis_sqpack_read_excel_sheet(&m_data, "InstanceContent", &instanceContentExh, Language::None);
+            auto instanceContentExh = physis_exh_parse(m_data.platform, physis_sqpack_read(&m_data, "exd/InstanceContent.exh"));
+            auto instanceContentSheet = physis_sqpack_read_excel_sheet(&m_data, "InstanceContent", &instanceContentExh, Language::None);
 
-        auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
+            auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
 
-        m_lgbEventRange = instanceContentRow.columns[7].u_int32._0;
+            m_lgbEventRange = instanceContentRow.columns[7].u_int32._0;
 
-        auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
+            auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
 
-        auto mapEffectExh = physis_exh_parse(m_data.platform, physis_sqpack_read(&m_data, "exd/ContentDirectorManagedSG.exh"));
-        auto mapEffectSheet = physis_sqpack_read_excel_sheet(&m_data, "ContentDirectorManagedSG", &mapEffectExh, Language::None);
+            auto mapEffectExh = physis_exh_parse(m_data.platform, physis_sqpack_read(&m_data, "exd/ContentDirectorManagedSG.exh"));
+            auto mapEffectSheet = physis_sqpack_read_excel_sheet(&m_data, "ContentDirectorManagedSG", &mapEffectExh, Language::None);
 
-        auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
-        for (size_t i = 0; i < effectCount; i++) {
-            auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
-            m_mapEffects.push_back(effectRow.columns[0].int32._0);
+            auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
+            for (size_t i = 0; i < effectCount; i++) {
+                auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
+                m_mapEffects.push_back(effectRow.columns[0].int32._0);
+            }
         }
     }
 }
