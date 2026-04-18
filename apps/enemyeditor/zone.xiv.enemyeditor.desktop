@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
+[Desktop Entry]
+Name=Novus SDK
+Comment=FFXIV Model Viewer
+Exec=novus-mdlviewer %u
+Terminal=false
+Icon=zone.xiv.mdlviewer
+Type=Application
+NoDisplay=true

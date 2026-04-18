@@ -557,6 +557,11 @@ RenderManager *MDLPart::manager() const
     return renderer.get();
 }
 
+QImage MDLPart::grab()
+{
+    return renderer->grab(vkWindow->models);
+}
+
 bool MDLPart::modelExists(const QString &name)
 {
     return vkWindow->sourceModels.contains(name);

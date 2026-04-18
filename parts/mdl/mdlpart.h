@@ -57,6 +57,8 @@ public:
 
     bool enableRacialDeform = true;
 
+    QImage grab();
+
 Q_SIGNALS:
     void modelChanged();
     void skeletonChanged();

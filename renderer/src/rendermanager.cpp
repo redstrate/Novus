@@ -875,3 +875,168 @@ void RenderManager::freeResources()
         m_renderer->freeResources();
     }
 }
+
+QImage RenderManager::grab(const std::vector<DrawObjectInstance> &models)
+{
+    render(models);
+
+    // Source for the copy is the last rendered swapchain image
+    VkImage srcImage = m_device->swapChain->swapchainImages[m_device->swapChain->currentFrame];
+
+    // Create the linear tiled destination image to copy to and to read the memory from
+    VkImageCreateInfo imageCreateCI = {};
+    imageCreateCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageCreateCI.imageType = VK_IMAGE_TYPE_2D;
+    // Note that vkCmdBlitImage (if supported) will also do format conversions if the swapchain color format would differ
+    imageCreateCI.format = VK_FORMAT_R8G8B8A8_UNORM;
+    imageCreateCI.extent.width = m_device->swapChain->extent.width;
+    imageCreateCI.extent.height = m_device->swapChain->extent.height;
+    imageCreateCI.extent.depth = 1;
+    imageCreateCI.arrayLayers = 1;
+    imageCreateCI.mipLevels = 1;
+    imageCreateCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageCreateCI.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageCreateCI.tiling = VK_IMAGE_TILING_LINEAR;
+    imageCreateCI.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    // Create the image
+    VkImage dstImage;
+    vkCreateImage(m_device->device, &imageCreateCI, nullptr, &dstImage);
+    // Create memory to back up the image
+    VkMemoryRequirements memRequirements;
+    VkMemoryAllocateInfo memAllocInfo = {};
+    memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    VkDeviceMemory dstImageMemory;
+    vkGetImageMemoryRequirements(m_device->device, dstImage, &memRequirements);
+    memAllocInfo.allocationSize = memRequirements.size;
+    // Memory must be host visible to copy from
+    memAllocInfo.memoryTypeIndex =
+        m_device->findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkAllocateMemory(m_device->device, &memAllocInfo, nullptr, &dstImageMemory);
+    vkBindImageMemory(m_device->device, dstImage, dstImageMemory, 0);
+
+    // Do the actual blit from the swapchain image to our host visible destination image
+    VkCommandBufferAllocateInfo allocateInfo = {};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocateInfo.commandBufferCount = 1;
+    allocateInfo.commandPool = m_device->commandPool;
+    allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+    VkCommandBuffer copyCmd = VK_NULL_HANDLE;
+    vkAllocateCommandBuffers(m_device->device, &allocateInfo, &copyCmd);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    vkBeginCommandBuffer(copyCmd, &beginInfo);
+
+    // Transition destination image to transfer destination layout
+    m_device->inlineTransitionImageLayout(copyCmd,
+                                          dstImage,
+                                          imageCreateCI.format,
+                                          VK_IMAGE_ASPECT_COLOR_BIT,
+                                          VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+                                          VK_IMAGE_LAYOUT_UNDEFINED,
+                                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                          VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                          VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+    // Transition swapchain image from present to transfer source layout
+    m_device->inlineTransitionImageLayout(copyCmd,
+                                          srcImage,
+                                          imageCreateCI.format,
+                                          VK_IMAGE_ASPECT_COLOR_BIT,
+                                          VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+                                          VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                          VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                          VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                          VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+    // Define the region to blit (we will blit the whole swapchain image)
+    VkOffset3D blitSize;
+    blitSize.x = m_device->swapChain->extent.width;
+    blitSize.y = m_device->swapChain->extent.height;
+    blitSize.z = 1;
+    VkImageBlit imageBlitRegion{};
+    imageBlitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageBlitRegion.srcSubresource.layerCount = 1;
+    imageBlitRegion.srcOffsets[1] = blitSize;
+    imageBlitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageBlitRegion.dstSubresource.layerCount = 1;
+    imageBlitRegion.dstOffsets[1] = blitSize;
+
+    // Issue the blit command
+    vkCmdBlitImage(copyCmd,
+                   srcImage,
+                   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                   dstImage,
+                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                   1,
+                   &imageBlitRegion,
+                   VK_FILTER_NEAREST);
+
+    // Transition destination image to general layout, which is the required layout for mapping the image memory later on
+    m_device->inlineTransitionImageLayout(copyCmd,
+                                          dstImage,
+                                          imageCreateCI.format,
+                                          VK_IMAGE_ASPECT_COLOR_BIT,
+                                          VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+                                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                          VK_IMAGE_LAYOUT_GENERAL,
+                                          VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                          VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+    // Transition back the swap chain image after the blit is done
+    m_device->inlineTransitionImageLayout(copyCmd,
+                                          srcImage,
+                                          imageCreateCI.format,
+                                          VK_IMAGE_ASPECT_COLOR_BIT,
+                                          VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+                                          VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                          VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                          VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                          VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+    vkEndCommandBuffer(copyCmd);
+
+    VkSubmitInfo submitInfo{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &copyCmd,
+    };
+    // Create fence to ensure that the command buffer has finished executing
+    VkFenceCreateInfo fenceInfo = {};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+    VkFence fence = VK_NULL_HANDLE;
+    vkCreateFence(m_device->device, &fenceInfo, nullptr, &fence);
+    // Submit to the queue
+    vkQueueSubmit(m_device->graphicsQueue, 1, &submitInfo, fence);
+    // Wait for the fence to signal that command buffer has finished executing
+    vkWaitForFences(m_device->device, 1, &fence, VK_TRUE, UINT64_MAX);
+
+    vkDestroyFence(m_device->device, fence, nullptr);
+
+    vkFreeCommandBuffers(m_device->device, m_device->commandPool, 1, &copyCmd);
+
+    // Get layout of the image (including row pitch)
+    VkImageSubresource subResource{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0};
+    VkSubresourceLayout subResourceLayout;
+    vkGetImageSubresourceLayout(m_device->device, dstImage, &subResource, &subResourceLayout);
+
+    // Map image memory so we can start copying from it
+    const char *data;
+    vkMapMemory(m_device->device, dstImageMemory, 0, VK_WHOLE_SIZE, 0, (void **)&data);
+    data += subResourceLayout.offset;
+
+    QImage image(imageCreateCI.extent.width, imageCreateCI.extent.height, QImage::Format_RGBA8888);
+    for (int y = 0; y < image.height(); ++y) {
+        memcpy(image.scanLine(y), data, image.width() * 4);
+        data += subResourceLayout.rowPitch;
+    }
+
+    // Clean up resources
+    vkUnmapMemory(m_device->device, dstImageMemory);
+    vkFreeMemory(m_device->device, dstImageMemory, nullptr);
+    vkDestroyImage(m_device->device, dstImage, nullptr);
+
+    return image;
+}

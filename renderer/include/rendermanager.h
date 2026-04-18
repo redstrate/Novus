@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 
+#include <QImage>
 #include <QString>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <physis.hpp>
@@ -63,6 +64,8 @@ public:
     BaseRenderer *renderer();
 
     void freeResources();
+
+    QImage grab(const std::vector<DrawObjectInstance> &models);
 
 private:
     void updateCamera(Camera &camera);

@@ -55,6 +55,7 @@ target_include_directories(renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(renderer
         PUBLIC
         Qt6::Core
+        Qt6::Gui
         Vulkan::Vulkan
         Physis::Physis
         glm::glm
