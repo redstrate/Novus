@@ -8,6 +8,7 @@
 #include <KXmlGuiWindow>
 #include <QFormLayout>
 
+class QTableView;
 class MDLPart;
 
 class MainWindow : public KXmlGuiWindow
@@ -24,4 +25,5 @@ private:
     MDLPart *part = nullptr;
     FileCache cache;
     QFormLayout *m_detailsLayout = nullptr;
+    QTableView *m_tableView;
 };

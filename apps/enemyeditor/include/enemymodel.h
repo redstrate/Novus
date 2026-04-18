@@ -21,9 +21,10 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
 private:
-    QImage renderModel(const QString &mdlPath, const QString &mtrlPath) const;
+    QImage renderModel(uint32_t id, const QString &mdlPath, const QString &mtrlPath) const;
 
     struct Enemy {
+        uint32_t id;
         QImage image;
         QString mdlPath;
         QString mtrlPath;

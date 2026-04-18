@@ -6,6 +6,7 @@
 #include "filecache.h"
 #include "mdlpart.h"
 
+#include <QPainter>
 #include <physis.hpp>
 
 enum class ModelCharaType {
@@ -68,7 +69,8 @@ EnemyModel::EnemyModel(physis_SqPackResource *resource)
 {
     m_part = new MDLPart(m_resource, *m_cache);
     m_part->minimumCameraDistance = 0.05f;
-    m_part->setMinimumSize(200, 200);
+    // TODO: terrible hack WRT to DPI but it works
+    m_part->setMinimumSize(128 / m_part->devicePixelRatio(), 128 / m_part->devicePixelRatio());
     m_part->show();
 
     auto bnpcBaseExhFile = physis_sqpack_read(resource, "exd/BNpcBase.exh");
@@ -96,9 +98,11 @@ EnemyModel::EnemyModel(physis_SqPackResource *resource)
 
             const auto modelCharaModel = modelCharaRow.columns[1].u_int16._0;
             const auto modelCharaBase = modelCharaRow.columns[2].u_int8._0;
-            const auto modelCharaVariant = modelCharaRow.columns[3].u_int8._0;
+            // TODO: some assumption about this is wrong...
+            const auto modelCharaVariant = 1; // modelCharaRow.columns[3].u_int8._0;
 
-            m_enemies.push_back(new Enemy{.image = {},
+            m_enemies.push_back(new Enemy{.id = entry.row_id,
+                                          .image = {},
                                           .mdlPath = buildMdlPath(modelCharaType, modelCharaModel, modelCharaBase),
                                           .mtrlPath = buildMtrlPath(modelCharaType, modelCharaModel, modelCharaBase, modelCharaVariant)});
         }
@@ -107,41 +111,53 @@ EnemyModel::EnemyModel(physis_SqPackResource *resource)
 
 int EnemyModel::rowCount(const QModelIndex &parent) const
 {
-    return m_enemies.size();
+    return m_enemies.size() / 8;
 }
 
 int EnemyModel::columnCount(const QModelIndex &parent) const
 {
-    return m_enemies.size() / 4;
+    Q_UNUSED(parent)
+    return 8;
 }
 
 QVariant EnemyModel::data(const QModelIndex &index, int role) const
 {
-    auto &enemy = m_enemies[index.row()];
-    if (enemy->image.isNull()) {
-        enemy->image = renderModel(enemy->mdlPath, enemy->mtrlPath);
+    const int realRow = index.row() * 8 + index.column();
+    auto &enemy = m_enemies[realRow];
+    if (role == Qt::DecorationRole) {
+        if (enemy->image.isNull()) {
+            enemy->image = renderModel(enemy->id, enemy->mdlPath, enemy->mtrlPath);
+        }
+        return enemy->image;
     }
-    return enemy->image;
+    return {};
 }
 
-QImage EnemyModel::renderModel(const QString &mdlPath, const QString &mtrlPath) const
+QImage EnemyModel::renderModel(const uint32_t id, const QString &mdlPath, const QString &mtrlPath) const
 {
     m_part->clear();
 
-    auto mdlFile = m_cache->lookupFile(mdlPath);
+    const auto mdlFile = physis_sqpack_read(m_resource, mdlPath.toStdString().c_str());
     if (mdlFile.size == 0) {
         return QImage{};
     }
 
     auto mdl = physis_mdl_parse(m_resource->platform, mdlFile);
+    physis_free_file(&mdlFile);
     if (mdl.p_ptr == nullptr) {
+        qWarning() << "While processing" << id << "could not find" << mdlPath;
         return QImage{};
     }
 
-    auto mtrlFile = m_cache->lookupFile(mtrlPath);
+    auto mtrlFile = physis_sqpack_read(m_resource, mtrlPath.toStdString().c_str());
+    if (mtrlFile.size == 0) {
+        qWarning() << "While processing" << id << "could not find" << mtrlPath;
+        physis_free_file(&mtrlFile);
+        return QImage{};
+    }
     auto mtrl = physis_material_parse(m_resource->platform, mtrlFile);
+    physis_free_file(&mtrlFile);
 
-    m_part->clear();
     m_part->addModel(mdl,
                      false,
                      Transformation{
@@ -153,7 +169,17 @@ QImage EnemyModel::renderModel(const QString &mdlPath, const QString &mtrlPath) 
                      {{mtrlPath.toStdString(), mtrl}},
                      0);
 
-    return m_part->grab();
+    auto image = m_part->grab();
+    m_part->clear();
+
+    physis_mtrl_free(&mtrl);
+    physis_mdl_free(&mdl);
+
+    QPainter p(&image);
+    p.setPen(Qt::red);
+    p.drawText(QPoint(50, 50), QString::number(id));
+
+    return image;
 }
 
 #include "moc_enemymodel.cpp"

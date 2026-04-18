@@ -22,6 +22,9 @@
 #include "mdlpart.h"
 #include "openinwidget.h"
 
+#include <QHeaderView>
+#include <QInputDialog>
+
 MainWindow::MainWindow(physis_SqPackResource data)
     : m_data(data)
     , cache(FileCache{m_data})
@@ -44,9 +47,13 @@ MainWindow::MainWindow(physis_SqPackResource data)
     auto skelName = physis_skeleton_path(Race::Hyur, Tribe::Midlander, Gender::Male);
     part->setSkeleton(physis_skeleton_parse(m_data.platform, physis_sqpack_read(&m_data, skelName)));
 
-    auto enemyView = new QTableView();
-    enemyView->setModel(model);
-    layout->addWidget(enemyView);
+    m_tableView = new QTableView();
+    m_tableView->setModel(model);
+    m_tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    m_tableView->verticalHeader()->setDefaultSectionSize(128);
+    m_tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    m_tableView->horizontalHeader()->setDefaultSectionSize(128);
+    layout->addWidget(m_tableView);
 
     // layout->addWidget(part);
 
@@ -133,6 +140,21 @@ void MainWindow::setupActions()
         }
     });
     actionCollection()->addAction(QStringLiteral("open_mdl"), openMDLFile);
+
+    auto goToBNpcBase = new QAction(i18nc("@action:inmenu", "To BNpcBase…"), this);
+    goToBNpcBase->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
+    KActionCollection::setDefaultShortcut(goToBNpcBase, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
+    connect(goToBNpcBase, &QAction::triggered, [this] {
+        bool ok = false;
+        const int id = QInputDialog::getInt(this, i18n("Go To…"), i18n("BNpcBase ID:"), QLineEdit::Normal, 0, 999999, 1, &ok);
+        if (ok) {
+            const int row = id / 8;
+            const int column = id % 8;
+            m_tableView->selectRow(row);
+            m_tableView->selectColumn(column);
+        }
+    });
+    actionCollection()->addAction(QStringLiteral("goto_row"), goToBNpcBase);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
