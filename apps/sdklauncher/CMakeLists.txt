@@ -16,6 +16,7 @@ target_link_libraries(novus-launcher
         Novus::Common
         Physis::Physis
         KF6::ConfigCore
+        KF6::WidgetsAddons
         Qt6::Widgets)
 target_include_directories(novus-launcher PUBLIC include PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

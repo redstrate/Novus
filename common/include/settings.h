@@ -27,4 +27,13 @@ NOVUSCOMMON_EXPORT QString getGameUUID();
 NOVUSCOMMON_EXPORT bool addNewInstall();
 NOVUSCOMMON_EXPORT Language getLanguage();
 
+struct GameMod {
+    QUuid uuid;
+    QString path;
+};
+
+NOVUSCOMMON_EXPORT QList<GameMod> getGameMods();
+NOVUSCOMMON_EXPORT void saveGameMods(QList<GameMod> mods);
+NOVUSCOMMON_EXPORT bool addNewGameMod();
+
 NOVUSCOMMON_EXPORT QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bool prompt = true);

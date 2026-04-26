@@ -124,6 +124,63 @@ Language getLanguage()
     Q_UNREACHABLE(); // if you hit this, you did something wrong
 }
 
+QList<GameMod> getGameMods()
+{
+    KConfig config(QStringLiteral("novusrc"));
+    auto groups = config.groupList();
+
+    QList<GameMod> mods;
+    for (const auto &group : groups) {
+        if (group.startsWith(QStringLiteral("mod-"))) {
+            const auto uuid = QUuid::fromString(group.split(QStringLiteral("mod-")).last());
+
+            KConfigGroup kgroup = config.group(group);
+
+            mods.push_back(GameMod{
+                .uuid = uuid,
+                .path = kgroup.readEntry(QStringLiteral("Path")),
+            });
+        }
+    }
+
+    return mods;
+}
+
+void saveGameMods(QList<GameMod> mods)
+{
+    KConfig config(QStringLiteral("novusrc"));
+
+    for (const auto &mod : mods) {
+        auto group = config.group(QStringLiteral("mod-%1").arg(mod.uuid.toString()));
+        group.writeEntry(QStringLiteral("Path"), mod.path);
+    }
+
+    config.sync();
+}
+
+bool addNewGameMod()
+{
+    const QString dir = QFileDialog::getExistingDirectory(nullptr,
+                                                          i18nc("@title:window", "Open Game Mod Directory"),
+                                                          QStandardPaths::standardLocations(QStandardPaths::StandardLocation::HomeLocation).last(),
+                                                          QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (!QDir(dir).exists(QStringLiteral("meta.json"))) {
+        return false;
+    }
+
+    KConfig config(QStringLiteral("novusrc"));
+    KConfigGroup game = config.group(QStringLiteral("Mod"));
+
+    const auto uuid = QUuid::createUuid();
+    KConfigGroup newGameInstall = config.group(QStringLiteral("mod-%1").arg(uuid.toString()));
+    newGameInstall.writeEntry(QStringLiteral("Path"), dir);
+
+    config.sync();
+
+    return true;
+}
+
 QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bool prompt)
 {
     QCommandLineOption gameInstallOption(QStringLiteral("game"), i18n("Which installation to use"), QStringLiteral("uuid"));
