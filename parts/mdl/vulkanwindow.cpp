@@ -153,6 +153,12 @@ bool VulkanWindow::event(QEvent *e)
             case Qt::Key_Shift:
                 pressed_keys[4] = true;
                 break;
+            case Qt::Key_Q:
+                pressed_keys[5] = true;
+                break;
+            case Qt::Key_E:
+                pressed_keys[6] = true;
+                break;
             }
         }
     } break;
@@ -175,6 +181,12 @@ bool VulkanWindow::event(QEvent *e)
                 break;
             case Qt::Key_Shift:
                 pressed_keys[4] = false;
+                break;
+            case Qt::Key_Q:
+                pressed_keys[5] = false;
+                break;
+            case Qt::Key_E:
+                pressed_keys[6] = false;
                 break;
             }
         }
@@ -238,6 +250,16 @@ void VulkanWindow::render()
 
         part->position += right * movX * speed * deltaTime;
         part->position += forward * movY * speed * deltaTime;
+
+        // TODO: should up/down be considered from the camera's rotation?
+        if (pressed_keys[5]) {
+            part->position.y -= 0.05f * speed * deltaTime;
+        }
+
+        if (pressed_keys[6]) {
+            part->position.y += 0.05f * speed * deltaTime;
+        }
+
         Q_EMIT part->cameraMoved();
 
         m_renderer->camera.view = glm::mat4(1.0f);
