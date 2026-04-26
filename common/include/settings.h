@@ -35,5 +35,7 @@ struct GameMod {
 NOVUSCOMMON_EXPORT QList<GameMod> getGameMods();
 NOVUSCOMMON_EXPORT void saveGameMods(QList<GameMod> mods);
 NOVUSCOMMON_EXPORT bool addNewGameMod();
+NOVUSCOMMON_EXPORT bool gameModsEnabled();
+NOVUSCOMMON_EXPORT void setGameModsEnabled(bool enabled);
 
 NOVUSCOMMON_EXPORT QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bool prompt = true);

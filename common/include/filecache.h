@@ -32,4 +32,5 @@ private:
     QHash<QString, bool> cachedExist;
     physis_SqPackResource &data;
     QMutex bufferMutex, existMutex;
+    QMap<QString, QString> m_modFileOverrides;
 };

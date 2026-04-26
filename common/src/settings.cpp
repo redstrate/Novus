@@ -181,6 +181,22 @@ bool addNewGameMod()
     return true;
 }
 
+bool gameModsEnabled()
+{
+    KConfig config(QStringLiteral("novusrc"));
+
+    const KConfigGroup game = config.group(QStringLiteral("Mod"));
+    return game.readEntry(QStringLiteral("Enabled"), false);
+}
+
+void setGameModsEnabled(const bool enabled)
+{
+    KConfig config(QStringLiteral("novusrc"));
+
+    KConfigGroup game = config.group(QStringLiteral("Mod"));
+    game.writeEntry(QStringLiteral("Enabled"), enabled);
+}
+
 QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bool prompt)
 {
     QCommandLineOption gameInstallOption(QStringLiteral("game"), i18n("Which installation to use"), QStringLiteral("uuid"));
