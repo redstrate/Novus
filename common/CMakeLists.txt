@@ -11,7 +11,6 @@ file (GENERATE
 #define EXCELEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-karuku>\")\n\
 #define MAPEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-mapeditor>\")\n\
 #define MATEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-mateditor>\")\n\
-#define MDLVIEWER_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-mdlviewer>\")\n\
 #define DATAEXPLORER_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-sagasu>\")\n\
         "
 )
