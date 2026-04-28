@@ -418,6 +418,9 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         partHolder->addTab(debugInformationText, i18nc("@title:tab", "Debug"));
     }
 
+    // Disable file actions if there are no actions to take
+    m_fileActions->setEnabled(!m_fileActionsMenu->isEmpty());
+
     auto hexWidget = new HexPart();
     hexWidget->loadFile(file);
     partHolder->addTab(hexWidget, i18nc("@title:tab", "Raw Data"));
