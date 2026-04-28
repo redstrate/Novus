@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gui name="mateditor"
+<gui name="patchdiff"
      version="1"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -8,6 +8,8 @@
   <MenuBar>
     <Menu name="file" >
       <text>File</text>
+      <Action name="open"/>
+      <Separator/>
       <Action name="quit"/>
     </Menu>
   </MenuBar>

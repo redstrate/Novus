@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Joshua Goins <josh@redstrate.com>
+// SPDX-FileCopyrightText: 2026 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <KLocalizedString>
@@ -17,10 +17,7 @@ int main(int argc, char *argv[])
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
-    customizeAboutData(QStringLiteral("novus"),
-                       QStringLiteral("zone.xiv.mateditor"),
-                       QStringLiteral("Material Editor"),
-                       i18n("Program to view FFXIV materials."));
+    customizeAboutData(QStringLiteral("novus"), QStringLiteral("zone.xiv.patchdiff"), QStringLiteral("Patch Diff"), i18n("Program to view FFXIV patches."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

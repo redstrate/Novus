@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Joshua Goins <josh@redstrate.com>
+// SPDX-FileCopyrightText: 2026 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -6,6 +6,9 @@
 #include <KXmlGuiWindow>
 
 #include "filecache.h"
+#include "hashdatabase.h"
+
+class DiffTreeWidget;
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -20,5 +23,6 @@ private:
 
     physis_SqPackResource m_data;
     FileCache cache;
-    physis_Material m_material;
+    HashDatabase m_database;
+    DiffTreeWidget *m_diffTreeWidget = nullptr;
 };

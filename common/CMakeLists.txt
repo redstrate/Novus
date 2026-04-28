@@ -11,6 +11,8 @@ file (GENERATE
 #define EXCELEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-karuku>\")\n\
 #define MAPEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-mapeditor>\")\n\
 #define DATAEXPLORER_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-sagasu>\")\n\
+#define ENEMYEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-enemyeditor>\")\n\
+#define PATCHDIFF_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-patchdiff>\")\n\
         "
 )
 
