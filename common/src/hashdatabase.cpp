@@ -108,6 +108,11 @@ QString HashDatabase::getPath(const uint32_t i) const
     return m_pathHashes.value(i);
 }
 
+QString HashDatabase::getFolder(uint32_t i) const
+{
+    return m_folderHashes.value(i);
+}
+
 void HashDatabase::importFileList(const QByteArray &file)
 {
     QVariantList folderNames, folderHashes;

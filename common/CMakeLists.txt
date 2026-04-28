@@ -45,6 +45,7 @@ target_sources(novus-common
         include/booledit.h
         include/openinwidget.h
         include/utility.h
+        include/hashdatabase.h
 
         src/aboutdata.cpp
         src/filecache.cpp
@@ -59,6 +60,7 @@ target_sources(novus-common
         src/booledit.cpp
         src/openinwidget.cpp
         src/utility.cpp
+        src/hashdatabase.cpp
 
         launcherconfig.h)
 target_include_directories(novus-common
@@ -75,6 +77,7 @@ target_link_libraries(novus-common
         KF6::I18n
         Qt6::Core
         Qt6::Widgets
+        Qt6::Sql
         glm::glm
         magic_enum)
 target_compile_definitions(novus-common PRIVATE TRANSLATION_DOMAIN="novus")

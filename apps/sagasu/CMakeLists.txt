@@ -5,9 +5,6 @@ add_executable(novus-sagasu)
 set_common_properties(novus-sagasu)
 target_sources(novus-sagasu
         PRIVATE
-        include/hashdatabase.h
-
-        src/hashdatabase.cpp
         src/main.cpp
         src/mainwindow.cpp
         src/filetreewindow.cpp
@@ -26,7 +23,6 @@ target_link_libraries(novus-sagasu
         Novus::Common
         Physis::Physis
         Qt6::Core
-        Qt6::Sql
         Novus::SklbPart
         Novus::CmpPart
         Novus::ShpkPart

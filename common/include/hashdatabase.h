@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <QObject>
-#include <QSqlDatabase>
 #include <QSqlQuery>
 
 class HashDatabase : public QObject
@@ -25,6 +23,7 @@ public:
 
     QString getFilename(uint32_t i) const;
     QString getPath(uint32_t i) const;
+    QString getFolder(uint32_t i) const;
 
 private:
     void cacheDatabase();
