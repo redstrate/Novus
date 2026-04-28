@@ -7,9 +7,6 @@
                          https://www.kde.org/standards/kxmlgui/1.0/kxmlgui.xsd">
   <MenuBar>
     <Menu name="file" >
-      <text>File</text>
-      <Action name="open_mdl" />
-      <Separator/>
       <Action name="quit"/>
     </Menu>
   </MenuBar>

@@ -55,35 +55,8 @@ MainWindow::MainWindow(physis_SqPackResource data)
     m_tableView->horizontalHeader()->setDefaultSectionSize(128);
     layout->addWidget(m_tableView);
 
-    // layout->addWidget(part);
-
-    auto tabWidget = new QTabWidget();
-    tabWidget->setMaximumHeight(150);
-
-    auto renderWidget = new QWidget();
-    auto renderLayout = new QVBoxLayout();
-    renderWidget->setLayout(renderLayout);
-
-    auto wireframeCheckbox = new QCheckBox(i18n("Wireframe"));
-    connect(wireframeCheckbox, &QCheckBox::clicked, this, [this](bool checked) {
-        part->setWireframe(checked);
-    });
-    renderLayout->addWidget(wireframeCheckbox);
-
-    auto modelWidget = new QWidget();
-    m_detailsLayout = new QFormLayout();
-    modelWidget->setLayout(m_detailsLayout);
-
-    tabWidget->addTab(renderWidget, i18nc("@title:tab", "Render"));
-    tabWidget->addTab(modelWidget, i18nc("@title:tab", "Model"));
-
-    tabWidget->setDocumentMode(true); // hide borders
-    tabWidget->tabBar()->setExpanding(true);
-
-    layout->addWidget(tabWidget);
-
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("mdlviewer.rc"));
+    setupGUI(Keys | Save | Create, QStringLiteral("enemyeditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -96,66 +69,6 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
 void MainWindow::setupActions()
 {
-    auto openMDLFile = new QAction(i18nc("@action:inmenu MDL is an abbreviation for a file type", "Open MDL…"));
-    openMDLFile->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
-    connect(openMDLFile, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getOpenFileName(nullptr, i18nc("@title:window", "Open MDL File"), QStringLiteral("~"), i18n("FFXIV Model File (*.mdl)"));
-        if (!fileName.isEmpty()) {
-            auto buffer = physis_read_file(fileName.toStdString().c_str());
-            if (buffer.data == nullptr) {
-                return;
-            }
-
-            auto mdl = physis_mdl_parse(m_data.platform, buffer);
-            if (mdl.p_ptr == nullptr) {
-                return;
-            }
-
-            part->clear();
-
-            setWindowFilePath(fileName);
-
-            Transformation transformation{};
-            transformation.scale[0] = 1;
-            transformation.scale[1] = 1;
-            transformation.scale[2] = 1;
-
-            part->addModel(mdl, false, transformation, QStringLiteral("mdl"), {}, 0);
-
-            // Clear layout
-            QLayoutItem *child = nullptr;
-            while ((child = m_detailsLayout->takeAt(0)) != nullptr) {
-                child->widget()->setParent(nullptr);
-                child->widget()->deleteLater();
-            }
-
-            m_detailsLayout->addRow(i18n("LOD #:"), new QLabel(QString::number(mdl.num_lod)));
-
-            uint32_t triangleCount = 0;
-            for (uint32_t i = 0; i < mdl.lods[0].num_parts; i++) {
-                triangleCount += mdl.lods[0].parts[i].num_indices / 3;
-            }
-
-            m_detailsLayout->addRow(i18n("Triangle #:"), new QLabel(QString::number(triangleCount)));
-        }
-    });
-    actionCollection()->addAction(QStringLiteral("open_mdl"), openMDLFile);
-
-    auto goToBNpcBase = new QAction(i18nc("@action:inmenu", "To BNpcBase…"), this);
-    goToBNpcBase->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
-    KActionCollection::setDefaultShortcut(goToBNpcBase, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
-    connect(goToBNpcBase, &QAction::triggered, [this] {
-        bool ok = false;
-        const int id = QInputDialog::getInt(this, i18n("Go To…"), i18n("BNpcBase ID:"), QLineEdit::Normal, 0, 999999, 1, &ok);
-        if (ok) {
-            const int row = id / 8;
-            const int column = id % 8;
-            m_tableView->selectRow(row);
-            m_tableView->selectColumn(column);
-        }
-    });
-    actionCollection()->addAction(QStringLiteral("goto_row"), goToBNpcBase);
-
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }
 
