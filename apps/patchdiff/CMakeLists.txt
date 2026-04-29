@@ -19,12 +19,12 @@ target_include_directories(novus-patchdiff
 target_link_libraries(novus-patchdiff
         PRIVATE
         Novus::Common
-        Novus::MdlPart
-        Novus::MtrlPart
+        Novus::HexPart
         Physis::Physis
         KF6::I18n
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        KF6::WidgetsAddons)
 
 install(TARGETS novus-patchdiff ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES patchdiff.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)

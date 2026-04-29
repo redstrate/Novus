@@ -45,6 +45,13 @@ DiffTreeWidget::DiffTreeWidget(HashDatabase &database, physis_SqPackResource *da
     m_treeWidget->setModel(m_searchModel);
     layout->addWidget(m_treeWidget);
 
+    connect(m_treeWidget, &QTreeView::activated, [this](const QModelIndex &item) {
+        if (item.isValid()) {
+            const auto buffer = m_searchModel->data(item, DiffTreeModel::CustomRoles::BufferRole).value<physis_Buffer>();
+            Q_EMIT bufferSelected(buffer);
+        }
+    });
+
     refreshModel();
 }
 

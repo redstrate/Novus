@@ -21,6 +21,9 @@ public:
     void refreshModel();
     void openPatch(const QString &path);
 
+Q_SIGNALS:
+    void bufferSelected(physis_Buffer buffer);
+
 private:
     physis_SqPackResource *data = nullptr;
     DiffTreeModel *m_fileModel = nullptr;

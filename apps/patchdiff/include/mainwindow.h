@@ -8,6 +8,8 @@
 #include "filecache.h"
 #include "hashdatabase.h"
 
+class HexPart;
+class KRecentFilesMenu;
 class DiffTreeWidget;
 
 class MainWindow : public KXmlGuiWindow
@@ -20,9 +22,12 @@ public:
 
 private:
     void setupActions();
+    void openPatch(const QUrl &url);
 
     physis_SqPackResource m_data;
     FileCache cache;
     HashDatabase m_database;
     DiffTreeWidget *m_diffTreeWidget = nullptr;
+    KRecentFilesMenu *m_recentFilesMenu = nullptr;
+    HexPart *m_hexPart = nullptr;
 };

@@ -9,6 +9,7 @@
     <Menu name="file" >
       <text>File</text>
       <Action name="open"/>
+      <Action name="open_recent"/>
       <Separator/>
       <Action name="quit"/>
     </Menu>

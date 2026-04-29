@@ -124,6 +124,9 @@ QVariant DiffTreeModel::data(const QModelIndex &index, int role) const
             return QIcon::fromTheme(FileTypes::getFiletypeIcon(type));
         }
     }
+    if (role == CustomRoles::BufferRole) {
+        return QVariant::fromValue(item->buffer);
+    }
 
     return {};
 }
@@ -146,7 +149,7 @@ void DiffTreeModel::openPatch(const QString &path)
     rootItem = new TreeInformation();
     rootItem->type = TreeType::Root;
 
-    auto patch = physis_patch_parse(path.toStdString().c_str());
+    const auto patch = physis_patch_parse(path.toStdString().c_str());
 
     SqpkTargetInfo targetInfo{};
 
@@ -159,7 +162,9 @@ void DiffTreeModel::openPatch(const QString &path)
             case physis_ZiPatchSqpkOperation::Tag::AddData: {
                 const auto addData = sqpk.operation.add_data._0;
 
-                const auto indexPath = physis_patch_index_path(targetInfo, addData.main_id, addData.sub_id, addData.file_id);
+                const auto indexPath = physis_patch_index_path(targetInfo, addData.main_id, addData.sub_id, 0); // don't need the file ID for index files
+                const auto baseItem = addIndexPath(QString::fromStdString(indexPath));
+
                 const auto indexGamePath = QDir(getGameDirectory()).absoluteFilePath(QString::fromStdString(indexPath));
 
                 const auto indexFile = physis_index_parse(gameData->platform, indexGamePath.toStdString().c_str());
@@ -167,7 +172,18 @@ void DiffTreeModel::openPatch(const QString &path)
                     auto hash = physis_index_hash_from_offset(indexFile, addData.block_offset);
 
                     // Add parent folder
-                    addPath(m_database.getFolder(hash.split_path.path));
+                    if (const auto folderName = m_database.getFolder(hash.split_path.path); !folderName.isEmpty()) {
+                        addGamePath(baseItem, folderName);
+                    } else {
+                        auto pathItem = new TreeInformation();
+                        pathItem->parent = baseItem;
+                        pathItem->type = TreeType::Folder;
+                        pathItem->row = baseItem->children.size();
+                        pathItem->hash = hash.split_path.path;
+
+                        baseItem->children.push_back(pathItem);
+                        knownDirHashes[hash.split_path.path] = baseItem;
+                    }
 
                     const auto completeHash =
                         static_cast<uint32_t>(static_cast<uint64_t>(hash.split_path.path) << 32 | static_cast<uint64_t>(hash.split_path.name));
@@ -181,6 +197,8 @@ void DiffTreeModel::openPatch(const QString &path)
                         pathItem->type = TreeType::File;
                         pathItem->row = parentItem->children.size();
                         pathItem->hash = completeHash; // FIXME: is this the correct/useful thing to show?
+                        pathItem->buffer.size = addData.block_data_size;
+                        pathItem->buffer.data = addData.block_data;
 
                         parentItem->children.push_back(pathItem);
                     } else {
@@ -190,6 +208,9 @@ void DiffTreeModel::openPatch(const QString &path)
                     qWarning() << "Could not read index file" << indexGamePath;
                 }
             } break;
+            case physis_ZiPatchSqpkOperation::Tag::FileOperation:
+                addIndexPath(QString::fromStdString(sqpk.operation.file_operation._0.path));
+                break;
             case physis_ZiPatchSqpkOperation::Tag::TargetInfo:
                 targetInfo = sqpk.operation.target_info._0;
                 break;
@@ -205,13 +226,13 @@ void DiffTreeModel::openPatch(const QString &path)
     endResetModel();
 }
 
-void DiffTreeModel::addPath(const QString &string)
+void DiffTreeModel::addGamePath(TreeInformation *baseItem, const QString &string)
 {
     const QStringList children = string.split(QLatin1Char('/'));
 
     QString conct = children[0];
     conct.reserve(string.length());
-    TreeInformation *parentItem = rootItem;
+    TreeInformation *parentItem = baseItem;
     for (int i = 0; i < children.size(); i++) {
         if (i > 0) {
             conct += QStringLiteral("/%1").arg(children[i]);
@@ -233,6 +254,38 @@ void DiffTreeModel::addPath(const QString &string)
             knownDirHashes.insert(folderItem->hash, folderItem);
         }
     }
+}
+
+TreeInformation *DiffTreeModel::addIndexPath(const QString &string)
+{
+    const QStringList children = string.split(QLatin1Char('/'));
+
+    QString conct = children[0];
+    conct.reserve(string.length());
+    TreeInformation *parentItem = rootItem;
+    for (int i = 0; i < children.size(); i++) {
+        if (i > 0) {
+            conct += QStringLiteral("/%1").arg(children[i]);
+        }
+        std::string conctStd = conct.toStdString();
+        const auto hash = physis_generate_partial_hash(conctStd.c_str());
+
+        if (knownIndexHashes.contains(hash)) {
+            parentItem = knownIndexHashes.value(hash);
+        } else {
+            auto folderItem = new TreeInformation();
+            folderItem->name = children[i];
+            folderItem->type = TreeType::Folder;
+            folderItem->parent = parentItem;
+            folderItem->row = parentItem->children.size();
+            folderItem->hash = hash;
+            parentItem->children.push_back(folderItem);
+            parentItem = folderItem;
+            knownIndexHashes.insert(folderItem->hash, folderItem);
+        }
+    }
+
+    return parentItem;
 }
 
 #include "moc_difftreemodel.cpp"

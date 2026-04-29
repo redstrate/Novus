@@ -23,6 +23,7 @@ struct TreeInformation {
     QString name;
     int row = 0;
     uint32_t hash = 0;
+    physis_Buffer buffer = {};
 
     std::vector<TreeInformation *> children;
 };
@@ -36,6 +37,7 @@ public:
 
     enum CustomRoles {
         PathRole = Qt::UserRole,
+        BufferRole,
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -50,10 +52,12 @@ public:
     void openPatch(const QString &path);
 
 private:
-    void addPath(const QString &string);
+    void addGamePath(TreeInformation *baseItem, const QString &string);
+    TreeInformation *addIndexPath(const QString &string);
 
     physis_SqPackResource *gameData = nullptr;
     TreeInformation *rootItem = nullptr;
     HashDatabase &m_database;
     QHash<uint32_t, TreeInformation *> knownDirHashes;
+    QHash<uint32_t, TreeInformation *> knownIndexHashes;
 };
