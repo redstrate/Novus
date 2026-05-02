@@ -1,4 +1,4 @@
-# Contributing to Astra
+# Contributing to Novus
 
 I appreciate any code contributions to Novus, whether they are bugfixes or new features! this repository is managed on [GitHub](https://github.com/redstrate/Novus).
 
