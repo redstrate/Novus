@@ -5,7 +5,9 @@
 
 #include <QSqlQuery>
 
-class HashDatabase : public QObject
+#include "novuscommon_export.h"
+
+class NOVUSCOMMON_EXPORT HashDatabase : public QObject
 {
     Q_OBJECT
 
