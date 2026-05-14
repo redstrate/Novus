@@ -158,12 +158,20 @@ QImage EnemyModel::renderModel(const uint32_t id, const QString &mdlPath, const 
     auto mtrl = physis_material_parse(m_resource->platform, mtrlFile);
     physis_free_file(&mtrlFile);
 
+    const glm::vec3 boundsMin{mdl.bounding_box.min[0], mdl.bounding_box.min[1], mdl.bounding_box.min[2]};
+    const glm::vec3 boundsMax{mdl.bounding_box.max[0], mdl.bounding_box.max[1], mdl.bounding_box.max[2]};
+
+    const glm::vec3 size = boundsMax - boundsMin;
+    const glm::vec3 center = (boundsMin + boundsMax) * 0.5f;
+    const glm::vec3 normalizedCenter = -center * (1.0f / size);
+
     m_part->addModel(mdl,
                      false,
                      Transformation{
-                         .translation = {},
+                         .translation = {normalizedCenter[0], normalizedCenter[1], normalizedCenter[2]},
                          .rotation = {},
-                         .scale = {1, 1, 1},
+                         // Normalize scale
+                         .scale = {1.0f / size[0], 1.0f / size[1], 1.0f / size[2]},
                      },
                      QStringLiteral("enemy"),
                      {{mtrlPath.toStdString(), mtrl}},
