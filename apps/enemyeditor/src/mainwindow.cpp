@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 
+#include "enemyinfowindow.h"
 #include "enemymodel.h"
 
 #include <KActionCollection>
@@ -54,6 +55,15 @@ MainWindow::MainWindow(physis_SqPackResource data)
     m_tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     m_tableView->horizontalHeader()->setDefaultSectionSize(128);
     layout->addWidget(m_tableView);
+
+    connect(m_tableView, &QTableView::activated, this, [this](const QModelIndex &index) {
+        const auto id = index.data(EnemyModel::CustomRole::IdRole).value<uint32_t>();
+        const auto mdlPath = index.data(EnemyModel::CustomRole::MdlPath).value<QString>();
+        const auto mtrlPath = index.data(EnemyModel::CustomRole::MtrlPath).value<QString>();
+
+        auto window = new EnemyInfoWindow(id, mdlPath, mtrlPath, this);
+        window->open();
+    });
 
     setupActions();
     setupGUI(Keys | Save | Create, QStringLiteral("enemyeditor.rc"));

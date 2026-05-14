@@ -7,10 +7,12 @@ target_sources(novus-enemyeditor
         PRIVATE
         include/mainwindow.h
         include/enemymodel.h
+        include/enemyinfowindow.h
 
         src/main.cpp
         src/mainwindow.cpp
-        src/enemymodel.cpp)
+        src/enemymodel.cpp
+        src/enemyinfowindow.cpp)
 target_include_directories(novus-enemyeditor
         PUBLIC
         include)

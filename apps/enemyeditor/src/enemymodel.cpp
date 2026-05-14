@@ -130,6 +130,15 @@ QVariant EnemyModel::data(const QModelIndex &index, int role) const
         }
         return enemy->image;
     }
+    if (role == CustomRole::IdRole) {
+        return enemy->id;
+    }
+    if (role == CustomRole::MdlPath) {
+        return enemy->mdlPath;
+    }
+    if (role == CustomRole::MtrlPath) {
+        return enemy->mtrlPath;
+    }
     return {};
 }
 
