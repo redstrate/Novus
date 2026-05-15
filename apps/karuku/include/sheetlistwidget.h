@@ -15,6 +15,7 @@ public:
     explicit SheetListWidget(physis_SqPackResource *data, QWidget *parent = nullptr);
 
     void focusSearchField();
+    void goToSheet(const QString &name);
 
 Q_SIGNALS:
     void sheetSelected(const QString &name);

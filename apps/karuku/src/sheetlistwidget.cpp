@@ -62,4 +62,14 @@ void SheetListWidget::focusSearchField()
     m_searchEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }
 
+void SheetListWidget::goToSheet(const QString &name)
+{
+    const auto indices = listWidget->model()->match(listWidget->model()->index(0, 0), Qt::DisplayRole, name);
+    if (indices.isEmpty()) {
+        return;
+    }
+    listWidget->scrollTo(indices.constFirst(), QListView::ScrollHint::PositionAtCenter);
+    listWidget->selectionModel()->select(indices.constFirst(), QItemSelectionModel::ClearAndSelect);
+}
+
 #include "moc_sheetlistwidget.cpp"

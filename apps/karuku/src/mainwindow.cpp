@@ -94,6 +94,7 @@ void MainWindow::jumpToSheet(const QString &name)
 
     auto file = physis_sqpack_read(&m_data, pathStd.c_str());
     m_exdPart->loadSheet(name, file);
+    m_sheetListWidget->goToSheet(name);
     physis_free_file(&file);
 
     setWindowTitle(name);
