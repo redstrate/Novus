@@ -549,6 +549,7 @@ constexpr std::array names = {
     "g_SamplerWaveletNoise",
     "g_SamplerRefractionMap",
     "g_VertexMovementMaxLength",
+    "g_SamplerFlow",
 
     // Passes
     "PASS_Z_OPAQUE",
