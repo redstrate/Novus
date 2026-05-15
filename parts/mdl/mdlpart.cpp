@@ -16,6 +16,7 @@
 #include <glm/gtx/matrix_major_storage.hpp>
 
 #include "filecache.h"
+#include "knownvalues.h"
 #include "vulkanwindow.h"
 
 MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
@@ -310,25 +311,36 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
         }
     }
 
-    for (uint32_t i = 0; i < material.num_textures; i++) {
-        std::string t = material.textures[i];
+    for (uint32_t i = 0; i < material.num_samplers; i++) {
+        const auto sampler = material.samplers[i];
+        const auto usage = nameFromCrc(sampler.texture_usage);
 
+        if (sampler.texture_index > material.num_textures) {
+            qWarning() << path << "has a sampler that is indexing a texture that shouldn't exist, please report this as a bug!";
+            continue;
+        }
+
+        std::string t = material.textures[sampler.texture_index];
         if (t.find("skin") != std::string::npos) {
             newMaterial.type = MaterialType::Skin;
         }
 
-        const auto type = t.substr(t.find_last_of('_') + 1, t.find_last_of('.') - t.find_last_of('_') - 1);
-        if (type == "m" && !newMaterial.maskTexture.has_value()) {
-            newMaterial.maskTexture = createOrCacheTexture(t);
-        } else if (type == "d" && !newMaterial.diffuseTexture.has_value()) {
+        // TODO: pass through the textures directly and allow the renderer to figure this out i guess
+        if (usage == "g_SamplerDiffuse" || usage == "g_SamplerColorMap0") { // ColorMap0 is used by bg.shpk, g_SamplerDiffuse is character.shpk
             newMaterial.diffuseTexture = createOrCacheTexture(t);
             newMaterial.diffuseTexturePath = t;
-        } else if (type == "n" && !newMaterial.normalTexture.has_value()) {
+        } else if (usage == "g_SamplerMask") {
+            newMaterial.maskTexture = createOrCacheTexture(t);
+        } else if (usage == "g_SamplerNormal" || usage == "g_SamplerNormalMap0") {
             newMaterial.normalTexture = createOrCacheTexture(t);
-        } else if (type == "s" && !newMaterial.specularTexture.has_value()) {
+        } else if (usage == "g_SamplerSpecular" || usage == "g_SamplerSpecularMap0") {
             newMaterial.specularTexture = createOrCacheTexture(t);
-        } else if (type == "id" && !newMaterial.indexTexture.has_value()) {
+        } else if (usage == "g_SamplerIndex") {
             newMaterial.indexTexture = createOrCacheTexture(t);
+        } else if (usage == "g_SamplerColorMap1" || usage == "g_SamplerNormalMap1" || usage == "g_SamplerSpecularMap1") {
+            // Intentionally ignored as we don't support these yet
+        } else {
+            qWarning() << "Unknown texture usage:" << usage << sampler.texture_usage << "from" << path << "Please report this is a bug!";
         }
     }
 
@@ -336,8 +348,6 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
     if (material.legacy_color_table.num_rows > 0) {
         int width = 4;
         int height = material.legacy_color_table.num_rows;
-
-        qInfo() << "Creating legacy color table" << width << "X" << height;
 
         std::vector<float> rgbaData(width * height * 4);
         int offset = 0;
@@ -382,8 +392,6 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
         constexpr int width = 8;
         const uint32_t height = material.dawntrail_color_table.num_rows;
         if (height > 0) {
-            qInfo() << "Creating DT color table" << width << "X" << height;
-
             // NOTE: this is just a copy of the legacy color table gen, it's probably all wrong!
             std::vector<float> rgbaData(width * height * 4);
             int offset = 0;
@@ -412,7 +420,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
                 }
             }
 
-            physis_Texture textureConfig;
+            physis_Texture textureConfig{};
             textureConfig.attribute = TextureAttribute_TEXTURE_TYPE2_D;
             textureConfig.format = TextureFormat::R32G32B32A32_FLOAT;
             textureConfig.width = width;

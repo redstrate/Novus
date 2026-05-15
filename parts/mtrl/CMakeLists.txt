@@ -5,7 +5,6 @@ add_library(mtrlpart STATIC)
 set_common_properties(mtrlpart)
 target_sources(mtrlpart
         PRIVATE
-        knownvalues.h
         mtrlpart.cpp
         mtrlpart.h)
 target_link_libraries(mtrlpart

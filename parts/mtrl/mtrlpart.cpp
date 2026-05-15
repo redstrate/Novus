@@ -12,7 +12,7 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-#include "knownvalues.h"
+#include "../../common/include/knownvalues.h"
 #include "pathedit.h"
 #include "texpart.h"
 

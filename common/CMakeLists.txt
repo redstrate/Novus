@@ -48,6 +48,7 @@ target_sources(novus-common
         include/openinwidget.h
         include/utility.h
         include/hashdatabase.h
+        include/knownvalues.h
 
         src/aboutdata.cpp
         src/filecache.cpp

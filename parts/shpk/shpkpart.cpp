@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "shpkpart.h"
-#include "../mtrl/knownvalues.h"
+#include "../../common/include/knownvalues.h"
 #include "dxbc_module.h"
 #include "dxbc_reader.h"
 
