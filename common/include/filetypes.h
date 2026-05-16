@@ -47,6 +47,7 @@ enum class FileType {
     Pap, // TODO: what would this be called?
     Png,
     Fdt,
+    PhysicsBinary,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes
