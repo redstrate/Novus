@@ -27,10 +27,12 @@ public Q_SLOTS:
 
 private:
     void setupActions();
+    void updateDocumentActions();
 
     physis_SqPackResource m_data;
     QNetworkAccessManager *mgr = nullptr;
     EXDPart *m_exdPart = nullptr;
     std::unique_ptr<CachingExcelResolver> m_excelResolver;
     SheetListWidget *m_sheetListWidget = nullptr;
+    QAction *m_saveAction = nullptr;
 };

@@ -285,6 +285,19 @@ void EXDPart::focusFilterField()
     m_filterEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }
 
+void EXDPart::setReadOnly(bool readOnly)
+{
+    m_readOnly = readOnly;
+}
+
+void EXDPart::save()
+{
+    auto buffer = physis_sqpack_write_sheet_page_to_buffer(&sheet.pages[0], &exh);
+    QFile file(QStringLiteral("test.exd"));
+    file.open(QIODevice::WriteOnly);
+    file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
+}
+
 void EXDPart::setPreferredLanguage(const Language language)
 {
     if (language != m_preferredLanguage) {
@@ -348,6 +361,11 @@ QString EXDPart::selectedRow() const
     return {};
 }
 
+bool EXDPart::isModified() const
+{
+    return m_modified;
+}
+
 void EXDPart::loadTables()
 {
     const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
@@ -365,13 +383,21 @@ void EXDPart::loadTables()
         connect(tableWidget, &ExcelTableView::requestJump, this, &EXDPart::requestJump);
 
         auto excelModel = new ExcelModel(exh, sheet.pages[i], schema, m_resolver, getSuitableLanguage(exh), this);
+        connect(excelModel, &ExcelModel::modified, this, [this] {
+            m_modified = true;
+            Q_EMIT modified();
+        });
 
         // Wrap it in a sortfilterproxy so we get column sorting for free
         auto proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setSourceModel(excelModel);
 
         tableWidget->setModel(proxyModel);
-        tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        if (m_readOnly) {
+            tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        } else {
+            tableWidget->setEditTriggers(QAbstractItemView::AllEditTriggers);
+        }
         tableWidget->resizeColumnsToContents();
         tableWidget->setAlternatingRowColors(true);
         tableWidget->setSortingEnabled(true);

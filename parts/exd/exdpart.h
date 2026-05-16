@@ -27,6 +27,8 @@ public:
     void resetSorting();
     void clear();
     void focusFilterField();
+    void setReadOnly(bool readOnly);
+    void save();
 
     void setPreferredLanguage(Language language);
     Language preferredLanguage() const;
@@ -37,6 +39,7 @@ public:
     QString name() const;
 
     QString selectedRow() const;
+    bool isModified() const;
 
     struct SearchSettings {
         int column = -1;
@@ -46,6 +49,7 @@ public:
 
 Q_SIGNALS:
     void requestJump(const QString &name, const QString &rowQuery);
+    void modified();
 
 private:
     void loadTables();
@@ -68,6 +72,8 @@ private:
     QAction *m_saveCsvAction = nullptr;
     physis_ExcelSheet sheet{};
     QLineEdit *m_filterEdit = nullptr;
+    bool m_modified = false;
+    bool m_readOnly = false;
 
     SearchSettings m_searchSettings;
 };

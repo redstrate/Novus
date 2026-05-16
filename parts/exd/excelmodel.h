@@ -33,8 +33,10 @@ public:
     int columnCount(const QModelIndex &parent) const override;
 
     QVariant data(const QModelIndex &index, int role) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     /**
      * @brief Returns the display field for this row ID, if found.
@@ -51,6 +53,9 @@ public:
      */
     int displayFieldColumn() const;
 
+Q_SIGNALS:
+    void modified();
+
 private:
     /**
      * @brief Returns a nice display for a given column data, including resolving other sheets.
@@ -61,6 +66,11 @@ private:
      * @brief Returns a nice display for a given column data.
      */
     static QVariant displayForData(const physis_Field &data);
+
+    /**
+     * @brief Returns a nice edit display for a given column data.
+     */
+    static QVariant editForData(const physis_Field &data);
 
     /**
      * @brief Returns the column data for a given QModelIndex.

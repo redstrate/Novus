@@ -300,6 +300,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     } break;
     case FileType::ExcelHeader: {
         auto exdWidget = new EXDPart(&m_data, m_excelResolver);
+        exdWidget->setReadOnly(true); // Editing here isn't supported yet
         exdWidget->loadSheet(info.filePath().remove(QStringLiteral(".exh")).remove(QStringLiteral("exd/")), file);
         addTab(exdWidget);
 

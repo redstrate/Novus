@@ -49,6 +49,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     m_exdPart = new EXDPart(&m_data, m_excelResolver.get());
     m_exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
     connect(m_exdPart, &EXDPart::requestJump, this, &MainWindow::jumpToSheetAndRow);
+    connect(m_exdPart, &EXDPart::modified, this, &MainWindow::updateDocumentActions);
     dummyWidget->addWidget(m_exdPart);
 
     connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, &MainWindow::jumpToSheet);
@@ -63,6 +64,8 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
+
+    updateDocumentActions();
 }
 
 MainWindow::~MainWindow()
@@ -241,6 +244,15 @@ void MainWindow::setupActions()
     connect(focusFilter, &QAction::triggered, m_exdPart, &EXDPart::focusFilterField);
     actionCollection()->addAction(QStringLiteral("filter"), focusFilter);
 
+    m_saveAction = KStandardAction::save(
+        qApp,
+        [this] {
+            qInfo() << "Saving...";
+
+            m_exdPart->save();
+        },
+        actionCollection());
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
     KStandardAction::close(
         qApp,
@@ -248,6 +260,11 @@ void MainWindow::setupActions()
             jumpToSheet({});
         },
         actionCollection());
+}
+
+void MainWindow::updateDocumentActions()
+{
+    m_saveAction->setEnabled(m_exdPart->isModified());
 }
 
 #include "moc_mainwindow.cpp"

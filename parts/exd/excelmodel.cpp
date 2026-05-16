@@ -77,6 +77,11 @@ QVariant ExcelModel::data(const QModelIndex &index, int role) const
 
         return displayForColumn(column, data);
     }
+    if (role == Qt::EditRole) {
+        const auto &data = dataForIndex(index);
+
+        return editForData(data);
+    }
     if (role == Qt::FontRole) {
         const auto mappedIndex = m_sortedColumnIndices.indexOf(index.column());
         const auto columnName = m_schema.nameForColumn(mappedIndex);
@@ -162,6 +167,58 @@ QVariant ExcelModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
+bool ExcelModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (role == Qt::EditRole) {
+        const auto [_, row_id, subrow_id] = m_rowIndices[index.row()];
+        auto newData = dataForIndex(index);
+        switch (newData.tag) {
+        case physis_Field::Tag::String: {
+            QString qStringData = value.toString();
+            std::string stdStringData = qStringData.toStdString();
+            char *cStringData = reinterpret_cast<char *>(malloc(stdStringData.length()));
+            strcpy(cStringData, stdStringData.data());
+            newData.string._0 = cStringData;
+        } break;
+        case physis_Field::Tag::Bool:
+            newData.bool_._0 = value.value<bool>();
+            break;
+        case physis_Field::Tag::Int8:
+            newData.int8._0 = value.value<int8_t>();
+            break;
+        case physis_Field::Tag::UInt8:
+            newData.u_int8._0 = value.value<uint8_t>();
+            break;
+        case physis_Field::Tag::Int16:
+            newData.int16._0 = value.value<int16_t>();
+            break;
+        case physis_Field::Tag::UInt16:
+            newData.u_int16._0 = value.value<uint16_t>();
+            break;
+        case physis_Field::Tag::Int32:
+            newData.int32._0 = value.value<int32_t>();
+            break;
+        case physis_Field::Tag::UInt32:
+            newData.u_int32._0 = value.value<uint32_t>();
+            break;
+        case physis_Field::Tag::Float32:
+            newData.float32._0 = value.value<float>();
+            break;
+        case physis_Field::Tag::Int64:
+            newData.int64._0 = value.value<int64_t>();
+            break;
+        case physis_Field::Tag::UInt64:
+            newData.u_int64._0 = value.value<uint16_t>();
+            break;
+        }
+
+        physis_sqpack_update_excel_sheet_page(&m_page, row_id, subrow_id, index.column(), &newData);
+
+        Q_EMIT modified();
+    }
+    return false;
+}
+
 QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role == Qt::DisplayRole) {
@@ -224,6 +281,12 @@ QHash<int, QByteArray> ExcelModel::roleNames() const
         {ResolvedSheetRole, "resolvedSheet"},
         {ResolvedRowRole, "resolvedRow"},
     };
+}
+
+Qt::ItemFlags ExcelModel::flags(const QModelIndex &index) const
+{
+    Q_UNUSED(index)
+    return Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 
 QVariant ExcelModel::resolveDisplay(const uint32_t rowId) const
@@ -321,6 +384,24 @@ QVariant ExcelModel::displayForData(const physis_Field &data)
         break;
     case physis_Field::Tag::Bool:
         result = data.bool_._0 ? i18nc("Value is true", "True") : i18nc("Value is false", "False");
+        break;
+    default:
+        result = editForData(data);
+        break;
+    }
+
+    return result;
+}
+
+QVariant ExcelModel::editForData(const physis_Field &data)
+{
+    QVariant result;
+    switch (data.tag) {
+    case physis_Field::Tag::String:
+        result = QString::fromStdString(data.string._0);
+        break;
+    case physis_Field::Tag::Bool:
+        result = data.bool_._0 ? true : false;
         break;
     case physis_Field::Tag::Int8:
         result = data.int8._0;
