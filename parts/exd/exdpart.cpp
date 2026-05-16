@@ -97,12 +97,13 @@ protected:
 
     void mousePressEvent(QMouseEvent *event) override
     {
-        QTableView::mousePressEvent(event);
-
         const auto index = indexAt(event->pos());
-        if (!index.data(ExcelModel::ResolvedSheetRole).isNull()) {
+        if (event->button() == Qt::LeftButton && !index.data(ExcelModel::ResolvedSheetRole).isNull()) {
             Q_EMIT requestJump(index.data(ExcelModel::ResolvedSheetRole).toString(), QString::number(index.data(ExcelModel::ResolvedRowRole).toInt()));
+            return;
         }
+
+        QTableView::mousePressEvent(event);
     }
 
 Q_SIGNALS:
