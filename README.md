@@ -10,7 +10,7 @@ Here is an exhaustive list of tooling available here:
 
 * [Gear Editor](apps/armoury), a graphical gear and character viewer. It also supports glTF import & export.
 * [Map Editor](apps/mapeditor), a graphical map viewer.
-* [Excel Editor](apps/karuku), a graphical program to view Excel data sheets.
+* [Excel Editor](apps/karuku), a graphical program to view and edit Excel data sheets.
 * [Data Explorer](apps/sagasu), a graphical interface to explore FFXIV data archive files.
 * [Enemy Editor](apps/enemyeditor), a graphical way to view enemy models.
 * [Patch Diff](apps/patchdiff), to see what files changed for a given patch.
