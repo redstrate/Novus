@@ -48,6 +48,8 @@ enum class FileType {
     Png,
     Fdt,
     PhysicsBinary,
+    AttachOffset,
+    BindPoint,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes

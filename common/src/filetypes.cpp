@@ -44,7 +44,9 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("pap"), FileType::Pap},
                                                      {QStringLiteral("png"), FileType::Png},
                                                      {QStringLiteral("fdt"), FileType::Fdt},
-                                                     {QStringLiteral("phyb"), FileType::PhysicsBinary}};
+                                                     {QStringLiteral("phyb"), FileType::PhysicsBinary},
+                                                     {QStringLiteral("atch"), FileType::AttachOffset},
+                                                     {QStringLiteral("eid"), FileType::BindPoint}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -83,7 +85,9 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::Pap, i18n("PAP")},
                                                 {FileType::Png, i18n("PNG")},
                                                 {FileType::Fdt, i18n("FDT")},
-                                                {FileType::PhysicsBinary, i18n("Physics Binary")}};
+                                                {FileType::PhysicsBinary, i18n("Physics Binary")},
+                                                {FileType::AttachOffset, i18n("Attach Offset")},
+                                                {FileType::BindPoint, i18n("Bind Point")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -132,7 +136,9 @@ const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>
                                                                                               {FileType::ObjectBehaviorSetBinary, physis_obsb_debug},
                                                                                               {FileType::Pap, physis_pap_debug},
                                                                                               {FileType::Fdt, physis_fdt_debug},
-                                                                                              {FileType::PhysicsBinary, physis_phyb_debug}};
+                                                                                              {FileType::PhysicsBinary, physis_phyb_debug},
+                                                                                              {FileType::AttachOffset, physis_atch_debug},
+                                                                                              {FileType::BindPoint, physis_eid_debug}};
 
 const static QMap<std::array<uint8_t, 4>, FileType> magicToType{
     {{0x70, 0x61, 0x70, 0x20}, FileType::Pap},
