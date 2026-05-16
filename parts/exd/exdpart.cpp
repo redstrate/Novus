@@ -294,8 +294,9 @@ void EXDPart::save()
 {
     auto buffer = physis_sqpack_write_sheet_page_to_buffer(&m_sheet.pages[0], &m_exh);
     QFile file(QStringLiteral("test.exd"));
-    file.open(QIODevice::WriteOnly);
-    file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
+    }
 }
 
 void EXDPart::setPreferredLanguage(const Language language)

@@ -27,6 +27,8 @@ QString folderNameFor(const ModelCharaType type)
         return QStringLiteral("demihuman");
     case ModelCharaType::Monster:
         return QStringLiteral("monster");
+    default:
+        break;
     }
 
     Q_UNREACHABLE();
@@ -41,6 +43,8 @@ QString prefixNameFor(const ModelCharaType type)
         return QStringLiteral("d");
     case ModelCharaType::Monster:
         return QStringLiteral("m");
+    default:
+        break;
     }
 
     Q_UNREACHABLE();
@@ -108,6 +112,7 @@ EnemyModel::EnemyModel(FileCache &cache)
 
 int EnemyModel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return m_enemies.size() / 8;
 }
 
@@ -192,5 +197,3 @@ QImage EnemyModel::renderModel(const uint32_t id, const QString &mdlPath, const 
 
     return image;
 }
-
-#include "moc_enemymodel.cpp"

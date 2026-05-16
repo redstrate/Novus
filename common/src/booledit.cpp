@@ -14,7 +14,9 @@ BoolEdit::BoolEdit(QWidget *parent)
     m_checkBox = new QCheckBox();
     itemsLayout->addWidget(m_checkBox);
 
-    connect(m_checkBox, &QCheckBox::stateChanged, this, [this](int state) {
+    connect(m_checkBox, &QCheckBox::checkStateChanged, this, [this](const Qt::CheckState state) {
+        Q_UNUSED(state)
+
         if (this->m_value) {
             *this->m_value = state;
             Q_EMIT onValueChanged();

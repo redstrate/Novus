@@ -10,6 +10,7 @@
 #include <QLineEdit>
 
 EnemyInfoWindow::EnemyInfoWindow(uint32_t id, const QString &mdlPath, const QString &mtrlPath, QWidget *parent)
+    : QDialog(parent)
 {
     auto layout = new QFormLayout();
     setLayout(layout);
@@ -32,5 +33,3 @@ EnemyInfoWindow::EnemyInfoWindow(uint32_t id, const QString &mdlPath, const QStr
 
     layout->addRow(i18n("MTRL"), mtrlPathEdit);
 }
-
-#include "moc_enemyinfowindow.cpp"
