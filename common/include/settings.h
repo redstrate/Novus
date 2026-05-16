@@ -10,6 +10,7 @@
 #include <QUuid>
 #include <physis.hpp>
 
+class QWidget;
 class QCoreApplication;
 class QCommandLineParser;
 
@@ -39,3 +40,21 @@ NOVUSCOMMON_EXPORT bool gameModsEnabled();
 NOVUSCOMMON_EXPORT void setGameModsEnabled(bool enabled);
 
 NOVUSCOMMON_EXPORT QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bool prompt = true);
+
+/**
+ * @brief Identical to QFileDialog::getSaveFileName but it saves its own settings automatically.
+ */
+NOVUSCOMMON_EXPORT QString getSaveFileName(QWidget *parent = nullptr,
+                                           const QString &configKey = QString(),
+                                           const QString &caption = QString(),
+                                           const QString &fileName = QString(),
+                                           const QString &filter = QString());
+
+/**
+ * @brief Identical to QFileDialog::getSaveFileName but it saves its own settings automatically.
+ */
+NOVUSCOMMON_EXPORT QString getOpenFileName(QWidget *parent = nullptr,
+                                           const QString &configKey = QString(),
+                                           const QString &caption = QString(),
+                                           const QString &fileName = QString(),
+                                           const QString &filter = QString());

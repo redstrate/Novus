@@ -15,6 +15,7 @@
 
 #include "boneeditor.h"
 #include "magic_enum.hpp"
+#include "settings.h"
 
 FullModelViewer::FullModelViewer(FileCache &cache, QWidget *parent)
     : QMainWindow(parent)
@@ -36,10 +37,11 @@ FullModelViewer::FullModelViewer(FileCache &cache, QWidget *parent)
     auto datOpenAction = fileMenu->addAction(i18nc("@action:inmenu DAT is an abbreviation", "Load Character DAT…"));
     datOpenAction->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(datOpenAction, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getOpenFileName(nullptr,
-                                                     i18nc("@title:window DAT is an abbreviation", "Open DAT File"),
-                                                     QStringLiteral("~"),
-                                                     i18nc("DAT is an abbreviation", "FFXIV Character DAT File (*.dat)"));
+        auto fileName = getOpenFileName(this,
+                                        QStringLiteral("ArmouryCharacterDatFile"),
+                                        i18nc("@title:window DAT is an abbreviation", "Open DAT File"),
+                                        {},
+                                        i18nc("DAT is an abbreviation", "FFXIV Character DAT File (*.dat)"));
 
         auto buffer = physis_read_file(fileName.toStdString().c_str());
 

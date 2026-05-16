@@ -10,6 +10,7 @@
 #include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
+#include <KSharedConfig>
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QFileDialog>
@@ -232,6 +233,65 @@ QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bo
         msgBox.exec();
 
         QCoreApplication::quit();
+    }
+
+    return {};
+}
+
+QString getSaveFileName(QWidget *parent, const QString &configKey, const QString &caption, const QString &fileName, const QString &filter)
+{
+    // NOTE: You thought I could just use QFileDialog::saveState huh HAHA wrong it doesn't work for saving the current directory
+
+    auto sharedConfig = KSharedConfig::openStateConfig();
+    auto dialogGroup = sharedConfig->group(QStringLiteral("FileDialog"));
+
+    QFileDialog dialog(parent);
+    dialog.setDirectory(dialogGroup.readEntry(configKey, QDir::homePath()));
+    dialog.setSupportedSchemes(QStringList(QStringLiteral("file")));
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.selectFile(fileName);
+    dialog.setWindowTitle(caption);
+    dialog.setNameFilter(filter);
+
+    const auto result = dialog.exec();
+    dialogGroup.writeEntry(configKey, dialog.directoryUrl().toLocalFile());
+    sharedConfig->sync();
+
+    if (result == QDialog::Accepted && !dialog.selectedUrls().isEmpty()) {
+        const auto selectedUrl = dialog.selectedUrls().constFirst();
+        if (selectedUrl.isLocalFile() || selectedUrl.isEmpty())
+            return selectedUrl.toLocalFile();
+
+        return selectedUrl.toString();
+    }
+
+    return {};
+}
+
+QString getOpenFileName(QWidget *parent, const QString &configKey, const QString &caption, const QString &fileName, const QString &filter)
+{
+    auto sharedConfig = KSharedConfig::openStateConfig();
+    auto dialogGroup = sharedConfig->group(QStringLiteral("FileDialog"));
+
+    QFileDialog dialog(parent);
+    dialog.setDirectory(dialogGroup.readEntry(configKey, QDir::homePath()));
+    dialog.setSupportedSchemes(QStringList(QStringLiteral("file")));
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.selectFile(fileName);
+    dialog.setWindowTitle(caption);
+    dialog.setNameFilter(filter);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+
+    const auto result = dialog.exec();
+    dialogGroup.writeEntry(configKey, dialog.directoryUrl().toLocalFile());
+    sharedConfig->sync();
+
+    if (result == QDialog::Accepted && !dialog.selectedUrls().isEmpty()) {
+        const auto selectedUrl = dialog.selectedUrls().constFirst();
+        if (selectedUrl.isLocalFile() || selectedUrl.isEmpty())
+            return selectedUrl.toLocalFile();
+
+        return selectedUrl.toString();
     }
 
     return {};

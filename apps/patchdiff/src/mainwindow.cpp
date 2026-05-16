@@ -67,7 +67,7 @@ void MainWindow::setupActions()
     KStandardAction::open(
         qApp,
         [this] {
-            const auto fileName = QFileDialog::getOpenFileName(this, i18n("Open Patch"), QDir::homePath(), i18n("ZiPatch files (*.patch)"));
+            const auto fileName = getOpenFileName(this, QStringLiteral("PatchDiffPatchFile"), i18n("Open Patch"), {}, i18n("ZiPatch files (*.patch)"));
             if (!fileName.isEmpty()) {
                 openPatch(QUrl::fromLocalFile(fileName));
                 m_recentFilesMenu->addUrl(QUrl::fromLocalFile(fileName));

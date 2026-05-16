@@ -50,6 +50,7 @@
 #include "openinwidget.h"
 #include "scenepart.h"
 #include "scenestate.h"
+#include "settings.h"
 #include "tmbpart.h"
 
 #include <KConfig>
@@ -85,8 +86,11 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     connect(m_tree, &FileTreeWindow::extractFile, this, [this](const QString &path, const QString &indexPath, Hash hash) {
         const QFileInfo info(path);
 
-        const QString savePath =
-            QFileDialog::getSaveFileName(this, i18nc("@title:window", "Save File"), info.fileName(), QStringLiteral("*.%1").arg(info.completeSuffix()));
+        const QString savePath = getSaveFileName(this,
+                                                 QStringLiteral("DataExplorerExtractFile"),
+                                                 i18nc("@title:window", "Extract File"),
+                                                 info.fileName(),
+                                                 QStringLiteral("*.%1").arg(info.completeSuffix()));
         if (!savePath.isEmpty()) {
             qInfo() << "Saving to" << savePath;
 
@@ -259,10 +263,16 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
             auto importAction = m_fileActionsMenu->addAction(QStringLiteral("Import glTF"));
             connect(importAction, &QAction::triggered, this, [this, mdlWidget](bool) {
-                const QString importFileName =
-                    QFileDialog::getOpenFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
-                const QString exportFileName =
-                    QFileDialog::getSaveFileName(this, i18nc("@title:window", "Import Model"), QDir::homePath(), i18n("Model file (*.mdl)"));
+                const QString importFileName = getOpenFileName(this,
+                                                               QStringLiteral("MDLImportGLBFile"),
+                                                               i18nc("@title:window", "Import Model"),
+                                                               QDir::homePath(),
+                                                               i18n("glTF Binary File (*.glb)"));
+                const QString exportFileName = getSaveFileName(this,
+                                                               QStringLiteral("MDLSaveGLBMDLFile"),
+                                                               i18nc("@title:window", "Import Model"),
+                                                               QDir::homePath(),
+                                                               i18n("Model file (*.mdl)"));
                 if (!importFileName.isEmpty() && !exportFileName.isEmpty()) {
                     auto mdl = mdlWidget->getModel(0).model;
                     importModel(mdl, importFileName);
@@ -279,8 +289,11 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
             auto exportAction = m_fileActionsMenu->addAction(QStringLiteral("Export glTF"));
             connect(exportAction, &QAction::triggered, this, [this, mdlWidget](bool) {
-                const QString fileName =
-                    QFileDialog::getSaveFileName(this, i18nc("@title:window", "Export Model"), QDir::homePath(), i18n("glTF Binary File (*.glb)"));
+                const QString fileName = getSaveFileName(this,
+                                                         QStringLiteral("MDLSaveAsGLBFile"),
+                                                         i18nc("@title:window", "Export Model"),
+                                                         QDir::homePath(),
+                                                         i18n("glTF Binary File (*.glb)"));
                 if (!fileName.isEmpty()) {
                     mdlWidget->exportModel(fileName);
                 }
@@ -436,7 +449,7 @@ void MainWindow::setupActions()
     auto openList = new QAction(i18nc("@action:inmenu", "Import Path List…"));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getOpenFileName(nullptr, i18nc("@title:window", "Open Path List"), QStringLiteral("~"));
+        auto fileName = getOpenFileName(this, QStringLiteral("DataExplorerPathListFile"), i18nc("@title:window", "Open Path List"));
 
         QMessageBox::warning(this,
                              i18nc("@title:window", "Import Warning"),

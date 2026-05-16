@@ -167,7 +167,7 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
 
     m_saveCsvAction = new QAction(QIcon::fromTheme(QStringLiteral("text-csv")), i18n("Save CSV…"), this);
     connect(m_saveCsvAction, &QAction::triggered, this, [this] {
-        const QString savePath = QFileDialog::getSaveFileName(this, i18nc("@title:window", "Save CSV"), QDir::homePath(), QStringLiteral("*.csv"));
+        const QString savePath = getSaveFileName(this, QStringLiteral("ExcelEditorCSVFile"), i18nc("@title:window", "Save CSV"), {}, QStringLiteral("*.csv"));
         if (!savePath.isEmpty()) {
             QString csvString;
 

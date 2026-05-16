@@ -8,6 +8,8 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
+#include "settings.h"
+
 TexPart::TexPart(QWidget *parent)
     : QWidget(parent)
 {
@@ -20,7 +22,7 @@ TexPart::TexPart(QWidget *parent)
     m_saveImage = new QAction(i18n("Save PNG…"), this);
     m_saveImage->setIcon(QIcon::fromTheme(QStringLiteral("document-save")));
     connect(m_saveImage, &QAction::triggered, this, [this] {
-        const QString savePath = QFileDialog::getSaveFileName(this, i18nc("@title:window", "Save Texture"), QDir::homePath(), QStringLiteral("*.png"));
+        const QString savePath = getSaveFileName(this, QStringLiteral("TexPartPNGFile"), i18nc("@title:window", "Save PNG"), {}, QStringLiteral("*.png"));
         if (!savePath.isEmpty()) {
             m_label->pixmap().save(savePath, "PNG");
         }
