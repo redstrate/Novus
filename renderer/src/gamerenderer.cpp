@@ -12,6 +12,7 @@
 
 #include "camera.h"
 #include "dxbc_reader.h"
+#include "filecache.h"
 #include "rendermanager.h"
 #include "swapchain.h"
 
@@ -55,9 +56,9 @@ const std::array<std::string, 14> passes = {
 
 constexpr int INVALID_PASS = 255;
 
-GameRenderer::GameRenderer(Device &device, physis_SqPackResource *data)
+GameRenderer::GameRenderer(Device &device, FileCache &cache)
     : m_device(device)
-    , m_data(data)
+    , m_cache(cache)
     , m_shaderManager(device)
 {
     m_dummyTex = m_device.createDummyTexture();
@@ -74,14 +75,16 @@ GameRenderer::GameRenderer(Device &device, physis_SqPackResource *data)
     m_device.copyToBuffer(m_planeVertexBuffer, (void *)planeVertices.data(), vertexSize);
 
     // TODO: they switched from 3D images from ARR to 2D arrays here, not yet supported
-    m_tileNormal = m_device.addGameTexture(physis_texture_parse(m_data->platform, physis_sqpack_read(m_data, "chara/common/texture/tile_norm_array.tex")));
+    m_tileNormal =
+        m_device.addGameTexture(physis_texture_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("chara/common/texture/tile_norm_array.tex"))));
     m_device.nameTexture(m_tileNormal, "chara/common/texture/tile_norm_array.tex");
-    m_tileOrb = m_device.addGameTexture(physis_texture_parse(m_data->platform, physis_sqpack_read(m_data, "chara/common/texture/tile_orb_array.tex")));
+    m_tileOrb =
+        m_device.addGameTexture(physis_texture_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("chara/common/texture/tile_orb_array.tex"))));
     m_device.nameTexture(m_tileOrb, "chara/common/texture/tile_orb_array.tex");
 
-    directionalLightningShpk = physis_shpk_parse(m_data->platform, physis_sqpack_read(m_data, "shader/sm5/shpk/directionallighting.shpk"));
-    createViewPositionShpk = physis_shpk_parse(m_data->platform, physis_sqpack_read(m_data, "shader/sm5/shpk/createviewposition.shpk"));
-    backgroundShpk = physis_shpk_parse(m_data->platform, physis_sqpack_read(m_data, "shader/sm5/shpk/bg.shpk"));
+    directionalLightningShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/directionallighting.shpk")));
+    createViewPositionShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/createviewposition.shpk")));
+    backgroundShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/bg.shpk")));
 
     // camera data
     {

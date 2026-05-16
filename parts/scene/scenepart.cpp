@@ -13,10 +13,9 @@
 
 #include "mapview.h"
 
-ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *parent)
+ScenePart::ScenePart(FileCache &cache, bool fixedSize, QWidget *parent)
     : QWidget(parent)
-    , m_data(data)
-    , m_fileCache(*data) // TODO: re-use FileCache
+    , m_fileCache(cache)
     , m_appState(new SceneState(m_fileCache, this))
 {
     auto layout = new QVBoxLayout();
@@ -51,7 +50,7 @@ ScenePart::ScenePart(physis_SqPackResource *data, bool fixedSize, QWidget *paren
     });
     sidebarLayout->addWidget(m_animationTimeSlider);
 
-    m_mapView = new MapView(data, m_fileCache, m_appState);
+    m_mapView = new MapView(m_fileCache, m_appState);
     splitter->addWidget(m_mapView);
     splitter->setStretchFactor(1, 1);
 
@@ -83,7 +82,7 @@ ScenePart::~ScenePart()
 void ScenePart::loadSgb(physis_Buffer file)
 {
     physis_sgb_free(&m_sgb); // free any previous ones
-    m_sgb = physis_sgb_parse(m_data->platform, file);
+    m_sgb = physis_sgb_parse(m_fileCache.platform(), file);
     if (m_sgb.sections) {
         // TODO: load more than one section?
         m_appState->load(m_fileCache, m_sgb.sections[0]);
@@ -101,7 +100,7 @@ void ScenePart::loadSgb(physis_Buffer file)
 void ScenePart::loadLvb(physis_Buffer file)
 {
     physis_lvb_free(&m_lvb); // free any previous ones
-    m_lvb = physis_lvb_parse(m_data->platform, file);
+    m_lvb = physis_lvb_parse(m_fileCache.platform(), file);
     if (m_lvb.sections) {
         // TODO: read all sections?
         m_appState->load(m_fileCache, m_lvb.sections[0]);

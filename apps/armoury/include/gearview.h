@@ -38,7 +38,7 @@ class GearView : public QFrame
     Q_OBJECT
 
 public:
-    explicit GearView(physis_SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit GearView(FileCache &cache, QWidget *parent = nullptr);
 
     /// Returns an inclusive list of races supported by the current gearset.
     std::vector<std::pair<Race, Tribe>> supportedRaces() const;
@@ -118,7 +118,6 @@ private:
 
     MDLPart *mdlPart = nullptr;
 
-    physis_SqPackResource *data;
     FileCache &cache;
 
     bool updating = false;

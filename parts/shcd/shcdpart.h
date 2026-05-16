@@ -20,12 +20,11 @@ class SHCDPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit SHCDPart(physis_SqPackResource *resource, QWidget *parent = nullptr);
+    explicit SHCDPart(QWidget *parent = nullptr);
 
-    void load(physis_Buffer buffer);
+    void load(Platform platform, physis_Buffer buffer);
 
 private:
-    physis_SqPackResource *m_resource = nullptr;
     physis_SHCD m_shcd;
     QTextEdit *m_shaderTextEdit = nullptr;
 

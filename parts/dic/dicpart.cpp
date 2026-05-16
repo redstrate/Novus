@@ -11,9 +11,8 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-DicPart::DicPart(physis_SqPackResource *resource, QWidget *parent)
+DicPart::DicPart(QWidget *parent)
     : QWidget(parent)
-    , m_resource(resource)
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -22,9 +21,9 @@ DicPart::DicPart(physis_SqPackResource *resource, QWidget *parent)
     setLayout(layout);
 }
 
-void DicPart::load(physis_Buffer file)
+void DicPart::load(Platform platform, physis_Buffer file)
 {
-    auto dic = physis_dictionary_parse(m_resource->platform, file);
+    auto dic = physis_dictionary_parse(platform, file);
     if (dic.num_words > 0) {
         m_tableWidget->clear();
         m_tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);

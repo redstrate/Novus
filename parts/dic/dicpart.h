@@ -12,11 +12,10 @@ class DicPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit DicPart(physis_SqPackResource *resource, QWidget *parent = nullptr);
+    explicit DicPart(QWidget *parent = nullptr);
 
-    void load(physis_Buffer file);
+    void load(Platform platform, physis_Buffer file);
 
 private:
     QTableWidget *m_tableWidget = nullptr;
-    physis_SqPackResource *m_resource = nullptr;
 };

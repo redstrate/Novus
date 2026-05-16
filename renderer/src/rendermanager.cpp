@@ -60,8 +60,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBits
     return VK_FALSE;
 }
 
-RenderManager::RenderManager(physis_SqPackResource *data)
-    : m_data(data)
+RenderManager::RenderManager(FileCache &cache)
+    : m_cache(cache)
 {
     Q_INIT_RESOURCE(shaders);
 
@@ -396,7 +396,7 @@ bool RenderManager::initSwapchain(VkSurfaceKHR surface, int width, int height)
     m_imGuiPass = new ImGuiPass(*this);
 
     if (qgetenv("NOVUS_USE_NEW_RENDERER") == QByteArrayLiteral("1")) {
-        m_renderer = new GameRenderer(*m_device, m_data);
+        m_renderer = new GameRenderer(*m_device, m_cache);
     } else {
         m_renderer = new SimpleRenderer(*m_device);
     }

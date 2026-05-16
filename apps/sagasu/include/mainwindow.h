@@ -29,7 +29,6 @@ public Q_SLOTS:
 private:
     void setupActions();
 
-    physis_SqPackResource m_data;
     QTabWidget *partHolder = nullptr;
     FileCache fileCache;
     HashDatabase m_database;

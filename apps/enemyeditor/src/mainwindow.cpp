@@ -40,13 +40,13 @@ MainWindow::MainWindow(physis_SqPackResource data)
     layout->setSpacing(0);
     dummyWidget->setLayout(layout);
 
-    auto model = new EnemyModel(&m_data);
+    auto model = new EnemyModel(cache);
 
-    part = new MDLPart(&m_data, cache);
+    part = new MDLPart(cache);
     part->minimumCameraDistance = 0.05f;
 
     auto skelName = physis_skeleton_path(Race::Hyur, Tribe::Midlander, Gender::Male);
-    part->setSkeleton(physis_skeleton_parse(m_data.platform, physis_sqpack_read(&m_data, skelName)));
+    part->setSkeleton(physis_skeleton_parse(m_data.platform, cache.lookupFile(QString::fromUtf8(skelName))));
 
     m_tableView = new QTableView();
     m_tableView->setModel(model);

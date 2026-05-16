@@ -19,9 +19,8 @@
 #include "knownvalues.h"
 #include "vulkanwindow.h"
 
-MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
+MDLPart::MDLPart(FileCache &cache, QWidget *parent)
     : QWidget(parent)
-    , data(data)
     , cache(cache)
 {
     auto viewportLayout = new QVBoxLayout();
@@ -32,13 +31,13 @@ MDLPart::MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
     if (pbdFile.size == 0) {
         qWarning() << "Failed to read chara/xls/bonedeformer/human.pbd";
     } else {
-        pbd = physis_pbd_parse(data->platform, pbdFile);
+        pbd = physis_pbd_parse(cache.platform(), pbdFile);
         if (!pbd.p_ptr) {
             qWarning() << "Failed to parse chara/xls/bonedeformer/human.pbd";
         }
     }
 
-    renderer = std::make_unique<RenderManager>(data);
+    renderer = std::make_unique<RenderManager>(cache);
 
     m_instance = std::make_unique<QVulkanInstance>();
     m_instance->setVkInstance(renderer->device().instance);
@@ -273,7 +272,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
         if (!shaderPackageCache.contains(h)) {
             auto shpkData = cache.lookupFile(shpkPath);
             if (shpkData.data != nullptr) {
-                shaderPackageCache[h] = physis_shpk_parse(data->platform, shpkData);
+                shaderPackageCache[h] = physis_shpk_parse(cache.platform(), shpkData);
             }
         }
 
@@ -461,7 +460,7 @@ void MDLPart::destroyMaterial(RenderMaterial &material)
 
 Texture MDLPart::createTexture(const std::string &path)
 {
-    auto texture = physis_texture_parse(data->platform, cache.lookupFile(QLatin1String(path)));
+    auto texture = physis_texture_parse(cache.platform(), cache.lookupFile(QLatin1String(path)));
     if (texture.p_ptr != nullptr) {
         auto gameTexture = renderer->addGameTexture(texture);
         renderer->device().nameTexture(gameTexture, "Game Texture " + path);

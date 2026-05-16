@@ -36,13 +36,11 @@ ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t
     m_models.reserve(excelSheets.size());
     m_sheets.reserve(excelSheets.size());
     for (const auto &sheetName : excelSheets) {
-        const std::string exhName = sheetName.toLower().toStdString();
-
-        const auto exhFile = physis_sqpack_read(&state->cache().resource(), (std::string("exd/") + exhName + ".exh").c_str());
+        const auto exhFile = state->cache().lookupFile(QStringLiteral("exd/%1.exh").arg(sheetName.toLower()));
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/" << sheetName << ".exh";
         } else {
-            const auto exh = physis_exh_parse(state->cache().resource().platform, exhFile);
+            const auto exh = physis_exh_parse(state->cache().platform(), exhFile);
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/" << sheetName << ".exh";
             } else {
@@ -54,7 +52,7 @@ ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t
                         break;
                     }
                 }
-                auto sheet = physis_sqpack_read_excel_sheet(&state->cache().resource(), sheetName.toStdString().c_str(), &exh, language);
+                auto sheet = state->cache().readExcelSheet(sheetName, &exh, language);
                 m_sheets.push_back(sheet);
 
                 const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);

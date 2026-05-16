@@ -11,12 +11,13 @@
 
 #include "filetreemodel.h"
 
+class FileCache;
 class FileTreeWindow : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit FileTreeWindow(HashDatabase &database, const QString &gamePath, physis_SqPackResource *data, QWidget *parent = nullptr);
+    explicit FileTreeWindow(HashDatabase &database, const QString &gamePath, FileCache &cache, QWidget *parent = nullptr);
 
     void refreshModel();
     void setShowUnknown(bool show);
@@ -28,7 +29,7 @@ Q_SIGNALS:
     void pathSelected(const QString &indexPath, Hash hash, const QString &path);
 
 private:
-    physis_SqPackResource *data = nullptr;
+    FileCache &m_cache;
     FileTreeModel *m_fileModel = nullptr;
     QSortFilterProxyModel *m_searchModel = nullptr;
     QCheckBox *m_unknownCheckbox = nullptr;

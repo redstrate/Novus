@@ -112,7 +112,6 @@ physis_EXH &CachingExcelResolver::getCachedEXH(const QString &sheetName)
         const auto file = m_cache.lookupFile(path);
         const auto exh = physis_exh_parse(m_cache.platform(), file);
         m_cachedEXHs.insert(sheetName, exh);
-        physis_free_file(&file);
     }
 
     return m_cachedEXHs[sheetName];

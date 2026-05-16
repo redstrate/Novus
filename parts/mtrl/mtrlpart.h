@@ -11,6 +11,7 @@
 #include <QTabWidget>
 #include <physis.hpp>
 
+class FileCache;
 class PathEdit;
 
 class MtrlPart : public QWidget
@@ -18,7 +19,7 @@ class MtrlPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit MtrlPart(physis_SqPackResource *data, QWidget *parent = nullptr);
+    explicit MtrlPart(FileCache &cache, QWidget *parent = nullptr);
     ~MtrlPart() override;
 
     void load(physis_Material file);
@@ -37,5 +38,5 @@ private:
     physis_Material m_material = {};
     physis_SHPK m_shpk = {};
 
-    physis_SqPackResource *m_data = nullptr;
+    FileCache &m_cache;
 };

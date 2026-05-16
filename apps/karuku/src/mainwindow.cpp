@@ -94,12 +94,10 @@ void MainWindow::jumpToSheet(const QString &name)
     }
 
     auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
-    auto pathStd = path.toStdString();
 
-    auto file = physis_sqpack_read(&m_data, pathStd.c_str());
+    auto file = m_cache.lookupFile(path);
     m_exdPart->loadSheet(name, file);
     m_sheetListWidget->goToSheet(name);
-    physis_free_file(&file);
 
     setWindowTitle(name);
 }

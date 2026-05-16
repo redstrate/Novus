@@ -3,6 +3,7 @@
 
 #include "maplistwidget.h"
 
+#include "filecache.h"
 #include "magic_enum.hpp"
 #include "settings.h"
 
@@ -14,9 +15,9 @@
 #include <QStandardItemModel>
 #include <QVBoxLayout>
 
-MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
+MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
     : QDialog(parent)
-    , data(data)
+    , m_cache(cache)
 {
     setModal(true);
     setMinimumSize(QSize(640, 480));
@@ -39,16 +40,17 @@ MapListWidget::MapListWidget(physis_SqPackResource *data, QWidget *parent)
     auto originalModel = new QStandardItemModel(this);
     m_searchModel->setSourceModel(originalModel);
 
-    auto nameExhFile = physis_sqpack_read(data, "exd/PlaceName.exh");
-    auto nameExh = physis_exh_parse(data->platform, nameExhFile);
-    physis_free_file(&nameExhFile);
+    auto nameExhFile = cache.lookupFile(QStringLiteral("exd/PlaceName.exh"));
+    if (nameExhFile.size == 0) {
+        qWarning() << "Could not load PlaceName Excel header!";
+    }
+    auto nameExh = physis_exh_parse(cache.platform(), nameExhFile);
 
-    auto territoryExhFile = physis_sqpack_read(data, "exd/TerritoryType.exh");
-    auto territoryExh = physis_exh_parse(data->platform, territoryExhFile);
-    physis_free_file(&territoryExhFile);
+    auto territoryExhFile = cache.lookupFile(QStringLiteral("exd/TerritoryType.exh"));
+    auto territoryExh = physis_exh_parse(cache.platform(), territoryExhFile);
 
-    auto nameSheet = physis_sqpack_read_excel_sheet(data, "PlaceName", &nameExh, getLanguage());
-    auto territorySheet = physis_sqpack_read_excel_sheet(data, "TerritoryType", &territoryExh, Language::None);
+    auto nameSheet = cache.readExcelSheet(QStringLiteral("PlaceName"), &nameExh, getLanguage());
+    auto territorySheet = cache.readExcelSheet(QStringLiteral("TerritoryType"), &territoryExh, Language::None);
 
     // TODO: figure out why row_count in EXH is wrong?!
     for (uint32_t i = 0; i < territoryExh.pages[0].row_count; i++) {

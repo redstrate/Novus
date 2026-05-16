@@ -56,8 +56,7 @@
 #include <KConfigGroup>
 
 MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
-    : m_data(data)
-    , fileCache(m_data)
+    : fileCache(data)
 {
     setMinimumSize(1280, 720);
 
@@ -82,7 +81,7 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    m_tree = new FileTreeWindow(m_database, gamePath, &m_data);
+    m_tree = new FileTreeWindow(m_database, gamePath, fileCache);
     connect(m_tree, &FileTreeWindow::extractFile, this, [this](const QString &path, const QString &indexPath, Hash hash) {
         const QFileInfo info(path);
 
@@ -93,10 +92,10 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
 
             std::string savePathStd = path.toStdString();
 
-            auto fileData = physis_sqpack_read_from_hash(&m_data, indexPath.toStdString().c_str(), hash);
+            auto fileData = physis_sqpack_read_from_hash(&fileCache.resource(), indexPath.toStdString().c_str(), hash);
             // HACK: Read from path as a fallback, which somehow makes more PS3 files load. I don't know why.
             if (fileData.size == 0) {
-                fileData = physis_sqpack_read(&m_data, path.toStdString().c_str());
+                fileData = fileCache.lookupFile(path);
             }
             if (fileData.size == 0) {
                 return;
@@ -172,16 +171,16 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     // FIXME: this is terrible, we should not be recalculating this. it isn't a huge deal with the file + index caching, but still
     // TODO: support for unknown files
     if (!path.isEmpty()) {
-        auto datOffset = physis_sqpack_find_offset(&m_data, pathStd.c_str());
+        auto datOffset = physis_sqpack_find_offset(&fileCache.resource(), pathStd.c_str());
         m_offsetLabel->setText(i18n("Offset: 0x%1", QString::number(datOffset, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
     } else {
         m_offsetLabel->setText(i18n("Offset: Unknown"));
     }
 
-    auto file = physis_sqpack_read_from_hash(&m_data, indexPath.toStdString().c_str(), hash);
+    auto file = physis_sqpack_read_from_hash(&fileCache.resource(), indexPath.toStdString().c_str(), hash);
     // HACK: Read from path as a fallback, which somehow makes more PS3 files load. I don't know why.
     if (file.size == 0) {
-        file = physis_sqpack_read(&m_data, path.toStdString().c_str());
+        file = fileCache.lookupFile(path);
     }
     if (file.size == 0) {
         return;
@@ -208,8 +207,8 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
     // Texture files are weird as they don't have an explicit magic, so we basically resort to brute-forcing them for now.
     if (type == FileType::Unknown || type == FileType::Texture) {
-        auto texWidget = new TexPart(&m_data);
-        if (texWidget->loadTex(file)) {
+        auto texWidget = new TexPart();
+        if (texWidget->loadTex(fileCache.platform(), file)) {
             if (type == FileType::Unknown) {
                 type = FileType::Texture;
                 source = i18n(" (Guessed)");
@@ -223,9 +222,9 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
     // Ditto for material files
     if (type == FileType::Unknown || type == FileType::Material) {
-        auto mtrl = physis_material_parse(m_data.platform, file);
+        auto mtrl = physis_material_parse(fileCache.platform(), file);
         if (mtrl.shpk_name) {
-            auto mtrlWidget = new MtrlPart(&m_data);
+            auto mtrlWidget = new MtrlPart(fileCache);
             mtrlWidget->load(mtrl);
             if (type == FileType::Unknown) {
                 type = FileType::Material;
@@ -238,7 +237,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
     // ... and model files!
     if (type == FileType::Unknown || type == FileType::Model) {
-        auto mdl = physis_mdl_parse(m_data.platform, file);
+        auto mdl = physis_mdl_parse(fileCache.platform(), file);
         if (mdl.p_ptr) {
             if (type == FileType::Unknown) {
                 type = FileType::Model;
@@ -250,10 +249,11 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
             transformation.scale[1] = 1;
             transformation.scale[2] = 1;
 
-            auto mdlWidget = new MDLPart(&m_data, fileCache);
+            auto mdlWidget = new MDLPart(fileCache);
             std::vector<std::pair<std::string, physis_Material>> materials(mdl.num_material_names);
             for (uint32_t i = 0; i < mdl.num_material_names; i++) {
-                materials[i] = {mdl.material_names[i], physis_material_parse(m_data.platform, physis_sqpack_read(&m_data, mdl.material_names[i]))};
+                materials[i] = {mdl.material_names[i],
+                                physis_material_parse(fileCache.platform(), fileCache.lookupFile(QString::fromUtf8(mdl.material_names[i])))};
             }
             mdlWidget->addModel(mdl, false, transformation, QStringLiteral("mdl"), materials, 0);
             addTab(mdlWidget);
@@ -293,8 +293,8 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
     switch (type) {
     case FileType::ExcelList: {
-        auto exlWidget = new EXLPart(&m_data);
-        exlWidget->load(file);
+        auto exlWidget = new EXLPart();
+        exlWidget->load(fileCache.platform(), file);
 
         addTab(exlWidget);
     } break;
@@ -330,23 +330,23 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         addTab(exdWidget);
     } break;
     case FileType::ShaderPackage: {
-        auto shpkWidget = new SHPKPart(&m_data);
-        shpkWidget->load(file);
+        auto shpkWidget = new SHPKPart();
+        shpkWidget->load(fileCache.platform(), file);
         addTab(shpkWidget);
     } break;
     case FileType::CharaMakeParams: {
-        auto cmpWidget = new CmpPart(&m_data);
-        cmpWidget->load(file);
+        auto cmpWidget = new CmpPart();
+        cmpWidget->load(fileCache.platform(), file);
         addTab(cmpWidget);
     } break;
     case FileType::Skeleton: {
         auto sklbWidget = new SklbPart();
-        sklbWidget->load(physis_skeleton_parse(m_data.platform, file));
+        sklbWidget->load(physis_skeleton_parse(fileCache.platform(), file));
         addTab(sklbWidget);
     } break;
     case FileType::Dictionary: {
-        auto dicWidget = new DicPart(&m_data);
-        dicWidget->load(file);
+        auto dicWidget = new DicPart();
+        dicWidget->load(fileCache.platform(), file);
         addTab(dicWidget);
     } break;
     case FileType::LuaBytecode: {
@@ -355,36 +355,36 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         addTab(luabWidget);
     } break;
     case FileType::HardwareCursor: {
-        auto texWidget = new TexPart(&m_data);
-        texWidget->loadHwc(file);
+        auto texWidget = new TexPart();
+        texWidget->loadHwc(fileCache.platform(), file);
         addTab(texWidget);
 
         m_fileActionsMenu->addAction(texWidget->saveImageAction());
     } break;
     case FileType::SharedGroup: {
-        auto scenePart = new ScenePart(&m_data);
+        auto scenePart = new ScenePart(fileCache);
         scenePart->loadSgb(file);
         Q_EMIT scenePart->sceneState()->mapLoaded();
         addTab(scenePart);
     } break;
     case FileType::TimelineMotion: {
-        auto tmbPart = new TmbPart(&m_data);
-        tmbPart->load(file);
+        auto tmbPart = new TmbPart();
+        tmbPart->load(fileCache.platform(), file);
         addTab(tmbPart);
     } break;
     case FileType::Shader: {
-        auto shcdPart = new SHCDPart(&m_data);
-        shcdPart->load(file);
+        auto shcdPart = new SHCDPart();
+        shcdPart->load(fileCache.platform(), file);
         addTab(shcdPart);
     } break;
     case FileType::LayerVariableBinary: {
-        auto scenePart = new ScenePart(&m_data);
+        auto scenePart = new ScenePart(fileCache);
         scenePart->loadLvb(file);
         Q_EMIT scenePart->sceneState()->mapLoaded();
         addTab(scenePart);
     } break;
     case FileType::Png: {
-        auto texWidget = new TexPart(&m_data);
+        auto texWidget = new TexPart();
         texWidget->loadPng(file);
         addTab(texWidget);
 
@@ -396,7 +396,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
     if (type != FileType::Unknown) {
         // TODO: this is sort of inefficient as it re-parses the whole file again...
-        auto debugInformation = FileTypes::printDebugInformation(type, m_data.platform, file);
+        auto debugInformation = FileTypes::printDebugInformation(type, fileCache.platform(), file);
         constexpr int maxDebugInformationLength = 1000000;
         if (debugInformation.length() > maxDebugInformationLength) {
             debugInformation.resize(maxDebugInformationLength);

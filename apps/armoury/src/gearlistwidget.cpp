@@ -11,9 +11,9 @@
 
 #include "gearlistmodel.h"
 
-GearListWidget::GearListWidget(physis_SqPackResource *data, QWidget *parent)
+GearListWidget::GearListWidget(FileCache &cache, QWidget *parent)
     : QWidget(parent)
-    , data(data)
+    , m_cache(cache)
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -31,7 +31,7 @@ GearListWidget::GearListWidget(physis_SqPackResource *data, QWidget *parent)
     connect(searchEdit, &QLineEdit::textChanged, searchModel, qOverload<const QString &>(&QSortFilterProxyModel::setFilterRegularExpression));
     layout->addWidget(searchEdit);
 
-    auto originalModel = new GearListModel(data);
+    auto originalModel = new GearListModel(m_cache);
     searchModel->setSourceModel(originalModel);
 
     listWidget = new QTreeView();

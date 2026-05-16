@@ -62,7 +62,8 @@ target_link_libraries(renderer
         imgui
         dxbc
         spirv-cross-core
-        spirv-cross-glsl)
+        spirv-cross-glsl
+        Novus::Common)
 target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_ENABLE_EXPERIMENTAL)
 target_compile_options(renderer PUBLIC -fexceptions) # needed for spirv-cross and dxbc
 

@@ -30,7 +30,6 @@ private:
     void openMap(const QString &basePath, int contentFinderCondition);
     void updateActionState();
 
-    physis_SqPackResource m_data;
     FileCache cache;
     ScenePart *m_part = nullptr;
     QAction *m_centerObjectAction = nullptr;

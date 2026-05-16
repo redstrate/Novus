@@ -17,7 +17,7 @@ class FullModelViewer : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit FullModelViewer(physis_SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit FullModelViewer(FileCache &cache, QWidget *parent = nullptr);
 
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
@@ -53,7 +53,7 @@ private:
     GearView *gearView = nullptr;
     QComboBox *raceCombo = nullptr, *subraceCombo = nullptr, *genderCombo = nullptr;
 
-    physis_SqPackResource *data = nullptr;
+    FileCache &m_cache;
     physis_CMP cmp{};
 
     BoneEditor *m_boneEditor;

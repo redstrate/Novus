@@ -8,9 +8,8 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-TexPart::TexPart(physis_SqPackResource *data, QWidget *parent)
+TexPart::TexPart(QWidget *parent)
     : QWidget(parent)
-    , data(data)
 {
     auto layout = new QVBoxLayout();
     setLayout(layout);
@@ -28,13 +27,13 @@ TexPart::TexPart(physis_SqPackResource *data, QWidget *parent)
     });
 }
 
-bool TexPart::loadTex(physis_Buffer file)
+bool TexPart::loadTex(Platform platform, physis_Buffer file)
 {
     if (file.size == 0) {
         return false;
     }
 
-    auto tex = physis_texture_parse(data->platform, file);
+    auto tex = physis_texture_parse(platform, file);
     if (tex.width == 0 && tex.height == 0) {
         return false;
     }
@@ -49,9 +48,9 @@ bool TexPart::loadTex(physis_Buffer file)
     return true;
 }
 
-void TexPart::loadHwc(physis_Buffer file)
+void TexPart::loadHwc(Platform platform, physis_Buffer file)
 {
-    auto tex = physis_hwc_parse(data->platform, file);
+    auto tex = physis_hwc_parse(platform, file);
 
     QImage image(tex.rgba, Hwc_WIDTH, Hwc_HEIGHT, QImage::Format_RGBA8888);
     m_label->setQPixmap(QPixmap::fromImage(image));

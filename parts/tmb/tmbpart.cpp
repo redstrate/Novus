@@ -6,17 +6,16 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-TmbPart::TmbPart(physis_SqPackResource *resource, QWidget *parent)
+TmbPart::TmbPart(QWidget *parent)
     : QWidget(parent)
-    , m_resource(resource)
 {
     auto layout = new QVBoxLayout();
     setLayout(layout);
 }
 
-void TmbPart::load(physis_Buffer buffer)
+void TmbPart::load(Platform platform, physis_Buffer buffer)
 {
-    auto tmb = physis_tmb_parse(m_resource->platform, buffer);
+    auto tmb = physis_tmb_parse(platform, buffer);
     loadExisting(tmb);
 }
 

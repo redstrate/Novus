@@ -13,17 +13,17 @@ class TexPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit TexPart(physis_SqPackResource *data, QWidget *parent = nullptr);
+    explicit TexPart(QWidget *parent = nullptr);
 
     /**
      * @brief Loads a .tex file.
      */
-    bool loadTex(physis_Buffer file);
+    bool loadTex(Platform platform, physis_Buffer file);
 
     /**
      * @brief Loads a .hwc file.
      */
-    void loadHwc(physis_Buffer file);
+    void loadHwc(Platform platform, physis_Buffer file);
 
     /**
      * @brief Loads a .png file.
@@ -33,8 +33,6 @@ public:
     QAction *saveImageAction();
 
 private:
-    physis_SqPackResource *data = nullptr;
-
     ImageLabel *m_label = nullptr;
     QAction *m_saveImage = nullptr;
 };

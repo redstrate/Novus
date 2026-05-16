@@ -15,13 +15,12 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-MapView::MapView(physis_SqPackResource *data, FileCache &cache, SceneState *appState, QWidget *parent)
+MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
     : QWidget(parent)
-    , m_data(data)
     , m_cache(cache)
     , m_appState(appState)
 {
-    mdlPart = new MDLPart(data, cache);
+    mdlPart = new MDLPart(cache);
     mdlPart->enableFreemode();
     connect(mdlPart, &MDLPart::initializeRender, this, [this, appState] {
         mdlPart->manager()->addPass(new ObjectPass(mdlPart->manager(), appState));
@@ -66,7 +65,7 @@ void MapView::addTerrain(ObjectScene &scene)
         QString mdlPath = QStringLiteral("%1/bgplate/%2").arg(base2Path, QString::fromStdString(scene.terrain.plates[i].filename));
 
         auto plateMdlFile = m_cache.lookupFile(mdlPath);
-        auto plateMdl = physis_mdl_parse(m_data->platform, plateMdlFile);
+        auto plateMdl = physis_mdl_parse(m_cache.platform(), plateMdlFile);
         if (plateMdl.p_ptr != nullptr) {
             std::vector<std::pair<std::string, physis_Material>> materials;
             for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
@@ -75,7 +74,7 @@ void MapView::addTerrain(ObjectScene &scene)
                 if (!scene.cachedMaterials.contains(material_name)) {
                     const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
                     if (matFile.size > 0) {
-                        auto mat = physis_material_parse(m_data->platform, matFile);
+                        auto mat = physis_material_parse(m_cache.platform(), matFile);
                         scene.cachedMaterials[material_name] = mat;
                     } else {
                         qWarning() << "Failed to find terrain material" << material_name;
@@ -212,7 +211,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                         continue;
                     }
 
-                    auto plateMdl = physis_mdl_parse(m_data->platform, plateMdlFile);
+                    auto plateMdl = physis_mdl_parse(m_cache.platform(), plateMdlFile);
                     if (plateMdl.p_ptr != nullptr) {
                         std::vector<std::pair<std::string, physis_Material>> materials;
                         for (uint32_t j = 0; j < plateMdl.num_material_names; j++) {
@@ -221,7 +220,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                             if (!scene.cachedMaterials.contains(material_name)) {
                                 const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
                                 if (matFile.size > 0) {
-                                    auto mat = physis_material_parse(m_data->platform, matFile);
+                                    auto mat = physis_material_parse(m_cache.platform(), matFile);
                                     scene.cachedMaterials[material_name] = mat;
                                 } else {
                                     qWarning() << "Failed to find model material" << material_name;

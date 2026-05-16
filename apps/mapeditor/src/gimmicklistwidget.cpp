@@ -12,7 +12,7 @@
 
 #include "scenestate.h"
 
-GimmickListWidget::GimmickListWidget(ScenePart *part, SceneState *state, physis_SqPackResource *data, QWidget *parent)
+GimmickListWidget::GimmickListWidget(ScenePart *part, SceneState *state, QWidget *parent)
     : QDialog(parent)
 {
     setMinimumSize(QSize(640, 480));
@@ -22,8 +22,8 @@ GimmickListWidget::GimmickListWidget(ScenePart *part, SceneState *state, physis_
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    auto eobjExh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/EObj.exh"));
-    auto eobjSheet = physis_sqpack_read_excel_sheet(data, "EObj", &eobjExh, Language::None);
+    auto eobjExh = physis_exh_parse(state->cache().platform(), state->cache().lookupFile(QStringLiteral("exd/EObj.exh")));
+    auto eobjSheet = state->cache().readExcelSheet(QStringLiteral("EObj"), &eobjExh, Language::None);
 
     auto tableWidget = new QTableWidget();
     tableWidget->setEditTriggers(QTableWidget::EditTrigger::NoEditTriggers);

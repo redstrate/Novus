@@ -9,6 +9,7 @@
 #include <QAbstractItemModel>
 #include <QFutureWatcher>
 
+class FileCache;
 struct SqPackResource;
 
 enum class TreeType { Root, Folder, File };
@@ -42,7 +43,7 @@ class FileTreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, physis_SqPackResource *data, QObject *parent = nullptr);
+    explicit FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, FileCache &cache, QObject *parent = nullptr);
 
     enum CustomRoles {
         PathRole = Qt::UserRole,
@@ -64,7 +65,7 @@ public:
     QModelIndex search(const QString &path) const;
 
 private:
-    physis_SqPackResource *gameData = nullptr;
+    FileCache &m_cache;
     TreeInformation *rootItem = nullptr;
 
     void addKnownFolder(const QString &string);

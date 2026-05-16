@@ -21,7 +21,7 @@ SceneState::SceneState(FileCache &cache, QObject *parent)
 {
     // ENPC
     {
-        const auto exhFile = physis_sqpack_read(&cache.resource(), "exd/enpcresident.exh");
+        const auto exhFile = cache.lookupFile(QStringLiteral("exd/enpcresident.exh"));
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/epncresident.exh";
         } else {
@@ -29,16 +29,15 @@ SceneState::SceneState(FileCache &cache, QObject *parent)
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/enpcresident.exh";
             } else {
-                m_enpcResidentSheet = physis_sqpack_read_excel_sheet(&cache.resource(), "ENpcResident", &exh, getLanguage());
+                m_enpcResidentSheet = cache.readExcelSheet(QStringLiteral("ENpcResident"), &exh, getLanguage());
             }
             physis_exh_free(&exh);
         }
-        physis_free_file(&exhFile);
     }
 
     // EOBJ
     {
-        const auto exhFile = physis_sqpack_read(&cache.resource(), "exd/eobjname.exh");
+        const auto exhFile = cache.lookupFile(QStringLiteral("exd/eobjname.exh"));
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/eobjname.exh";
         } else {
@@ -46,16 +45,15 @@ SceneState::SceneState(FileCache &cache, QObject *parent)
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/eobjname.exh";
             } else {
-                m_eobjNameSheet = physis_sqpack_read_excel_sheet(&cache.resource(), "EObjName", &exh, getLanguage());
+                m_eobjNameSheet = cache.readExcelSheet(QStringLiteral("EObjName"), &exh, getLanguage());
             }
             physis_exh_free(&exh);
         }
-        physis_free_file(&exhFile);
     }
 
     // BNPC
     {
-        const auto exhFile = physis_sqpack_read(&cache.resource(), "exd/bnpcname.exh");
+        const auto exhFile = cache.lookupFile(QStringLiteral("exd/bnpcname.exh"));
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/bnpcname.exh";
         } else {
@@ -63,11 +61,10 @@ SceneState::SceneState(FileCache &cache, QObject *parent)
             if (!exh.p_ptr) {
                 qWarning() << "Failed to parse exd/bnpcname.exh";
             } else {
-                m_bnpcNameSheet = physis_sqpack_read_excel_sheet(&cache.resource(), "BNpcName", &exh, getLanguage());
+                m_bnpcNameSheet = cache.readExcelSheet(QStringLiteral("BNpcName"), &exh, getLanguage());
             }
             physis_exh_free(&exh);
         }
-        physis_free_file(&exhFile);
     }
 }
 

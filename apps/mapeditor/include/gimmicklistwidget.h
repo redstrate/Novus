@@ -14,5 +14,5 @@ class GimmickListWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit GimmickListWidget(ScenePart *part, SceneState *state, physis_SqPackResource *data, QWidget *parent = nullptr);
+    explicit GimmickListWidget(ScenePart *part, SceneState *state, QWidget *parent = nullptr);
 };

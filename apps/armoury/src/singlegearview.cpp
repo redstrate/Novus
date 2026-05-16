@@ -18,10 +18,10 @@
 #include "mdlimport.h"
 #include "pathedit.h"
 
-SingleGearView::SingleGearView(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
+SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
     : QWidget(parent)
-    , gearView(new GearView(data, cache))
-    , data(data)
+    , gearView(new GearView(cache))
+    , m_cache(cache)
 {
     gearView->setWhatsThis(i18n("A 3D preview of the gear model."));
 
@@ -188,7 +188,7 @@ SingleGearView::SingleGearView(physis_SqPackResource *data, FileCache &cache, QW
         }
     });
     auto mdlAction = testMenu->addAction(i18nc("@action:inmenu", "MDL"));
-    connect(mdlAction, &QAction::triggered, this, [this, data, &cache](bool) {
+    connect(mdlAction, &QAction::triggered, this, [this, &cache](bool) {
         if (currentGear.has_value()) {
             // TODO: deduplicate
             const auto sanitizeMdlPath = [](const QString &mdlPath) -> QString {

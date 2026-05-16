@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "filetreemodel.h"
+
+#include "filecache.h"
 #include "filetypes.h"
 #include "physis.hpp"
 
@@ -11,9 +13,9 @@
 
 Q_DECLARE_METATYPE(Hash)
 
-FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, physis_SqPackResource *data, QObject *parent)
+FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, FileCache &cache, QObject *parent)
     : QAbstractItemModel(parent)
-    , gameData(data)
+    , m_cache(cache)
     , m_database(database)
     , m_showUnknown(showUnknown)
 {
@@ -32,7 +34,7 @@ FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QSt
         QFileInfo info = it.fileInfo();
         if (info.exists() && info.completeSuffix().contains(QStringLiteral(".index"))) {
             std::string pathStd = info.filePath().toStdString();
-            const auto indexEntries = physis_index_parse(data->platform, pathStd.c_str());
+            const auto indexEntries = physis_index_parse(m_cache.platform(), pathStd.c_str());
             for (uint32_t i = 0; i < indexEntries.num_hashes; i++) {
                 const auto hash = indexEntries.hashes[i];
                 switch (hash.tag) {

@@ -14,12 +14,11 @@ class TmbPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit TmbPart(physis_SqPackResource *resource, QWidget *parent = nullptr);
+    explicit TmbPart(QWidget *parent = nullptr);
 
-    void load(physis_Buffer file);
+    void load(Platform platform, physis_Buffer file);
     void loadExisting(physis_Tmb tmb);
 
 private:
     physis_Tmb m_tmb = {};
-    physis_SqPackResource *m_resource = nullptr;
 };

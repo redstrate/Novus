@@ -18,6 +18,7 @@
 #include "drawobject.h"
 #include "scene.h"
 
+class FileCache;
 class ImGuiPass;
 struct ImGuiContext;
 class BaseRenderer;
@@ -27,7 +28,7 @@ class RendererPass;
 class RenderManager
 {
 public:
-    explicit RenderManager(physis_SqPackResource *data);
+    explicit RenderManager(FileCache &cache);
     ~RenderManager();
 
     bool initSwapchain(VkSurfaceKHR surface, int width, int height);
@@ -86,6 +87,6 @@ private:
     ImGuiPass *m_imGuiPass = nullptr;
     std::unique_ptr<Device> m_device;
     BaseRenderer *m_renderer = nullptr;
-    physis_SqPackResource *m_data = nullptr;
+    FileCache &m_cache;
     std::vector<RendererPass *> m_passes;
 };

@@ -15,7 +15,7 @@ class SingleGearView : public QWidget
     Q_OBJECT
 
 public:
-    explicit SingleGearView(physis_SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit SingleGearView(FileCache &cache, QWidget *parent = nullptr);
 
     QList<physis_Material> getLoadedMaterials() const;
 
@@ -63,5 +63,5 @@ private:
 
     bool fmvAvailable = false;
 
-    physis_SqPackResource *data = nullptr;
+    FileCache &m_cache;
 };

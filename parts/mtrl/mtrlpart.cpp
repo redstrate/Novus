@@ -3,6 +3,8 @@
 
 #include "mtrlpart.h"
 
+#include "filecache.h"
+
 #include <KLocalizedString>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -16,9 +18,9 @@
 #include "pathedit.h"
 #include "texpart.h"
 
-MtrlPart::MtrlPart(physis_SqPackResource *data, QWidget *parent)
+MtrlPart::MtrlPart(FileCache &cache, QWidget *parent)
     : QWidget(parent)
-    , m_data(data)
+    , m_cache(cache)
 {
     m_itemsLayout = new QVBoxLayout(this);
 
@@ -62,15 +64,14 @@ void MtrlPart::load(physis_Material file)
 {
     m_material = file;
     if (m_material.shpk_name != nullptr) {
-        std::string shpkPath = "shader/sm5/shpk/" + std::string(m_material.shpk_name);
-        m_shaderPackageName->setPath(QString::fromStdString(shpkPath));
+        const QString shpkPath = QStringLiteral("shader/sm5/shpk/%1").arg(QString::fromUtf8(m_material.shpk_name));
+        m_shaderPackageName->setPath(shpkPath);
 
-        auto shpkData = physis_sqpack_read(m_data, shpkPath.c_str());
+        auto shpkData = m_cache.lookupFile(shpkPath);
         if (shpkData.data != nullptr) {
             physis_shpk_free(&m_shpk);
-            m_shpk = physis_shpk_parse(m_data->platform, shpkData);
+            m_shpk = physis_shpk_parse(m_cache.platform(), shpkData);
         }
-        physis_free_file(&shpkData);
     }
     rebuild();
 }
@@ -134,13 +135,11 @@ void MtrlPart::rebuild()
         auto layout = new QFormLayout();
         groupBox->setLayout(layout);
 
-        auto file = physis_sqpack_read(m_data, m_material.textures[sampler.texture_index]);
+        auto file = m_cache.lookupFile(QString::fromUtf8(m_material.textures[sampler.texture_index]));
 
-        auto texWidget = new TexPart(m_data);
-        texWidget->loadTex(file);
+        auto texWidget = new TexPart();
+        texWidget->loadTex(m_cache.platform(), file);
         layout->addWidget(texWidget);
-
-        physis_free_file(&file);
 
         auto texturePath = new PathEdit();
         texturePath->setPath(QString::fromLatin1(m_material.textures[sampler.texture_index]));

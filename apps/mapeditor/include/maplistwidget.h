@@ -7,6 +7,7 @@
 #include <QListView>
 #include <physis.hpp>
 
+class FileCache;
 class QSortFilterProxyModel;
 
 class MapListWidget : public QDialog
@@ -14,7 +15,7 @@ class MapListWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit MapListWidget(physis_SqPackResource *data, QWidget *parent = nullptr);
+    explicit MapListWidget(FileCache &cache, QWidget *parent = nullptr);
 
     QString acceptedMap() const;
     int acceptedContentFinderCondition() const;
@@ -24,7 +25,7 @@ public:
 private:
     QListView *listWidget = nullptr;
 
-    physis_SqPackResource *data = nullptr;
+    FileCache &m_cache;
     QString m_acceptedMap;
     int m_acceptedContentFinderCondition = 0;
     QSortFilterProxyModel *m_searchModel = nullptr;

@@ -16,14 +16,15 @@
 #include <physis.hpp>
 
 class QScrollArea;
+
 class SHPKPart : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SHPKPart(physis_SqPackResource *resource, QWidget *parent = nullptr);
+    explicit SHPKPart(QWidget *parent = nullptr);
 
-    void load(physis_Buffer buffer);
+    void load(Platform platform, physis_Buffer buffer);
 
 private:
     void loadShader(const QModelIndex &index);
@@ -34,7 +35,6 @@ private:
     void clearLayout(QLayout *layout);
 
     QTabWidget *pageTabWidget = nullptr;
-    physis_SqPackResource *m_resource = nullptr;
 
     QWidget *shadersTab = nullptr;
     QListWidget *shadersListWidget = nullptr;

@@ -12,12 +12,10 @@ class EXLPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit EXLPart(physis_SqPackResource *data, QWidget *parent = nullptr);
+    explicit EXLPart(QWidget *parent = nullptr);
 
-    void load(physis_Buffer file);
+    void load(Platform platform, physis_Buffer file);
 
 private:
-    physis_SqPackResource *data = nullptr;
-
     QTableWidget *m_tableWidget = nullptr;
 };

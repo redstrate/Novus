@@ -63,26 +63,23 @@ QString buildMtrlPath(const ModelCharaType type, const uint16_t model, const uin
         .arg(variant, 4, 10, QLatin1Char('0'));
 }
 
-EnemyModel::EnemyModel(physis_SqPackResource *resource)
-    : m_resource(resource)
-    , m_cache(new FileCache(*m_resource))
+EnemyModel::EnemyModel(FileCache &cache)
+    : m_cache(cache)
 {
-    m_part = new MDLPart(m_resource, *m_cache);
+    m_part = new MDLPart(m_cache);
     m_part->minimumCameraDistance = 0.05f;
     // TODO: terrible hack WRT to DPI but it works
     m_part->setMinimumSize(128 / m_part->devicePixelRatio(), 128 / m_part->devicePixelRatio());
     m_part->show();
 
-    auto bnpcBaseExhFile = physis_sqpack_read(resource, "exd/BNpcBase.exh");
-    auto bnpcBaseExh = physis_exh_parse(resource->platform, bnpcBaseExhFile);
-    physis_free_file(&bnpcBaseExhFile);
+    auto bnpcBaseExhFile = cache.lookupFile(QStringLiteral("exd/BNpcBase.exh"));
+    auto bnpcBaseExh = physis_exh_parse(cache.platform(), bnpcBaseExhFile);
 
-    auto modelCharaExhFile = physis_sqpack_read(resource, "exd/ModelChara.exh");
-    auto modelCharaExh = physis_exh_parse(resource->platform, modelCharaExhFile);
-    physis_free_file(&modelCharaExhFile);
+    auto modelCharaExhFile = cache.lookupFile(QStringLiteral("exd/ModelChara.exh"));
+    auto modelCharaExh = physis_exh_parse(cache.platform(), modelCharaExhFile);
 
-    auto bnpcBaseSheet = physis_sqpack_read_excel_sheet(resource, "BNpcBase", &bnpcBaseExh, Language::None);
-    auto modelCharaSheet = physis_sqpack_read_excel_sheet(resource, "ModelChara", &modelCharaExh, Language::None);
+    auto bnpcBaseSheet = m_cache.readExcelSheet(QStringLiteral("BNpcBase"), &bnpcBaseExh, Language::None);
+    auto modelCharaSheet = m_cache.readExcelSheet(QStringLiteral("ModelChara"), &modelCharaExh, Language::None);
 
     for (uint32_t i = 0; i < bnpcBaseSheet.page_count; i++) {
         for (uint32_t j = 0; j < bnpcBaseSheet.pages[i].entry_count; j++) {
@@ -146,26 +143,23 @@ QImage EnemyModel::renderModel(const uint32_t id, const QString &mdlPath, const 
 {
     m_part->clear();
 
-    const auto mdlFile = physis_sqpack_read(m_resource, mdlPath.toStdString().c_str());
+    const auto mdlFile = m_cache.lookupFile(mdlPath);
     if (mdlFile.size == 0) {
         return QImage{};
     }
 
-    auto mdl = physis_mdl_parse(m_resource->platform, mdlFile);
-    physis_free_file(&mdlFile);
+    auto mdl = physis_mdl_parse(m_cache.platform(), mdlFile);
     if (mdl.p_ptr == nullptr) {
         qWarning() << "While processing" << id << "could not find" << mdlPath;
         return QImage{};
     }
 
-    auto mtrlFile = physis_sqpack_read(m_resource, mtrlPath.toStdString().c_str());
+    auto mtrlFile = m_cache.lookupFile(mtrlPath);
     if (mtrlFile.size == 0) {
         qWarning() << "While processing" << id << "could not find" << mtrlPath;
-        physis_free_file(&mtrlFile);
         return QImage{};
     }
-    auto mtrl = physis_material_parse(m_resource->platform, mtrlFile);
-    physis_free_file(&mtrlFile);
+    auto mtrl = physis_material_parse(m_cache.platform(), mtrlFile);
 
     const glm::vec3 boundsMin{mdl.bounding_box.min[0], mdl.bounding_box.min[1], mdl.bounding_box.min[2]};
     const glm::vec3 boundsMax{mdl.bounding_box.max[0], mdl.bounding_box.max[1], mdl.bounding_box.max[2]};

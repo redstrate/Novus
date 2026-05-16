@@ -9,9 +9,9 @@
 #include <QtConcurrent>
 #include <magic_enum.hpp>
 
-GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
+GearListModel::GearListModel(FileCache &cache, QObject *parent)
     : QAbstractItemModel(parent)
-    , gameData(data)
+    , m_cache(cache)
 {
     // smallclothes body
     {
@@ -31,8 +31,8 @@ GearListModel::GearListModel(physis_SqPackResource *data, QObject *parent)
         gears.push_back(info);
     }
 
-    m_exh = physis_exh_parse(data->platform, physis_sqpack_read(data, "exd/item.exh"));
-    m_sheet = physis_sqpack_read_excel_sheet(data, "Item", &m_exh, getLanguage());
+    m_exh = physis_exh_parse(cache.platform(), cache.lookupFile(QStringLiteral("exd/item.exh")));
+    m_sheet = cache.readExcelSheet(QStringLiteral("Item"), &m_exh, getLanguage());
 
     for (unsigned int i = 0; i < m_sheet.page_count; i++) {
         for (unsigned int j = m_exh.pages[i].start_id; j < m_exh.pages[i].start_id + m_sheet.pages[i].entry_count; j++) {
@@ -167,11 +167,9 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
             const QString iconFolder = QStringLiteral("ui/icon/%1").arg(iconBaseNum, 6, QLatin1Char('0'));
             const QString iconFile = QStringLiteral("%1.tex").arg(iconName, 6, QLatin1Char('0'));
 
-            const std::string iconFilename = iconFolder.toStdString() + "/" + iconFile.toStdString();
-
-            auto texFile = physis_sqpack_read(gameData, iconFilename.c_str());
+            auto texFile = m_cache.lookupFile(QStringLiteral("%1/%2").arg(iconFolder, iconFile));
             if (texFile.data != nullptr) {
-                auto tex = physis_texture_parse(gameData->platform, texFile);
+                auto tex = physis_texture_parse(m_cache.platform(), texFile);
                 if (tex.p_ptr != nullptr) {
                     auto rgba = physis_texture_to_rgba(tex);
                     QImage image(rgba.rgba, static_cast<int>(tex.width), static_cast<int>(tex.height), QImage::Format_RGBA8888);

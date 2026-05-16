@@ -14,7 +14,7 @@
 
 using namespace Qt::StringLiterals;
 
-FileCache::FileCache(physis_SqPackResource &data)
+FileCache::FileCache(physis_SqPackResource data)
     : data(data)
 {
     // Custom resource used for reading and parsing Excel files and other nonsense
@@ -98,7 +98,7 @@ Platform FileCache::platform() const
     return data.platform;
 }
 
-physis_SqPackResource &FileCache::resource() const
+physis_SqPackResource &FileCache::resource()
 {
     return data;
 }

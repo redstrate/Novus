@@ -21,7 +21,7 @@ class MDLPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit MDLPart(physis_SqPackResource *data, FileCache &cache, QWidget *parent = nullptr);
+    explicit MDLPart(FileCache &cache, QWidget *parent = nullptr);
     ~MDLPart() override;
 
     void exportModel(const QString &fileName);
@@ -121,7 +121,6 @@ private:
     void calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone);
     void calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone);
 
-    physis_SqPackResource *data = nullptr;
     FileCache &cache;
 
     std::unordered_map<size_t, RenderMaterial> renderMaterialCache;

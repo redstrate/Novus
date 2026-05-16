@@ -26,17 +26,16 @@ const std::vector<RaceTree> raceTree = {{Race::Hyur, {Tribe::Midlander, Tribe::H
                                         {Race::Hrothgar, {Tribe::Hellion, Tribe::Lost}},
                                         {Race::Viera, {Tribe::Rava, Tribe::Veena}}};
 
-CmpPart::CmpPart(physis_SqPackResource *data, QWidget *parent)
+CmpPart::CmpPart(QWidget *parent)
     : QWidget(parent)
-    , data(data)
 {
     layout = new QHBoxLayout();
     setLayout(layout);
 }
 
-void CmpPart::load(physis_Buffer file)
+void CmpPart::load(Platform platform, physis_Buffer file)
 {
-    cmp = physis_cmp_parse(data->platform, file);
+    cmp = physis_cmp_parse(platform, file);
 
     auto raceListWidget = new QTreeWidget();
     raceListWidget->setMaximumWidth(200);

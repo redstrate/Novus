@@ -16,22 +16,22 @@ struct physis_SqPackResource;
 class NOVUSCOMMON_EXPORT FileCache
 {
 public:
-    explicit FileCache(physis_SqPackResource &data);
+    explicit FileCache(physis_SqPackResource data);
     ~FileCache();
 
-    bool fileExists(const QString &path);
-    physis_Buffer &lookupFile(const QString &path);
-    physis_ExcelSheet readExcelSheet(const QString &name, const physis_EXH *exh, Language language);
+    [[nodiscard]] bool fileExists(const QString &path);
+    [[nodiscard]] physis_Buffer &lookupFile(const QString &path);
+    [[nodiscard]] physis_ExcelSheet readExcelSheet(const QString &name, const physis_EXH *exh, Language language);
 
-    Platform platform() const;
+    [[nodiscard]] Platform platform() const;
 
     // NOTE: This is only a porting aid, and usages should eventually be removed!
-    physis_SqPackResource &resource() const;
+    [[nodiscard]] physis_SqPackResource &resource();
 
 private:
     QMap<QString, physis_Buffer> cachedBuffers;
     QHash<QString, bool> cachedExist;
-    physis_SqPackResource &data;
+    physis_SqPackResource data;
     QMutex bufferMutex, existMutex;
     QMap<QString, QString> m_modFileOverrides;
     physis_CustomResource m_customResource;

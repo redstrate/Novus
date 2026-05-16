@@ -18,9 +18,8 @@
 #include <KSyntaxHighlighting/Theme>
 #endif
 
-SHCDPart::SHCDPart(physis_SqPackResource *resource, QWidget *parent)
+SHCDPart::SHCDPart(QWidget *parent)
     : QWidget(parent)
-    , m_resource(resource)
 {
     auto layout = new QVBoxLayout();
     layout->setSpacing(0);
@@ -32,9 +31,9 @@ SHCDPart::SHCDPart(physis_SqPackResource *resource, QWidget *parent)
     layout->addWidget(m_shaderTextEdit);
 }
 
-void SHCDPart::load(physis_Buffer buffer)
+void SHCDPart::load(Platform platform, physis_Buffer buffer)
 {
-    m_shcd = physis_shcd_parse(m_resource->platform, buffer);
+    m_shcd = physis_shcd_parse(platform, buffer);
     if (m_shcd.len == 0) {
         qWarning() << "Failed to parse SHCD!";
         return;

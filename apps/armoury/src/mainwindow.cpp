@@ -36,11 +36,11 @@ MainWindow::MainWindow(physis_SqPackResource in_data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    auto gearListWidget = new GearListWidget(&m_data);
+    auto gearListWidget = new GearListWidget(cache);
     gearListWidget->setMaximumWidth(350);
     dummyWidget->addWidget(gearListWidget);
 
-    gearView = new SingleGearView(&m_data, cache);
+    gearView = new SingleGearView(cache);
     connect(gearView, &SingleGearView::importedModel, m_api, &PenumbraApi::redrawAll);
     connect(gearListWidget, &GearListWidget::gearSelected, gearView, &SingleGearView::setGear);
 
@@ -56,7 +56,7 @@ MainWindow::MainWindow(physis_SqPackResource in_data)
     tabWidget->tabBar()->setExpanding(true);
     dummyWidget->addWidget(tabWidget);
 
-    fullModelViewer = new FullModelViewer(&m_data, cache);
+    fullModelViewer = new FullModelViewer(cache);
     connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {
         gearView->setFMVAvailable(!loading);
     });
@@ -68,7 +68,7 @@ MainWindow::MainWindow(physis_SqPackResource in_data)
 
         int i = 0;
         for (auto material : gearView->getLoadedMaterials()) {
-            auto materialView = new MtrlPart(&m_data);
+            auto materialView = new MtrlPart(cache);
             materialView->load(material);
             materialsView->addTab(materialView, i18n("Material %1", i)); // TODO: it would be nice to get the actual material name here
 
@@ -119,7 +119,7 @@ void MainWindow::setupActions()
     cmpEditorAction->setText(i18n("&CMP Editor"));
     cmpEditorAction->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
     connect(cmpEditorAction, &QAction::triggered, [this] {
-        auto cmpEditor = new CmpEditor(&m_data);
+        auto cmpEditor = new CmpEditor(cache);
         cmpEditor->show();
     });
     actionCollection()->addAction(QStringLiteral("cmp_editor"), cmpEditorAction);

@@ -10,9 +10,9 @@
 #include <QMenu>
 #include <QTimer>
 
-FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, physis_SqPackResource *data, QWidget *parent)
+FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, FileCache &cache, QWidget *parent)
     : QWidget(parent)
-    , data(data)
+    , m_cache(cache)
     , m_gamePath(gamePath)
     , m_database(database)
 {
@@ -103,7 +103,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 void FileTreeWindow::refreshModel()
 {
     // TODO: this should really be handled by the proxy
-    m_fileModel = new FileTreeModel(m_database, m_showUnknown, m_gamePath, data);
+    m_fileModel = new FileTreeModel(m_database, m_showUnknown, m_gamePath, m_cache);
     m_searchModel->setSourceModel(m_fileModel);
 }
 

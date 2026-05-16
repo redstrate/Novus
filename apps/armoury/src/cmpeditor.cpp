@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "cmpeditor.h"
+
+#include "filecache.h"
+
 #include <KLocalizedString>
 
-CmpEditor::CmpEditor(physis_SqPackResource *data, QWidget *parent)
-    : CmpPart(data, parent)
+CmpEditor::CmpEditor(FileCache &cache, QWidget *parent)
+    : CmpPart(parent)
 {
     setWindowTitle(i18nc("@title:window CMP is an abbreviation", "CMP Editor"));
 
-    load(physis_sqpack_read(data, "chara/xls/charamake/human.cmp"));
+    load(cache.platform(), cache.lookupFile(QStringLiteral("chara/xls/charamake/human.cmp")));
 }
 
 #include "moc_cmpeditor.cpp"

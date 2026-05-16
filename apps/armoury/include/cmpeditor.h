@@ -5,10 +5,11 @@
 
 #include "cmppart.h"
 
+class FileCache;
 class CmpEditor : public CmpPart
 {
     Q_OBJECT
 
 public:
-    explicit CmpEditor(physis_SqPackResource *data, QWidget *parent = nullptr);
+    explicit CmpEditor(FileCache &cache, QWidget *parent = nullptr);
 };

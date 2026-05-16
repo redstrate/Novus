@@ -11,9 +11,8 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-EXLPart::EXLPart(physis_SqPackResource *data, QWidget *parent)
+EXLPart::EXLPart(QWidget *parent)
     : QWidget(parent)
-    , data(data)
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -22,9 +21,9 @@ EXLPart::EXLPart(physis_SqPackResource *data, QWidget *parent)
     setLayout(layout);
 }
 
-void EXLPart::load(physis_Buffer file)
+void EXLPart::load(Platform platform, physis_Buffer file)
 {
-    auto exl = physis_exl_parse(data->platform, file);
+    auto exl = physis_exl_parse(platform, file);
     if (exl.entry_count > 0) {
         m_tableWidget->clear();
         m_tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);

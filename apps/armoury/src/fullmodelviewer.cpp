@@ -16,9 +16,9 @@
 #include "boneeditor.h"
 #include "magic_enum.hpp"
 
-FullModelViewer::FullModelViewer(physis_SqPackResource *data, FileCache &cache, QWidget *parent)
+FullModelViewer::FullModelViewer(FileCache &cache, QWidget *parent)
     : QMainWindow(parent)
-    , data(data)
+    , m_cache(cache)
 {
     setWindowTitle(i18nc("@title:window", "Full Model Viewer"));
     setMinimumWidth(1280);
@@ -54,9 +54,9 @@ FullModelViewer::FullModelViewer(physis_SqPackResource *data, FileCache &cache, 
         updateHeightScaling((float)charDat.customize.height / 100.0f);
     });
 
-    cmp = physis_cmp_parse(data->platform, cache.lookupFile(QStringLiteral("chara/xls/charamake/human.cmp")));
+    cmp = physis_cmp_parse(m_cache.platform(), cache.lookupFile(QStringLiteral("chara/xls/charamake/human.cmp")));
 
-    gearView = new GearView(data, cache);
+    gearView = new GearView(cache);
 
     connect(gearView, &GearView::modelReloaded, this, &FullModelViewer::updateCharacterParameters);
     connect(gearView, &GearView::raceChanged, this, &FullModelViewer::updateRaceData);
