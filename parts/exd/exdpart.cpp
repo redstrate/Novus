@@ -293,10 +293,24 @@ void EXDPart::setReadOnly(bool readOnly)
 
 void EXDPart::save()
 {
-    auto buffer = physis_sqpack_write_sheet_page_to_buffer(&m_sheet.pages[0], &m_exh);
-    QFile file(QStringLiteral("test.exd"));
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
+    const auto mods = getGameMods();
+    if (mods.isEmpty()) {
+        qWarning() << "No mod to write a file to!";
+        return;
+    }
+
+    const QDir targetDir = mods.constFirst().path;
+    const QDir exdDir = targetDir.absoluteFilePath(QStringLiteral("exd"));
+
+    for (uint32_t i = 0; i < m_exh.page_count; i++) {
+        const QString filename =
+            QString::fromUtf8(physis_exd_calculate_filename(m_name.toStdString().c_str(), &m_exh, getSuitableLanguage(m_exh), i)).toLower();
+        const auto buffer = physis_sqpack_write_sheet_page_to_buffer(&m_sheet.pages[i], &m_exh);
+
+        QFile file(exdDir.absoluteFilePath(filename));
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
+        }
     }
 }
 
