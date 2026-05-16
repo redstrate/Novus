@@ -21,12 +21,12 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    QString label;
+    QString m_label;
 
-    bool closable;
-    bool closeButtonHovered = false;
-    bool collapsed = false;
+    bool m_closable;
+    bool m_closeButtonHovered = false;
+    bool m_collapsed = false;
 
-    QWidget *wrapper;
-    QLayout *layout;
+    QWidget *m_wrapper = nullptr;
+    QLayout *m_layout = nullptr;
 };

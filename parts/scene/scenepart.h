@@ -15,7 +15,6 @@ class MapView;
 class SceneListWidget;
 class SceneState;
 class ObjectPropertiesWidget;
-struct physis_SqPackResource;
 class VulkanWindow;
 
 class ScenePart : public QWidget
@@ -38,7 +37,7 @@ public:
     MapView *mapView() const;
 
 private:
-    FileCache &m_fileCache;
+    FileCache &m_cache;
     SceneState *m_appState = nullptr;
     SceneListWidget *m_sceneListWidget = nullptr;
     ObjectPropertiesWidget *m_objectPropertiesWidget = nullptr;

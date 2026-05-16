@@ -32,22 +32,22 @@ Q_SIGNALS:
 private:
     void treeItemClicked(QTreeWidgetItem *item, int column);
 
-    QTreeWidget *boneListWidget = nullptr;
+    QTreeWidget *m_boneListWidget = nullptr;
 
-    glm::vec3 currentPosition;
-    glm::quat currentRotation;
-    glm::vec3 currentScale;
+    glm::vec3 m_currentPosition;
+    glm::quat m_currentRotation;
+    glm::vec3 m_currentScale;
 
-    physis_Bone *currentEditedBone = nullptr;
+    physis_Bone *m_currentEditedBone = nullptr;
 
-    Vector3Edit *posEdit = nullptr;
-    QuaternionEdit *rotationEdit = nullptr;
-    Vector3Edit *scaleEdit = nullptr;
-    physis_Skeleton skeleton;
+    Vector3Edit *m_posEdit = nullptr;
+    QuaternionEdit *m_rotationEdit = nullptr;
+    Vector3Edit *m_scaleEdit = nullptr;
+    physis_Skeleton m_skeleton;
     physis_PreBoneDeformMatrices m_matrices;
-    Vector3Edit *racePosEdit = nullptr;
-    QuaternionEdit *raceRotationEdit = nullptr;
-    Vector3Edit *raceScaleEdit = nullptr;
+    Vector3Edit *m_racePosEdit = nullptr;
+    QuaternionEdit *m_raceRotationEdit = nullptr;
+    Vector3Edit *m_raceScaleEdit = nullptr;
 
-    QVBoxLayout *transformLayout = nullptr;
+    QVBoxLayout *m_transformLayout = nullptr;
 };

@@ -19,7 +19,7 @@ GearListModel::GearListModel(FileCache &cache, QObject *parent)
         info.name = i18n("SmallClothes Body");
         info.slot = EquipSlotCategory::Body;
 
-        gears.push_back(info);
+        m_gears.push_back(info);
     }
 
     // smallclothes legs
@@ -28,11 +28,11 @@ GearListModel::GearListModel(FileCache &cache, QObject *parent)
         info.name = i18n("SmallClothes Legs");
         info.slot = EquipSlotCategory::Legs;
 
-        gears.push_back(info);
+        m_gears.push_back(info);
     }
 
-    m_exh = physis_exh_parse(cache.platform(), cache.lookupFile(QStringLiteral("exd/item.exh")));
-    m_sheet = cache.readExcelSheet(QStringLiteral("Item"), &m_exh, getLanguage());
+    m_exh = physis_exh_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("exd/item.exh")));
+    m_sheet = m_cache.readExcelSheet(QStringLiteral("Item"), &m_exh, getLanguage());
 
     for (unsigned int i = 0; i < m_sheet.page_count; i++) {
         for (unsigned int j = m_exh.pages[i].start_id; j < m_exh.pages[i].start_id + m_sheet.pages[i].entry_count; j++) {
@@ -55,15 +55,15 @@ GearListModel::GearListModel(FileCache &cache, QObject *parent)
                 info.slot = slot;
                 info.modelInfo.primaryID = parts[0];
 
-                gears.push_back(info);
+                m_gears.push_back(info);
             }
         }
     }
 
     beginResetModel();
 
-    rootItem = new SceneTreeInformation();
-    rootItem->type = TreeType::Root;
+    m_rootItem = new SceneTreeInformation();
+    m_rootItem->type = TreeType::Root;
 
     int i = 0;
     for (auto slot : magic_enum::enum_values<EquipSlotCategory>()) {
@@ -74,12 +74,12 @@ GearListModel::GearListModel(FileCache &cache, QObject *parent)
         auto categoryItem = new SceneTreeInformation();
         categoryItem->type = TreeType::Category;
         categoryItem->slotType = slot;
-        categoryItem->parent = rootItem;
+        categoryItem->parent = m_rootItem;
         categoryItem->row = i++;
-        rootItem->children.push_back(categoryItem);
+        m_rootItem->children.push_back(categoryItem);
 
         int j = 0;
-        for (const auto &gear : gears) {
+        for (const auto &gear : m_gears) {
             if (gear.slot == slot) {
                 auto item = new SceneTreeInformation();
                 item->type = TreeType::Item;
@@ -100,7 +100,7 @@ int GearListModel::rowCount(const QModelIndex &parent) const
         return 0;
 
     if (!parent.isValid())
-        parentItem = rootItem;
+        parentItem = m_rootItem;
     else
         parentItem = static_cast<SceneTreeInformation *>(parent.internalPointer());
 
@@ -121,7 +121,7 @@ QModelIndex GearListModel::index(int row, int column, const QModelIndex &parent)
     SceneTreeInformation *parentItem;
 
     if (!parent.isValid())
-        parentItem = rootItem;
+        parentItem = m_rootItem;
     else
         parentItem = static_cast<SceneTreeInformation *>(parent.internalPointer());
 
@@ -139,7 +139,7 @@ QModelIndex GearListModel::parent(const QModelIndex &index) const
     auto childItem = static_cast<SceneTreeInformation *>(index.internalPointer());
     SceneTreeInformation *parentItem = childItem->parent;
 
-    if (parentItem == rootItem)
+    if (parentItem == m_rootItem)
         return {};
 
     return createIndex(parentItem->row, 0, parentItem);

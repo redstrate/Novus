@@ -25,7 +25,7 @@ Q_SIGNALS:
     void bufferSelected(physis_Buffer buffer);
 
 private:
-    physis_SqPackResource *data = nullptr;
+    physis_SqPackResource *m_data = nullptr;
     DiffTreeModel *m_fileModel = nullptr;
     QSortFilterProxyModel *m_searchModel = nullptr;
     HashDatabase &m_database;

@@ -25,7 +25,7 @@ private:
     void openPatch(const QUrl &url);
 
     physis_SqPackResource m_data;
-    FileCache cache;
+    FileCache m_cache;
     HashDatabase m_database;
     DiffTreeWidget *m_diffTreeWidget = nullptr;
     KRecentFilesMenu *m_recentFilesMenu = nullptr;

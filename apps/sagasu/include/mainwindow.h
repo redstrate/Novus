@@ -29,8 +29,8 @@ public Q_SLOTS:
 private:
     void setupActions();
 
-    QTabWidget *partHolder = nullptr;
-    FileCache fileCache;
+    QTabWidget *m_partHolder = nullptr;
+    FileCache m_cache;
     HashDatabase m_database;
     QNetworkAccessManager *m_mgr = nullptr;
     FileTreeWindow *m_tree = nullptr;

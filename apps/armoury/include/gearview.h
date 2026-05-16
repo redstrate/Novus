@@ -31,8 +31,6 @@ inline bool operator==(const GearInfo &a, const GearInfo &b)
     return a.name == b.name && a.slot == b.slot;
 }
 
-struct physis_SqPackResource;
-
 class GearView : public QFrame
 {
     Q_OBJECT
@@ -96,9 +94,9 @@ protected:
 private:
     void resetMdlPart();
 
-    int currentLod = 0;
+    int m_currentLod = 0;
 
-    uint32_t maxLod = 0;
+    uint32_t m_maxLod = 0;
 
     struct LoadedGear {
         GearInfo info;
@@ -107,20 +105,21 @@ private:
         int bodyId = 0;
     };
 
-    std::vector<LoadedGear> loadedGears;
-    std::vector<LoadedGear> queuedGearAdditions;
-    std::vector<LoadedGear> queuedGearRemovals;
-    bool gearDirty = false;
+    std::vector<LoadedGear> m_loadedGears;
+    std::vector<LoadedGear> m_queuedGearAdditions;
+    std::vector<LoadedGear> m_queuedGearRemovals;
+    bool m_gearDirty = false;
 
-    std::optional<int> face = 1, hair = 1, ear = 1, tail;
-    bool faceDirty = false, hairDirty = false, earDirty = false, tailDirty = false;
-    bool raceDirty = false;
+    std::optional<int> m_face = 1, m_hair = 1, m_ear = 1, m_tail;
+    bool m_faceDirty = false, m_hairDirty = false, m_earDirty = false, m_tailDirty = false;
+    bool m_raceDirty = false;
 
-    MDLPart *mdlPart = nullptr;
+    MDLPart *m_mdlPart = nullptr;
 
-    FileCache &cache;
+    FileCache &m_cache;
 
-    bool updating = false;
+    bool m_updating = false;
+
     void updatePart();
     bool needsUpdate() const;
 };

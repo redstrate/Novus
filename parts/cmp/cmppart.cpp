@@ -29,18 +29,18 @@ const std::vector<RaceTree> raceTree = {{Race::Hyur, {Tribe::Midlander, Tribe::H
 CmpPart::CmpPart(QWidget *parent)
     : QWidget(parent)
 {
-    layout = new QHBoxLayout();
-    setLayout(layout);
+    m_layout = new QHBoxLayout();
+    setLayout(m_layout);
 }
 
 void CmpPart::load(Platform platform, physis_Buffer file)
 {
-    cmp = physis_cmp_parse(platform, file);
+    m_cmp = physis_cmp_parse(platform, file);
 
     auto raceListWidget = new QTreeWidget();
     raceListWidget->setMaximumWidth(200);
     raceListWidget->setHeaderLabel(i18nc("@title:column", "Race"));
-    layout->addWidget(raceListWidget);
+    m_layout->addWidget(raceListWidget);
 
     for (const auto &race : raceTree) {
         auto item = new QTreeWidgetItem();
@@ -65,78 +65,78 @@ void CmpPart::load(Platform platform, physis_Buffer file)
     });
 
     auto detailBox = new QGroupBox();
-    layout->addWidget(detailBox);
+    m_layout->addWidget(detailBox);
     auto detailBoxLayout = new QFormLayout();
     detailBox->setLayout(detailBoxLayout);
 
-    maleMinSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Male Min Size"), maleMinSize);
+    m_maleMinSize = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Male Min Size"), m_maleMinSize);
 
-    maleMaxSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Male Max Size"), maleMaxSize);
+    m_maleMaxSize = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Male Max Size"), m_maleMaxSize);
 
-    maleMinTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Male Min Tail"), maleMinTail);
+    m_maleMinTail = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Male Min Tail"), m_maleMinTail);
 
-    maleMaxTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Male Max Tail"), maleMaxTail);
+    m_maleMaxTail = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Male Max Tail"), m_maleMaxTail);
 
-    femaleMinSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Female Min Size"), femaleMinSize);
+    m_femaleMinSize = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Female Min Size"), m_femaleMinSize);
 
-    femaleMaxSize = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Female Max Size"), femaleMaxSize);
+    m_femaleMaxSize = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Female Max Size"), m_femaleMaxSize);
 
-    femaleMinTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Female Min Tail"), femaleMinTail);
+    m_femaleMinTail = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Female Min Tail"), m_femaleMinTail);
 
-    femaleMaxTail = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Female Max Tail"), femaleMaxTail);
+    m_femaleMaxTail = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Female Max Tail"), m_femaleMaxTail);
 
-    bustMinX = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Bust Min X"), bustMinX);
+    m_bustMinX = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Bust Min X"), m_bustMinX);
 
-    bustMinY = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Bust Min Y"), bustMinY);
+    m_bustMinY = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Bust Min Y"), m_bustMinY);
 
-    bustMinZ = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Bust Min Z"), bustMinZ);
+    m_bustMinZ = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Bust Min Z"), m_bustMinZ);
 
-    bustMaxX = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Bust Max X"), bustMaxX);
+    m_bustMaxX = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Bust Max X"), m_bustMaxX);
 
-    bustMaxY = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Bust Max Y"), bustMaxY);
+    m_bustMaxY = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Bust Max Y"), m_bustMaxY);
 
-    bustMaxZ = new QDoubleSpinBox();
-    detailBoxLayout->addRow(i18n("Bust Max Z"), bustMaxZ);
+    m_bustMaxZ = new QDoubleSpinBox();
+    detailBoxLayout->addRow(i18n("Bust Max Z"), m_bustMaxZ);
 
     loadRaceData(Race::Hyur, Tribe::Midlander);
 }
 
 void CmpPart::loadRaceData(Race race, Tribe subrace)
 {
-    auto raceData = physis_cmp_get_racial_scaling_parameters(cmp, race, subrace);
+    auto raceData = physis_cmp_get_racial_scaling_parameters(m_cmp, race, subrace);
 
-    maleMinSize->setValue(raceData.male_min_size);
-    maleMaxSize->setValue(raceData.male_max_size);
+    m_maleMinSize->setValue(raceData.male_min_size);
+    m_maleMaxSize->setValue(raceData.male_max_size);
 
-    maleMinTail->setValue(raceData.male_min_tail);
-    maleMaxTail->setValue(raceData.male_max_tail);
+    m_maleMinTail->setValue(raceData.male_min_tail);
+    m_maleMaxTail->setValue(raceData.male_max_tail);
 
-    femaleMinSize->setValue(raceData.female_min_size);
-    femaleMaxSize->setValue(raceData.female_max_size);
+    m_femaleMinSize->setValue(raceData.female_min_size);
+    m_femaleMaxSize->setValue(raceData.female_max_size);
 
-    femaleMinTail->setValue(raceData.female_min_tail);
-    femaleMaxTail->setValue(raceData.female_max_tail);
+    m_femaleMinTail->setValue(raceData.female_min_tail);
+    m_femaleMaxTail->setValue(raceData.female_max_tail);
 
-    bustMinX->setValue(raceData.bust_min_x);
-    bustMinY->setValue(raceData.bust_min_y);
-    bustMinZ->setValue(raceData.bust_min_z);
+    m_bustMinX->setValue(raceData.bust_min_x);
+    m_bustMinY->setValue(raceData.bust_min_y);
+    m_bustMinZ->setValue(raceData.bust_min_z);
 
-    bustMaxX->setValue(raceData.bust_max_x);
-    bustMaxY->setValue(raceData.bust_max_y);
-    bustMaxZ->setValue(raceData.bust_max_z);
+    m_bustMaxX->setValue(raceData.bust_max_x);
+    m_bustMaxY->setValue(raceData.bust_max_y);
+    m_bustMaxZ->setValue(raceData.bust_max_z);
 }
 
 #include "moc_cmppart.cpp"

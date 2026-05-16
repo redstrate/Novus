@@ -31,9 +31,8 @@ private:
     void setupActions();
     void updateDocumentActions();
 
-    physis_SqPackResource m_data;
     FileCache m_cache;
-    QNetworkAccessManager *mgr = nullptr;
+    QNetworkAccessManager *m_mgr = nullptr;
     EXDPart *m_exdPart = nullptr;
     std::unique_ptr<CachingExcelResolver> m_excelResolver;
     SheetListWidget *m_sheetListWidget = nullptr;

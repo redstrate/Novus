@@ -20,7 +20,7 @@ Q_SIGNALS:
     void gearSelected(const GearInfo &gear);
 
 private:
-    QTreeView *listWidget = nullptr;
+    QTreeView *m_listWidget = nullptr;
 
     FileCache &m_cache;
 };

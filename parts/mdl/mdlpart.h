@@ -11,8 +11,6 @@
 #include "rendermanager.h"
 
 class QVulkanInstance;
-struct physis_SqPackResource;
-
 class VulkanWindow;
 class FileCache;
 
@@ -121,14 +119,14 @@ private:
     void calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone);
     void calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone);
 
-    FileCache &cache;
+    FileCache &m_cache;
 
-    std::unordered_map<size_t, RenderMaterial> renderMaterialCache;
-    std::unordered_map<size_t, physis_SHPK> shaderPackageCache;
-    std::unordered_map<size_t, Texture> textureCache;
+    std::unordered_map<size_t, RenderMaterial> m_renderMaterialCache;
+    std::unordered_map<size_t, physis_SHPK> m_shaderPackageCache;
+    std::unordered_map<size_t, Texture> m_textureCache;
 
-    std::unique_ptr<RenderManager> renderer;
-    VulkanWindow *vkWindow = nullptr;
-    bool firstTimeSkeletonDataCalculated = false;
+    std::unique_ptr<RenderManager> m_renderer;
+    VulkanWindow *m_vkWindow = nullptr;
+    bool m_firstTimeSkeletonDataCalculated = false;
     std::unique_ptr<QVulkanInstance> m_instance;
 };

@@ -25,9 +25,8 @@
 #include "penumbraapi.h"
 #include "settingswindow.h"
 
-MainWindow::MainWindow(physis_SqPackResource in_data)
-    : m_data(in_data)
-    , cache(FileCache{m_data})
+MainWindow::MainWindow(physis_SqPackResource data)
+    : m_cache(data)
     , m_api(new PenumbraApi(this))
 {
     setMinimumSize(QSize(800, 600));
@@ -36,41 +35,41 @@ MainWindow::MainWindow(physis_SqPackResource in_data)
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    auto gearListWidget = new GearListWidget(cache);
+    auto gearListWidget = new GearListWidget(m_cache);
     gearListWidget->setMaximumWidth(350);
     dummyWidget->addWidget(gearListWidget);
 
-    gearView = new SingleGearView(cache);
-    connect(gearView, &SingleGearView::importedModel, m_api, &PenumbraApi::redrawAll);
-    connect(gearListWidget, &GearListWidget::gearSelected, gearView, &SingleGearView::setGear);
+    m_gearView = new SingleGearView(m_cache);
+    connect(m_gearView, &SingleGearView::importedModel, m_api, &PenumbraApi::redrawAll);
+    connect(gearListWidget, &GearListWidget::gearSelected, m_gearView, &SingleGearView::setGear);
 
-    materialsView = new QTabWidget();
+    m_materialsView = new QTabWidget();
 
-    metadataView = new MetadataView();
+    m_metadataView = new MetadataView();
 
     auto tabWidget = new QTabWidget();
-    tabWidget->addTab(gearView, i18nc("@title:tab", "Models"));
-    tabWidget->addTab(materialsView, i18nc("@title:tab", "Materials"));
-    tabWidget->addTab(metadataView, i18nc("@title:tab", "Metadata"));
+    tabWidget->addTab(m_gearView, i18nc("@title:tab", "Models"));
+    tabWidget->addTab(m_materialsView, i18nc("@title:tab", "Materials"));
+    tabWidget->addTab(m_metadataView, i18nc("@title:tab", "Metadata"));
     tabWidget->setDocumentMode(true); // Don't draw the borders
     tabWidget->tabBar()->setExpanding(true);
     dummyWidget->addWidget(tabWidget);
 
-    fullModelViewer = new FullModelViewer(cache);
-    connect(fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {
-        gearView->setFMVAvailable(!loading);
+    m_fullModelViewer = new FullModelViewer(m_cache);
+    connect(m_fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {
+        m_gearView->setFMVAvailable(!loading);
     });
-    connect(gearView, &SingleGearView::addToFullModelViewer, fullModelViewer, &FullModelViewer::addGear);
-    connect(gearView, &SingleGearView::gearChanged, this, &KXmlGuiWindow::setWindowTitle);
+    connect(m_gearView, &SingleGearView::addToFullModelViewer, m_fullModelViewer, &FullModelViewer::addGear);
+    connect(m_gearView, &SingleGearView::gearChanged, this, &KXmlGuiWindow::setWindowTitle);
 
-    connect(gearView, &SingleGearView::doneLoadingModel, this, [this] {
-        materialsView->clear();
+    connect(m_gearView, &SingleGearView::doneLoadingModel, this, [this] {
+        m_materialsView->clear();
 
         int i = 0;
-        for (auto material : gearView->getLoadedMaterials()) {
-            auto materialView = new MtrlPart(cache);
+        for (auto material : m_gearView->getLoadedMaterials()) {
+            auto materialView = new MtrlPart(m_cache);
             materialView->load(material);
-            materialsView->addTab(materialView, i18n("Material %1", i)); // TODO: it would be nice to get the actual material name here
+            m_materialsView->addTab(materialView, i18n("Material %1", i)); // TODO: it would be nice to get the actual material name here
 
             i++;
         }
@@ -105,13 +104,13 @@ void MainWindow::setupActions()
     showFMVAction->setIcon(QIcon::fromTheme(QStringLiteral("user-symbolic")));
     connect(showFMVAction, &QAction::toggled, [this](bool toggled) {
         if (toggled) {
-            fullModelViewer->show();
+            m_fullModelViewer->show();
         } else {
-            fullModelViewer->hide();
+            m_fullModelViewer->hide();
         }
     });
-    connect(fullModelViewer, &FullModelViewer::visibleChanged, this, [this, showFMVAction] {
-        showFMVAction->setChecked(fullModelViewer->isVisible());
+    connect(m_fullModelViewer, &FullModelViewer::visibleChanged, this, [this, showFMVAction] {
+        showFMVAction->setChecked(m_fullModelViewer->isVisible());
     });
     actionCollection()->addAction(QStringLiteral("show_fmv"), showFMVAction);
 
@@ -119,7 +118,7 @@ void MainWindow::setupActions()
     cmpEditorAction->setText(i18n("&CMP Editor"));
     cmpEditorAction->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
     connect(cmpEditorAction, &QAction::triggered, [this] {
-        auto cmpEditor = new CmpEditor(cache);
+        auto cmpEditor = new CmpEditor(m_cache);
         cmpEditor->show();
     });
     actionCollection()->addAction(QStringLiteral("cmp_editor"), cmpEditorAction);

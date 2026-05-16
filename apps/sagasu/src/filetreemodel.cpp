@@ -19,8 +19,8 @@ FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QSt
     , m_database(database)
     , m_showUnknown(showUnknown)
 {
-    rootItem = new TreeInformation();
-    rootItem->type = TreeType::Root;
+    m_rootItem = new TreeInformation();
+    m_rootItem->type = TreeType::Root;
 
     for (const auto &knownFolder : m_database.getKnownFolders()) {
         addKnownFolder(knownFolder);
@@ -39,8 +39,8 @@ FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QSt
                 const auto hash = indexEntries.hashes[i];
                 switch (hash.tag) {
                 case Hash::Tag::SplitPath: {
-                    if (!knownDirHashes.contains(hash.split_path.path)) {
-                        addUnknownFolder(rootItem, hash.split_path.path);
+                    if (!m_knownDirHashes.contains(hash.split_path.path)) {
+                        addUnknownFolder(m_rootItem, hash.split_path.path);
                     }
 
                     const auto completeHash =
@@ -50,7 +50,7 @@ FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QSt
                     if (m_database.knowsFile(completeHash)) {
                         name = m_database.getFilename(completeHash);
                     }
-                    addFile(knownDirHashes.value(hash.split_path.path), completeHash, name, hash.split_path.name, hash, info.filePath());
+                    addFile(m_knownDirHashes.value(hash.split_path.path), completeHash, name, hash.split_path.name, hash, info.filePath());
                 } break;
                 case Hash::Tag::FullPath:
                     if (m_database.knowsPath(hash.full_path._0)) {
@@ -62,7 +62,7 @@ FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QSt
                             const QString foldername = path.left(lastSlash);
                             const auto folderHash = physis_generate_partial_hash(foldername.toStdString().c_str());
 
-                            addFile(knownDirHashes.value(folderHash),
+                            addFile(m_knownDirHashes.value(folderHash),
                                     hash.full_path._0,
                                     filename,
                                     physis_generate_partial_hash(filename.toStdString().c_str()),
@@ -87,7 +87,7 @@ int FileTreeModel::rowCount(const QModelIndex &parent) const
         return 0;
 
     if (!parent.isValid())
-        parentItem = rootItem;
+        parentItem = m_rootItem;
     else
         parentItem = static_cast<TreeInformation *>(parent.internalPointer());
 
@@ -108,7 +108,7 @@ QModelIndex FileTreeModel::index(int row, int column, const QModelIndex &parent)
     TreeInformation *parentItem;
 
     if (!parent.isValid())
-        parentItem = rootItem;
+        parentItem = m_rootItem;
     else
         parentItem = static_cast<TreeInformation *>(parent.internalPointer());
 
@@ -128,7 +128,7 @@ QModelIndex FileTreeModel::parent(const QModelIndex &index) const
     auto childItem = static_cast<TreeInformation *>(index.internalPointer());
     TreeInformation *parentItem = childItem->parent;
 
-    if (parentItem == rootItem)
+    if (parentItem == m_rootItem)
         return {};
 
     return createIndex(parentItem->row, index.column(), parentItem);
@@ -148,7 +148,7 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
         // build the full path
         QString path;
         TreeInformation *parent = item;
-        while (parent != rootItem) {
+        while (parent != m_rootItem) {
             if (path.isEmpty()) {
                 path = parent->name;
             } else {
@@ -220,7 +220,7 @@ void FileTreeModel::addKnownFolder(const QString &string)
 
     QString conct = children[0];
     conct.reserve(string.length());
-    TreeInformation *parentItem = rootItem;
+    TreeInformation *parentItem = m_rootItem;
     for (int i = 0; i < children.size(); i++) {
         if (i > 0) {
             conct += QStringLiteral("/%1").arg(children[i]);
@@ -228,8 +228,8 @@ void FileTreeModel::addKnownFolder(const QString &string)
         std::string conctStd = conct.toStdString();
         const auto hash = physis_generate_partial_hash(conctStd.c_str());
 
-        if (knownDirHashes.contains(hash)) {
-            parentItem = knownDirHashes.value(hash);
+        if (m_knownDirHashes.contains(hash)) {
+            parentItem = m_knownDirHashes.value(hash);
         } else {
             auto folderItem = new TreeInformation();
             folderItem->name = children[i];
@@ -239,7 +239,7 @@ void FileTreeModel::addKnownFolder(const QString &string)
             folderItem->hash = hash;
             parentItem->children.push_back(folderItem);
             parentItem = folderItem;
-            knownDirHashes.insert(folderItem->hash, folderItem);
+            m_knownDirHashes.insert(folderItem->hash, folderItem);
         }
     }
 }
@@ -286,7 +286,7 @@ void FileTreeModel::addUnknownFolder(TreeInformation *parentItem, uint32_t name)
 
     parentItem->children.push_back(folderItem);
 
-    knownDirHashes.insert(name, folderItem);
+    m_knownDirHashes.insert(name, folderItem);
 }
 
 #include "moc_filetreemodel.cpp"

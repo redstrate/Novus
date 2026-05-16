@@ -13,13 +13,13 @@ ImageLabel::ImageLabel(QWidget *parent)
 
 void ImageLabel::setQPixmap(const QPixmap &p)
 {
-    pix = p;
+    m_pix = p;
     QLabel::setPixmap(scaledPixmap());
 }
 
 int ImageLabel::heightForWidth(int width) const
 {
-    return pix.isNull() ? height() : (pix.height() * width) / pix.width();
+    return m_pix.isNull() ? height() : (m_pix.height() * width) / m_pix.width();
 }
 
 QSize ImageLabel::sizeHint() const
@@ -30,13 +30,13 @@ QSize ImageLabel::sizeHint() const
 
 QPixmap ImageLabel::scaledPixmap() const
 {
-    return pix.scaled(this->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    return m_pix.scaled(this->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }
 
 void ImageLabel::resizeEvent(QResizeEvent *e)
 {
     Q_UNUSED(e)
-    if (!pix.isNull()) {
+    if (!m_pix.isNull()) {
         QLabel::setPixmap(scaledPixmap());
     }
 }

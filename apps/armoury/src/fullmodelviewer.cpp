@@ -45,27 +45,27 @@ FullModelViewer::FullModelViewer(FileCache &cache, QWidget *parent)
 
         auto charDat = physis_chardat_parse(buffer);
 
-        gearView->setRace(charDat.customize.race);
-        gearView->setGender(charDat.customize.gender);
+        m_gearView->setRace(charDat.customize.race);
+        m_gearView->setGender(charDat.customize.gender);
         // gearView->setTribe(charDat.subrace);
-        gearView->setFace(charDat.customize.face);
-        gearView->setHair(charDat.customize.hair);
+        m_gearView->setFace(charDat.customize.face);
+        m_gearView->setHair(charDat.customize.hair);
         updateBustScaling((float)charDat.customize.bust / 100.0f);
         updateHeightScaling((float)charDat.customize.height / 100.0f);
     });
 
-    cmp = physis_cmp_parse(m_cache.platform(), cache.lookupFile(QStringLiteral("chara/xls/charamake/human.cmp")));
+    m_cmp = physis_cmp_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("chara/xls/charamake/human.cmp")));
 
-    gearView = new GearView(cache);
+    m_gearView = new GearView(m_cache);
 
-    connect(gearView, &GearView::modelReloaded, this, &FullModelViewer::updateCharacterParameters);
-    connect(gearView, &GearView::raceChanged, this, &FullModelViewer::updateRaceData);
-    connect(gearView, &GearView::subraceChanged, this, &FullModelViewer::updateRaceData);
-    connect(gearView, &GearView::genderChanged, this, &FullModelViewer::updateRaceData);
+    connect(m_gearView, &GearView::modelReloaded, this, &FullModelViewer::updateCharacterParameters);
+    connect(m_gearView, &GearView::raceChanged, this, &FullModelViewer::updateRaceData);
+    connect(m_gearView, &GearView::subraceChanged, this, &FullModelViewer::updateRaceData);
+    connect(m_gearView, &GearView::genderChanged, this, &FullModelViewer::updateRaceData);
 
     auto viewportLayout = new QHBoxLayout();
     viewportLayout->setContentsMargins(0, 0, 0, 0);
-    viewportLayout->addWidget(gearView, 1);
+    viewportLayout->addWidget(m_gearView, 1);
     layout->addLayout(viewportLayout);
 
     auto characterEditorWidget = new QWidget();
@@ -95,7 +95,7 @@ FullModelViewer::FullModelViewer(FileCache &cache, QWidget *parent)
     characterEditorLayout->addWidget(addEarGroup());
     characterEditorLayout->addWidget(addTailGroup());
 
-    m_boneEditor = new BoneEditor(gearView);
+    m_boneEditor = new BoneEditor(m_gearView);
 
     auto debugWidget = new QWidget();
     auto debugLayout = new QFormLayout();
@@ -104,8 +104,8 @@ FullModelViewer::FullModelViewer(FileCache &cache, QWidget *parent)
     auto racialTransformsBox = new QCheckBox();
     racialTransformsBox->setChecked(true);
     connect(racialTransformsBox, &QCheckBox::clicked, this, [this](bool checked) {
-        gearView->part().enableRacialDeform = checked;
-        gearView->part().reloadRenderer();
+        m_gearView->part().enableRacialDeform = checked;
+        m_gearView->part().reloadRenderer();
     });
     debugLayout->addRow(i18n("Enable Racial Deforms"), racialTransformsBox);
 
@@ -118,42 +118,42 @@ FullModelViewer::FullModelViewer(FileCache &cache, QWidget *parent)
     auto controlLayout = new QHBoxLayout();
     layout->addLayout(controlLayout);
 
-    raceCombo = new QComboBox();
-    controlLayout->addWidget(raceCombo);
+    m_raceCombo = new QComboBox();
+    controlLayout->addWidget(m_raceCombo);
 
     for (auto [race, race_name] : magic_enum::enum_entries<Race>()) {
-        raceCombo->addItem(QLatin1String(race_name.data()), (int)race);
+        m_raceCombo->addItem(QLatin1String(race_name.data()), (int)race);
     }
 
-    subraceCombo = new QComboBox();
-    connect(subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        gearView->setTribe((Tribe)subraceCombo->itemData(index).toInt());
+    m_subraceCombo = new QComboBox();
+    connect(m_subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        m_gearView->setTribe((Tribe)m_subraceCombo->itemData(index).toInt());
     });
-    controlLayout->addWidget(subraceCombo);
+    controlLayout->addWidget(m_subraceCombo);
 
-    connect(raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        gearView->setRace((Race)raceCombo->itemData(index).toInt());
+    connect(m_raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        m_gearView->setRace((Race)m_raceCombo->itemData(index).toInt());
 
         updateSupportedTribes();
     });
     updateSupportedTribes();
 
-    genderCombo = new QComboBox();
-    connect(genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        gearView->setGender((Gender)genderCombo->itemData(index).toInt());
+    m_genderCombo = new QComboBox();
+    connect(m_genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+        m_gearView->setGender((Gender)m_genderCombo->itemData(index).toInt());
     });
-    controlLayout->addWidget(genderCombo);
+    controlLayout->addWidget(m_genderCombo);
 
     for (auto [gender, gender_name] : magic_enum::enum_entries<Gender>()) {
-        genderCombo->addItem(QLatin1String(gender_name.data()), (int)gender);
+        m_genderCombo->addItem(QLatin1String(gender_name.data()), (int)gender);
     }
 
     connect(this, &FullModelViewer::gearChanged, this, &FullModelViewer::reloadGear);
-    connect(gearView, &GearView::loadingChanged, this, &FullModelViewer::loadingChanged);
+    connect(m_gearView, &GearView::loadingChanged, this, &FullModelViewer::loadingChanged);
     connect(this, &FullModelViewer::loadingChanged, this, [this, tabWidget](const bool loading) {
-        raceCombo->setEnabled(!loading);
-        subraceCombo->setEnabled(!loading);
-        genderCombo->setEnabled(!loading);
+        m_raceCombo->setEnabled(!loading);
+        m_subraceCombo->setEnabled(!loading);
+        m_genderCombo->setEnabled(!loading);
         tabWidget->setEnabled(!loading);
     });
 
@@ -183,8 +183,8 @@ void FullModelViewer::closeEvent(QCloseEvent *event)
 
 void FullModelViewer::clear()
 {
-    topSlot.reset();
-    bottomSlot.reset();
+    m_topSlot.reset();
+    m_bottomSlot.reset();
 
     Q_EMIT gearChanged();
 }
@@ -193,13 +193,13 @@ void FullModelViewer::addGear(GearInfo &info)
 {
     switch (info.slot) {
     case EquipSlotCategory::Body:
-        if (!topSlot || *topSlot != info) {
-            topSlot = info;
+        if (!m_topSlot || *m_topSlot != info) {
+            m_topSlot = info;
         }
         break;
     case EquipSlotCategory::Legs:
-        if (!bottomSlot || *bottomSlot != info) {
-            bottomSlot = info;
+        if (!m_bottomSlot || *m_bottomSlot != info) {
+            m_bottomSlot = info;
         }
         break;
     default:
@@ -211,26 +211,26 @@ void FullModelViewer::addGear(GearInfo &info)
 
 void FullModelViewer::reloadGear()
 {
-    if (topSlot.has_value()) {
-        gearView->addGear(*topSlot);
+    if (m_topSlot.has_value()) {
+        m_gearView->addGear(*m_topSlot);
     } else {
         // smallclothes body
         GearInfo info = {};
         info.name = i18n("SmallClothes Body");
         info.slot = EquipSlotCategory::Body;
 
-        gearView->addGear(info);
+        m_gearView->addGear(info);
     }
 
-    if (bottomSlot.has_value()) {
-        gearView->addGear(*bottomSlot);
+    if (m_bottomSlot.has_value()) {
+        m_gearView->addGear(*m_bottomSlot);
     } else {
         // smallclothes legs
         GearInfo info = {};
         info.name = i18n("SmallClothes Legs");
         info.slot = EquipSlotCategory::Legs;
 
-        gearView->addGear(info);
+        m_gearView->addGear(info);
     }
 
     // smallclothes hands
@@ -239,7 +239,7 @@ void FullModelViewer::reloadGear()
         info.name = i18n("SmallClothes Hands");
         info.slot = EquipSlotCategory::Hands;
 
-        gearView->addGear(info);
+        m_gearView->addGear(info);
     }
 
     // smallclothes hands
@@ -248,20 +248,20 @@ void FullModelViewer::reloadGear()
         info.name = i18n("SmallClothes Feet");
         info.slot = EquipSlotCategory::Feet;
 
-        gearView->addGear(info);
+        m_gearView->addGear(info);
     }
 }
 
 void FullModelViewer::updateHeightScaling(float scale)
 {
-    auto &boneData = *gearView->part().skeleton;
+    auto &boneData = *m_gearView->part().skeleton;
     for (uint32_t i = 0; i < boneData.num_bones; i++) {
         const std::string_view name{boneData.bones[i].name};
         if (name == "n_root") {
-            auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentTribe);
+            auto racialScaling = physis_cmp_get_racial_scaling_parameters(m_cmp, m_gearView->currentRace, m_gearView->currentTribe);
 
-            const float minSize = gearView->currentGender == Gender::Male ? racialScaling.male_min_size : racialScaling.female_min_size;
-            const float maxSize = gearView->currentGender == Gender::Male ? racialScaling.male_max_size : racialScaling.female_max_size;
+            const float minSize = m_gearView->currentGender == Gender::Male ? racialScaling.male_min_size : racialScaling.female_min_size;
+            const float maxSize = m_gearView->currentGender == Gender::Male ? racialScaling.male_max_size : racialScaling.female_max_size;
 
             const float size = glm::mix(minSize, maxSize, scale);
 
@@ -269,20 +269,20 @@ void FullModelViewer::updateHeightScaling(float scale)
             boneData.bones[i].scale[1] = size;
             boneData.bones[i].scale[2] = size;
 
-            gearView->part().reloadRenderer();
+            m_gearView->part().reloadRenderer();
         }
     }
 
-    heightScale = scale;
+    m_heightScale = scale;
 }
 
 void FullModelViewer::updateBustScaling(float scale)
 {
-    auto &boneData = *gearView->part().skeleton;
+    auto &boneData = *m_gearView->part().skeleton;
     for (uint32_t i = 0; i < boneData.num_bones; i++) {
         const std::string_view name{boneData.bones[i].name};
         if (name == "j_mune_l" || name == "j_mune_r") {
-            auto racialScaling = physis_cmp_get_racial_scaling_parameters(cmp, gearView->currentRace, gearView->currentTribe);
+            auto racialScaling = physis_cmp_get_racial_scaling_parameters(m_cmp, m_gearView->currentRace, m_gearView->currentTribe);
 
             const float rangeX = glm::mix(racialScaling.bust_min_x, racialScaling.bust_max_x, scale);
             const float rangeY = glm::mix(racialScaling.bust_min_y, racialScaling.bust_max_y, scale);
@@ -292,32 +292,32 @@ void FullModelViewer::updateBustScaling(float scale)
             boneData.bones[i].scale[1] = rangeY;
             boneData.bones[i].scale[2] = rangeZ;
 
-            gearView->part().reloadRenderer();
+            m_gearView->part().reloadRenderer();
         }
     }
 
-    bustScale = scale;
+    m_bustScale = scale;
 }
 
 void FullModelViewer::updateCharacterParameters()
 {
-    updateHeightScaling(heightScale);
-    updateBustScaling(bustScale);
+    updateHeightScaling(m_heightScale);
+    updateBustScaling(m_bustScale);
 }
 
 void FullModelViewer::updateSupportedTribes()
 {
-    subraceCombo->clear();
-    for (auto subrace : physis_get_supported_tribes(gearView->currentRace).subraces) {
-        subraceCombo->addItem(QLatin1String(magic_enum::enum_name(subrace).data()), (int)subrace);
+    m_subraceCombo->clear();
+    for (auto subrace : physis_get_supported_tribes(m_gearView->currentRace).subraces) {
+        m_subraceCombo->addItem(QLatin1String(magic_enum::enum_name(subrace).data()), (int)subrace);
     }
 }
 
 void FullModelViewer::updateRaceData()
 {
-    m_boneEditor->load_pbd(gearView->part().pbd,
-                           physis_get_race_code(Race::Hyur, Tribe::Midlander, gearView->currentGender),
-                           physis_get_race_code(gearView->currentRace, gearView->currentTribe, gearView->currentGender));
+    m_boneEditor->load_pbd(m_gearView->part().pbd,
+                           physis_get_race_code(Race::Hyur, Tribe::Midlander, m_gearView->currentGender),
+                           physis_get_race_code(m_gearView->currentRace, m_gearView->currentTribe, m_gearView->currentGender));
 }
 
 QGroupBox *FullModelViewer::addFaceGroup()
@@ -328,19 +328,19 @@ QGroupBox *FullModelViewer::addFaceGroup()
 
     auto faceRadio1 = new QRadioButton(i18nc("@option:radio", "Face 1"));
     connect(faceRadio1, &QRadioButton::clicked, this, [this] {
-        gearView->setFace(1);
+        m_gearView->setFace(1);
     });
     faceGroupLayout->addWidget(faceRadio1);
 
     auto faceRadio2 = new QRadioButton(i18nc("@option:radio", "Face 2"));
     connect(faceRadio2, &QRadioButton::clicked, this, [this] {
-        gearView->setFace(2);
+        m_gearView->setFace(2);
     });
     faceGroupLayout->addWidget(faceRadio2);
 
     auto faceRadio3 = new QRadioButton(i18nc("@option:radio", "Face 3"));
     connect(faceRadio3, &QRadioButton::clicked, this, [this] {
-        gearView->setFace(3);
+        m_gearView->setFace(3);
     });
     faceGroupLayout->addWidget(faceRadio3);
 
@@ -355,19 +355,19 @@ QGroupBox *FullModelViewer::addHairGroup()
 
     auto hairRadio1 = new QRadioButton(i18nc("@option:radio", "Hair 1"));
     connect(hairRadio1, &QRadioButton::clicked, this, [this] {
-        gearView->setHair(1);
+        m_gearView->setHair(1);
     });
     hairGroupLayout->addWidget(hairRadio1);
 
     auto hairRadio2 = new QRadioButton(i18nc("@option:radio", "Hair 2"));
     connect(hairRadio2, &QRadioButton::clicked, this, [this] {
-        gearView->setHair(2);
+        m_gearView->setHair(2);
     });
     hairGroupLayout->addWidget(hairRadio2);
 
     auto hairRadio3 = new QRadioButton(i18nc("@option:radio", "Hair 3"));
     connect(hairRadio3, &QRadioButton::clicked, this, [this] {
-        gearView->setHair(3);
+        m_gearView->setHair(3);
     });
     hairGroupLayout->addWidget(hairRadio3);
 
@@ -382,19 +382,19 @@ QGroupBox *FullModelViewer::addEarGroup()
 
     auto earRadio1 = new QRadioButton(i18nc("@option:radio", "Ears 1"));
     connect(earRadio1, &QRadioButton::clicked, this, [this] {
-        gearView->setEar(1);
+        m_gearView->setEar(1);
     });
     earGroupLayout->addWidget(earRadio1);
 
     auto earRadio2 = new QRadioButton(i18nc("@option:radio", "Ears 2"));
     connect(earRadio2, &QRadioButton::clicked, this, [this] {
-        gearView->setEar(2);
+        m_gearView->setEar(2);
     });
     earGroupLayout->addWidget(earRadio2);
 
     auto earRadio3 = new QRadioButton(i18nc("@option:radio", "Ears 3"));
     connect(earRadio3, &QRadioButton::clicked, this, [this] {
-        gearView->setEar(3);
+        m_gearView->setEar(3);
     });
     earGroupLayout->addWidget(earRadio3);
 
@@ -409,19 +409,19 @@ QGroupBox *FullModelViewer::addTailGroup()
 
     auto tailRadio1 = new QRadioButton(i18nc("@option:radio", "Tail 1"));
     connect(tailRadio1, &QRadioButton::clicked, this, [this] {
-        gearView->setTail(1);
+        m_gearView->setTail(1);
     });
     tailGroupLayout->addWidget(tailRadio1);
 
     auto tailRadio2 = new QRadioButton(i18nc("@option:radio", "Tail 2"));
     connect(tailRadio2, &QRadioButton::clicked, this, [this] {
-        gearView->setTail(2);
+        m_gearView->setTail(2);
     });
     tailGroupLayout->addWidget(tailRadio2);
 
     auto tailRadio3 = new QRadioButton(i18nc("@option:radio", "Tail 3"));
     connect(tailRadio3, &QRadioButton::clicked, this, [this] {
-        gearView->setTail(3);
+        m_gearView->setTail(3);
     });
     tailGroupLayout->addWidget(tailRadio3);
 

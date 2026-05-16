@@ -8,25 +8,25 @@
 
 UIntEdit::UIntEdit(uint32_t &value, QWidget *parent)
     : EditWidget(parent)
-    , value(value)
+    , m_value(value)
 {
     auto itemsLayout = new QHBoxLayout(this);
     itemsLayout->setContentsMargins(0, 0, 0, 0);
 
-    spinBox = new QSpinBox();
+    m_spinBox = new QSpinBox();
 
-    spinBox->setMinimum(0);
-    spinBox->setMaximum(std::numeric_limits<int>::max());
+    m_spinBox->setMinimum(0);
+    m_spinBox->setMaximum(std::numeric_limits<int>::max());
 
-    itemsLayout->addWidget(spinBox);
+    itemsLayout->addWidget(m_spinBox);
 
-    spinBox->setValue(value);
+    m_spinBox->setValue(value);
 
-    connect(spinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](const int d) {
-        this->value = d;
+    connect(m_spinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this](const int d) {
+        this->m_value = d;
         Q_EMIT onValueChanged();
     });
-    connect(spinBox, &QSpinBox::editingFinished, this, &EditWidget::editingFinished);
+    connect(m_spinBox, &QSpinBox::editingFinished, this, &EditWidget::editingFinished);
 }
 
 #include "moc_uintedit.cpp"

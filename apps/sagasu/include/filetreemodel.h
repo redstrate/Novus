@@ -66,13 +66,13 @@ public:
 
 private:
     FileCache &m_cache;
-    TreeInformation *rootItem = nullptr;
+    TreeInformation *m_rootItem = nullptr;
 
     void addKnownFolder(const QString &string);
     void addFile(TreeInformation *parentItem, uint32_t filenameHash, const QString &name, uint32_t nameHash, Hash originalHash, const QString &indexPath);
     void addUnknownFolder(TreeInformation *parentItem, uint32_t filenameHash);
 
-    QHash<uint32_t, TreeInformation *> knownDirHashes;
+    QHash<uint32_t, TreeInformation *> m_knownDirHashes;
 
     HashDatabase &m_database;
     bool m_showUnknown = false;

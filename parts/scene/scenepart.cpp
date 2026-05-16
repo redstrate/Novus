@@ -15,8 +15,8 @@
 
 ScenePart::ScenePart(FileCache &cache, bool fixedSize, QWidget *parent)
     : QWidget(parent)
-    , m_fileCache(cache)
-    , m_appState(new SceneState(m_fileCache, this))
+    , m_cache(cache)
+    , m_appState(new SceneState(m_cache, this))
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -50,7 +50,7 @@ ScenePart::ScenePart(FileCache &cache, bool fixedSize, QWidget *parent)
     });
     sidebarLayout->addWidget(m_animationTimeSlider);
 
-    m_mapView = new MapView(m_fileCache, m_appState);
+    m_mapView = new MapView(m_cache, m_appState);
     splitter->addWidget(m_mapView);
     splitter->setStretchFactor(1, 1);
 
@@ -82,10 +82,10 @@ ScenePart::~ScenePart()
 void ScenePart::loadSgb(physis_Buffer file)
 {
     physis_sgb_free(&m_sgb); // free any previous ones
-    m_sgb = physis_sgb_parse(m_fileCache.platform(), file);
+    m_sgb = physis_sgb_parse(m_cache.platform(), file);
     if (m_sgb.sections) {
         // TODO: load more than one section?
-        m_appState->load(m_fileCache, m_sgb.sections[0]);
+        m_appState->load(m_cache, m_sgb.sections[0]);
 
         // Expand the first level of the SGB
         m_sceneListWidget->expandToDepth(1);
@@ -100,10 +100,10 @@ void ScenePart::loadSgb(physis_Buffer file)
 void ScenePart::loadLvb(physis_Buffer file)
 {
     physis_lvb_free(&m_lvb); // free any previous ones
-    m_lvb = physis_lvb_parse(m_fileCache.platform(), file);
+    m_lvb = physis_lvb_parse(m_cache.platform(), file);
     if (m_lvb.sections) {
         // TODO: read all sections?
-        m_appState->load(m_fileCache, m_lvb.sections[0]);
+        m_appState->load(m_cache, m_lvb.sections[0]);
     } else {
         qWarning() << "Failed to parse lvb";
     }

@@ -10,8 +10,8 @@
 #include <QStyleOption>
 
 CollapseSection::CollapseSection(QString label, bool closable)
-    : label(label)
-    , closable(closable)
+    : m_label(label)
+    , m_closable(closable)
 {
     setContentsMargins(0, 25, 0, 0);
     setMouseTracking(true);
@@ -30,16 +30,16 @@ void CollapseSection::paintEvent(QPaintEvent *event)
     painter.drawRect(r);
 
     painter.setPen(Qt::white);
-    painter.drawText(event->rect().adjusted(6, 5, 0, 0), label);
+    painter.drawText(event->rect().adjusted(6, 5, 0, 0), m_label);
 
-    if (closable) {
+    if (m_closable) {
         QStyleOption option;
         option.rect.adjust(event->rect().width() - 20, 7, 0, 0);
         option.rect.setHeight(16);
         option.rect.setWidth(16);
         option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_AutoRaise;
 
-        if (closeButtonHovered)
+        if (m_closeButtonHovered)
             option.state |= QStyle::State_Raised | QStyle::State_MouseOver;
 
         QApplication::style()->drawPrimitive(QStyle::PE_IndicatorTabClose, &option, &painter, this);
@@ -50,13 +50,13 @@ void CollapseSection::mouseMoveEvent(QMouseEvent *event)
 {
     Q_UNUSED(event)
 
-    if (closable) {
+    if (m_closable) {
         QRect r(width() - 20, 0, width(), 25); // close button
 
         if (r.contains(mapFromGlobal(QCursor::pos())))
-            closeButtonHovered = true;
+            m_closeButtonHovered = true;
         else
-            closeButtonHovered = false;
+            m_closeButtonHovered = false;
 
         repaint();
     }
@@ -69,16 +69,16 @@ void CollapseSection::mousePressEvent(QMouseEvent *event)
     QRect r(0, 0, width() - 20, 30); // header
 
     if (r.contains(mapFromGlobal(QCursor::pos()))) {
-        if (!collapsed) {
+        if (!m_collapsed) {
             setFixedHeight(30);
-            collapsed = true;
+            m_collapsed = true;
         } else {
             setFixedHeight(QWIDGETSIZE_MAX);
-            collapsed = false;
+            m_collapsed = false;
         }
     }
 
-    if (closable) {
+    if (m_closable) {
         QRect r(width() - 20, 0, width(), 25); // close button
 
         if (r.contains(mapFromGlobal(QCursor::pos())))

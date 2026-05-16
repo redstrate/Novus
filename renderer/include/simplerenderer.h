@@ -72,7 +72,7 @@ private:
 
     VkDescriptorSetLayout m_setLayout = VK_NULL_HANDLE;
 
-    std::map<size_t, VkDescriptorSet> cachedDescriptors;
+    std::map<size_t, VkDescriptorSet> m_cachedDescriptors;
 
     Texture m_depthTexture;
     Texture m_compositeTexture;

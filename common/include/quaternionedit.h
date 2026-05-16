@@ -25,7 +25,7 @@ public:
 private:
     struct {
         QDoubleSpinBox *x = nullptr, *y = nullptr, *z = nullptr;
-    } spinBoxes;
+    } m_spinBoxes;
 
-    glm::quat &quat;
+    glm::quat &m_quat;
 };

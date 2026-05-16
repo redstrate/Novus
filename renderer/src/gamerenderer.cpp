@@ -82,9 +82,9 @@ GameRenderer::GameRenderer(Device &device, FileCache &cache)
         m_device.addGameTexture(physis_texture_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("chara/common/texture/tile_orb_array.tex"))));
     m_device.nameTexture(m_tileOrb, "chara/common/texture/tile_orb_array.tex");
 
-    directionalLightningShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/directionallighting.shpk")));
-    createViewPositionShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/createviewposition.shpk")));
-    backgroundShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/bg.shpk")));
+    m_directionalLightningShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/directionallighting.shpk")));
+    m_createViewPositionShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/createviewposition.shpk")));
+    m_backgroundShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/bg.shpk")));
 
     // camera data
     {
@@ -489,7 +489,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                                                                                    0,
                                                                                    subviewKeys.data(),
                                                                                    subviewKeys.size());
-                const physis_SHPKNode node = physis_shpk_get_node(&createViewPositionShpk, selector);
+                const physis_SHPKNode node = physis_shpk_get_node(&m_createViewPositionShpk, selector);
 
                 // check if invalid
                 if (node.pass_count == 0) {
@@ -504,8 +504,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     const uint32_t vertexShaderIndice = currentPass.vertex_shader;
                     const uint32_t pixelShaderIndice = currentPass.pixel_shader;
 
-                    physis_Shader vertexShader = createViewPositionShpk.vertex_shaders[vertexShaderIndice];
-                    physis_Shader pixelShader = createViewPositionShpk.pixel_shaders[pixelShaderIndice];
+                    physis_Shader vertexShader = m_createViewPositionShpk.vertex_shaders[vertexShaderIndice];
+                    physis_Shader pixelShader = m_createViewPositionShpk.pixel_shaders[pixelShaderIndice];
 
                     auto &pipeline = bindPipeline(commandBuffer,
                                                   "PASS_LIGHTING_OPAQUE_VIEWPOSITION",
@@ -551,7 +551,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                                                                                    0,
                                                                                    subviewKeys.data(),
                                                                                    subviewKeys.size());
-                const physis_SHPKNode node = physis_shpk_get_node(&directionalLightningShpk, selector);
+                const physis_SHPKNode node = physis_shpk_get_node(&m_directionalLightningShpk, selector);
 
                 // check if invalid
                 if (node.pass_count == 0) {
@@ -566,8 +566,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     const uint32_t vertexShaderIndice = currentPass.vertex_shader;
                     const uint32_t pixelShaderIndice = currentPass.pixel_shader;
 
-                    physis_Shader vertexShader = directionalLightningShpk.vertex_shaders[vertexShaderIndice];
-                    physis_Shader pixelShader = directionalLightningShpk.pixel_shaders[pixelShaderIndice];
+                    physis_Shader vertexShader = m_directionalLightningShpk.vertex_shaders[vertexShaderIndice];
+                    physis_Shader pixelShader = m_directionalLightningShpk.pixel_shaders[pixelShaderIndice];
 
                     auto &pipeline = bindPipeline(commandBuffer,
                                                   pass,

@@ -27,9 +27,9 @@ public:
 
 private:
     bool m_initialized = false;
-    RenderManager *m_renderer;
-    QVulkanInstance *m_instance;
-    MDLPart *part;
-    bool pressed_keys[7] = {};
-    QElapsedTimer timer;
+    RenderManager *m_renderer = nullptr;
+    QVulkanInstance *m_instance = nullptr;
+    MDLPart *m_part = nullptr;
+    bool m_pressedKeys[7] = {};
+    QElapsedTimer m_timer;
 };

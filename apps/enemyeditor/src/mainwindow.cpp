@@ -27,8 +27,7 @@
 #include <QInputDialog>
 
 MainWindow::MainWindow(physis_SqPackResource data)
-    : m_data(data)
-    , cache(FileCache{m_data})
+    : m_cache(data)
 {
     setMinimumSize(640, 480);
 
@@ -40,13 +39,13 @@ MainWindow::MainWindow(physis_SqPackResource data)
     layout->setSpacing(0);
     dummyWidget->setLayout(layout);
 
-    auto model = new EnemyModel(cache);
+    auto model = new EnemyModel(m_cache);
 
-    part = new MDLPart(cache);
-    part->minimumCameraDistance = 0.05f;
+    m_part = new MDLPart(m_cache);
+    m_part->minimumCameraDistance = 0.05f;
 
     auto skelName = physis_skeleton_path(Race::Hyur, Tribe::Midlander, Gender::Male);
-    part->setSkeleton(physis_skeleton_parse(m_data.platform, cache.lookupFile(QString::fromUtf8(skelName))));
+    m_part->setSkeleton(physis_skeleton_parse(m_cache.platform(), m_cache.lookupFile(QString::fromUtf8(skelName))));
 
     m_tableView = new QTableView();
     m_tableView->setModel(model);

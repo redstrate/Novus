@@ -129,7 +129,7 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
 
     auto searchSettingsAction = new QAction(QIcon::fromTheme(QStringLiteral("settings-configure-symbolic")), i18n("Search Settings"), this);
     connect(searchSettingsAction, &QAction::triggered, this, [this] {
-        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(0));
+        const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(0));
         if (!tableWidget) {
             return;
         }
@@ -150,10 +150,10 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
     });
     m_filterEdit->addAction(searchSettingsAction, QLineEdit::TrailingPosition);
 
-    pageTabWidget = new QTabWidget();
-    pageTabWidget->setTabPosition(QTabWidget::TabPosition::South);
-    pageTabWidget->setDocumentMode(true); // hide borders
-    layout->addWidget(pageTabWidget);
+    m_pageTabWidget = new QTabWidget();
+    m_pageTabWidget->setTabPosition(QTabWidget::TabPosition::South);
+    m_pageTabWidget->setDocumentMode(true); // hide borders
+    layout->addWidget(m_pageTabWidget);
 
     m_selectLanguage = new QAction(i18nc("@action:inmenu", "Language"), this);
     m_selectLanguage->setEnabled(false);
@@ -171,8 +171,8 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
         if (!savePath.isEmpty()) {
             QString csvString;
 
-            for (uint32_t i = 0; i < exh.page_count; i++) {
-                const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
+            for (uint32_t i = 0; i < m_exh.page_count; i++) {
+                const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(i));
                 Q_ASSERT(tableWidget);
 
                 const auto model = tableWidget->model();
@@ -209,16 +209,16 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
 
 EXDPart::~EXDPart()
 {
-    physis_sqpack_free_excel_sheet(&sheet);
-    physis_exh_free(&exh);
+    physis_sqpack_free_excel_sheet(&m_sheet);
+    physis_exh_free(&m_exh);
 }
 
 void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 {
     m_name = name;
 
-    physis_exh_free(&exh); // Free existing
-    exh = physis_exh_parse(m_cache.platform(), buffer);
+    physis_exh_free(&m_exh); // Free existing
+    m_exh = physis_exh_parse(m_cache.platform(), buffer);
 
     loadTables();
 
@@ -250,8 +250,8 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
 
 void EXDPart::goToRow(const QString &query)
 {
-    for (uint32_t i = 0; i < exh.page_count; i++) {
-        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
+    for (uint32_t i = 0; i < m_exh.page_count; i++) {
+        const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(i));
         Q_ASSERT(tableWidget);
         if (!tableWidget)
             continue;
@@ -259,7 +259,7 @@ void EXDPart::goToRow(const QString &query)
         for (int row = 0; row < tableWidget->model()->rowCount(); row++) {
             const auto headerItem = tableWidget->model()->headerData(row, Qt::Vertical).toString();
             if (headerItem == query) {
-                pageTabWidget->setCurrentIndex(i);
+                m_pageTabWidget->setCurrentIndex(i);
                 tableWidget->selectRow(row);
                 return;
             }
@@ -269,7 +269,7 @@ void EXDPart::goToRow(const QString &query)
 
 void EXDPart::resetSorting()
 {
-    const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->currentWidget());
+    const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->currentWidget());
     Q_ASSERT(tableWidget);
 
     tableWidget->sortByColumn(-1, Qt::AscendingOrder);
@@ -277,7 +277,7 @@ void EXDPart::resetSorting()
 
 void EXDPart::clear()
 {
-    pageTabWidget->clear();
+    m_pageTabWidget->clear();
 }
 
 void EXDPart::focusFilterField()
@@ -292,7 +292,7 @@ void EXDPart::setReadOnly(bool readOnly)
 
 void EXDPart::save()
 {
-    auto buffer = physis_sqpack_write_sheet_page_to_buffer(&sheet.pages[0], &exh);
+    auto buffer = physis_sqpack_write_sheet_page_to_buffer(&m_sheet.pages[0], &m_exh);
     QFile file(QStringLiteral("test.exd"));
     file.open(QIODevice::WriteOnly);
     file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
@@ -315,10 +315,10 @@ QList<QPair<QString, Language>> EXDPart::availableLanguages() const
 {
     QList<QPair<QString, Language>> languages;
 
-    for (unsigned int i = 0; i < exh.language_count; i++) {
+    for (unsigned int i = 0; i < m_exh.language_count; i++) {
         // Don't add None to the combo box, the reason for this is because
         // many localized sheets *report* this language but it's usually empty and useless.
-        const auto language = exh.languages[i];
+        const auto language = m_exh.languages[i];
         if (language == Language::None) {
             continue;
         }
@@ -347,8 +347,8 @@ QString EXDPart::name() const
 
 QString EXDPart::selectedRow() const
 {
-    for (uint32_t i = 0; i < exh.page_count; i++) {
-        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
+    for (uint32_t i = 0; i < m_exh.page_count; i++) {
+        const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(i));
         if (!tableWidget) {
             continue;
         }
@@ -375,14 +375,14 @@ void EXDPart::loadTables()
 
     clear();
 
-    physis_sqpack_free_excel_sheet(&sheet); // Free existing
-    sheet = m_cache.readExcelSheet(m_name, &exh, getSuitableLanguage(exh));
+    physis_sqpack_free_excel_sheet(&m_sheet); // Free existing
+    m_sheet = m_cache.readExcelSheet(m_name, &m_exh, getSuitableLanguage(m_exh));
 
-    for (uint32_t i = 0; i < sheet.page_count; i++) {
+    for (uint32_t i = 0; i < m_sheet.page_count; i++) {
         auto tableWidget = new ExcelTableView();
         connect(tableWidget, &ExcelTableView::requestJump, this, &EXDPart::requestJump);
 
-        auto excelModel = new ExcelModel(exh, sheet.pages[i], schema, m_resolver, getSuitableLanguage(exh), this);
+        auto excelModel = new ExcelModel(m_exh, m_sheet.pages[i], schema, m_resolver, getSuitableLanguage(m_exh), this);
         connect(excelModel, &ExcelModel::modified, this, [this] {
             m_modified = true;
             Q_EMIT modified();
@@ -406,21 +406,21 @@ void EXDPart::loadTables()
         // We have to call sort(-1) here because the above call to enable sorting sorts by the first column
         tableWidget->sortByColumn(-1, Qt::SortOrder::AscendingOrder);
 
-        pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1", i));
+        m_pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1", i));
     }
 
     setSearchSettings(m_searchSettings); // Apply to new models
 
     // Expand the tabs and hide the tab bar if there's only one page
     // (it effectively makes the tab bar useless, so why show it?)
-    pageTabWidget->tabBar()->setExpanding(true);
-    pageTabWidget->tabBar()->setVisible(exh.page_count > 1);
+    m_pageTabWidget->tabBar()->setExpanding(true);
+    m_pageTabWidget->tabBar()->setVisible(m_exh.page_count > 1);
 }
 
 void EXDPart::filterData(const QString &pattern)
 {
-    for (uint32_t i = 0; i < exh.page_count; i++) {
-        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
+    for (uint32_t i = 0; i < m_exh.page_count; i++) {
+        const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(i));
         if (!tableWidget) {
             continue;
         }
@@ -439,8 +439,8 @@ void EXDPart::setSearchSettings(const SearchSettings newSettings)
 {
     m_searchSettings = newSettings;
 
-    for (uint32_t i = 0; i < exh.page_count; i++) {
-        const auto tableWidget = qobject_cast<QTableView *>(pageTabWidget->widget(i));
+    for (uint32_t i = 0; i < m_exh.page_count; i++) {
+        const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(i));
         if (!tableWidget) {
             continue;
         }

@@ -16,7 +16,7 @@ public:
     ~UIntEdit() override = default;
 
 private:
-    QSpinBox *spinBox = nullptr;
+    QSpinBox *m_spinBox = nullptr;
 
-    uint32_t &value;
+    uint32_t &m_value;
 };

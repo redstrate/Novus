@@ -23,7 +23,7 @@ public:
     void accept() override;
 
 private:
-    QListView *listWidget = nullptr;
+    QListView *m_listWidget = nullptr;
 
     FileCache &m_cache;
     QString m_acceptedMap;

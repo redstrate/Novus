@@ -15,7 +15,7 @@
 using namespace Qt::StringLiterals;
 
 FileCache::FileCache(physis_SqPackResource data)
-    : data(data)
+    : m_data(data)
 {
     // Custom resource used for reading and parsing Excel files and other nonsense
     m_customResource = physis_custom_initialize(
@@ -51,18 +51,18 @@ FileCache::FileCache(physis_SqPackResource data)
 
 FileCache::~FileCache()
 {
-    for (const auto &buffer : cachedBuffers) {
+    for (const auto &buffer : m_cachedBuffers) {
         physis_free_file(&buffer);
     }
 }
 
 physis_Buffer &FileCache::lookupFile(const QString &path)
 {
-    QMutexLocker locker(&bufferMutex);
+    QMutexLocker locker(&m_bufferMutex);
 
     const QString normalizedPath = path.toLower();
 
-    if (!cachedBuffers.contains(normalizedPath)) {
+    if (!m_cachedBuffers.contains(normalizedPath)) {
         if (m_modFileOverrides.contains(normalizedPath)) {
             QFile file(m_modFileOverrides[normalizedPath]);
             if (file.open(QIODevice::ReadOnly)) {
@@ -74,17 +74,17 @@ physis_Buffer &FileCache::lookupFile(const QString &path)
                 buffer.data = new uint8_t[data.size()];
                 std::memcpy(buffer.data, data.data(), data.size());
 
-                cachedBuffers[normalizedPath] = buffer;
-                return cachedBuffers[normalizedPath];
+                m_cachedBuffers[normalizedPath] = buffer;
+                return m_cachedBuffers[normalizedPath];
             }
             qWarning() << "Failed to read supposed mod file" << m_modFileOverrides[normalizedPath] << "and will fall back to game data";
         }
 
         const std::string pathstd = normalizedPath.toStdString();
-        cachedBuffers[normalizedPath] = physis_sqpack_read(&data, pathstd.c_str());
+        m_cachedBuffers[normalizedPath] = physis_sqpack_read(&m_data, pathstd.c_str());
     }
 
-    return cachedBuffers[normalizedPath];
+    return m_cachedBuffers[normalizedPath];
 }
 
 physis_ExcelSheet FileCache::readExcelSheet(const QString &name, const physis_EXH *exh, const Language language)
@@ -95,22 +95,22 @@ physis_ExcelSheet FileCache::readExcelSheet(const QString &name, const physis_EX
 
 Platform FileCache::platform() const
 {
-    return data.platform;
+    return m_data.platform;
 }
 
 physis_SqPackResource &FileCache::resource()
 {
-    return data;
+    return m_data;
 }
 
 bool FileCache::fileExists(const QString &path)
 {
-    QMutexLocker locker(&existMutex);
+    QMutexLocker locker(&m_existMutex);
 
-    if (!cachedExist.contains(path)) {
+    if (!m_cachedExist.contains(path)) {
         std::string pathstd = path.toStdString();
-        cachedExist[path] = physis_sqpack_exists(&data, pathstd.c_str());
+        m_cachedExist[path] = physis_sqpack_exists(&m_data, pathstd.c_str());
     }
 
-    return cachedExist[path];
+    return m_cachedExist[path];
 }

@@ -30,7 +30,7 @@ private:
     void openMap(const QString &basePath, int contentFinderCondition);
     void updateActionState();
 
-    FileCache cache;
+    FileCache m_cache;
     ScenePart *m_part = nullptr;
     QAction *m_centerObjectAction = nullptr;
     QAction *m_goToEntranceAction = nullptr;

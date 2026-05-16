@@ -21,8 +21,7 @@ Q_SIGNALS:
     void sheetSelected(const QString &name);
 
 private:
-    QListView *listWidget = nullptr;
+    QListView *m_listWidget = nullptr;
 
-    physis_SqPackResource *data = nullptr;
     QLineEdit *m_searchEdit = nullptr;
 };

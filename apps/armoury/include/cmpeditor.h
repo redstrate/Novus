@@ -6,6 +6,7 @@
 #include "cmppart.h"
 
 class FileCache;
+
 class CmpEditor : public CmpPart
 {
     Q_OBJECT

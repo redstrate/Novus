@@ -60,19 +60,19 @@ private:
 
     FileCache &m_cache;
 
-    QTabWidget *pageTabWidget = nullptr;
-    QFormLayout *headerFormLayout = nullptr;
+    QTabWidget *m_pageTabWidget = nullptr;
+    QFormLayout *m_headerFormLayout = nullptr;
 
     Language getSuitableLanguage(const physis_EXH &pExh) const;
     Language m_preferredLanguage;
-    physis_EXH exh{};
+    physis_EXH m_exh{};
     QString m_name;
     AbstractExcelResolver *m_resolver = nullptr;
     QAction *m_selectLanguage = nullptr;
     QMenu *m_languageMenu = nullptr;
     QActionGroup *m_languageGroup = nullptr;
     QAction *m_saveCsvAction = nullptr;
-    physis_ExcelSheet sheet{};
+    physis_ExcelSheet m_sheet{};
     QLineEdit *m_filterEdit = nullptr;
     bool m_modified = false;
     bool m_readOnly = false;

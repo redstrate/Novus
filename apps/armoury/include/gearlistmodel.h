@@ -42,8 +42,8 @@ private:
     physis_EXH m_exh;
     physis_ExcelSheet m_sheet;
 
-    std::vector<GearInfo> gears;
+    std::vector<GearInfo> m_gears;
 
     FileCache &m_cache;
-    SceneTreeInformation *rootItem = nullptr;
+    SceneTreeInformation *m_rootItem = nullptr;
 };

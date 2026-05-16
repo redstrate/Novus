@@ -34,16 +34,16 @@ GearListWidget::GearListWidget(FileCache &cache, QWidget *parent)
     auto originalModel = new GearListModel(m_cache);
     searchModel->setSourceModel(originalModel);
 
-    listWidget = new QTreeView();
-    listWidget->setModel(searchModel);
+    m_listWidget = new QTreeView();
+    m_listWidget->setModel(searchModel);
 
-    connect(listWidget, &QTreeView::clicked, [this, searchModel, originalModel](const QModelIndex &item) {
+    connect(m_listWidget, &QTreeView::clicked, [this, searchModel, originalModel](const QModelIndex &item) {
         if (auto gear = originalModel->getGearFromIndex(searchModel->mapToSource(item))) {
             Q_EMIT gearSelected(*gear);
         }
     });
 
-    layout->addWidget(listWidget);
+    layout->addWidget(m_listWidget);
 }
 
 #include "moc_gearlistwidget.cpp"

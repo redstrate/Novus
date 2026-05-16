@@ -40,17 +40,17 @@ MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
     auto originalModel = new QStandardItemModel(this);
     m_searchModel->setSourceModel(originalModel);
 
-    auto nameExhFile = cache.lookupFile(QStringLiteral("exd/PlaceName.exh"));
+    auto nameExhFile = m_cache.lookupFile(QStringLiteral("exd/PlaceName.exh"));
     if (nameExhFile.size == 0) {
         qWarning() << "Could not load PlaceName Excel header!";
     }
-    auto nameExh = physis_exh_parse(cache.platform(), nameExhFile);
+    auto nameExh = physis_exh_parse(m_cache.platform(), nameExhFile);
 
-    auto territoryExhFile = cache.lookupFile(QStringLiteral("exd/TerritoryType.exh"));
-    auto territoryExh = physis_exh_parse(cache.platform(), territoryExhFile);
+    auto territoryExhFile = m_cache.lookupFile(QStringLiteral("exd/TerritoryType.exh"));
+    auto territoryExh = physis_exh_parse(m_cache.platform(), territoryExhFile);
 
-    auto nameSheet = cache.readExcelSheet(QStringLiteral("PlaceName"), &nameExh, getLanguage());
-    auto territorySheet = cache.readExcelSheet(QStringLiteral("TerritoryType"), &territoryExh, Language::None);
+    auto nameSheet = m_cache.readExcelSheet(QStringLiteral("PlaceName"), &nameExh, getLanguage());
+    auto territorySheet = m_cache.readExcelSheet(QStringLiteral("TerritoryType"), &territoryExh, Language::None);
 
     // TODO: figure out why row_count in EXH is wrong?!
     for (uint32_t i = 0; i < territoryExh.pages[0].row_count; i++) {
@@ -108,13 +108,13 @@ MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
     physis_exh_free(&nameExh);
     physis_exh_free(&territoryExh);
 
-    listWidget = new QListView();
-    listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
-    listWidget->setModel(m_searchModel);
+    m_listWidget = new QListView();
+    m_listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
+    m_listWidget->setModel(m_searchModel);
 
-    connect(listWidget, &QListView::activated, this, &MapListWidget::accept);
+    connect(m_listWidget, &QListView::activated, this, &MapListWidget::accept);
 
-    layout->addWidget(listWidget);
+    layout->addWidget(m_listWidget);
 
     auto buttonBox = new QDialogButtonBox(QDialogButtonBox::Open | QDialogButtonBox::Cancel);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &MapListWidget::accept);
@@ -122,8 +122,8 @@ MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
     layout->addWidget(buttonBox);
 
     // Disable when there's no selection
-    connect(listWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this, buttonBox] {
-        buttonBox->button(QDialogButtonBox::Open)->setEnabled(listWidget->selectionModel()->hasSelection());
+    connect(m_listWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this, buttonBox] {
+        buttonBox->button(QDialogButtonBox::Open)->setEnabled(m_listWidget->selectionModel()->hasSelection());
     });
 
     // And it should be disabled by default
@@ -143,7 +143,7 @@ int MapListWidget::acceptedContentFinderCondition() const
 void MapListWidget::accept()
 {
     // Figure out the selection first
-    const auto index = listWidget->selectionModel()->selectedIndexes().constFirst();
+    const auto index = m_listWidget->selectionModel()->selectedIndexes().constFirst();
     if (index.isValid()) {
         m_acceptedMap = m_searchModel->mapToSource(index).data(Qt::UserRole + 1).toString();
         m_acceptedContentFinderCondition = m_searchModel->mapToSource(index).data(Qt::UserRole + 2).toInt();

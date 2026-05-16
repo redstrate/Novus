@@ -33,7 +33,7 @@ private:
     void processScene(ObjectScene &scene, const Transformation &rootTransformation);
     void processLayer(ObjectScene &scene, const physis_Layer &layer, const Transformation &rootTransformation);
 
-    MDLPart *mdlPart = nullptr;
+    MDLPart *m_mdlPart = nullptr;
 
     FileCache &m_cache;
     SceneState *m_appState;

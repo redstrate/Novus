@@ -182,13 +182,13 @@ void DiffTreeModel::openPatch(const QString &path)
                         pathItem->hash = hash.split_path.path;
 
                         baseItem->children.push_back(pathItem);
-                        knownDirHashes[hash.split_path.path] = baseItem;
+                        m_knownDirHashes[hash.split_path.path] = baseItem;
                     }
 
                     const auto completeHash =
                         static_cast<uint32_t>(static_cast<uint64_t>(hash.split_path.path) << 32 | static_cast<uint64_t>(hash.split_path.name));
 
-                    const auto parentItem = knownDirHashes.value(hash.split_path.path);
+                    const auto parentItem = m_knownDirHashes.value(hash.split_path.path);
                     if (parentItem) {
                         // Actual file item
                         auto pathItem = new TreeInformation();
@@ -240,8 +240,8 @@ void DiffTreeModel::addGamePath(TreeInformation *baseItem, const QString &string
         std::string conctStd = conct.toStdString();
         const auto hash = physis_generate_partial_hash(conctStd.c_str());
 
-        if (knownDirHashes.contains(hash)) {
-            parentItem = knownDirHashes.value(hash);
+        if (m_knownDirHashes.contains(hash)) {
+            parentItem = m_knownDirHashes.value(hash);
         } else {
             auto folderItem = new TreeInformation();
             folderItem->name = children[i];
@@ -251,7 +251,7 @@ void DiffTreeModel::addGamePath(TreeInformation *baseItem, const QString &string
             folderItem->hash = hash;
             parentItem->children.push_back(folderItem);
             parentItem = folderItem;
-            knownDirHashes.insert(folderItem->hash, folderItem);
+            m_knownDirHashes.insert(folderItem->hash, folderItem);
         }
     }
 }
@@ -270,8 +270,8 @@ TreeInformation *DiffTreeModel::addIndexPath(const QString &string)
         std::string conctStd = conct.toStdString();
         const auto hash = physis_generate_partial_hash(conctStd.c_str());
 
-        if (knownIndexHashes.contains(hash)) {
-            parentItem = knownIndexHashes.value(hash);
+        if (m_knownIndexHashes.contains(hash)) {
+            parentItem = m_knownIndexHashes.value(hash);
         } else {
             auto folderItem = new TreeInformation();
             folderItem->name = children[i];
@@ -281,7 +281,7 @@ TreeInformation *DiffTreeModel::addIndexPath(const QString &string)
             folderItem->hash = hash;
             parentItem->children.push_back(folderItem);
             parentItem = folderItem;
-            knownIndexHashes.insert(folderItem->hash, folderItem);
+            m_knownIndexHashes.insert(folderItem->hash, folderItem);
         }
     }
 

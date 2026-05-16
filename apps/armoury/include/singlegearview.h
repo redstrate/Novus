@@ -8,8 +8,6 @@
 #include <QPushButton>
 #include <QWidget>
 
-struct physis_SqPackResource;
-
 class SingleGearView : public QWidget
 {
     Q_OBJECT
@@ -50,18 +48,17 @@ private Q_SLOTS:
 private:
     void importModel(const QString &filename);
 
-    std::optional<GearInfo> currentGear;
-
-    Race currentRace = Race::Hyur;
-    Tribe currentTribe = Tribe::Midlander;
-    Gender currentGender = Gender::Male;
-    int currentLod = 0;
-
-    GearView *gearView = nullptr;
-    QComboBox *raceCombo, *subraceCombo, *genderCombo, *lodCombo;
-    QPushButton *addToFMVButton, *editButton, *importButton, *exportButton;
-
-    bool fmvAvailable = false;
-
     FileCache &m_cache;
+    std::optional<GearInfo> m_currentGear;
+
+    Race m_currentRace = Race::Hyur;
+    Tribe m_currentTribe = Tribe::Midlander;
+    Gender m_currentGender = Gender::Male;
+    int m_currentLod = 0;
+
+    GearView *m_gearView = nullptr;
+    QComboBox *m_raceCombo, *m_subraceCombo, *m_genderCombo, *m_lodCombo;
+    QPushButton *m_addToFMVButton, *m_editButton, *m_importButton, *m_exportButton;
+
+    bool m_fmvAvailable = false;
 };

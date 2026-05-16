@@ -20,15 +20,15 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
     , m_cache(cache)
     , m_appState(appState)
 {
-    mdlPart = new MDLPart(cache);
-    mdlPart->enableFreemode();
-    connect(mdlPart, &MDLPart::initializeRender, this, [this, appState] {
-        mdlPart->manager()->addPass(new ObjectPass(mdlPart->manager(), appState));
+    m_mdlPart = new MDLPart(m_cache);
+    m_mdlPart->enableFreemode();
+    connect(m_mdlPart, &MDLPart::initializeRender, this, [this, appState] {
+        m_mdlPart->manager()->addPass(new ObjectPass(m_mdlPart->manager(), appState));
     });
 
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(mdlPart);
+    layout->addWidget(m_mdlPart);
     setLayout(layout);
 
     connect(appState, &SceneState::mapLoaded, this, &MapView::reloadMap);
@@ -40,18 +40,18 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
 
 MDLPart &MapView::part() const
 {
-    return *mdlPart;
+    return *m_mdlPart;
 }
 
 void MapView::centerOn(const glm::vec3 position)
 {
-    mdlPart->position = position;
-    Q_EMIT mdlPart->cameraMoved();
+    m_mdlPart->position = position;
+    Q_EMIT m_mdlPart->cameraMoved();
 }
 
 void MapView::clear()
 {
-    mdlPart->clear();
+    m_mdlPart->clear();
 }
 
 void MapView::addTerrain(ObjectScene &scene)
@@ -90,7 +90,7 @@ void MapView::addTerrain(ObjectScene &scene)
                 .scale = {1, 1, 1},
             };
 
-            mdlPart->addModel(plateMdl, false, transformation, QStringLiteral("terapart%1").arg(i), materials, 0);
+            m_mdlPart->addModel(plateMdl, false, transformation, QStringLiteral("terapart%1").arg(i), materials, 0);
 
             // We don't need this, and it will just take up memory
             physis_mdl_free(&plateMdl);
@@ -102,7 +102,7 @@ void MapView::addTerrain(ObjectScene &scene)
 
 void MapView::reloadMap()
 {
-    mdlPart->clear();
+    m_mdlPart->clear();
 
     Transformation transformation{};
     transformation.scale[0] = 1;
@@ -205,7 +205,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
         case physis_LayerEntry::Tag::BG: {
             std::string assetPath = object.data.bg._0.asset_path;
             if (!assetPath.empty()) {
-                if (!mdlPart->modelExists(QString::fromStdString(assetPath))) {
+                if (!m_mdlPart->modelExists(QString::fromStdString(assetPath))) {
                     auto plateMdlFile = m_cache.lookupFile(QString::fromStdString(assetPath));
                     if (plateMdlFile.size == 0) {
                         continue;
@@ -230,7 +230,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                             materials.push_back(std::make_pair(material_name, scene.cachedMaterials[material_name]));
                         }
 
-                        mdlPart->addModel(plateMdl, false, combinedTransform, QString::fromStdString(assetPath), materials, 0);
+                        m_mdlPart->addModel(plateMdl, false, combinedTransform, QString::fromStdString(assetPath), materials, 0);
 
                         // We don't need this, and it will just take up memory
                         physis_mdl_free(&plateMdl);
@@ -238,7 +238,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                         qWarning() << "Failed to load" << assetPath;
                     }
                 } else {
-                    mdlPart->addExistingModel(QString::fromStdString(assetPath), combinedTransform);
+                    m_mdlPart->addExistingModel(QString::fromStdString(assetPath), combinedTransform);
                 }
             }
         } break;
@@ -251,7 +251,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                                          static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.blue) / 255.0f);
             sceneLight.intensity = object.data.lay_light._0.diffuse_color_hdri.intensity;
 
-            mdlPart->addLight(sceneLight);
+            m_mdlPart->addLight(sceneLight);
         } break;
         default:
             break;

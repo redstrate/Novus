@@ -9,7 +9,6 @@
 #include <QImage>
 
 class MDLPart;
-struct physis_SqPackResource;
 
 class EnemyModel : public QAbstractTableModel
 {

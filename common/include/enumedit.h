@@ -20,33 +20,33 @@ public:
         auto itemsLayout = new QHBoxLayout(this);
         itemsLayout->setContentsMargins(0, 0, 0, 0);
 
-        comboBox = new QComboBox();
-        itemsLayout->addWidget(comboBox);
+        m_comboBox = new QComboBox();
+        itemsLayout->addWidget(m_comboBox);
 
         for (auto [type, name] : magic_enum::enum_entries<E>()) {
-            comboBox->addItem(QString::fromLatin1(name.data()));
+            m_comboBox->addItem(QString::fromLatin1(name.data()));
         }
 
-        connect(comboBox, &QComboBox::currentIndexChanged, this, &EnumEdit::editingFinished);
+        connect(m_comboBox, &QComboBox::currentIndexChanged, this, &EnumEdit::editingFinished);
     }
     ~EnumEdit() override = default;
 
     void setValue(const E &value)
     {
-        QSignalBlocker blocker(comboBox);
-        comboBox->setCurrentIndex(static_cast<int>(value));
+        QSignalBlocker blocker(m_comboBox);
+        m_comboBox->setCurrentIndex(static_cast<int>(value));
     }
 
     void resetValue()
     {
-        comboBox->setCurrentIndex(-1);
+        m_comboBox->setCurrentIndex(-1);
     }
 
     E value() const
     {
-        return static_cast<E>(comboBox->currentIndex());
+        return static_cast<E>(m_comboBox->currentIndex());
     }
 
 private:
-    QComboBox *comboBox = nullptr;
+    QComboBox *m_comboBox = nullptr;
 };

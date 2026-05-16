@@ -21,5 +21,5 @@ public Q_SLOTS:
     void resizeEvent(QResizeEvent *) override;
 
 private:
-    QPixmap pix;
+    QPixmap m_pix;
 };

@@ -37,72 +37,72 @@ SklbPart::SklbPart(QWidget *parent)
     auto layout = new QHBoxLayout();
     setLayout(layout);
 
-    boneListWidget = new QTreeWidget();
-    boneListWidget->setHeaderLabel(i18nc("@title:column", "Name"));
-    boneListWidget->setMaximumWidth(200);
+    m_boneListWidget = new QTreeWidget();
+    m_boneListWidget->setHeaderLabel(i18nc("@title:column", "Name"));
+    m_boneListWidget->setMaximumWidth(200);
 
-    layout->addWidget(boneListWidget);
+    layout->addWidget(m_boneListWidget);
 
-    transformLayout = new QVBoxLayout();
-    layout->addLayout(transformLayout);
+    m_transformLayout = new QVBoxLayout();
+    layout->addLayout(m_transformLayout);
 
     auto transformGroup = new QGroupBox(i18nc("@title:group", "Bone Transform"));
-    transformLayout->addWidget(transformGroup);
+    m_transformLayout->addWidget(transformGroup);
     auto transformGroupLayout = new QFormLayout();
     transformGroup->setLayout(transformGroupLayout);
 
-    posEdit = new Vector3Edit(currentPosition);
-    posEdit->setEnabled(false);
-    connect(posEdit, &Vector3Edit::onValueChanged, [this] {
-        memcpy(currentEditedBone->position, glm::value_ptr(currentPosition), sizeof(float) * 3);
+    m_posEdit = new Vector3Edit(m_currentPosition);
+    m_posEdit->setEnabled(false);
+    connect(m_posEdit, &Vector3Edit::onValueChanged, [this] {
+        memcpy(m_currentEditedBone->position, glm::value_ptr(m_currentPosition), sizeof(float) * 3);
         Q_EMIT valueChanged();
     });
-    transformGroupLayout->addRow(i18nc("@label:spinbox", "Position"), posEdit);
+    transformGroupLayout->addRow(i18nc("@label:spinbox", "Position"), m_posEdit);
 
-    rotationEdit = new QuaternionEdit(currentRotation);
-    rotationEdit->setEnabled(false);
-    connect(rotationEdit, &QuaternionEdit::onValueChanged, [this] {
-        memcpy(currentEditedBone->rotation, glm::value_ptr(currentRotation), sizeof(float) * 4);
+    m_rotationEdit = new QuaternionEdit(m_currentRotation);
+    m_rotationEdit->setEnabled(false);
+    connect(m_rotationEdit, &QuaternionEdit::onValueChanged, [this] {
+        memcpy(m_currentEditedBone->rotation, glm::value_ptr(m_currentRotation), sizeof(float) * 4);
         Q_EMIT valueChanged();
     });
-    transformGroupLayout->addRow(i18nc("@label:spinbox", "Rotation"), rotationEdit);
+    transformGroupLayout->addRow(i18nc("@label:spinbox", "Rotation"), m_rotationEdit);
 
-    scaleEdit = new Vector3Edit(currentScale);
-    scaleEdit->setEnabled(false);
-    connect(scaleEdit, &Vector3Edit::onValueChanged, [this] {
-        memcpy(currentEditedBone->scale, glm::value_ptr(currentScale), sizeof(float) * 3);
+    m_scaleEdit = new Vector3Edit(m_currentScale);
+    m_scaleEdit->setEnabled(false);
+    connect(m_scaleEdit, &Vector3Edit::onValueChanged, [this] {
+        memcpy(m_currentEditedBone->scale, glm::value_ptr(m_currentScale), sizeof(float) * 3);
         Q_EMIT valueChanged();
     });
-    transformGroupLayout->addRow(i18nc("@label:spinbox", "Scale"), scaleEdit);
+    transformGroupLayout->addRow(i18nc("@label:spinbox", "Scale"), m_scaleEdit);
 
-    connect(boneListWidget, &QTreeWidget::itemClicked, this, &SklbPart::treeItemClicked);
+    connect(m_boneListWidget, &QTreeWidget::itemClicked, this, &SklbPart::treeItemClicked);
 }
 
 void SklbPart::treeItemClicked(QTreeWidgetItem *item, int column)
 {
-    for (uint32_t i = 0; i < skeleton.num_bones; i++) {
-        if (strcmp(skeleton.bones[i].name, item->text(column).toStdString().c_str()) == 0) {
-            currentPosition = glm::make_vec3(skeleton.bones[i].position);
-            currentRotation = glm::make_quat(skeleton.bones[i].rotation);
-            currentScale = glm::make_vec3(skeleton.bones[i].scale);
-            currentEditedBone = &skeleton.bones[i];
+    for (uint32_t i = 0; i < m_skeleton.num_bones; i++) {
+        if (strcmp(m_skeleton.bones[i].name, item->text(column).toStdString().c_str()) == 0) {
+            m_currentPosition = glm::make_vec3(m_skeleton.bones[i].position);
+            m_currentRotation = glm::make_quat(m_skeleton.bones[i].rotation);
+            m_currentScale = glm::make_vec3(m_skeleton.bones[i].scale);
+            m_currentEditedBone = &m_skeleton.bones[i];
 
-            QSignalBlocker posBlocker(posEdit);
-            QSignalBlocker rotBlocker(rotationEdit);
-            QSignalBlocker sclBlocker(scaleEdit);
+            QSignalBlocker posBlocker(m_posEdit);
+            QSignalBlocker rotBlocker(m_rotationEdit);
+            QSignalBlocker sclBlocker(m_scaleEdit);
 
-            posEdit->setEnabled(true);
-            posEdit->setVector(currentPosition);
+            m_posEdit->setEnabled(true);
+            m_posEdit->setVector(m_currentPosition);
 
-            rotationEdit->setEnabled(true);
-            rotationEdit->setQuat(currentRotation);
+            m_rotationEdit->setEnabled(true);
+            m_rotationEdit->setQuat(m_currentRotation);
 
-            scaleEdit->setEnabled(true);
-            scaleEdit->setVector(currentScale);
+            m_scaleEdit->setEnabled(true);
+            m_scaleEdit->setVector(m_currentScale);
 
-            if (racePosEdit != nullptr && raceRotationEdit != nullptr && raceScaleEdit != nullptr) {
+            if (m_racePosEdit != nullptr && m_raceRotationEdit != nullptr && m_raceScaleEdit != nullptr) {
                 for (int j = 0; j < m_matrices.num_bones; j++) {
-                    if (std::string_view{m_matrices.bones[j].name} == std::string_view{skeleton.bones[i].name}) {
+                    if (std::string_view{m_matrices.bones[j].name} == std::string_view{m_skeleton.bones[i].name}) {
                         auto deformBone = glm::rowMajor4(glm::vec4{m_matrices.bones[j].deform[0],
                                                                    m_matrices.bones[j].deform[1],
                                                                    m_matrices.bones[j].deform[2],
@@ -124,9 +124,9 @@ void SklbPart::treeItemClicked(QTreeWidgetItem *item, int column)
                         glm::vec4 perspective;
                         glm::decompose(deformBone, scale, rotation, translation, skew, perspective);
 
-                        racePosEdit->setVector(translation);
-                        raceRotationEdit->setQuat(rotation);
-                        raceScaleEdit->setVector(scale);
+                        m_racePosEdit->setVector(translation);
+                        m_raceRotationEdit->setQuat(rotation);
+                        m_raceScaleEdit->setVector(scale);
                     }
                 }
             }
@@ -136,35 +136,35 @@ void SklbPart::treeItemClicked(QTreeWidgetItem *item, int column)
 
 void SklbPart::clear()
 {
-    boneListWidget->clear();
+    m_boneListWidget->clear();
 }
 
 void SklbPart::load(physis_Skeleton file)
 {
     clear();
-    addItem(file, *file.root_bone, boneListWidget);
-    skeleton = file;
+    addItem(file, *file.root_bone, m_boneListWidget);
+    m_skeleton = file;
 }
 
 void SklbPart::load_pbd(physis_PBD deformer, int from_body_id, int to_body_id)
 {
-    if (racePosEdit == nullptr && raceRotationEdit == nullptr && raceScaleEdit == nullptr) {
+    if (m_racePosEdit == nullptr && m_raceRotationEdit == nullptr && m_raceScaleEdit == nullptr) {
         auto raceTransformGroup = new QGroupBox(i18nc("@title:group", "Race Transform"));
-        transformLayout->addWidget(raceTransformGroup);
+        m_transformLayout->addWidget(raceTransformGroup);
         auto raceTransformGroupLayout = new QFormLayout();
         raceTransformGroup->setLayout(raceTransformGroupLayout);
 
-        racePosEdit = new Vector3Edit(currentPosition);
-        racePosEdit->setEnabled(false);
-        raceTransformGroupLayout->addRow(i18nc("@label:spinbox", "Position"), racePosEdit);
+        m_racePosEdit = new Vector3Edit(m_currentPosition);
+        m_racePosEdit->setEnabled(false);
+        raceTransformGroupLayout->addRow(i18nc("@label:spinbox", "Position"), m_racePosEdit);
 
-        raceRotationEdit = new QuaternionEdit(currentRotation);
-        raceRotationEdit->setEnabled(false);
-        raceTransformGroupLayout->addRow(i18nc("@label:spinbox", "Rotation"), raceRotationEdit);
+        m_raceRotationEdit = new QuaternionEdit(m_currentRotation);
+        m_raceRotationEdit->setEnabled(false);
+        raceTransformGroupLayout->addRow(i18nc("@label:spinbox", "Rotation"), m_raceRotationEdit);
 
-        raceScaleEdit = new Vector3Edit(currentScale);
-        raceScaleEdit->setEnabled(false);
-        raceTransformGroupLayout->addRow(i18nc("@label:spinbox", "Scale"), raceScaleEdit);
+        m_raceScaleEdit = new Vector3Edit(m_currentScale);
+        m_raceScaleEdit->setEnabled(false);
+        raceTransformGroupLayout->addRow(i18nc("@label:spinbox", "Scale"), m_raceScaleEdit);
     }
 
     m_matrices = physis_pbd_get_deform_matrix(deformer, from_body_id, to_body_id);

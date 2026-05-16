@@ -12,7 +12,7 @@
 
 DiffTreeWidget::DiffTreeWidget(HashDatabase &database, physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
-    , data(data)
+    , m_data(data)
     , m_database(database)
 {
     auto layout = new QVBoxLayout();
@@ -58,7 +58,7 @@ DiffTreeWidget::DiffTreeWidget(HashDatabase &database, physis_SqPackResource *da
 void DiffTreeWidget::refreshModel()
 {
     // TODO: this should really be handled by the proxy
-    m_fileModel = new DiffTreeModel(m_database, data);
+    m_fileModel = new DiffTreeModel(m_database, m_data);
     m_searchModel->setSourceModel(m_fileModel);
 }
 

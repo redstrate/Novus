@@ -30,7 +30,7 @@ private:
     VkPipeline m_pipeline = nullptr;
     VkPipelineLayout m_pipelineLayout = nullptr;
 
-    RenderManager *m_renderer;
+    RenderManager *m_renderer = nullptr;
     Device &m_device;
-    SceneState *m_appState;
+    SceneState *m_appState = nullptr;
 };

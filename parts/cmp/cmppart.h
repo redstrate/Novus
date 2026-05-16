@@ -35,27 +35,27 @@ public:
 private:
     void loadRaceData(Race race, Tribe subrace);
 
-    physis_CMP cmp{};
+    physis_CMP m_cmp{};
 
-    QDoubleSpinBox *maleMinSize = nullptr;
-    QDoubleSpinBox *maleMaxSize = nullptr;
+    QDoubleSpinBox *m_maleMinSize = nullptr;
+    QDoubleSpinBox *m_maleMaxSize = nullptr;
 
-    QDoubleSpinBox *maleMinTail = nullptr;
-    QDoubleSpinBox *maleMaxTail = nullptr;
+    QDoubleSpinBox *m_maleMinTail = nullptr;
+    QDoubleSpinBox *m_maleMaxTail = nullptr;
 
-    QDoubleSpinBox *femaleMinSize = nullptr;
-    QDoubleSpinBox *femaleMaxSize = nullptr;
+    QDoubleSpinBox *m_femaleMinSize = nullptr;
+    QDoubleSpinBox *m_femaleMaxSize = nullptr;
 
-    QDoubleSpinBox *femaleMinTail = nullptr;
-    QDoubleSpinBox *femaleMaxTail = nullptr;
+    QDoubleSpinBox *m_femaleMinTail = nullptr;
+    QDoubleSpinBox *m_femaleMaxTail = nullptr;
 
-    QDoubleSpinBox *bustMinX = nullptr;
-    QDoubleSpinBox *bustMinY = nullptr;
-    QDoubleSpinBox *bustMinZ = nullptr;
+    QDoubleSpinBox *m_bustMinX = nullptr;
+    QDoubleSpinBox *m_bustMinY = nullptr;
+    QDoubleSpinBox *m_bustMinZ = nullptr;
 
-    QDoubleSpinBox *bustMaxX = nullptr;
-    QDoubleSpinBox *bustMaxY = nullptr;
-    QDoubleSpinBox *bustMaxZ = nullptr;
+    QDoubleSpinBox *m_bustMaxX = nullptr;
+    QDoubleSpinBox *m_bustMaxY = nullptr;
+    QDoubleSpinBox *m_bustMaxZ = nullptr;
 
-    QHBoxLayout *layout = nullptr;
+    QHBoxLayout *m_layout = nullptr;
 };

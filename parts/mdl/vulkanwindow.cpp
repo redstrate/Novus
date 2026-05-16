@@ -12,7 +12,7 @@
 VulkanWindow::VulkanWindow(MDLPart *part, RenderManager *renderer, QVulkanInstance *instance)
     : m_renderer(renderer)
     , m_instance(instance)
-    , part(part)
+    , m_part(part)
 {
     setSurfaceType(VulkanSurface);
     setVulkanInstance(instance);
@@ -27,7 +27,7 @@ void VulkanWindow::exposeEvent(QExposeEvent *)
         if (!m_renderer->initSwapchain(surface, width() * screen()->devicePixelRatio(), height() * screen()->devicePixelRatio())) {
             m_initialized = false;
         } else {
-            Q_EMIT part->initializeRender();
+            Q_EMIT m_part->initializeRender();
             render();
         }
     }
@@ -81,20 +81,20 @@ bool VulkanWindow::event(QEvent *e)
     case QEvent::MouseButtonPress: {
         auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
 
-        part->setFocus(Qt::FocusReason::MouseFocusReason);
+        m_part->setFocus(Qt::FocusReason::MouseFocusReason);
 
-        if (part->isEnabled() && (mouseEvent->button() == Qt::MouseButton::LeftButton || mouseEvent->button() == Qt::MouseButton::RightButton)) {
-            part->lastX = mouseEvent->position().x();
-            part->lastY = mouseEvent->position().y();
-            part->cameraMode = mouseEvent->button() == Qt::MouseButton::LeftButton ? MDLPart::CameraMode::Orbit : MDLPart::CameraMode::Move;
+        if (m_part->isEnabled() && (mouseEvent->button() == Qt::MouseButton::LeftButton || mouseEvent->button() == Qt::MouseButton::RightButton)) {
+            m_part->lastX = mouseEvent->position().x();
+            m_part->lastY = mouseEvent->position().y();
+            m_part->cameraMode = mouseEvent->button() == Qt::MouseButton::LeftButton ? MDLPart::CameraMode::Orbit : MDLPart::CameraMode::Move;
 
             setKeyboardGrabEnabled(true);
             setCursor(Qt::BlankCursor);
         }
     } break;
     case QEvent::MouseButtonRelease: {
-        if (part->isEnabled()) {
-            part->cameraMode = MDLPart::CameraMode::None;
+        if (m_part->isEnabled()) {
+            m_part->cameraMode = MDLPart::CameraMode::None;
 
             setKeyboardGrabEnabled(false);
             setCursor({});
@@ -102,62 +102,62 @@ bool VulkanWindow::event(QEvent *e)
     } break;
     case QEvent::MouseMove: {
         auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
-        if (part->isEnabled() && part->cameraMode != MDLPart::CameraMode::None) {
-            const int deltaX = mouseEvent->position().x() - part->lastX;
-            const int deltaY = mouseEvent->position().y() - part->lastY;
+        if (m_part->isEnabled() && m_part->cameraMode != MDLPart::CameraMode::None) {
+            const int deltaX = mouseEvent->position().x() - m_part->lastX;
+            const int deltaY = mouseEvent->position().y() - m_part->lastY;
 
-            if (part->cameraMode == MDLPart::CameraMode::Orbit) {
-                part->yaw -= deltaX * 0.01f; // TODO: remove these magic numbers
-                part->pitch += deltaY * 0.01f;
+            if (m_part->cameraMode == MDLPart::CameraMode::Orbit) {
+                m_part->yaw -= deltaX * 0.01f; // TODO: remove these magic numbers
+                m_part->pitch += deltaY * 0.01f;
             } else {
-                const glm::vec3 position(part->cameraDistance * std::sin(part->yaw),
-                                         part->cameraDistance * part->pitch,
-                                         part->cameraDistance * std::cos(part->yaw));
+                const glm::vec3 position(m_part->cameraDistance * std::sin(m_part->yaw),
+                                         m_part->cameraDistance * m_part->pitch,
+                                         m_part->cameraDistance * std::cos(m_part->yaw));
 
                 // const glm::quat rot = glm::quatLookAt((part->position + position) - part->position, {0, 1, 0});
 
-                part->position += glm::vec3{0, 1, 0} * (float)deltaY * 0.01f;
-                part->position.y = std::clamp(part->position.y, 0.0f, 10.0f);
-                Q_EMIT part->cameraMoved();
+                m_part->position += glm::vec3{0, 1, 0} * (float)deltaY * 0.01f;
+                m_part->position.y = std::clamp(m_part->position.y, 0.0f, 10.0f);
+                Q_EMIT m_part->cameraMoved();
             }
 
-            part->lastX = mouseEvent->position().x();
-            part->lastY = mouseEvent->position().y();
+            m_part->lastX = mouseEvent->position().x();
+            m_part->lastY = mouseEvent->position().y();
         }
     } break;
     case QEvent::Wheel: {
         auto scrollEvent = dynamic_cast<QWheelEvent *>(e);
 
-        if (part->isEnabled()) {
-            part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
-            part->cameraDistance = std::clamp(part->cameraDistance, part->minimumCameraDistance, 4.0f);
+        if (m_part->isEnabled()) {
+            m_part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
+            m_part->cameraDistance = std::clamp(m_part->cameraDistance, m_part->minimumCameraDistance, 4.0f);
         }
     } break;
     case QEvent::KeyPress: {
         auto keyEvent = dynamic_cast<QKeyEvent *>(e);
 
-        if (part->isEnabled()) {
+        if (m_part->isEnabled()) {
             switch (keyEvent->key()) {
             case Qt::Key_W:
-                pressed_keys[0] = true;
+                m_pressedKeys[0] = true;
                 break;
             case Qt::Key_A:
-                pressed_keys[1] = true;
+                m_pressedKeys[1] = true;
                 break;
             case Qt::Key_S:
-                pressed_keys[2] = true;
+                m_pressedKeys[2] = true;
                 break;
             case Qt::Key_D:
-                pressed_keys[3] = true;
+                m_pressedKeys[3] = true;
                 break;
             case Qt::Key_Shift:
-                pressed_keys[4] = true;
+                m_pressedKeys[4] = true;
                 break;
             case Qt::Key_Q:
-                pressed_keys[5] = true;
+                m_pressedKeys[5] = true;
                 break;
             case Qt::Key_E:
-                pressed_keys[6] = true;
+                m_pressedKeys[6] = true;
                 break;
             }
         }
@@ -165,28 +165,28 @@ bool VulkanWindow::event(QEvent *e)
     case QEvent::KeyRelease: {
         auto keyEvent = dynamic_cast<QKeyEvent *>(e);
 
-        if (part->isEnabled()) {
+        if (m_part->isEnabled()) {
             switch (keyEvent->key()) {
             case Qt::Key_W:
-                pressed_keys[0] = false;
+                m_pressedKeys[0] = false;
                 break;
             case Qt::Key_A:
-                pressed_keys[1] = false;
+                m_pressedKeys[1] = false;
                 break;
             case Qt::Key_S:
-                pressed_keys[2] = false;
+                m_pressedKeys[2] = false;
                 break;
             case Qt::Key_D:
-                pressed_keys[3] = false;
+                m_pressedKeys[3] = false;
                 break;
             case Qt::Key_Shift:
-                pressed_keys[4] = false;
+                m_pressedKeys[4] = false;
                 break;
             case Qt::Key_Q:
-                pressed_keys[5] = false;
+                m_pressedKeys[5] = false;
                 break;
             case Qt::Key_E:
-                pressed_keys[6] = false;
+                m_pressedKeys[6] = false;
                 break;
             }
         }
@@ -204,8 +204,8 @@ void VulkanWindow::render()
         return;
     }
 
-    const float deltaTime = timer.nsecsElapsed() / 1000000000.0f;
-    timer.restart();
+    const float deltaTime = m_timer.nsecsElapsed() / 1000000000.0f;
+    m_timer.restart();
 
     ImGui::SetCurrentContext(m_renderer->ctx);
 
@@ -214,8 +214,8 @@ void VulkanWindow::render()
 
     ImGui::NewFrame();
 
-    if (part->requestUpdate)
-        part->requestUpdate();
+    if (m_part->requestUpdate)
+        m_part->requestUpdate();
 
     ImGui::Render();
 
@@ -223,55 +223,55 @@ void VulkanWindow::render()
         float movX = 0.0f;
         float movY = 0.0f;
 
-        if (pressed_keys[0]) {
+        if (m_pressedKeys[0]) {
             movY = -0.05f;
         }
 
-        if (pressed_keys[1]) {
+        if (m_pressedKeys[1]) {
             movX = 0.05f;
         }
 
-        if (pressed_keys[2]) {
+        if (m_pressedKeys[2]) {
             movY = 0.05f;
         }
 
-        if (pressed_keys[3]) {
+        if (m_pressedKeys[3]) {
             movX = -0.05f;
         }
 
         glm::vec3 forward, right;
-        forward = normalize(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(part->pitch, glm::vec3(1, 0, 0)) * glm::vec3(0, 0, 1));
-        right = normalize(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::vec3(1, 0, 0));
+        forward = normalize(glm::angleAxis(m_part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(m_part->pitch, glm::vec3(1, 0, 0)) * glm::vec3(0, 0, 1));
+        right = normalize(glm::angleAxis(m_part->yaw, glm::vec3(0, 1, 0)) * glm::vec3(1, 0, 0));
 
         float speed = 200.0f;
-        if (pressed_keys[4]) {
+        if (m_pressedKeys[4]) {
             speed = 1000.0f;
         }
 
-        part->position += right * movX * speed * deltaTime;
-        part->position += forward * movY * speed * deltaTime;
+        m_part->position += right * movX * speed * deltaTime;
+        m_part->position += forward * movY * speed * deltaTime;
 
         // TODO: should up/down be considered from the camera's rotation?
-        if (pressed_keys[5]) {
-            part->position.y -= 0.05f * speed * deltaTime;
+        if (m_pressedKeys[5]) {
+            m_part->position.y -= 0.05f * speed * deltaTime;
         }
 
-        if (pressed_keys[6]) {
-            part->position.y += 0.05f * speed * deltaTime;
+        if (m_pressedKeys[6]) {
+            m_part->position.y += 0.05f * speed * deltaTime;
         }
 
-        Q_EMIT part->cameraMoved();
+        Q_EMIT m_part->cameraMoved();
 
         m_renderer->camera.view = glm::mat4(1.0f);
-        m_renderer->camera.view = glm::translate(m_renderer->camera.view, part->position);
-        m_renderer->camera.view *= glm::mat4_cast(glm::angleAxis(part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(part->pitch, glm::vec3(1, 0, 0)));
+        m_renderer->camera.view = glm::translate(m_renderer->camera.view, m_part->position);
+        m_renderer->camera.view *= glm::mat4_cast(glm::angleAxis(m_part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(m_part->pitch, glm::vec3(1, 0, 0)));
         m_renderer->camera.view = glm::inverse(m_renderer->camera.view);
-        m_renderer->camera.position = part->position;
+        m_renderer->camera.position = m_part->position;
     } else {
-        glm::vec3 position(part->cameraDistance * sin(part->yaw), part->cameraDistance * part->pitch, part->cameraDistance * cos(part->yaw));
+        glm::vec3 position(m_part->cameraDistance * sin(m_part->yaw), m_part->cameraDistance * m_part->pitch, m_part->cameraDistance * cos(m_part->yaw));
 
-        m_renderer->camera.view = glm::lookAt(part->position + position, part->position, glm::vec3(0, -1, 0));
-        m_renderer->camera.position = part->position + position;
+        m_renderer->camera.view = glm::lookAt(m_part->position + position, m_part->position, glm::vec3(0, -1, 0));
+        m_renderer->camera.position = m_part->position + position;
     }
 
     m_renderer->render(models);

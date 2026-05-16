@@ -30,18 +30,17 @@
 #include <QLineEdit>
 
 MainWindow::MainWindow(physis_SqPackResource data)
-    : m_data(data)
-    , m_cache(m_data)
+    : m_cache(data)
 {
     setMinimumSize(1280, 720);
 
-    mgr = new QNetworkAccessManager(this);
+    m_mgr = new QNetworkAccessManager(this);
 
     auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    m_sheetListWidget = new SheetListWidget(&m_data);
+    m_sheetListWidget = new SheetListWidget(&data);
     m_sheetListWidget->setMaximumWidth(200);
     dummyWidget->addWidget(m_sheetListWidget);
 
@@ -69,10 +68,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     updateDocumentActions();
 }
 
-MainWindow::~MainWindow()
-{
-    physis_sqpack_free(&m_data);
-}
+MainWindow::~MainWindow() = default;
 
 QString MainWindow::getArguments() const
 {
@@ -174,7 +170,7 @@ void MainWindow::setupActions()
         url.setPath(QStringLiteral("/xivdev/EXDSchema/releases/latest/download/latest.zip"));
 
         // TODO: Use Qcoro?
-        auto reply = mgr->get(QNetworkRequest(url));
+        auto reply = m_mgr->get(QNetworkRequest(url));
         connect(reply, &QNetworkReply::finished, this, [this, reply] {
             qInfo() << "Finished downloading definitions!";
 

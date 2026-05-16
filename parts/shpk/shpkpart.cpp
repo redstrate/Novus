@@ -27,170 +27,170 @@ SHPKPart::SHPKPart(QWidget *parent)
     auto layout = new QVBoxLayout();
     setLayout(layout);
 
-    shadersTab = new QWidget();
+    m_shadersTab = new QWidget();
 
     auto shadersLayout = new QHBoxLayout();
-    shadersTab->setLayout(shadersLayout);
+    m_shadersTab->setLayout(shadersLayout);
 
-    shadersListWidget = new QListWidget();
-    connect(shadersListWidget, &QListWidget::activated, this, &SHPKPart::loadShader);
-    shadersLayout->addWidget(shadersListWidget);
+    m_shadersListWidget = new QListWidget();
+    connect(m_shadersListWidget, &QListWidget::activated, this, &SHPKPart::loadShader);
+    shadersLayout->addWidget(m_shadersListWidget);
 
-    shadersTextEdit = new QTextEdit();
-    shadersTextEdit->setReadOnly(true);
-    shadersTextEdit->setFontFamily(QStringLiteral("monospace"));
+    m_shadersTextEdit = new QTextEdit();
+    m_shadersTextEdit->setReadOnly(true);
+    m_shadersTextEdit->setFontFamily(QStringLiteral("monospace"));
 
-    shadersScalarListWidget = new QListWidget();
-    shadersTextureListWidget = new QListWidget();
+    m_shadersScalarListWidget = new QListWidget();
+    m_shadersTextureListWidget = new QListWidget();
 
     auto shadersTabWidget = new QTabWidget();
-    shadersTabWidget->addTab(shadersTextEdit, i18n("Code"));
-    shadersTabWidget->addTab(shadersScalarListWidget, i18n("Scalars"));
-    shadersTabWidget->addTab(shadersTextureListWidget, i18n("Textures"));
+    shadersTabWidget->addTab(m_shadersTextEdit, i18n("Code"));
+    shadersTabWidget->addTab(m_shadersScalarListWidget, i18n("Scalars"));
+    shadersTabWidget->addTab(m_shadersTextureListWidget, i18n("Textures"));
     shadersLayout->addWidget(shadersTabWidget);
 
     // System
-    systemTab = new QScrollArea();
-    systemTab->setWidgetResizable(true);
+    m_systemTab = new QScrollArea();
+    m_systemTab->setWidgetResizable(true);
 
     auto systemTabLayoutHolder = new QWidget();
-    systemTab->setWidget(systemTabLayoutHolder);
+    m_systemTab->setWidget(systemTabLayoutHolder);
 
-    systemLayout = new QVBoxLayout();
-    systemTabLayoutHolder->setLayout(systemLayout);
+    m_systemLayout = new QVBoxLayout();
+    systemTabLayoutHolder->setLayout(m_systemLayout);
 
     // Scene
-    sceneTab = new QScrollArea();
-    sceneTab->setWidgetResizable(true);
+    m_sceneTab = new QScrollArea();
+    m_sceneTab->setWidgetResizable(true);
 
     auto sceneTabLayoutHolder = new QWidget();
-    sceneTab->setWidget(sceneTabLayoutHolder);
+    m_sceneTab->setWidget(sceneTabLayoutHolder);
 
-    sceneLayout = new QVBoxLayout();
-    sceneTabLayoutHolder->setLayout(sceneLayout);
+    m_sceneLayout = new QVBoxLayout();
+    sceneTabLayoutHolder->setLayout(m_sceneLayout);
 
     // Material
-    materialTab = new QScrollArea();
-    materialTab->setWidgetResizable(true);
+    m_materialTab = new QScrollArea();
+    m_materialTab->setWidgetResizable(true);
 
     auto materialTabLayoutHolder = new QWidget();
-    materialTab->setWidget(materialTabLayoutHolder);
+    m_materialTab->setWidget(materialTabLayoutHolder);
 
-    materialLayout = new QVBoxLayout();
-    materialTabLayoutHolder->setLayout(materialLayout);
+    m_materialLayout = new QVBoxLayout();
+    materialTabLayoutHolder->setLayout(m_materialLayout);
 
     // Sub view
-    subViewTab = new QScrollArea();
-    subViewTab->setWidgetResizable(true);
+    m_subViewTab = new QScrollArea();
+    m_subViewTab->setWidgetResizable(true);
 
     auto subViewTabLayoutHolder = new QWidget();
-    subViewTab->setWidget(subViewTabLayoutHolder);
+    m_subViewTab->setWidget(subViewTabLayoutHolder);
 
-    subViewLayout = new QVBoxLayout();
-    subViewTabLayoutHolder->setLayout(subViewLayout);
+    m_subViewLayout = new QVBoxLayout();
+    subViewTabLayoutHolder->setLayout(m_subViewLayout);
 
-    keysTab = new QTabWidget();
-    keysTab->addTab(systemTab, i18n("System"));
-    keysTab->addTab(sceneTab, i18n("Scene"));
-    keysTab->addTab(materialTab, i18n("Material"));
-    keysTab->addTab(subViewTab, i18n("Sub View"));
+    m_keysTab = new QTabWidget();
+    m_keysTab->addTab(m_systemTab, i18n("System"));
+    m_keysTab->addTab(m_sceneTab, i18n("Scene"));
+    m_keysTab->addTab(m_materialTab, i18n("Material"));
+    m_keysTab->addTab(m_subViewTab, i18n("Sub View"));
 
-    nodesTab = new QWidget();
-    nodesLayout = new QHBoxLayout();
-    nodesTab->setLayout(nodesLayout);
+    m_nodesTab = new QWidget();
+    m_nodesLayout = new QHBoxLayout();
+    m_nodesTab->setLayout(m_nodesLayout);
 
-    nodesListWidget = new QListWidget();
-    connect(nodesListWidget, &QListWidget::activated, this, &SHPKPart::loadNode);
-    nodesLayout->addWidget(nodesListWidget);
+    m_nodesListWidget = new QListWidget();
+    connect(m_nodesListWidget, &QListWidget::activated, this, &SHPKPart::loadNode);
+    m_nodesLayout->addWidget(m_nodesListWidget);
 
     auto nodeSidebarLayout = new QVBoxLayout();
-    nodesLayout->addLayout(nodeSidebarLayout);
+    m_nodesLayout->addLayout(nodeSidebarLayout);
 
-    nodesSelectorEdit = new QLineEdit();
-    nodesSelectorEdit->setReadOnly(true);
-    nodeSidebarLayout->addWidget(nodesSelectorEdit);
+    m_nodesSelectorEdit = new QLineEdit();
+    m_nodesSelectorEdit->setReadOnly(true);
+    nodeSidebarLayout->addWidget(m_nodesSelectorEdit);
 
-    nodesPassesTab = new QWidget();
+    m_nodesPassesTab = new QWidget();
     auto nodesPassesTabLayout = new QHBoxLayout();
-    nodesPassesTab->setLayout(nodesPassesTabLayout);
+    m_nodesPassesTab->setLayout(nodesPassesTabLayout);
 
-    nodesPassesListWidget = new QListWidget();
-    connect(nodesPassesListWidget, &QListWidget::activated, this, &SHPKPart::loadPass);
-    nodesPassesTabLayout->addWidget(nodesPassesListWidget);
+    m_nodesPassesListWidget = new QListWidget();
+    connect(m_nodesPassesListWidget, &QListWidget::activated, this, &SHPKPart::loadPass);
+    nodesPassesTabLayout->addWidget(m_nodesPassesListWidget);
 
-    nodesPassesFormLayout = new QFormLayout();
+    m_nodesPassesFormLayout = new QFormLayout();
 
-    vertexShaderButton = new QPushButton(i18n("Go To Vertex Shader"));
-    vertexShaderButton->setEnabled(false);
-    nodesPassesFormLayout->addWidget(vertexShaderButton);
+    m_vertexShaderButton = new QPushButton(i18n("Go To Vertex Shader"));
+    m_vertexShaderButton->setEnabled(false);
+    m_nodesPassesFormLayout->addWidget(m_vertexShaderButton);
 
-    pixelShaderButton = new QPushButton(i18n("Go To Pixel Shader"));
-    pixelShaderButton->setEnabled(false);
-    nodesPassesFormLayout->addWidget(pixelShaderButton);
+    m_pixelShaderButton = new QPushButton(i18n("Go To Pixel Shader"));
+    m_pixelShaderButton->setEnabled(false);
+    m_nodesPassesFormLayout->addWidget(m_pixelShaderButton);
 
-    nodesPassesTabLayout->addLayout(nodesPassesFormLayout);
+    nodesPassesTabLayout->addLayout(m_nodesPassesFormLayout);
 
     // System
-    nodesSystemTab = new QScrollArea();
-    nodesSystemTab->setWidgetResizable(true);
+    m_nodesSystemTab = new QScrollArea();
+    m_nodesSystemTab->setWidgetResizable(true);
 
     auto systemTabLayoutNodeHolder = new QWidget();
-    nodesSystemTab->setWidget(systemTabLayoutNodeHolder);
+    m_nodesSystemTab->setWidget(systemTabLayoutNodeHolder);
 
-    nodesSystemLayout = new QVBoxLayout();
-    systemTabLayoutNodeHolder->setLayout(nodesSystemLayout);
+    m_nodesSystemLayout = new QVBoxLayout();
+    systemTabLayoutNodeHolder->setLayout(m_nodesSystemLayout);
 
     // Scene
-    nodesSceneTab = new QScrollArea();
-    nodesSceneTab->setWidgetResizable(true);
+    m_nodesSceneTab = new QScrollArea();
+    m_nodesSceneTab->setWidgetResizable(true);
 
     auto sceneTabLayoutNodeHolder = new QWidget();
-    nodesSceneTab->setWidget(sceneTabLayoutNodeHolder);
+    m_nodesSceneTab->setWidget(sceneTabLayoutNodeHolder);
 
-    nodesSceneLayout = new QVBoxLayout();
-    sceneTabLayoutNodeHolder->setLayout(nodesSceneLayout);
+    m_nodesSceneLayout = new QVBoxLayout();
+    sceneTabLayoutNodeHolder->setLayout(m_nodesSceneLayout);
 
     // Material
-    nodesMaterialTab = new QScrollArea();
-    nodesMaterialTab->setWidgetResizable(true);
+    m_nodesMaterialTab = new QScrollArea();
+    m_nodesMaterialTab->setWidgetResizable(true);
 
     auto materialTabLayoutNodeHolder = new QWidget();
-    nodesMaterialTab->setWidget(materialTabLayoutNodeHolder);
+    m_nodesMaterialTab->setWidget(materialTabLayoutNodeHolder);
 
-    nodesMaterialLayout = new QVBoxLayout();
-    materialTabLayoutNodeHolder->setLayout(nodesMaterialLayout);
+    m_nodesMaterialLayout = new QVBoxLayout();
+    materialTabLayoutNodeHolder->setLayout(m_nodesMaterialLayout);
 
     // Sub view
-    nodesSubViewTab = new QScrollArea();
-    nodesSubViewTab->setWidgetResizable(true);
+    m_nodesSubViewTab = new QScrollArea();
+    m_nodesSubViewTab->setWidgetResizable(true);
 
     auto subViewTabLayoutNodeHolder = new QWidget();
-    nodesSubViewTab->setWidget(subViewTabLayoutNodeHolder);
+    m_nodesSubViewTab->setWidget(subViewTabLayoutNodeHolder);
 
-    nodesSubViewLayout = new QVBoxLayout();
-    subViewTabLayoutNodeHolder->setLayout(nodesSubViewLayout);
+    m_nodesSubViewLayout = new QVBoxLayout();
+    subViewTabLayoutNodeHolder->setLayout(m_nodesSubViewLayout);
 
-    nodesKeysTabWidget = new QTabWidget();
-    nodesKeysTabWidget->addTab(nodesSystemTab, i18n("System"));
-    nodesKeysTabWidget->addTab(nodesSceneTab, i18n("Scene"));
-    nodesKeysTabWidget->addTab(nodesMaterialTab, i18n("Material"));
-    nodesKeysTabWidget->addTab(nodesSubViewTab, i18n("Sub View"));
+    m_nodesKeysTabWidget = new QTabWidget();
+    m_nodesKeysTabWidget->addTab(m_nodesSystemTab, i18n("System"));
+    m_nodesKeysTabWidget->addTab(m_nodesSceneTab, i18n("Scene"));
+    m_nodesKeysTabWidget->addTab(m_nodesMaterialTab, i18n("Material"));
+    m_nodesKeysTabWidget->addTab(m_nodesSubViewTab, i18n("Sub View"));
 
-    nodesTabWidget = new QTabWidget();
-    nodesTabWidget->addTab(nodesPassesTab, i18n("Passes"));
-    nodesTabWidget->addTab(nodesKeysTabWidget, i18n("Keys"));
-    nodeSidebarLayout->addWidget(nodesTabWidget);
+    m_nodesTabWidget = new QTabWidget();
+    m_nodesTabWidget->addTab(m_nodesPassesTab, i18n("Passes"));
+    m_nodesTabWidget->addTab(m_nodesKeysTabWidget, i18n("Keys"));
+    nodeSidebarLayout->addWidget(m_nodesTabWidget);
 
-    scalarsListWidget = new QListWidget();
-    texturesListWidget = new QListWidget();
+    m_scalarsListWidget = new QListWidget();
+    m_texturesListWidget = new QListWidget();
 
-    pageTabWidget = new QTabWidget();
-    pageTabWidget->addTab(shadersTab, i18n("Shaders"));
-    pageTabWidget->addTab(keysTab, i18n("Keys"));
-    pageTabWidget->addTab(nodesTab, i18n("Nodes"));
-    pageTabWidget->addTab(scalarsListWidget, i18n("Scalars"));
-    pageTabWidget->addTab(texturesListWidget, i18n("Textures"));
-    layout->addWidget(pageTabWidget);
+    m_pageTabWidget = new QTabWidget();
+    m_pageTabWidget->addTab(m_shadersTab, i18n("Shaders"));
+    m_pageTabWidget->addTab(m_keysTab, i18n("Keys"));
+    m_pageTabWidget->addTab(m_nodesTab, i18n("Nodes"));
+    m_pageTabWidget->addTab(m_scalarsListWidget, i18n("Scalars"));
+    m_pageTabWidget->addTab(m_texturesListWidget, i18n("Textures"));
+    layout->addWidget(m_pageTabWidget);
 }
 
 void SHPKPart::load(Platform platform, physis_Buffer buffer)
@@ -198,14 +198,14 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
     m_shpk = physis_shpk_parse(platform, buffer);
 
     // shaders
-    shadersListWidget->clear();
+    m_shadersListWidget->clear();
 
     for (uint32_t i = 0; i < m_shpk.num_vertex_shaders; i++) {
         auto item = new QListWidgetItem();
         item->setText(i18nc("@title:tab", "Vertex Shader %1", i));
         item->setData(Qt::UserRole, 0); // vertex
         item->setData(Qt::UserRole + 1, i); // index
-        shadersListWidget->addItem(item);
+        m_shadersListWidget->addItem(item);
     }
 
     for (uint32_t i = 0; i < m_shpk.num_pixel_shaders; i++) {
@@ -213,7 +213,7 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
         item->setText(i18nc("@title:tab", "Pixel Shader %1", i));
         item->setData(Qt::UserRole, 1); // vertex
         item->setData(Qt::UserRole + 1, i); // index
-        shadersListWidget->addItem(item);
+        m_shadersListWidget->addItem(item);
     }
 
     // keys
@@ -224,32 +224,32 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
         layout->addWidget(label);
     };
 
-    clearLayout(systemLayout);
+    clearLayout(m_systemLayout);
     for (uint32_t i = 0; i < m_shpk.num_system_keys; i++) {
-        addKey(systemLayout, m_shpk.system_keys[i]);
+        addKey(m_systemLayout, m_shpk.system_keys[i]);
     }
-    systemLayout->addStretch();
+    m_systemLayout->addStretch();
 
-    clearLayout(sceneLayout);
+    clearLayout(m_sceneLayout);
     for (uint32_t i = 0; i < m_shpk.num_scene_keys; i++) {
-        addKey(sceneLayout, m_shpk.scene_keys[i]);
+        addKey(m_sceneLayout, m_shpk.scene_keys[i]);
     }
-    sceneLayout->addStretch();
+    m_sceneLayout->addStretch();
 
-    clearLayout(materialLayout);
+    clearLayout(m_materialLayout);
     for (uint32_t i = 0; i < m_shpk.num_material_keys; i++) {
-        addKey(materialLayout, m_shpk.material_keys[i]);
+        addKey(m_materialLayout, m_shpk.material_keys[i]);
     }
-    materialLayout->addStretch();
+    m_materialLayout->addStretch();
 
-    clearLayout(subViewLayout);
+    clearLayout(m_subViewLayout);
 
     // first
     {
         auto label = new QLabel();
         label->setText(QString::fromStdString(nameFromCrc(m_shpk.sub_view_key1_default)));
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
-        subViewLayout->addWidget(label);
+        m_subViewLayout->addWidget(label);
     }
 
     // second
@@ -257,25 +257,25 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
         auto label = new QLabel();
         label->setText(QString::fromStdString(nameFromCrc(m_shpk.sub_view_key2_default)));
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
-        subViewLayout->addWidget(label);
+        m_subViewLayout->addWidget(label);
     }
-    subViewLayout->addStretch();
+    m_subViewLayout->addStretch();
 
     // nodes
-    nodesListWidget->clear();
+    m_nodesListWidget->clear();
     for (uint32_t i = 0; i < m_shpk.num_nodes; i++) {
-        nodesListWidget->addItem(i18nc("@title:tab", "Node %1", i));
+        m_nodesListWidget->addItem(i18nc("@title:tab", "Node %1", i));
     }
 
     // resources
-    scalarsListWidget->clear();
+    m_scalarsListWidget->clear();
     for (uint32_t i = 0; i < m_shpk.num_scalar_parameters; i++) {
-        scalarsListWidget->addItem(QStringLiteral("%1: %2").arg(i).arg(m_shpk.scalar_parameters[i].name));
+        m_scalarsListWidget->addItem(QStringLiteral("%1: %2").arg(i).arg(m_shpk.scalar_parameters[i].name));
     }
 
-    texturesListWidget->clear();
+    m_texturesListWidget->clear();
     for (uint32_t i = 0; i < m_shpk.num_texture_parameters; i++) {
-        texturesListWidget->addItem(QStringLiteral("%1: %2").arg(i).arg(m_shpk.texture_parameters[i].name));
+        m_texturesListWidget->addItem(QStringLiteral("%1: %2").arg(i).arg(m_shpk.texture_parameters[i].name));
     }
 }
 
@@ -313,16 +313,16 @@ void SHPKPart::loadShader(const QModelIndex &index)
         options.vulkan_semantics = true;
         glsl.set_common_options(options);
 
-        shadersTextEdit->setText(QLatin1String(glsl.compile().c_str()));
+        m_shadersTextEdit->setText(QLatin1String(glsl.compile().c_str()));
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting
-        auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(shadersTextEdit->document());
-        highlighter->setTheme((shadersTextEdit->palette().color(QPalette::Base).lightness() < 128)
-                                  ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
-                                  : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
+        auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_shadersTextEdit->document());
+        highlighter->setTheme((m_shadersTextEdit->palette().color(QPalette::Base).lightness() < 128)
+                                  ? m_repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
+                                  : m_repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
 
-        const auto def = repository.definitionForName(QStringLiteral("GLSL"));
+        const auto def = m_repository.definitionForName(QStringLiteral("GLSL"));
         highlighter->setDefinition(def);
 #endif
     } catch (const dxvk::DxvkError &exception) {
@@ -330,14 +330,14 @@ void SHPKPart::loadShader(const QModelIndex &index)
     }
 
     // resources
-    shadersScalarListWidget->clear();
+    m_shadersScalarListWidget->clear();
     for (uint32_t i = 0; i < shader->num_scalar_parameters; i++) {
-        shadersScalarListWidget->addItem(QStringLiteral("%1: %2").arg(shader->scalar_parameters[i].slot).arg(shader->scalar_parameters[i].name));
+        m_shadersScalarListWidget->addItem(QStringLiteral("%1: %2").arg(shader->scalar_parameters[i].slot).arg(shader->scalar_parameters[i].name));
     }
 
-    shadersTextureListWidget->clear();
+    m_shadersTextureListWidget->clear();
     for (uint32_t i = 0; i < shader->num_resource_parameters; i++) {
-        shadersTextureListWidget->addItem(QStringLiteral("%1: %2").arg(shader->resource_parameters[i].slot).arg(shader->resource_parameters[i].name));
+        m_shadersTextureListWidget->addItem(QStringLiteral("%1: %2").arg(shader->resource_parameters[i].slot).arg(shader->resource_parameters[i].name));
     }
 }
 
@@ -346,10 +346,10 @@ void SHPKPart::loadNode(const QModelIndex &index)
     const auto nodeIndex = index.row();
     const physis_SHPKNode *node = &m_shpk.nodes[nodeIndex];
 
-    nodesSelectorEdit->setText(QString::number(node->selector));
+    m_nodesSelectorEdit->setText(QString::number(node->selector));
 
     // passes
-    nodesPassesListWidget->clear();
+    m_nodesPassesListWidget->clear();
     for (int i = 0; i < 16; i++) {
         if (node->pass_indices[i] != 255) {
             auto realPass = node->pass_indices[i];
@@ -358,11 +358,11 @@ void SHPKPart::loadNode(const QModelIndex &index)
             item->setText(i18nc("@title:tab", "%1: %2", i, QString::fromStdString(nameFromCrc(node->passes[realPass].id))));
             item->setData(Qt::UserRole, nodeIndex); // node index
             item->setData(Qt::UserRole + 1, realPass); // pass index
-            nodesPassesListWidget->addItem(item);
+            m_nodesPassesListWidget->addItem(item);
         } else {
             auto item = new QListWidgetItem();
             item->setText(i18nc("@title:tab", "%1: (No Pass)", i));
-            nodesPassesListWidget->addItem(item);
+            m_nodesPassesListWidget->addItem(item);
         }
     }
 
@@ -389,37 +389,37 @@ void SHPKPart::loadNode(const QModelIndex &index)
         layout->addWidget(label);
     };
 
-    clearLayout(nodesSystemLayout);
+    clearLayout(m_nodesSystemLayout);
     for (uint32_t i = 0; i < node->system_key_count; i++) {
-        addKey(nodesSystemLayout, m_shpk.system_keys[i], node->system_keys[i]);
+        addKey(m_nodesSystemLayout, m_shpk.system_keys[i], node->system_keys[i]);
     }
-    nodesSystemLayout->addStretch();
+    m_nodesSystemLayout->addStretch();
 
-    clearLayout(nodesSceneLayout);
+    clearLayout(m_nodesSceneLayout);
     for (uint32_t i = 0; i < node->scene_key_count; i++) {
-        addKey(nodesSceneLayout, m_shpk.scene_keys[i], node->scene_keys[i]);
+        addKey(m_nodesSceneLayout, m_shpk.scene_keys[i], node->scene_keys[i]);
     }
-    nodesSceneLayout->addStretch();
+    m_nodesSceneLayout->addStretch();
 
-    clearLayout(nodesMaterialLayout);
+    clearLayout(m_nodesMaterialLayout);
     for (uint32_t i = 0; i < node->material_key_count; i++) {
-        addKey(nodesMaterialLayout, m_shpk.material_keys[i], node->material_keys[i]);
+        addKey(m_nodesMaterialLayout, m_shpk.material_keys[i], node->material_keys[i]);
     }
-    nodesMaterialLayout->addStretch();
+    m_nodesMaterialLayout->addStretch();
 
-    clearLayout(nodesSubViewLayout);
+    clearLayout(m_nodesSubViewLayout);
     Q_ASSERT(node->subview_key_count < 3);
     for (uint32_t i = 0; i < node->subview_key_count; i++) {
-        addSubviewKey(nodesSubViewLayout, i == 0 ? m_shpk.sub_view_key1_default : m_shpk.sub_view_key2_default, node->subview_keys[i]);
+        addSubviewKey(m_nodesSubViewLayout, i == 0 ? m_shpk.sub_view_key1_default : m_shpk.sub_view_key2_default, node->subview_keys[i]);
     }
-    nodesSubViewLayout->addStretch();
+    m_nodesSubViewLayout->addStretch();
 }
 
 void SHPKPart::loadPass(const QModelIndex &index)
 {
     if (index.data(Qt::DisplayRole).toString().contains(i18n("(No Pass)"))) {
-        vertexShaderButton->setEnabled(false);
-        pixelShaderButton->setEnabled(false);
+        m_vertexShaderButton->setEnabled(false);
+        m_pixelShaderButton->setEnabled(false);
 
         return;
     }
@@ -429,34 +429,34 @@ void SHPKPart::loadPass(const QModelIndex &index)
     const physis_SHPKNode *node = &m_shpk.nodes[nodeIndex];
     const Pass *pass = &node->passes[passIndex];
 
-    vertexShaderButton->setEnabled(true);
-    connect(vertexShaderButton, &QPushButton::clicked, this, [this, pass] {
+    m_vertexShaderButton->setEnabled(true);
+    connect(m_vertexShaderButton, &QPushButton::clicked, this, [this, pass] {
         goToVertexShader(pass->vertex_shader);
     });
 
-    pixelShaderButton->setEnabled(true);
-    connect(pixelShaderButton, &QPushButton::clicked, this, [this, pass] {
+    m_pixelShaderButton->setEnabled(true);
+    connect(m_pixelShaderButton, &QPushButton::clicked, this, [this, pass] {
         goToPixelShader(pass->pixel_shader);
     });
 }
 
 void SHPKPart::goToVertexShader(const int index)
 {
-    pageTabWidget->setCurrentIndex(0); // shaders tab
-    shadersListWidget->setCurrentRow(index);
-    Q_EMIT shadersListWidget->activated(shadersListWidget->currentIndex()); // manually activate
+    m_pageTabWidget->setCurrentIndex(0); // shaders tab
+    m_shadersListWidget->setCurrentRow(index);
+    Q_EMIT m_shadersListWidget->activated(m_shadersListWidget->currentIndex()); // manually activate
 }
 
 void SHPKPart::goToPixelShader(const int index)
 {
-    pageTabWidget->setCurrentIndex(0); // shaders tab
+    m_pageTabWidget->setCurrentIndex(0); // shaders tab
 
     // Since vertex and pixel shaders share the same list widget currently
     const int numVertexShaders = m_shpk.num_vertex_shaders;
     const int realIndex = numVertexShaders + index;
 
-    shadersListWidget->setCurrentRow(realIndex);
-    Q_EMIT shadersListWidget->activated(shadersListWidget->currentIndex()); // manually activate
+    m_shadersListWidget->setCurrentRow(realIndex);
+    Q_EMIT m_shadersListWidget->activated(m_shadersListWidget->currentIndex()); // manually activate
 }
 
 void SHPKPart::clearLayout(QLayout *layout)

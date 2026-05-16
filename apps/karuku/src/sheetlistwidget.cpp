@@ -11,7 +11,6 @@
 
 SheetListWidget::SheetListWidget(physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
-    , data(data)
 {
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
@@ -45,16 +44,16 @@ SheetListWidget::SheetListWidget(physis_SqPackResource *data, QWidget *parent)
 
     originalModel->setStringList(list);
 
-    listWidget = new QListView();
-    listWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of Excel sheet names. Select one to view it's contents."));
-    listWidget->setModel(searchModel);
-    listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
+    m_listWidget = new QListView();
+    m_listWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of Excel sheet names. Select one to view it's contents."));
+    m_listWidget->setModel(searchModel);
+    m_listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
 
-    connect(listWidget, &QListView::activated, [this, searchModel](const QModelIndex &index) {
+    connect(m_listWidget, &QListView::activated, [this, searchModel](const QModelIndex &index) {
         Q_EMIT sheetSelected(searchModel->mapToSource(index).data(Qt::DisplayRole).toString());
     });
 
-    layout->addWidget(listWidget);
+    layout->addWidget(m_listWidget);
 }
 
 void SheetListWidget::focusSearchField()
@@ -64,12 +63,12 @@ void SheetListWidget::focusSearchField()
 
 void SheetListWidget::goToSheet(const QString &name)
 {
-    const auto indices = listWidget->model()->match(listWidget->model()->index(0, 0), Qt::DisplayRole, name);
+    const auto indices = m_listWidget->model()->match(m_listWidget->model()->index(0, 0), Qt::DisplayRole, name);
     if (indices.isEmpty()) {
         return;
     }
-    listWidget->scrollTo(indices.constFirst(), QListView::ScrollHint::PositionAtCenter);
-    listWidget->selectionModel()->select(indices.constFirst(), QItemSelectionModel::ClearAndSelect);
+    m_listWidget->scrollTo(indices.constFirst(), QListView::ScrollHint::PositionAtCenter);
+    m_listWidget->selectionModel()->select(indices.constFirst(), QItemSelectionModel::ClearAndSelect);
 }
 
 #include "moc_sheetlistwidget.cpp"

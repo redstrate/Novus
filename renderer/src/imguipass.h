@@ -24,16 +24,16 @@ private:
     void createPipeline();
     void createFontImage();
 
-    VkDescriptorSetLayout setLayout_ = nullptr;
+    VkDescriptorSetLayout m_setLayout = nullptr;
 
-    VkPipelineLayout pipelineLayout_ = nullptr;
-    VkPipeline pipeline_ = nullptr;
+    VkPipelineLayout m_pipelineLayout = nullptr;
+    VkPipeline m_pipeline = nullptr;
 
-    Texture fontAtlas;
+    Texture m_fontAtlas;
 
-    Buffer vertexBuffer, indexBuffer;
+    Buffer m_vertexBuffer, m_indexBuffer;
 
-    std::map<VkImageView, VkDescriptorSet> descriptorSets_ = {};
+    std::map<VkImageView, VkDescriptorSet> m_descriptorSets = {};
 
-    RenderManager &renderer_;
+    RenderManager &m_renderer;
 };

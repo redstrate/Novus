@@ -42,7 +42,7 @@ SimpleRenderer::SimpleRenderer(Device &device)
 
 SimpleRenderer::~SimpleRenderer()
 {
-    for (const auto &[_, descriptor] : cachedDescriptors) {
+    for (const auto &[_, descriptor] : m_cachedDescriptors) {
         vkFreeDescriptorSets(m_device.device, m_device.descriptorPool, 1, &descriptor);
     }
 
@@ -157,16 +157,16 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             }
 
             const auto h = std::hash<std::string>{}(material.path);
-            if (!cachedDescriptors.contains(h)) {
+            if (!m_cachedDescriptors.contains(h)) {
                 if (const auto descriptor = createDescriptorFor(*model.sourceObject, material); descriptor != VK_NULL_HANDLE) {
-                    cachedDescriptors[h] = descriptor;
+                    m_cachedDescriptors[h] = descriptor;
                 } else {
                     qWarning() << "Failed to create descriptor?!";
                     continue;
                 }
             }
 
-            const auto descriptor = cachedDescriptors[h];
+            const auto descriptor = m_cachedDescriptors[h];
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &descriptor, 0, nullptr);
 
             VkDeviceSize offsets[] = {0};
@@ -750,8 +750,8 @@ void SimpleRenderer::freeResources()
 {
     m_device.waitForIdle();
 
-    for (const auto &[_, descriptor] : cachedDescriptors) {
+    for (const auto &[_, descriptor] : m_cachedDescriptors) {
         vkFreeDescriptorSets(m_device.device, m_device.descriptorPool, 1, &descriptor);
     }
-    cachedDescriptors.clear();
+    m_cachedDescriptors.clear();
 }

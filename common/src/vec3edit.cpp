@@ -8,40 +8,40 @@
 
 Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
     : EditWidget(parent)
-    , vec(vec)
+    , m_vec(vec)
 {
     auto itemsLayout = new QHBoxLayout(this);
 
-    spinBoxes.x = new QDoubleSpinBox();
-    spinBoxes.y = new QDoubleSpinBox();
-    spinBoxes.z = new QDoubleSpinBox();
+    m_spinBoxes.x = new QDoubleSpinBox();
+    m_spinBoxes.y = new QDoubleSpinBox();
+    m_spinBoxes.z = new QDoubleSpinBox();
 
-    spinBoxes.x->setMinimum(-10000.0);
-    spinBoxes.x->setMaximum(10000.0);
+    m_spinBoxes.x->setMinimum(-10000.0);
+    m_spinBoxes.x->setMaximum(10000.0);
 
-    spinBoxes.y->setMinimum(-10000.0);
-    spinBoxes.y->setMaximum(10000.0);
+    m_spinBoxes.y->setMinimum(-10000.0);
+    m_spinBoxes.y->setMaximum(10000.0);
 
-    spinBoxes.z->setMinimum(-10000.0);
-    spinBoxes.z->setMaximum(10000.0);
+    m_spinBoxes.z->setMinimum(-10000.0);
+    m_spinBoxes.z->setMaximum(10000.0);
 
-    itemsLayout->addWidget(spinBoxes.x);
-    itemsLayout->addWidget(spinBoxes.y);
-    itemsLayout->addWidget(spinBoxes.z);
+    itemsLayout->addWidget(m_spinBoxes.x);
+    itemsLayout->addWidget(m_spinBoxes.y);
+    itemsLayout->addWidget(m_spinBoxes.z);
 
-    spinBoxes.x->setValue(vec.x);
-    spinBoxes.y->setValue(vec.y);
-    spinBoxes.z->setValue(vec.z);
+    m_spinBoxes.x->setValue(vec.x);
+    m_spinBoxes.y->setValue(vec.y);
+    m_spinBoxes.z->setValue(vec.z);
 
-    connect(spinBoxes.x, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
+    connect(m_spinBoxes.x, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
         vec.x = d;
         Q_EMIT onValueChanged();
     });
-    connect(spinBoxes.y, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
+    connect(m_spinBoxes.y, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
         vec.y = d;
         Q_EMIT onValueChanged();
     });
-    connect(spinBoxes.z, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
+    connect(m_spinBoxes.z, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
         vec.z = d;
         Q_EMIT onValueChanged();
     });
@@ -49,17 +49,17 @@ Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
 
 void Vector3Edit::setVector(glm::vec3 &vec)
 {
-    this->vec = vec;
-    spinBoxes.x->setValue(vec.x);
-    spinBoxes.y->setValue(vec.y);
-    spinBoxes.z->setValue(vec.z);
+    this->m_vec = vec;
+    m_spinBoxes.x->setValue(vec.x);
+    m_spinBoxes.y->setValue(vec.y);
+    m_spinBoxes.z->setValue(vec.z);
 }
 
 void Vector3Edit::setReadOnly(const bool readOnly)
 {
-    spinBoxes.x->setReadOnly(readOnly);
-    spinBoxes.y->setReadOnly(readOnly);
-    spinBoxes.z->setReadOnly(readOnly);
+    m_spinBoxes.x->setReadOnly(readOnly);
+    m_spinBoxes.y->setReadOnly(readOnly);
+    m_spinBoxes.z->setReadOnly(readOnly);
 }
 
 #include "moc_vec3edit.cpp"

@@ -28,12 +28,11 @@ public Q_SLOTS:
 private:
     void setupActions();
 
-    SingleGearView *gearView = nullptr;
-    FullModelViewer *fullModelViewer = nullptr;
-    QTabWidget *materialsView = nullptr;
-    MetadataView *metadataView = nullptr;
+    SingleGearView *m_gearView = nullptr;
+    FullModelViewer *m_fullModelViewer = nullptr;
+    QTabWidget *m_materialsView = nullptr;
+    MetadataView *m_metadataView = nullptr;
 
-    physis_SqPackResource m_data;
-    FileCache cache;
+    FileCache m_cache;
     PenumbraApi *m_api = nullptr;
 };

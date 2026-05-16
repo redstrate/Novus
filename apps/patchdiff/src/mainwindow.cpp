@@ -22,7 +22,7 @@
 
 MainWindow::MainWindow(physis_SqPackResource data)
     : m_data(data)
-    , cache(data)
+    , m_cache(data)
 {
     setMinimumSize(720, 720);
 

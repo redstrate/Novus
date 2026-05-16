@@ -87,9 +87,9 @@ private:
 
     void createImageResources();
 
-    physis_SHPK directionalLightningShpk;
-    physis_SHPK createViewPositionShpk;
-    physis_SHPK backgroundShpk;
+    physis_SHPK m_directionalLightningShpk;
+    physis_SHPK m_createViewPositionShpk;
+    physis_SHPK m_backgroundShpk;
 
     // combined vertex + pixel code length
     std::unordered_map<uint32_t, CachedPipeline> m_cachedPipelines;

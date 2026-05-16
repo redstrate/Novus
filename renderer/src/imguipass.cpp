@@ -11,7 +11,7 @@
 #include "rendermanager.h"
 
 ImGuiPass::ImGuiPass(RenderManager &renderer)
-    : renderer_(renderer)
+    : m_renderer(renderer)
 {
     createDescriptorSetLayout();
     createPipeline();
@@ -20,15 +20,15 @@ ImGuiPass::ImGuiPass(RenderManager &renderer)
 
 ImGuiPass::~ImGuiPass()
 {
-    renderer_.device().destroyBuffer(indexBuffer);
-    renderer_.device().destroyBuffer(vertexBuffer);
+    m_renderer.device().destroyBuffer(m_indexBuffer);
+    m_renderer.device().destroyBuffer(m_vertexBuffer);
 
-    renderer_.device().destroyTexture(fontAtlas);
+    m_renderer.device().destroyTexture(m_fontAtlas);
 
-    vkDestroyPipeline(renderer_.device().device, pipeline_, nullptr);
-    vkDestroyPipelineLayout(renderer_.device().device, pipelineLayout_, nullptr);
+    vkDestroyPipeline(m_renderer.device().device, m_pipeline, nullptr);
+    vkDestroyPipelineLayout(m_renderer.device().device, m_pipelineLayout, nullptr);
 
-    vkDestroyDescriptorSetLayout(renderer_.device().device, setLayout_, nullptr);
+    vkDestroyDescriptorSetLayout(m_renderer.device().device, m_setLayout, nullptr);
 }
 
 void ImGuiPass::render(VkCommandBuffer commandBuffer)
@@ -39,26 +39,26 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
     }
 
     const size_t newVertexSize = drawData->TotalVtxCount * sizeof(ImDrawVert);
-    if (newVertexSize > vertexBuffer.size) {
-        renderer_.device().destroyBuffer(vertexBuffer);
-        vertexBuffer = renderer_.device().createBuffer(newVertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-        renderer_.device().nameBuffer(vertexBuffer, "ImGui Vertex Buffer");
+    if (newVertexSize > m_vertexBuffer.size) {
+        m_renderer.device().destroyBuffer(m_vertexBuffer);
+        m_vertexBuffer = m_renderer.device().createBuffer(newVertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        m_renderer.device().nameBuffer(m_vertexBuffer, "ImGui Vertex Buffer");
     }
 
     const size_t newIndexSize = drawData->TotalIdxCount * sizeof(ImDrawIdx);
-    if (newIndexSize > indexBuffer.size) {
-        renderer_.device().destroyBuffer(indexBuffer);
-        indexBuffer = renderer_.device().createBuffer(newIndexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-        renderer_.device().nameBuffer(indexBuffer, "ImGui Index Buffer");
+    if (newIndexSize > m_indexBuffer.size) {
+        m_renderer.device().destroyBuffer(m_indexBuffer);
+        m_indexBuffer = m_renderer.device().createBuffer(newIndexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+        m_renderer.device().nameBuffer(m_indexBuffer, "ImGui Index Buffer");
     }
 
-    if (vertexBuffer.size == 0 || indexBuffer.size == 0)
+    if (m_vertexBuffer.size == 0 || m_indexBuffer.size == 0)
         return;
 
     ImDrawVert *vertexData = nullptr;
     ImDrawIdx *indexData = nullptr;
-    vkMapMemory(renderer_.device().device, vertexBuffer.memory, 0, vertexBuffer.size, 0, reinterpret_cast<void **>(&vertexData));
-    vkMapMemory(renderer_.device().device, indexBuffer.memory, 0, indexBuffer.size, 0, reinterpret_cast<void **>(&indexData));
+    vkMapMemory(m_renderer.device().device, m_vertexBuffer.memory, 0, m_vertexBuffer.size, 0, reinterpret_cast<void **>(&vertexData));
+    vkMapMemory(m_renderer.device().device, m_indexBuffer.memory, 0, m_indexBuffer.size, 0, reinterpret_cast<void **>(&indexData));
 
     for (int i = 0; i < drawData->CmdListsCount; i++) {
         const ImDrawList *cmd_list = drawData->CmdLists[i];
@@ -70,14 +70,14 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
         indexData += cmd_list->IdxBuffer.Size;
     }
 
-    vkUnmapMemory(renderer_.device().device, vertexBuffer.memory);
-    vkUnmapMemory(renderer_.device().device, indexBuffer.memory);
+    vkUnmapMemory(m_renderer.device().device, m_vertexBuffer.memory);
+    vkUnmapMemory(m_renderer.device().device, m_indexBuffer.memory);
 
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
     VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer.buffer, &offset);
-    vkCmdBindIndexBuffer(commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer.buffer, &offset);
+    vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
     float scale[2];
     scale[0] = 2.0f / drawData->DisplaySize.x;
@@ -87,8 +87,8 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
     translate[0] = -1.0f - drawData->DisplayPos.x * scale[0];
     translate[1] = -1.0f - drawData->DisplayPos.y * scale[1];
 
-    vkCmdPushConstants(commandBuffer, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
-    vkCmdPushConstants(commandBuffer, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
+    vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
+    vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
 
     int vertexOffset = 0, indexOffset = 0;
     const ImVec2 displayPos = drawData->DisplayPos;
@@ -97,29 +97,29 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
             const ImDrawCmd *pcmd = &cmd_list->CmdBuffer[cmd_i];
 
-            if (descriptorSets_.count((VkImageView)pcmd->TextureId)) {
+            if (m_descriptorSets.count((VkImageView)pcmd->TextureId)) {
                 vkCmdBindDescriptorSets(commandBuffer,
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        pipelineLayout_,
+                                        m_pipelineLayout,
                                         0,
                                         1,
-                                        &descriptorSets_[(VkImageView)pcmd->TextureId],
+                                        &m_descriptorSets[(VkImageView)pcmd->TextureId],
                                         0,
                                         nullptr);
             } else {
                 VkDescriptorSetAllocateInfo allocInfo = {};
                 allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                allocInfo.descriptorPool = renderer_.device().descriptorPool;
+                allocInfo.descriptorPool = m_renderer.device().descriptorPool;
                 allocInfo.descriptorSetCount = 1;
-                allocInfo.pSetLayouts = &setLayout_;
+                allocInfo.pSetLayouts = &m_setLayout;
 
                 VkDescriptorSet set = nullptr;
-                vkAllocateDescriptorSets(renderer_.device().device, &allocInfo, &set);
+                vkAllocateDescriptorSets(m_renderer.device().device, &allocInfo, &set);
 
                 VkDescriptorImageInfo imageInfo = {};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 imageInfo.imageView = static_cast<VkImageView>(pcmd->TextureId);
-                imageInfo.sampler = renderer_.defaultSampler();
+                imageInfo.sampler = m_renderer.defaultSampler();
 
                 VkWriteDescriptorSet descriptorWrite = {};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -128,11 +128,11 @@ void ImGuiPass::render(VkCommandBuffer commandBuffer)
                 descriptorWrite.dstSet = set;
                 descriptorWrite.pImageInfo = &imageInfo;
 
-                vkUpdateDescriptorSets(renderer_.device().device, 1, &descriptorWrite, 0, nullptr);
+                vkUpdateDescriptorSets(m_renderer.device().device, 1, &descriptorWrite, 0, nullptr);
 
-                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout_, 0, 1, &set, 0, nullptr);
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &set, 0, nullptr);
 
-                descriptorSets_[static_cast<VkImageView>(pcmd->TextureId)] = set;
+                m_descriptorSets[static_cast<VkImageView>(pcmd->TextureId)] = set;
             }
 
             if (pcmd->UserCallback) {
@@ -168,13 +168,13 @@ void ImGuiPass::createDescriptorSetLayout()
     createInfo.bindingCount = 1;
     createInfo.pBindings = &samplerBinding;
 
-    vkCreateDescriptorSetLayout(renderer_.device().device, &createInfo, nullptr, &setLayout_);
+    vkCreateDescriptorSetLayout(m_renderer.device().device, &createInfo, nullptr, &m_setLayout);
 }
 
 void ImGuiPass::createPipeline()
 {
-    VkShaderModule vertShaderModule = renderer_.device().loadShaderFromDisk(":/shaders/imgui.vert.spv");
-    VkShaderModule fragShaderModule = renderer_.device().loadShaderFromDisk(":/shaders/imgui.frag.spv");
+    VkShaderModule vertShaderModule = m_renderer.device().loadShaderFromDisk(":/shaders/imgui.vert.spv");
+    VkShaderModule fragShaderModule = m_renderer.device().loadShaderFromDisk(":/shaders/imgui.frag.spv");
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -266,11 +266,11 @@ void ImGuiPass::createPipeline()
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &setLayout_;
+    pipelineLayoutInfo.pSetLayouts = &m_setLayout;
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
-    vkCreatePipelineLayout(renderer_.device().device, &pipelineLayoutInfo, nullptr, &pipelineLayout_);
+    vkCreatePipelineLayout(m_renderer.device().device, &pipelineLayoutInfo, nullptr, &m_pipelineLayout);
 
     VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo = {};
     depthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -286,14 +286,14 @@ void ImGuiPass::createPipeline()
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = pipelineLayout_;
+    pipelineInfo.layout = m_pipelineLayout;
     pipelineInfo.pDepthStencilState = &depthStencilStateCreateInfo;
-    pipelineInfo.renderPass = renderer_.presentationRenderPass();
+    pipelineInfo.renderPass = m_renderer.presentationRenderPass();
 
-    vkCreateGraphicsPipelines(renderer_.device().device, nullptr, 1, &pipelineInfo, nullptr, &pipeline_);
+    vkCreateGraphicsPipelines(m_renderer.device().device, nullptr, 1, &pipelineInfo, nullptr, &m_pipeline);
 
-    vkDestroyShaderModule(renderer_.device().device, fragShaderModule, nullptr);
-    vkDestroyShaderModule(renderer_.device().device, vertShaderModule, nullptr);
+    vkDestroyShaderModule(m_renderer.device().device, fragShaderModule, nullptr);
+    vkDestroyShaderModule(m_renderer.device().device, vertShaderModule, nullptr);
 }
 
 void ImGuiPass::createFontImage()
@@ -315,8 +315,8 @@ void ImGuiPass::createFontImage()
     texture.data_size = width * height * 4;
     texture.mip_levels = 1;
 
-    fontAtlas = renderer_.addGameTexture(texture);
-    renderer_.device().nameTexture(fontAtlas, "ImGui Font Atlas");
+    m_fontAtlas = m_renderer.addGameTexture(texture);
+    m_renderer.device().nameTexture(m_fontAtlas, "ImGui Font Atlas");
 
-    io.Fonts->SetTexID(static_cast<ImTextureID>(fontAtlas.imageView));
+    io.Fonts->SetTexID(static_cast<ImTextureID>(m_fontAtlas.imageView));
 }

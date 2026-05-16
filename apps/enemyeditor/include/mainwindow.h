@@ -21,9 +21,8 @@ public:
 private:
     void setupActions();
 
-    physis_SqPackResource m_data;
-    MDLPart *part = nullptr;
-    FileCache cache;
+    MDLPart *m_part = nullptr;
+    FileCache m_cache;
     QFormLayout *m_detailsLayout = nullptr;
     QTableView *m_tableView;
 };

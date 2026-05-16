@@ -72,11 +72,11 @@ EnemyModel::EnemyModel(FileCache &cache)
     m_part->setMinimumSize(128 / m_part->devicePixelRatio(), 128 / m_part->devicePixelRatio());
     m_part->show();
 
-    auto bnpcBaseExhFile = cache.lookupFile(QStringLiteral("exd/BNpcBase.exh"));
-    auto bnpcBaseExh = physis_exh_parse(cache.platform(), bnpcBaseExhFile);
+    auto bnpcBaseExhFile = m_cache.lookupFile(QStringLiteral("exd/BNpcBase.exh"));
+    auto bnpcBaseExh = physis_exh_parse(m_cache.platform(), bnpcBaseExhFile);
 
-    auto modelCharaExhFile = cache.lookupFile(QStringLiteral("exd/ModelChara.exh"));
-    auto modelCharaExh = physis_exh_parse(cache.platform(), modelCharaExhFile);
+    auto modelCharaExhFile = m_cache.lookupFile(QStringLiteral("exd/ModelChara.exh"));
+    auto modelCharaExh = physis_exh_parse(m_cache.platform(), modelCharaExhFile);
 
     auto bnpcBaseSheet = m_cache.readExcelSheet(QStringLiteral("BNpcBase"), &bnpcBaseExh, Language::None);
     auto modelCharaSheet = m_cache.readExcelSheet(QStringLiteral("ModelChara"), &modelCharaExh, Language::None);

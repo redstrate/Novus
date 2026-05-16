@@ -20,7 +20,7 @@ public:
     void resetValue();
 
 private:
-    QCheckBox *checkBox = nullptr;
+    QCheckBox *m_checkBox = nullptr;
 
-    bool *value = nullptr;
+    bool *m_value = nullptr;
 };

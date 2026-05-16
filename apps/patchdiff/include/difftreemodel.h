@@ -58,6 +58,6 @@ private:
     physis_SqPackResource *gameData = nullptr;
     TreeInformation *rootItem = nullptr;
     HashDatabase &m_database;
-    QHash<uint32_t, TreeInformation *> knownDirHashes;
-    QHash<uint32_t, TreeInformation *> knownIndexHashes;
+    QHash<uint32_t, TreeInformation *> m_knownDirHashes;
+    QHash<uint32_t, TreeInformation *> m_knownIndexHashes;
 };

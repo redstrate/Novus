@@ -29,10 +29,10 @@ public:
     [[nodiscard]] physis_SqPackResource &resource();
 
 private:
-    QMap<QString, physis_Buffer> cachedBuffers;
-    QHash<QString, bool> cachedExist;
-    physis_SqPackResource data;
-    QMutex bufferMutex, existMutex;
+    QMap<QString, physis_Buffer> m_cachedBuffers;
+    QHash<QString, bool> m_cachedExist;
+    physis_SqPackResource m_data;
+    QMutex m_bufferMutex, m_existMutex;
     QMap<QString, QString> m_modFileOverrides;
     physis_CustomResource m_customResource;
 };
