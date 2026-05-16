@@ -45,7 +45,8 @@ GearListModel::GearListModel(FileCache &cache, QObject *parent)
                 memcpy(parts, &primaryModel, sizeof(int16_t) * 4);
 
                 const auto slot = physis_slot_from_id(row.columns[17].u_int8._0);
-                if (slot == EquipSlotCategory::Invalid || slot == EquipSlotCategory::Invalid2) {
+                if (slot == EquipSlotCategory::Invalid || slot == EquipSlotCategory::Invalid2 || slot == EquipSlotCategory::SoulCrystal
+                    || slot == EquipSlotCategory::Waist) {
                     continue;
                 }
 
@@ -67,7 +68,8 @@ GearListModel::GearListModel(FileCache &cache, QObject *parent)
 
     int i = 0;
     for (auto slot : magic_enum::enum_values<EquipSlotCategory>()) {
-        if (slot == EquipSlotCategory::Invalid || slot == EquipSlotCategory::Waist || slot == EquipSlotCategory::Invalid2) {
+        if (slot == EquipSlotCategory::Invalid || slot == EquipSlotCategory::Waist || slot == EquipSlotCategory::Invalid2
+            || slot == EquipSlotCategory::SoulCrystal) {
             continue;
         }
 
