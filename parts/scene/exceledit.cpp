@@ -31,7 +31,7 @@ ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t
     m_lineEdit->setReadOnly(true);
     layout->addWidget(m_lineEdit);
 
-    auto resolver = new CachingExcelResolver(&state->cache().resource());
+    auto resolver = new CachingExcelResolver(state->cache());
 
     m_models.reserve(excelSheets.size());
     m_sheets.reserve(excelSheets.size());

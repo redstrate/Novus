@@ -8,6 +8,7 @@
 
 #include "physis.hpp"
 
+class FileCache;
 class Schema;
 
 /**
@@ -83,7 +84,7 @@ inline size_t qHash(const EXDSelector &selector, const size_t seed)
 class CachingExcelResolver : public AbstractExcelResolver
 {
 public:
-    explicit CachingExcelResolver(physis_SqPackResource *resource);
+    explicit CachingExcelResolver(FileCache &cache);
     ~CachingExcelResolver() override;
 
     std::optional<std::pair<QString, ScopedExelRow>> resolveRow(const QStringList &sheetNames, uint32_t row, Language preferredLanguage) override;
@@ -108,7 +109,7 @@ private:
 
     static Language getSuitableLanguage(const physis_EXH &pExh, Language preferredLanguage);
 
-    physis_SqPackResource *m_resource = nullptr;
+    FileCache &m_cache;
     QHash<QString, physis_EXH> m_cachedEXHs;
     QHash<EXDSelector, physis_ExcelSheet> m_cachedSheets;
 };

@@ -109,9 +109,9 @@ Q_SIGNALS:
     void requestJump(const QString &name, const QString &rowQuery);
 };
 
-EXDPart::EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent)
+EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *parent)
     : QWidget(parent)
-    , data(data)
+    , m_cache(cache)
     , m_preferredLanguage(getLanguage())
     , m_resolver(resolver)
 {
@@ -218,7 +218,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
     m_name = name;
 
     physis_exh_free(&exh); // Free existing
-    exh = physis_exh_parse(data->platform, buffer);
+    exh = physis_exh_parse(m_cache.platform(), buffer);
 
     loadTables();
 
@@ -376,7 +376,7 @@ void EXDPart::loadTables()
     clear();
 
     physis_sqpack_free_excel_sheet(&sheet); // Free existing
-    sheet = physis_sqpack_read_excel_sheet(data, m_name.toStdString().c_str(), &exh, getSuitableLanguage(exh));
+    sheet = m_cache.readExcelSheet(m_name, &exh, getSuitableLanguage(exh));
 
     for (uint32_t i = 0; i < sheet.page_count; i++) {
         auto tableWidget = new ExcelTableView();

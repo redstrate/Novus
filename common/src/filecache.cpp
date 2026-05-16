@@ -17,6 +17,18 @@ using namespace Qt::StringLiterals;
 FileCache::FileCache(physis_SqPackResource &data)
     : data(data)
 {
+    // Custom resource used for reading and parsing Excel files and other nonsense
+    m_customResource = physis_custom_initialize(
+        this,
+        [](void *userData, const char *path) -> physis_Buffer {
+            const auto cache = static_cast<FileCache *>(userData);
+            return cache->lookupFile(QString::fromUtf8(path));
+        },
+        [](void *userData, const char *path) -> bool {
+            const auto cache = static_cast<FileCache *>(userData);
+            return cache->fileExists(QString::fromUtf8(path));
+        });
+
     // TODO: move this into a generic parser
     if (gameModsEnabled()) {
         const auto mods = getGameMods();
@@ -48,9 +60,11 @@ physis_Buffer &FileCache::lookupFile(const QString &path)
 {
     QMutexLocker locker(&bufferMutex);
 
-    if (!cachedBuffers.contains(path)) {
-        if (m_modFileOverrides.contains(path)) {
-            QFile file(m_modFileOverrides[path]);
+    const QString normalizedPath = path.toLower();
+
+    if (!cachedBuffers.contains(normalizedPath)) {
+        if (m_modFileOverrides.contains(normalizedPath)) {
+            QFile file(m_modFileOverrides[normalizedPath]);
             if (file.open(QIODevice::ReadOnly)) {
                 const auto data = file.readAll();
 
@@ -60,17 +74,23 @@ physis_Buffer &FileCache::lookupFile(const QString &path)
                 buffer.data = new uint8_t[data.size()];
                 std::memcpy(buffer.data, data.data(), data.size());
 
-                cachedBuffers[path] = buffer;
-                return cachedBuffers[path];
+                cachedBuffers[normalizedPath] = buffer;
+                return cachedBuffers[normalizedPath];
             }
-            qWarning() << "Failed to read supposed mod file" << m_modFileOverrides[path] << "and will fall back to game data";
+            qWarning() << "Failed to read supposed mod file" << m_modFileOverrides[normalizedPath] << "and will fall back to game data";
         }
 
-        const std::string pathstd = path.toStdString();
-        cachedBuffers[path] = physis_sqpack_read(&data, pathstd.c_str());
+        const std::string pathstd = normalizedPath.toStdString();
+        cachedBuffers[normalizedPath] = physis_sqpack_read(&data, pathstd.c_str());
     }
 
-    return cachedBuffers[path];
+    return cachedBuffers[normalizedPath];
+}
+
+physis_ExcelSheet FileCache::readExcelSheet(const QString &name, const physis_EXH *exh, const Language language)
+{
+    // Pass through our custom file loading mechanism
+    return physis_custom_read_excel_sheet(&m_customResource, name.toStdString().c_str(), exh, language);
 }
 
 Platform FileCache::platform() const

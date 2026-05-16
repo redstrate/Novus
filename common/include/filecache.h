@@ -21,6 +21,7 @@ public:
 
     bool fileExists(const QString &path);
     physis_Buffer &lookupFile(const QString &path);
+    physis_ExcelSheet readExcelSheet(const QString &name, const physis_EXH *exh, Language language);
 
     Platform platform() const;
 
@@ -33,4 +34,5 @@ private:
     physis_SqPackResource &data;
     QMutex bufferMutex, existMutex;
     QMap<QString, QString> m_modFileOverrides;
+    physis_CustomResource m_customResource;
 };

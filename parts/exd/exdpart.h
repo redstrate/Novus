@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "filecache.h"
+
 #include <QComboBox>
 #include <QFormLayout>
 #include <QJsonArray>
@@ -19,7 +21,7 @@ class EXDPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit EXDPart(physis_SqPackResource *data, AbstractExcelResolver *resolver, QWidget *parent = nullptr);
+    explicit EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *parent = nullptr);
     ~EXDPart() override;
 
     void loadSheet(const QString &name, physis_Buffer buffer);
@@ -56,7 +58,7 @@ private:
     void filterData(const QString &pattern);
     void setSearchSettings(SearchSettings newSettings);
 
-    physis_SqPackResource *data = nullptr;
+    FileCache &m_cache;
 
     QTabWidget *pageTabWidget = nullptr;
     QFormLayout *headerFormLayout = nullptr;

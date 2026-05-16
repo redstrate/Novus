@@ -3,6 +3,7 @@
 
 #include "excelresolver.h"
 
+#include "filecache.h"
 #include "magic_enum.hpp"
 #include "schema.h"
 #include "settings.h"
@@ -42,8 +43,8 @@ physis_Field *AbstractExcelResolver::translateSchemaColumn(const QString &sheetN
     return nullptr;
 }
 
-CachingExcelResolver::CachingExcelResolver(physis_SqPackResource *resource)
-    : m_resource(resource)
+CachingExcelResolver::CachingExcelResolver(FileCache &cache)
+    : m_cache(cache)
 {
 }
 
@@ -107,10 +108,9 @@ physis_EXH &CachingExcelResolver::getCachedEXH(const QString &sheetName)
 {
     if (!m_cachedEXHs.contains(sheetName)) {
         const auto path = QStringLiteral("exd/%1.exh").arg(sheetName.toLower());
-        const auto pathStd = path.toStdString();
 
-        const auto file = physis_sqpack_read(m_resource, pathStd.c_str());
-        const auto exh = physis_exh_parse(m_resource->platform, file);
+        const auto file = m_cache.lookupFile(path);
+        const auto exh = physis_exh_parse(m_cache.platform(), file);
         m_cachedEXHs.insert(sheetName, exh);
         physis_free_file(&file);
     }
@@ -122,7 +122,7 @@ physis_ExcelSheet &CachingExcelResolver::getCachedSheet(const physis_EXH &exh, c
 {
     if (!m_cachedSheets.contains(selector)) {
         const auto language = getSuitableLanguage(exh, selector.preferredLanguage);
-        const auto exd = physis_sqpack_read_excel_sheet(m_resource, selector.name.toStdString().c_str(), &exh, language);
+        const auto exd = m_cache.readExcelSheet(selector.name, &exh, language);
         if (exd.p_ptr) {
             m_cachedSheets.insert(selector, exd);
         } else {

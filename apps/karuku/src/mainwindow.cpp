@@ -31,6 +31,7 @@
 
 MainWindow::MainWindow(physis_SqPackResource data)
     : m_data(data)
+    , m_cache(m_data)
 {
     setMinimumSize(1280, 720);
 
@@ -44,9 +45,9 @@ MainWindow::MainWindow(physis_SqPackResource data)
     m_sheetListWidget->setMaximumWidth(200);
     dummyWidget->addWidget(m_sheetListWidget);
 
-    m_excelResolver = std::make_unique<CachingExcelResolver>(&m_data);
+    m_excelResolver = std::make_unique<CachingExcelResolver>(m_cache);
 
-    m_exdPart = new EXDPart(&m_data, m_excelResolver.get());
+    m_exdPart = new EXDPart(m_cache, m_excelResolver.get());
     m_exdPart->setWhatsThis(i18nc("@info:whatsthis", "Contents of an Excel sheet. If it's made up of multiple pages, select the page from the tabs below."));
     connect(m_exdPart, &EXDPart::requestJump, this, &MainWindow::jumpToSheetAndRow);
     connect(m_exdPart, &EXDPart::modified, this, &MainWindow::updateDocumentActions);

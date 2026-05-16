@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "filecache.h"
+
 #include <KXmlGuiWindow>
 #include <QActionGroup>
 #include <QNetworkAccessManager>
@@ -30,6 +32,7 @@ private:
     void updateDocumentActions();
 
     physis_SqPackResource m_data;
+    FileCache m_cache;
     QNetworkAccessManager *mgr = nullptr;
     EXDPart *m_exdPart = nullptr;
     std::unique_ptr<CachingExcelResolver> m_excelResolver;

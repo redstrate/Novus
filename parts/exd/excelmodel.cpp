@@ -176,7 +176,7 @@ bool ExcelModel::setData(const QModelIndex &index, const QVariant &value, int ro
         case physis_Field::Tag::String: {
             QString qStringData = value.toString();
             std::string stdStringData = qStringData.toStdString();
-            char *cStringData = reinterpret_cast<char *>(malloc(stdStringData.length()));
+            char *cStringData = reinterpret_cast<char *>(malloc(stdStringData.length() + 1));
             strcpy(cStringData, stdStringData.data());
             newData.string._0 = cStringData;
         } break;
