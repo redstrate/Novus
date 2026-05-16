@@ -1,7 +1,7 @@
 version = 1
 SPDX-PackageName = "Novus"
 SPDX-PackageSupplier = "Joshua Goins <josh@redstrate.com>"
-SPDX-PackageDownloadLocation = "https://git.sr.ht/~redstrate/novus"
+SPDX-PackageDownloadLocation = "https://github.com/redstrate/Novus"
 
 [[annotations]]
 path = ["apps/armoury/geareditor.rc", "apps/karuku/exceleditor.rc", "apps/sagasu/dataexplorer.rc", "apps/mapeditor/mapeditor.rc", "apps/enemyeditor/enemyeditor.rc", "apps/patchdiff/patchdiff.rc"]
