@@ -40,13 +40,13 @@ MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
     auto originalModel = new QStandardItemModel(this);
     m_searchModel->setSourceModel(originalModel);
 
-    auto nameExhFile = m_cache.lookupFile(QStringLiteral("exd/PlaceName.exh"));
+    auto nameExhFile = m_cache.read(QStringLiteral("exd/PlaceName.exh"));
     if (nameExhFile.size == 0) {
         qWarning() << "Could not load PlaceName Excel header!";
     }
     auto nameExh = physis_exh_parse(m_cache.platform(), nameExhFile);
 
-    auto territoryExhFile = m_cache.lookupFile(QStringLiteral("exd/TerritoryType.exh"));
+    auto territoryExhFile = m_cache.read(QStringLiteral("exd/TerritoryType.exh"));
     auto territoryExh = physis_exh_parse(m_cache.platform(), territoryExhFile);
 
     auto nameSheet = m_cache.readExcelSheet(QStringLiteral("PlaceName"), &nameExh, getLanguage());

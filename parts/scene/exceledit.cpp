@@ -36,7 +36,7 @@ ExcelEdit::ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t
     m_models.reserve(excelSheets.size());
     m_sheets.reserve(excelSheets.size());
     for (const auto &sheetName : excelSheets) {
-        const auto exhFile = state->cache().lookupFile(QStringLiteral("exd/%1.exh").arg(sheetName.toLower()));
+        const auto exhFile = state->cache().read(QStringLiteral("exd/%1.exh").arg(sheetName.toLower()));
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/" << sheetName << ".exh";
         } else {

@@ -91,7 +91,7 @@ void MainWindow::jumpToSheet(const QString &name)
 
     auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
 
-    auto file = m_cache.lookupFile(path);
+    auto file = m_cache.read(path);
     m_exdPart->loadSheet(name, file);
     m_sheetListWidget->goToSheet(name);
 

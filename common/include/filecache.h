@@ -19,8 +19,8 @@ public:
     explicit FileCache(physis_SqPackResource data);
     ~FileCache();
 
-    [[nodiscard]] bool fileExists(const QString &path);
-    [[nodiscard]] physis_Buffer &lookupFile(const QString &path);
+    [[nodiscard]] bool exists(const QString &path);
+    [[nodiscard]] physis_Buffer &read(const QString &path);
     [[nodiscard]] physis_ExcelSheet readExcelSheet(const QString &name, const physis_EXH *exh, Language language);
 
     [[nodiscard]] Platform platform() const;

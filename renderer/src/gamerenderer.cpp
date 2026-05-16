@@ -75,16 +75,14 @@ GameRenderer::GameRenderer(Device &device, FileCache &cache)
     m_device.copyToBuffer(m_planeVertexBuffer, (void *)planeVertices.data(), vertexSize);
 
     // TODO: they switched from 3D images from ARR to 2D arrays here, not yet supported
-    m_tileNormal =
-        m_device.addGameTexture(physis_texture_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("chara/common/texture/tile_norm_array.tex"))));
+    m_tileNormal = m_device.addGameTexture(physis_texture_parse(m_cache.platform(), m_cache.read(QStringLiteral("chara/common/texture/tile_norm_array.tex"))));
     m_device.nameTexture(m_tileNormal, "chara/common/texture/tile_norm_array.tex");
-    m_tileOrb =
-        m_device.addGameTexture(physis_texture_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("chara/common/texture/tile_orb_array.tex"))));
+    m_tileOrb = m_device.addGameTexture(physis_texture_parse(m_cache.platform(), m_cache.read(QStringLiteral("chara/common/texture/tile_orb_array.tex"))));
     m_device.nameTexture(m_tileOrb, "chara/common/texture/tile_orb_array.tex");
 
-    m_directionalLightningShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/directionallighting.shpk")));
-    m_createViewPositionShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/createviewposition.shpk")));
-    m_backgroundShpk = physis_shpk_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("shader/sm5/shpk/bg.shpk")));
+    m_directionalLightningShpk = physis_shpk_parse(m_cache.platform(), m_cache.read(QStringLiteral("shader/sm5/shpk/directionallighting.shpk")));
+    m_createViewPositionShpk = physis_shpk_parse(m_cache.platform(), m_cache.read(QStringLiteral("shader/sm5/shpk/createviewposition.shpk")));
+    m_backgroundShpk = physis_shpk_parse(m_cache.platform(), m_cache.read(QStringLiteral("shader/sm5/shpk/bg.shpk")));
 
     // camera data
     {

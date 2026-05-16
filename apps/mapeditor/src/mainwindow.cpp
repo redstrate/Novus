@@ -166,7 +166,7 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
     m_lgbEventRange = 0;
 
     const QString lvbPath = QStringLiteral("bg/%1.lvb").arg(basePath);
-    auto lvbFile = m_cache.lookupFile(lvbPath);
+    auto lvbFile = m_cache.read(lvbPath);
     if (lvbFile.size > 0) {
         m_part->loadLvb(lvbFile);
 
@@ -196,14 +196,14 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
     if (contentFinderCondition != 0) {
         qInfo() << "This map contains a duty! CF:" << contentFinderCondition;
 
-        auto cfcExh = physis_exh_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("exd/ContentFinderCondition.exh")));
+        auto cfcExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/ContentFinderCondition.exh")));
         if (cfcExh.p_ptr) {
             auto cfcSheet = m_cache.readExcelSheet(QStringLiteral("ContentFinderCondition"), &cfcExh, getLanguage());
 
             auto cfcRow = physis_excel_get_row(&cfcSheet, contentFinderCondition);
             auto instanceContentId = cfcRow.columns[3].u_int16._0;
 
-            auto instanceContentExh = physis_exh_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("exd/InstanceContent.exh")));
+            auto instanceContentExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/InstanceContent.exh")));
             auto instanceContentSheet = m_cache.readExcelSheet(QStringLiteral("InstanceContent"), &instanceContentExh, Language::None);
 
             auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
@@ -212,7 +212,7 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
 
             auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
 
-            auto mapEffectExh = physis_exh_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("exd/ContentDirectorManagedSG.exh")));
+            auto mapEffectExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/ContentDirectorManagedSG.exh")));
             auto mapEffectSheet = m_cache.readExcelSheet(QStringLiteral("ContentDirectorManagedSG"), &mapEffectExh, Language::None);
 
             auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);

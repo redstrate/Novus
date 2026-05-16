@@ -31,7 +31,7 @@ GearListModel::GearListModel(FileCache &cache, QObject *parent)
         m_gears.push_back(info);
     }
 
-    m_exh = physis_exh_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("exd/item.exh")));
+    m_exh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/item.exh")));
     m_sheet = m_cache.readExcelSheet(QStringLiteral("Item"), &m_exh, getLanguage());
 
     for (unsigned int i = 0; i < m_sheet.page_count; i++) {
@@ -167,7 +167,7 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
             const QString iconFolder = QStringLiteral("ui/icon/%1").arg(iconBaseNum, 6, QLatin1Char('0'));
             const QString iconFile = QStringLiteral("%1.tex").arg(iconName, 6, QLatin1Char('0'));
 
-            auto texFile = m_cache.lookupFile(QStringLiteral("%1/%2").arg(iconFolder, iconFile));
+            auto texFile = m_cache.read(QStringLiteral("%1/%2").arg(iconFolder, iconFile));
             if (texFile.data != nullptr) {
                 auto tex = physis_texture_parse(m_cache.platform(), texFile);
                 if (tex.p_ptr != nullptr) {

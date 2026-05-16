@@ -200,7 +200,7 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
                                                                   sanitizeMdlPath(m_gearView->getLoadedGearPath()),
                                                                   i18n("MDL File (*.mdl)"));
 
-            auto buffer = m_cache.lookupFile(m_gearView->getLoadedGearPath());
+            auto buffer = m_cache.read(m_gearView->getLoadedGearPath());
 
             QFile file(fileName);
             if (file.open(QIODevice::WriteOnly)) {

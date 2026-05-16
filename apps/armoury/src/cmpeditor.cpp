@@ -12,7 +12,7 @@ CmpEditor::CmpEditor(FileCache &cache, QWidget *parent)
 {
     setWindowTitle(i18nc("@title:window CMP is an abbreviation", "CMP Editor"));
 
-    load(cache.platform(), cache.lookupFile(QStringLiteral("chara/xls/charamake/human.cmp")));
+    load(cache.platform(), cache.read(QStringLiteral("chara/xls/charamake/human.cmp")));
 }
 
 #include "moc_cmpeditor.cpp"

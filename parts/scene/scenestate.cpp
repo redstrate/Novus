@@ -21,7 +21,7 @@ SceneState::SceneState(FileCache &cache, QObject *parent)
 {
     // ENPC
     {
-        const auto exhFile = m_cache.lookupFile(QStringLiteral("exd/enpcresident.exh"));
+        const auto exhFile = m_cache.read(QStringLiteral("exd/enpcresident.exh"));
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/epncresident.exh";
         } else {
@@ -37,7 +37,7 @@ SceneState::SceneState(FileCache &cache, QObject *parent)
 
     // EOBJ
     {
-        const auto exhFile = m_cache.lookupFile(QStringLiteral("exd/eobjname.exh"));
+        const auto exhFile = m_cache.read(QStringLiteral("exd/eobjname.exh"));
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/eobjname.exh";
         } else {
@@ -53,7 +53,7 @@ SceneState::SceneState(FileCache &cache, QObject *parent)
 
     // BNPC
     {
-        const auto exhFile = m_cache.lookupFile(QStringLiteral("exd/bnpcname.exh"));
+        const auto exhFile = m_cache.read(QStringLiteral("exd/bnpcname.exh"));
         if (exhFile.size == 0) {
             qWarning() << "Failed to read exd/bnpcname.exh";
         } else {
@@ -93,13 +93,13 @@ void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
     QString bgPath = QStringLiteral("%1/bgplate/").arg(section.general.bg_path);
 
     terrainPath = bgPath + QStringLiteral("terrain.tera");
-    auto tera_buffer = cache.lookupFile(terrainPath);
+    auto tera_buffer = cache.read(terrainPath);
     if (tera_buffer.size > 0) {
         terrain = physis_terrain_parse(cache.platform(), tera_buffer);
     }
 
     const auto loadLgb = [this, &cache](const char *path) {
-        const auto bg_buffer = cache.lookupFile(QString::fromStdString(path));
+        const auto bg_buffer = cache.read(QString::fromStdString(path));
         if (bg_buffer.size > 0) {
             const auto lgb = physis_lgb_parse(cache.platform(), bg_buffer);
             if (lgb.num_chunks > 0) {
@@ -466,7 +466,7 @@ bool ObjectScene::isSgb() const
 
 void ObjectScene::processSharedGroup(FileCache &cache, uint32_t instanceId, uint32_t layerId, const Transformation &transformation, const char *path)
 {
-    const auto sgbFile = cache.lookupFile(QString::fromStdString(path));
+    const auto sgbFile = cache.read(QString::fromStdString(path));
     if (sgbFile.size == 0) {
         // NOTE: this silently fails for now because korean festival SGBs triggers this way too easily
         return;

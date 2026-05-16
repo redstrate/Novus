@@ -54,7 +54,7 @@ FullModelViewer::FullModelViewer(FileCache &cache, QWidget *parent)
         updateHeightScaling((float)charDat.customize.height / 100.0f);
     });
 
-    m_cmp = physis_cmp_parse(m_cache.platform(), m_cache.lookupFile(QStringLiteral("chara/xls/charamake/human.cmp")));
+    m_cmp = physis_cmp_parse(m_cache.platform(), m_cache.read(QStringLiteral("chara/xls/charamake/human.cmp")));
 
     m_gearView = new GearView(m_cache);
 

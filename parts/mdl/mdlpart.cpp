@@ -27,7 +27,7 @@ MDLPart::MDLPart(FileCache &cache, QWidget *parent)
     viewportLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(viewportLayout);
 
-    auto pbdFile = m_cache.lookupFile(QStringLiteral("chara/xls/bonedeformer/human.pbd"));
+    auto pbdFile = m_cache.read(QStringLiteral("chara/xls/bonedeformer/human.pbd"));
     if (pbdFile.size == 0) {
         qWarning() << "Failed to read chara/xls/bonedeformer/human.pbd";
     } else {
@@ -270,7 +270,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
         QString shpkPath = QStringLiteral("shader/sm5/shpk/%1").arg(QString::fromStdString(material.shpk_name));
         auto h = std::hash<std::string>{}(shpkPath.toStdString());
         if (!m_shaderPackageCache.contains(h)) {
-            auto shpkData = m_cache.lookupFile(shpkPath);
+            auto shpkData = m_cache.read(shpkPath);
             if (shpkData.data != nullptr) {
                 m_shaderPackageCache[h] = physis_shpk_parse(m_cache.platform(), shpkData);
             }
@@ -460,7 +460,7 @@ void MDLPart::destroyMaterial(RenderMaterial &material)
 
 Texture MDLPart::createTexture(const std::string &path)
 {
-    auto texture = physis_texture_parse(m_cache.platform(), m_cache.lookupFile(QLatin1String(path)));
+    auto texture = physis_texture_parse(m_cache.platform(), m_cache.read(QLatin1String(path)));
     if (texture.p_ptr != nullptr) {
         auto gameTexture = m_renderer->addGameTexture(texture);
         m_renderer->device().nameTexture(gameTexture, "Game Texture " + path);

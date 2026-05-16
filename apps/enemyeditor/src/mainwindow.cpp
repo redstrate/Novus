@@ -45,7 +45,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     m_part->minimumCameraDistance = 0.05f;
 
     auto skelName = physis_skeleton_path(Race::Hyur, Tribe::Midlander, Gender::Male);
-    m_part->setSkeleton(physis_skeleton_parse(m_cache.platform(), m_cache.lookupFile(QString::fromUtf8(skelName))));
+    m_part->setSkeleton(physis_skeleton_parse(m_cache.platform(), m_cache.read(QString::fromUtf8(skelName))));
 
     m_tableView = new QTableView();
     m_tableView->setModel(model);

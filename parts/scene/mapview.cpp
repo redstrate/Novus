@@ -64,7 +64,7 @@ void MapView::addTerrain(ObjectScene &scene)
         QString base2Path = scene.basePath.left(scene.basePath.lastIndexOf(QStringLiteral("/level/")));
         QString mdlPath = QStringLiteral("%1/bgplate/%2").arg(base2Path, QString::fromStdString(scene.terrain.plates[i].filename));
 
-        auto plateMdlFile = m_cache.lookupFile(mdlPath);
+        auto plateMdlFile = m_cache.read(mdlPath);
         auto plateMdl = physis_mdl_parse(m_cache.platform(), plateMdlFile);
         if (plateMdl.p_ptr != nullptr) {
             std::vector<std::pair<std::string, physis_Material>> materials;
@@ -72,7 +72,7 @@ void MapView::addTerrain(ObjectScene &scene)
                 const char *material_name = plateMdl.material_names[j];
 
                 if (!scene.cachedMaterials.contains(material_name)) {
-                    const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
+                    const auto matFile = m_cache.read(QLatin1String(material_name));
                     if (matFile.size > 0) {
                         auto mat = physis_material_parse(m_cache.platform(), matFile);
                         scene.cachedMaterials[material_name] = mat;
@@ -206,7 +206,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
             std::string assetPath = object.data.bg._0.asset_path;
             if (!assetPath.empty()) {
                 if (!m_mdlPart->modelExists(QString::fromStdString(assetPath))) {
-                    auto plateMdlFile = m_cache.lookupFile(QString::fromStdString(assetPath));
+                    auto plateMdlFile = m_cache.read(QString::fromStdString(assetPath));
                     if (plateMdlFile.size == 0) {
                         continue;
                     }
@@ -218,7 +218,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                             const char *material_name = plateMdl.material_names[j];
 
                             if (!scene.cachedMaterials.contains(material_name)) {
-                                const auto matFile = m_cache.lookupFile(QLatin1String(material_name));
+                                const auto matFile = m_cache.read(QLatin1String(material_name));
                                 if (matFile.size > 0) {
                                     auto mat = physis_material_parse(m_cache.platform(), matFile);
                                     scene.cachedMaterials[material_name] = mat;

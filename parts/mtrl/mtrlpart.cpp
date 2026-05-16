@@ -67,7 +67,7 @@ void MtrlPart::load(physis_Material file)
         const QString shpkPath = QStringLiteral("shader/sm5/shpk/%1").arg(QString::fromUtf8(m_material.shpk_name));
         m_shaderPackageName->setPath(shpkPath);
 
-        auto shpkData = m_cache.lookupFile(shpkPath);
+        auto shpkData = m_cache.read(shpkPath);
         if (shpkData.data != nullptr) {
             physis_shpk_free(&m_shpk);
             m_shpk = physis_shpk_parse(m_cache.platform(), shpkData);
@@ -135,7 +135,7 @@ void MtrlPart::rebuild()
         auto layout = new QFormLayout();
         groupBox->setLayout(layout);
 
-        auto file = m_cache.lookupFile(QString::fromUtf8(m_material.textures[sampler.texture_index]));
+        auto file = m_cache.read(QString::fromUtf8(m_material.textures[sampler.texture_index]));
 
         auto texWidget = new TexPart();
         texWidget->loadTex(m_cache.platform(), file);

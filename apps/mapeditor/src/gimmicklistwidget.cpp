@@ -22,7 +22,7 @@ GimmickListWidget::GimmickListWidget(ScenePart *part, SceneState *state, QWidget
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    auto eobjExh = physis_exh_parse(state->cache().platform(), state->cache().lookupFile(QStringLiteral("exd/EObj.exh")));
+    auto eobjExh = physis_exh_parse(state->cache().platform(), state->cache().read(QStringLiteral("exd/EObj.exh")));
     auto eobjSheet = state->cache().readExcelSheet(QStringLiteral("EObj"), &eobjExh, Language::None);
 
     auto tableWidget = new QTableWidget();

@@ -95,7 +95,7 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
             auto fileData = physis_sqpack_read_from_hash(&m_cache.resource(), indexPath.toStdString().c_str(), hash);
             // HACK: Read from path as a fallback, which somehow makes more PS3 files load. I don't know why.
             if (fileData.size == 0) {
-                fileData = m_cache.lookupFile(path);
+                fileData = m_cache.read(path);
             }
             if (fileData.size == 0) {
                 return;
@@ -180,7 +180,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     auto file = physis_sqpack_read_from_hash(&m_cache.resource(), indexPath.toStdString().c_str(), hash);
     // HACK: Read from path as a fallback, which somehow makes more PS3 files load. I don't know why.
     if (file.size == 0) {
-        file = m_cache.lookupFile(path);
+        file = m_cache.read(path);
     }
     if (file.size == 0) {
         return;
@@ -252,7 +252,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
             auto mdlWidget = new MDLPart(m_cache);
             std::vector<std::pair<std::string, physis_Material>> materials(mdl.num_material_names);
             for (uint32_t i = 0; i < mdl.num_material_names; i++) {
-                materials[i] = {mdl.material_names[i], physis_material_parse(m_cache.platform(), m_cache.lookupFile(QString::fromUtf8(mdl.material_names[i])))};
+                materials[i] = {mdl.material_names[i], physis_material_parse(m_cache.platform(), m_cache.read(QString::fromUtf8(mdl.material_names[i])))};
             }
             mdlWidget->addModel(mdl, false, transformation, QStringLiteral("mdl"), materials, 0);
             addTab(mdlWidget);

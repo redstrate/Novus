@@ -22,11 +22,11 @@ FileCache::FileCache(physis_SqPackResource data)
         this,
         [](void *userData, const char *path) -> physis_Buffer {
             const auto cache = static_cast<FileCache *>(userData);
-            return cache->lookupFile(QString::fromUtf8(path));
+            return cache->read(QString::fromUtf8(path));
         },
         [](void *userData, const char *path) -> bool {
             const auto cache = static_cast<FileCache *>(userData);
-            return cache->fileExists(QString::fromUtf8(path));
+            return cache->exists(QString::fromUtf8(path));
         });
 
     // TODO: move this into a generic parser
@@ -56,7 +56,7 @@ FileCache::~FileCache()
     }
 }
 
-physis_Buffer &FileCache::lookupFile(const QString &path)
+physis_Buffer &FileCache::read(const QString &path)
 {
     QMutexLocker locker(&m_bufferMutex);
 
@@ -103,7 +103,7 @@ physis_SqPackResource &FileCache::resource()
     return m_data;
 }
 
-bool FileCache::fileExists(const QString &path)
+bool FileCache::exists(const QString &path)
 {
     QMutexLocker locker(&m_existMutex);
 

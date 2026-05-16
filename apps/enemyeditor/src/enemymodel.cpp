@@ -72,10 +72,10 @@ EnemyModel::EnemyModel(FileCache &cache)
     m_part->setMinimumSize(128 / m_part->devicePixelRatio(), 128 / m_part->devicePixelRatio());
     m_part->show();
 
-    auto bnpcBaseExhFile = m_cache.lookupFile(QStringLiteral("exd/BNpcBase.exh"));
+    auto bnpcBaseExhFile = m_cache.read(QStringLiteral("exd/BNpcBase.exh"));
     auto bnpcBaseExh = physis_exh_parse(m_cache.platform(), bnpcBaseExhFile);
 
-    auto modelCharaExhFile = m_cache.lookupFile(QStringLiteral("exd/ModelChara.exh"));
+    auto modelCharaExhFile = m_cache.read(QStringLiteral("exd/ModelChara.exh"));
     auto modelCharaExh = physis_exh_parse(m_cache.platform(), modelCharaExhFile);
 
     auto bnpcBaseSheet = m_cache.readExcelSheet(QStringLiteral("BNpcBase"), &bnpcBaseExh, Language::None);
@@ -143,7 +143,7 @@ QImage EnemyModel::renderModel(const uint32_t id, const QString &mdlPath, const 
 {
     m_part->clear();
 
-    const auto mdlFile = m_cache.lookupFile(mdlPath);
+    const auto mdlFile = m_cache.read(mdlPath);
     if (mdlFile.size == 0) {
         return QImage{};
     }
@@ -154,7 +154,7 @@ QImage EnemyModel::renderModel(const uint32_t id, const QString &mdlPath, const 
         return QImage{};
     }
 
-    auto mtrlFile = m_cache.lookupFile(mtrlPath);
+    auto mtrlFile = m_cache.read(mtrlPath);
     if (mtrlFile.size == 0) {
         qWarning() << "While processing" << id << "could not find" << mtrlPath;
         return QImage{};
