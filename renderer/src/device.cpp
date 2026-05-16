@@ -385,7 +385,10 @@ Texture Device::addGameTexture(physis_Texture gameTexture)
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = gameTexture.mip_levels;
+    // TODO: for some reason some game textures have a crazy amount of reported mip levels (like 150 for
+    // chara/equipment/e6245/texture/v01_c0101e6245_top_norm.tex)
+    // imageInfo.mipLevels = gameTexture.mip_levels;
+    imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
 
     if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE1_D) {
