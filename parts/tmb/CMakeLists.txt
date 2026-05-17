@@ -3,7 +3,7 @@
 
 add_library(tmbpart STATIC)
 set_common_properties(tmbpart)
-target_sources(tmbpart PRIVATE tmbpart.cpp)
+target_sources(tmbpart PRIVATE tmbpart.cpp tmbpart.h)
 target_link_libraries(tmbpart
         PUBLIC
         KF6::I18n

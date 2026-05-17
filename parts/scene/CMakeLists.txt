@@ -5,31 +5,31 @@ add_library(scenepart STATIC)
 set_common_properties(scenepart)
 target_sources(scenepart
         PRIVATE
-        scenelistwidget.h
-        scenelistmodel.h
-        scenestate.h
-        scenepart.h
-        objectpropertieswidget.h
-        collapsesection.h
-        mapview.h
-        objectpass.h
-        primitives.h
         animation.h
-        objectidedit.h
+        collapsesection.h
         exceledit.h
+        mapview.h
+        objectidedit.h
+        objectpass.h
+        objectpropertieswidget.h
+        primitives.h
+        scenelistmodel.h
+        scenelistwidget.h
+        scenepart.h
+        scenestate.h
 
-        scenelistwidget.cpp
-        scenelistmodel.cpp
-        scenestate.cpp
-        scenepart.cpp
-        objectpropertieswidget.cpp
-        collapsesection.cpp
-        mapview.cpp
-        objectpass.cpp
-        primitives.cpp
         animation.cpp
+        collapsesection.cpp
+        exceledit.cpp
+        mapview.cpp
         objectidedit.cpp
-        exceledit.cpp)
+        objectpass.cpp
+        objectpropertieswidget.cpp
+        primitives.cpp
+        scenelistmodel.cpp
+        scenelistwidget.cpp
+        scenepart.cpp
+        scenestate.cpp)
 target_link_libraries(scenepart
         PUBLIC
         Novus::Renderer

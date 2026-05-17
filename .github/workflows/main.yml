@@ -7,7 +7,6 @@ on:
 env:
   QT_VERSION: 6.10.3 # Keep in sync with CMakeLists.txt
   KF_VERSION: v6.26.0 # Ditto
-  PLASMA_WAYLAND_VERSION: v1.21.0
   COMMON_CMAKE_OPTIONS: "-DBUILD_TESTING=OFF -DBUILD_PYTHON_BINDINGS=OFF"
 
 jobs:
@@ -68,21 +67,6 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "prefix-dir=${{ github.workspace }}/prefix" >> "$GITHUB_OUTPUT"
-
-    - name: Setup Linux dependencies
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install \
-          gettext \
-          gperf \
-          libwayland-dev \
-          libhunspell-dev \
-          libc6-dev-i386 \
-          gcc-multilib \
-          g++-multilib
-        
-        pip install lxml
 
     - name: Cache Prefix
       id: cache-prefix-restore
@@ -176,13 +160,6 @@ jobs:
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kcodecs.git
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcodecs -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcodecs -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
         cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcodecs --config ${{ matrix.build_type }} --target install
-
-    - name: Build Plasma Wayland Protocols
-      if: (runner.os == 'Linux') && (steps.cache-prefix-restore.outputs.cache-hit != 'true')
-      run: |
-        git clone --depth 1 --branch ${{ env.PLASMA_WAYLAND_VERSION }} https://invent.kde.org/libraries/plasma-wayland-protocols.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-plasma-wayland-protocols -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S plasma-wayland-protocols -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-plasma-wayland-protocols --config ${{ matrix.build_type }} --target install
 
     - name: Build KGuiAddons
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'

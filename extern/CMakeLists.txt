@@ -8,12 +8,16 @@ if (ENABLE_SANITIZERS)
     set(Rust_TOOLCHAIN "nightly")
 endif()
 
-FetchContent_Declare(
-        Corrosion
-        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.5.2
-)
-FetchContent_MakeAvailable(Corrosion)
+
+find_package(Corrosion QUIET)
+if (NOT Corrosion_FOUND)
+    FetchContent_Declare(
+            Corrosion
+            GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+            GIT_TAG v0.6.1
+    )
+    FetchContent_MakeAvailable(Corrosion)
+endif()
 
 corrosion_import_crate(MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/Cargo.toml)
 target_include_directories(physis INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libphysis/target/public)

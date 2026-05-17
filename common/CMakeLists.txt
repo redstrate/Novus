@@ -35,35 +35,35 @@ set_common_properties(novus-common)
 target_sources(novus-common
         PRIVATE
         include/aboutdata.h
+        include/booledit.h
+        include/editwidget.h
+        include/enumedit.h
         include/filecache.h
         include/filetypes.h
-        include/quaternionedit.h
-        include/settings.h
-        include/vec3edit.h
-        include/pathedit.h
-        include/enumedit.h
-        include/editwidget.h
-        include/uintedit.h
-        include/booledit.h
-        include/openinwidget.h
-        include/utility.h
         include/hashdatabase.h
         include/knownvalues.h
+        include/openinwidget.h
+        include/pathedit.h
+        include/quaternionedit.h
+        include/settings.h
+        include/uintedit.h
+        include/utility.h
+        include/vec3edit.h
 
         src/aboutdata.cpp
+        src/booledit.cpp
+        src/editwidget.cpp
+        src/enumedit.cpp
         src/filecache.cpp
         src/filetypes.cpp
+        src/hashdatabase.cpp
+        src/openinwidget.cpp
+        src/pathedit.cpp
         src/quaternionedit.cpp
         src/settings.cpp
-        src/vec3edit.cpp
-        src/pathedit.cpp
-        src/enumedit.cpp
-        src/editwidget.cpp
         src/uintedit.cpp
-        src/booledit.cpp
-        src/openinwidget.cpp
         src/utility.cpp
-        src/hashdatabase.cpp
+        src/vec3edit.cpp
 
         launcherconfig.h)
 target_include_directories(novus-common

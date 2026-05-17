@@ -3,7 +3,7 @@
 
 add_library(dicpart STATIC)
 set_common_properties(dicpart)
-target_sources(dicpart PRIVATE dicpart.cpp)
+target_sources(dicpart PRIVATE dicpart.cpp dicpart.h)
 target_link_libraries(dicpart
         PUBLIC
         KF6::I18n

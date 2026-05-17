@@ -40,16 +40,11 @@ ecm_setup_version(${PROJECT_VERSION}
 )
 
 find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent Sql Network CONFIG REQUIRED)
-find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons Config XmlGui Archive I18n KF6SyntaxHighlighting)
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons Config XmlGui Archive I18n SyntaxHighlighting BreezeIcons)
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 if (NOT TARGET glm::glm)
     add_library(glm::glm ALIAS glm)
-endif ()
-
-# TODO: we should really do this on all platforms anyway
-if (WIN32)
-    find_package(KF6BreezeIcons REQUIRED)
 endif ()
 
 add_subdirectory(extern)
