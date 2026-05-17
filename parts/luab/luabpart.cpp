@@ -15,13 +15,10 @@
 
 #include "scriptprocessor.h"
 
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/FoldingRegion>
 #include <KSyntaxHighlighting/Repository>
 #include <KSyntaxHighlighting/SyntaxHighlighter>
 #include <KSyntaxHighlighting/Theme>
-#endif
 
 LuabPart::LuabPart(QWidget *parent)
     : QWidget(parent)
@@ -57,7 +54,6 @@ void LuabPart::load(physis_Buffer buffer)
         ScriptProcessor processor;
         m_codeEdit->setText(processor.process(QString::fromUtf8(luaDecProcess.readAllStandardOutput())));
 
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting
         KSyntaxHighlighting::Repository repository;
 
@@ -68,7 +64,6 @@ void LuabPart::load(physis_Buffer buffer)
 
         const auto def = repository.definitionForName(QStringLiteral("Lua"));
         highlighter->setDefinition(def);
-#endif
     }
 }
 

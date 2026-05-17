@@ -10,12 +10,6 @@ target_sources(novus-sagasu
         src/filetreewindow.cpp
         src/filepropertieswindow.cpp
         src/filetreemodel.cpp)
-if (TARGET KF6::SyntaxHighlighting)
-    target_link_libraries(novus-sagasu
-            PUBLIC
-            KF6::SyntaxHighlighting)
-    target_compile_definitions(novus-sagasu PUBLIC HAVE_SYNTAX_HIGHLIGHTING)
-endif()
 target_include_directories(novus-sagasu PRIVATE include)
 target_link_libraries(novus-sagasu
         PRIVATE
@@ -38,7 +32,8 @@ target_link_libraries(novus-sagasu
         Novus::TmbPart
         Novus::ShcdPart
         Qt6::Concurrent
-        Qt6::Network)
+        Qt6::Network
+        KF6::SyntaxHighlighting)
 
 install(TARGETS novus-sagasu ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES dataexplorer.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)
