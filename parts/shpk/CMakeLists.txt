@@ -7,7 +7,7 @@ find_package(SPIRV-Headers REQUIRED)
 
 add_library(shpkpart STATIC)
 set_common_properties(shpkpart)
-target_sources(shpkpart PRIVATE shpkpart.cpp)
+target_sources(shpkpart PRIVATE shpkpart.cpp shpkpart.h)
 target_link_libraries(shpkpart
         PUBLIC
         Novus::Common
@@ -19,7 +19,7 @@ target_link_libraries(shpkpart
         Qt6::Widgets
         KF6::SyntaxHighlighting)
 target_include_directories(shpkpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_compile_options(shpkpart PRIVATE -fexceptions)
+target_compile_options(shpkpart PRIVATE -fexceptions) # Needed for SPIRV-Cross
 target_compile_definitions(shpkpart PRIVATE TRANSLATION_DOMAIN="novus")
 
 add_library(Novus::ShpkPart ALIAS shpkpart)

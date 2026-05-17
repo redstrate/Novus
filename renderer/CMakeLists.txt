@@ -4,12 +4,12 @@
 find_package(spirv_cross_core REQUIRED)
 find_package(spirv_cross_glsl REQUIRED)
 find_package(SPIRV-Headers REQUIRED)
-find_package(glslang) # for additional debug information in the GLSL
+find_package(glslang) # For additional debug information in the GLSL (currently optional for the Windows CI build)
 
 add_library(renderer STATIC)
 set_target_properties(renderer
         PROPERTIES
-        EXCLUDE_FROM_SANITIZERS ON)
+        EXCLUDE_FROM_SANITIZERS ON) # Excluded from sanitizers because of glslang...
 set_common_properties(renderer)
 target_sources(renderer
         PRIVATE
@@ -19,6 +19,7 @@ target_sources(renderer
         include/device.h
         include/drawobject.h
         include/gamerenderer.h
+        include/pass.h
         include/rendermanager.h
         include/scene.h
         include/shadermanager.h
@@ -26,17 +27,16 @@ target_sources(renderer
         include/simplerenderer.h
         include/swapchain.h
         include/texture.h
-        include/pass.h
 
         src/device.cpp
         src/gamerenderer.cpp
         src/imguipass.cpp
         src/imguipass.h
         src/rendermanager.cpp
+        src/scene.cpp
         src/shadermanager.cpp
         src/simplerenderer.cpp
-        src/swapchain.cpp
-        src/scene.cpp)
+        src/swapchain.cpp)
 qt_add_resources(renderer
         "shaders"
         PREFIX "/"
@@ -65,7 +65,7 @@ target_link_libraries(renderer
         spirv-cross-glsl
         Novus::Common)
 target_compile_definitions(renderer PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_ENABLE_EXPERIMENTAL)
-target_compile_options(renderer PUBLIC -fexceptions) # needed for spirv-cross and dxbc
+target_compile_options(renderer PUBLIC -fexceptions) # Exceptions are needed for SPIRV-Cross and DXBC
 
 if (glslang_FOUND)
     target_link_libraries(renderer

@@ -6,13 +6,13 @@ set_common_properties(novus-patchdiff)
 target_sources(novus-patchdiff
         PRIVATE
         include/mainwindow.h
-        include/difftreemodel.h
         include/difftreewidget.h
+        include/difftreemodel.h
 
-        src/main.cpp
-        src/mainwindow.cpp
         src/difftreemodel.cpp
-        src/difftreewidget.cpp)
+        src/difftreewidget.cpp
+        src/main.cpp
+        src/mainwindow.cpp)
 target_include_directories(novus-patchdiff
         PUBLIC
         include)

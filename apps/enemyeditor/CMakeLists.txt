@@ -5,14 +5,14 @@ add_executable(novus-enemyeditor)
 set_common_properties(novus-enemyeditor)
 target_sources(novus-enemyeditor
         PRIVATE
-        include/mainwindow.h
-        include/enemymodel.h
         include/enemyinfowindow.h
+        include/enemymodel.h
+        include/mainwindow.h
 
-        src/main.cpp
-        src/mainwindow.cpp
+        src/enemyinfowindow.cpp
         src/enemymodel.cpp
-        src/enemyinfowindow.cpp)
+        src/main.cpp
+        src/mainwindow.cpp)
 target_include_directories(novus-enemyeditor
         PUBLIC
         include)

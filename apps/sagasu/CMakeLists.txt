@@ -5,11 +5,16 @@ add_executable(novus-sagasu)
 set_common_properties(novus-sagasu)
 target_sources(novus-sagasu
         PRIVATE
-        src/main.cpp
-        src/mainwindow.cpp
-        src/filetreewindow.cpp
+        include/filepropertieswindow.h
+        include/filetreemodel.h
+        include/filetreewindow.h
+        include/mainwindow.h
+
         src/filepropertieswindow.cpp
-        src/filetreemodel.cpp)
+        src/filetreemodel.cpp
+        src/filetreewindow.cpp
+        src/main.cpp
+        src/mainwindow.cpp)
 target_include_directories(novus-sagasu PRIVATE include)
 target_link_libraries(novus-sagasu
         PRIVATE
