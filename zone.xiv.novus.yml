@@ -33,7 +33,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/g-truc/glm.git
-        tag: 1.0.2
+        tag: 1.0.3
   - name: json
     buildsystem: cmake-ninja
     config-opts:
@@ -60,7 +60,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/KhronosGroup/SPIRV-Headers.git
-        tag: vulkan-sdk-1.4.328.1
+        tag: vulkan-sdk-1.4.350.0
   - name: spirv-cross
     buildsystem: cmake-ninja
     cleanup:
@@ -68,7 +68,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/KhronosGroup/SPIRV-Cross.git
-        tag: vulkan-sdk-1.4.328.1
+        tag: vulkan-sdk-1.4.350.0
   - name: glslang
     buildsystem: cmake-ninja
     config-opts:
@@ -80,7 +80,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/KhronosGroup/glslang.git
-        tag: 16.0.0
+        tag: 16.3.0
   - name: corrosion
     buildsystem: cmake-ninja
     config-opts:
@@ -93,7 +93,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/AndrewGaspar/corrosion.git
-        tag: v0.5.2
+        tag: v0.6.1
   - name: novus
     buildsystem: cmake-ninja
     config-opts:

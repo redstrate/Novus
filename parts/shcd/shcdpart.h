@@ -3,9 +3,7 @@
 
 #pragma once
 
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
 #include <KSyntaxHighlighting/Repository>
-#endif
 #include <QFormLayout>
 #include <QListWidget>
 #include <QPushButton>
@@ -28,7 +26,5 @@ private:
     physis_SHCD m_shcd;
     QTextEdit *m_shaderTextEdit = nullptr;
 
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
     KSyntaxHighlighting::Repository repository;
-#endif
 };

@@ -11,12 +11,10 @@
 #include <QVBoxLayout>
 #include <spirv_glsl.hpp>
 
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
 #include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/FoldingRegion>
 #include <KSyntaxHighlighting/SyntaxHighlighter>
 #include <KSyntaxHighlighting/Theme>
-#endif
 
 SHCDPart::SHCDPart(QWidget *parent)
     : QWidget(parent)
@@ -59,7 +57,6 @@ void SHCDPart::load(Platform platform, physis_Buffer buffer)
 
         m_shaderTextEdit->setText(QLatin1String(glsl.compile().c_str()));
 
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting
         auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_shaderTextEdit->document());
         highlighter->setTheme((m_shaderTextEdit->palette().color(QPalette::Base).lightness() < 128)
@@ -68,7 +65,6 @@ void SHCDPart::load(Platform platform, physis_Buffer buffer)
 
         const auto def = repository.definitionForName(QStringLiteral("GLSL"));
         highlighter->setDefinition(def);
-#endif
     } catch (const dxvk::DxvkError &exception) {
         qWarning() << "Failed to load shader:" << exception.message();
     }
