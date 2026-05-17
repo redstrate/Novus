@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="dataexplorer"
-     version="7"
+     version="8"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
@@ -20,6 +20,7 @@
     <Menu name="edit" >
       <text>Edit</text>
       <Action name="search" />
+      <Action name="go_to_path" />
     </Menu>
     <Menu name="view" >
       <text>View</text>

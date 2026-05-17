@@ -574,6 +574,7 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 
     auto goToPath = new QAction(i18nc("@action:inmenu", "Go to Path…"));
+    goToPath->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
     KActionCollection::setDefaultShortcut(goToPath, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
     connect(goToPath, &QAction::triggered, [this] {
         bool ok = false;
