@@ -73,7 +73,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: ${{ steps.strings.outputs.prefix-dir }}
-        key: ${{ runner.os }}-prefix
+        key: ${{ runner.os }}-${{ env.QT_VERSION }}-${{ env.KF_VERSION }}-prefix
 
     - name: Setup Windows dependencies
       if: (runner.os == 'Windows') && (steps.cache-prefix-restore.outputs.cache-hit != 'true')
