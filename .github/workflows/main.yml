@@ -24,24 +24,10 @@ jobs:
 
   build:
     name: "Build"
-    runs-on: ${{ matrix.os }}
-
+    runs-on: windows-latest
+    
     # Skip running on PR events that come from the same repository, it will just duplicate the branch action
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
-        build_type: [Release]
-        c_compiler: [cl]
-        include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
 
     steps:
     - uses: actions/checkout@v6
@@ -76,7 +62,7 @@ jobs:
         key: ${{ runner.os }}-${{ env.QT_VERSION }}-${{ env.KF_VERSION }}-prefix
 
     - name: Setup Windows dependencies
-      if: (runner.os == 'Windows') && (steps.cache-prefix-restore.outputs.cache-hit != 'true')
+      if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       shell: powershell
       run: |
         $ProgressPreference = 'SilentlyContinue'
@@ -96,161 +82,154 @@ jobs:
         pip install lxml
 
     - name: Build zlib
-      if: (runner.os == 'Windows') && (steps.cache-prefix-restore.outputs.cache-hit != 'true')
+      if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone https://github.com/madler/zlib.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-zlib -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S zlib -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-zlib --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-zlib -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S zlib -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-zlib --config Release --target install
 
     - name: Build Extra CMake Modules
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/extra-cmake-modules.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S extra-cmake-modules -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM --config ${{ matrix.build_type }}
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S extra-cmake-modules -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM --config Release
 
     - name: Configure KI18n
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/ki18n.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ki18n -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ki18n -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ki18n -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S ki18n -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
 
     - name: Build KI18n
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ki18n --config ${{ matrix.build_type }} --target install
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ki18n --config Release --target install
 
     - name: Build KCoreAddons
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kcoreaddons.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kca -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcoreaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kca --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kca -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kcoreaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kca --config Release --target install
 
     - name: Build KConfig
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kconfig.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kconfig -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kconfig -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kconfig --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kconfig -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kconfig -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kconfig --config Release --target install
 
     - name: Build KArchive
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/karchive.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-karchive -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S karchive -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }} -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF # TODO: enable bzip which we need later
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-karchive --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-karchive -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S karchive -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }} -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF # TODO: enable bzip which we need later
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-karchive --config Release --target install
 
     - name: Build KItemViews
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kitemviews.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kitemviews -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kitemviews -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kitemviews --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kitemviews -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kitemviews -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kitemviews --config Release --target install
 
     - name: Build KCodecs
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kcodecs.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcodecs -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcodecs -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcodecs --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcodecs -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kcodecs -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcodecs --config Release --target install
 
     - name: Build KGuiAddons
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kguiaddons.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kguiaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kguiaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }} -DWITH_WAYLAND=OFF -DWITH_X11=OFF
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kguiaddons --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kguiaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kguiaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }} -DWITH_WAYLAND=OFF -DWITH_X11=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kguiaddons --config Release --target install
 
     - name: Build KWidgetsAddons
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kwidgetsaddons.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kwidgetsaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kwidgetsaddons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kwidgetsaddons --config Release --target install
 
     - name: Configure KColorScheme
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kcolorscheme.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcolorscheme -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kcolorscheme -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
 
     - name: Build KColorScheme
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme --config ${{ matrix.build_type }} --target install
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcolorscheme --config Release --target install
 
     - name: Build KConfigWidgets
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kconfigwidgets.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kconfigwidgets -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kconfigwidgets -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kconfigwidgets --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kconfigwidgets -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kconfigwidgets -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kconfigwidgets --config Release --target install
 
     - name: Build Breeze Icons
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       continue-on-error: true
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/breeze-icons.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-breeze-icons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S breeze-icons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DICONS_LIBRARY=ON -DSKIP_INSTALL_ICONS=ON
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-breeze-icons --config ${{ matrix.build_type }} --target install
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-breeze-icons --config ${{ matrix.build_type }} --target install # To workaround some bug
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-breeze-icons -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S breeze-icons -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DICONS_LIBRARY=ON -DSKIP_INSTALL_ICONS=ON
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-breeze-icons --config Release --target install
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-breeze-icons --config Release --target install # To workaround some bug
 
     - name: Build KIconThemes
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kiconthemes.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kiconthemes -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kiconthemes -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kiconthemes --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kiconthemes -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kiconthemes -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kiconthemes --config Release --target install
 
     - name: Build Sonnet
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/sonnet.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-sonnet -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S sonnet -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-sonnet --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-sonnet -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S sonnet -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-sonnet --config Release --target install
 
     - name: Build KCompletion
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kcompletion.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcompletion -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kcompletion -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcompletion --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kcompletion -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kcompletion -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kcompletion --config Release --target install
 
     - name: Build KTextWidgets
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/ktextwidgets.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ktextwidgets -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ktextwidgets -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }} -DWITH_TEXT_TO_SPEECH=OFF
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ktextwidgets --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-ktextwidgets -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S ktextwidgets -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }} -DWITH_TEXT_TO_SPEECH=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-ktextwidgets --config Release --target install
 
     - name: Build KXmlGui
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/kxmlgui.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kxmlgui -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S kxmlgui -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }} -DFORCE_DISABLE_KGLOBALACCEL=ON
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kxmlgui --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-kxmlgui -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S kxmlgui -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }} -DFORCE_DISABLE_KGLOBALACCEL=ON
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-kxmlgui --config Release --target install
 
     - name: Build glm
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone https://github.com/g-truc/glm.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-glm -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S glm -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DGLM_BUILD_TESTS=OFF
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-glm --config ${{ matrix.build_type }} --target install
-
-    - name: Build Corrosion
-      if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
-      run: |
-        git clone https://github.com/corrosion-rs/corrosion.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-corrosion -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S corrosion -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DCORROSION_BUILD_TESTS=OFF
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-corrosion --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-glm -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S glm -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DGLM_BUILD_TESTS=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-glm --config Release --target install
 
     - name: Build nlohmann
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
         git clone https://github.com/nlohmann/json.git
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-nlohmann -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S json -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DJSON_BuildTests=OFF
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-nlohmann --config ${{ matrix.build_type }} --target install
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}-nlohmann -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_BUILD_TYPE=Release -S json -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} -DJSON_BuildTests=OFF
+        cmake --build ${{ steps.strings.outputs.build-output-dir }}-nlohmann --config Release --target install
 
     - name: Build stb
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
@@ -269,18 +248,15 @@ jobs:
     - name: Configure
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }}
         -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.build-output-dir }}/bin
         -S ${{ github.workspace }}
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target install
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release --target install
 
     - name: Copy required DLLs
-      if: runner.os == 'Windows'
       run: |
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/KF6BreezeIcons.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
         Copy-Item -Path ${{ steps.strings.outputs.prefix-dir }}/bin/KF6ItemViews.dll -Destination ${{ steps.strings.outputs.build-output-dir }}/bin/bin
@@ -299,14 +275,12 @@ jobs:
         Copy-Item -Path "../Qt/${{ env.QT_VERSION }}/msvc2022_64/plugins/sqldrivers/qsqlite.dll" -Destination "${{ steps.strings.outputs.build-output-dir }}/bin/plugins/sqldrivers"
 
     - name: Remove extra files
-      if: runner.os == 'Windows'
       run: |
         Remove-Item -Path ${{ steps.strings.outputs.build-output-dir }}/bin/bin/opengl32sw.dll
         Remove-Item -Path ${{ steps.strings.outputs.build-output-dir }}/bin/Release -Force -Recurse
 
     - name: Archive artifacts
       uses: actions/upload-artifact@v7
-      if: runner.os == 'Windows'
       with:
         name: ${{ runner.os }}-package
         path: ${{ steps.strings.outputs.build-output-dir }}/bin
