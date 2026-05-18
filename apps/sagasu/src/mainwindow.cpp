@@ -38,11 +38,13 @@
 #include <QInputDialog>
 #include <QStringListModel>
 
+#ifdef HAVE_SYNTAX_HIGHLIGHTING
 #include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/FoldingRegion>
 #include <KSyntaxHighlighting/Repository>
 #include <KSyntaxHighlighting/SyntaxHighlighter>
 #include <KSyntaxHighlighting/Theme>
+#endif
 
 #include "mdlimport.h"
 #include "openinwidget.h"
@@ -414,7 +416,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         }
         const auto debugInformationText = new QTextEdit();
         debugInformationText->setText(debugInformation);
-
+#ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting
         KSyntaxHighlighting::Repository repository;
 
@@ -425,7 +427,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
         const auto def = repository.definitionForName(QStringLiteral("Rust"));
         highlighter->setDefinition(def);
-
+#endif
         m_partHolder->addTab(debugInformationText, i18nc("@title:tab", "Debug"));
     }
 

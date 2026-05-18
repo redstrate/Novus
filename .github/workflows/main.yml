@@ -109,14 +109,6 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}-ECM -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S extra-cmake-modules -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
         cmake --install ${{ steps.strings.outputs.build-output-dir }}-ECM --config ${{ matrix.build_type }}
 
-    - name: Build KSyntaxHighlighting
-      if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
-      run: |
-        git clone --depth 1 --branch ${{ env.KF_VERSION }} https://invent.kde.org/frameworks/syntax-highlighting.git
-        (Get-Content -ReadCount 0 syntax-highlighting/data/CMakeLists.txt).Replace('target_sources(SyntaxHighlightingData PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/themes/theme-data.qrc)', 'qt_add_resources(SyntaxHighlightingData ${CMAKE_CURRENT_SOURCE_DIR}/themes/theme-data.qrc)') | Set-Content syntax-highlighting/data/CMakeLists.txt # Work around this IDK
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}-syntax-highlighting -DCMAKE_PREFIX_PATH=${{ steps.strings.outputs.prefix-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S syntax-highlighting -DCMAKE_INSTALL_PREFIX=${{ steps.strings.outputs.prefix-dir }} ${{ env.COMMON_CMAKE_OPTIONS }}
-        cmake --build ${{ steps.strings.outputs.build-output-dir }}-syntax-highlighting --config ${{ matrix.build_type }} --target install
-
     - name: Configure KI18n
       if: steps.cache-prefix-restore.outputs.cache-hit != 'true'
       run: |
