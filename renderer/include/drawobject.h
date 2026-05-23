@@ -38,6 +38,7 @@ struct RenderMaterial {
 };
 
 struct DrawObject {
+    std::string name;
     physis_MDL model;
     std::vector<RenderPart> parts;
     std::array<glm::mat3x4, JOINT_MATRIX_SIZE_DAWNTRAIL> boneData; // JOINT_MATRIX_SIZE_DAWNTRAIL

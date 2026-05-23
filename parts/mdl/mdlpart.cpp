@@ -101,7 +101,7 @@ void MDLPart::addModel(physis_MDL mdl,
     if (m_vkWindow->sourceModels.contains(name)) {
         model = m_vkWindow->sourceModels[name];
     } else {
-        model = m_renderer->addDrawObject(mdl, lod);
+        model = m_renderer->addDrawObject(mdl, lod, name.toStdString());
         model->from_body_id = fromBodyId;
         model->to_body_id = toBodyId;
         model->skinned = skinned;

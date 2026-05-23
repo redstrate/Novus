@@ -602,10 +602,11 @@ VkRenderPass RenderManager::presentationRenderPass() const
     return m_renderPass;
 }
 
-DrawObject *RenderManager::addDrawObject(const physis_MDL &model, int lod)
+DrawObject *RenderManager::addDrawObject(const physis_MDL &model, int lod, std::string name)
 {
     auto DrawObject = new ::DrawObject();
     DrawObject->model = model;
+    DrawObject->name = name;
 
     reloadDrawObject(*DrawObject, lod);
 
@@ -644,7 +645,7 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
                 m_device->copyToBuffer(renderPart.vertexBuffer, (void *)part.vertices, vertexSize);
                 m_device->nameBuffer(renderPart.vertexBuffer, "Vertex Buffer for MDL");
             } else {
-                qWarning() << "Got a model part with zero vertices, is that supposed to happen?";
+                qWarning() << DrawObject.name << "Lod" << lod << "Part" << i << "has zero vertices, is that supposed to happen?";
             }
         }
 
@@ -656,7 +657,7 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
 
             renderPart.numIndices = part.num_indices;
         } else {
-            qWarning() << "Got a model part with zero indices, is that supposed to happen?";
+            qWarning() << DrawObject.name << "Lod" << lod << "Part" << i << "has zero indices, is that supposed to happen?";
         }
 
         DrawObject.parts.push_back(renderPart);

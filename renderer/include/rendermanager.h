@@ -36,7 +36,7 @@ public:
 
     void destroySwapchain(bool keepSwapchainObject);
 
-    DrawObject *addDrawObject(const physis_MDL &model, int lod);
+    DrawObject *addDrawObject(const physis_MDL &model, int lod, std::string name);
     void reloadDrawObject(DrawObject &model, uint32_t lod);
     void destroyDrawObject(DrawObject &model);
 
