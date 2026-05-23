@@ -6,3 +6,4 @@
 #include <QString>
 
 QString fromCString(const char *string);
+const char *toCString(const QString &value);

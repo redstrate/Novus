@@ -4,6 +4,7 @@
 #include "excelmodel.h"
 
 #include "excelresolver.h"
+#include "utility.h"
 
 #include <KLocalizedString>
 #include <QDir>
@@ -173,13 +174,9 @@ bool ExcelModel::setData(const QModelIndex &index, const QVariant &value, int ro
         const auto [_, row_id, subrow_id] = m_rowIndices[index.row()];
         auto newData = dataForIndex(index);
         switch (newData.tag) {
-        case physis_Field::Tag::String: {
-            QString qStringData = value.toString();
-            std::string stdStringData = qStringData.toStdString();
-            char *cStringData = reinterpret_cast<char *>(malloc(stdStringData.length() + 1));
-            strcpy(cStringData, stdStringData.data());
-            newData.string._0 = cStringData;
-        } break;
+        case physis_Field::Tag::String:
+            newData.string._0 = toCString(value.toString());
+            break;
         case physis_Field::Tag::Bool:
             newData.bool_._0 = value.value<bool>();
             break;

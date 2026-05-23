@@ -32,6 +32,7 @@ PathEdit::PathEdit(QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 0);
 
     m_lineEdit = new QLineEdit();
+    connect(m_lineEdit, &QLineEdit::editingFinished, this, &EditWidget::editingFinished);
     layout->addWidget(m_lineEdit);
 
     m_openButton = new QPushButton();
@@ -57,6 +58,11 @@ void PathEdit::setReadOnly(const bool readOnly)
 OpenPathHandler *PathEdit::handler()
 {
     return openPathHandler;
+}
+
+QString PathEdit::path() const
+{
+    return m_lineEdit->text();
 }
 
 #include "moc_pathedit.cpp"

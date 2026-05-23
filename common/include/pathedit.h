@@ -40,6 +40,8 @@ public:
 
     static OpenPathHandler *handler();
 
+    QString path() const;
+
 private:
     QLineEdit *m_lineEdit = nullptr;
     QPushButton *m_openButton = nullptr;

@@ -64,7 +64,7 @@ private:
     void addTriggerBoxSection(const physis_TriggerBoxInstanceObject &triggerBox);
     void addNPCSection(physis_NPCInstanceObject &npc);
     void addGameObjectSection(physis_GameInstanceObject &object);
-    void addSharedGroupSection(const physis_SharedGroupInstanceObject &sharedGroup);
+    void addSharedGroupSection(physis_SharedGroupInstanceObject &sharedGroup);
     void addAetheryteSection(physis_AetheryteInstanceObject &aetheryte);
     void addExitRangeSection(const physis_ExitRangeInstanceObject &exitRange);
     void addEventRangeSection(const physis_EventRangeInstanceObject &eventRange);

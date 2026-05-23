@@ -23,6 +23,7 @@
 #include "exceledit.h"
 #include "objectidedit.h"
 #include "uintedit.h"
+#include "utility.h"
 
 #include <QLabel>
 
@@ -570,7 +571,7 @@ void ObjectPropertiesWidget::addGameObjectSection(physis_GameInstanceObject &obj
     layout->addRow(i18n("Base ID"), baseIdEdit);
 }
 
-void ObjectPropertiesWidget::addSharedGroupSection(const physis_SharedGroupInstanceObject &sharedGroup)
+void ObjectPropertiesWidget::addSharedGroupSection(physis_SharedGroupInstanceObject &sharedGroup)
 {
     auto section = new CollapseSection(i18n("Shared Group"));
     m_layout->addWidget(section);
@@ -581,6 +582,9 @@ void ObjectPropertiesWidget::addSharedGroupSection(const physis_SharedGroupInsta
 
     auto assetPathEdit = new PathEdit();
     assetPathEdit->setPath(QString::fromLatin1(sharedGroup.asset_path));
+    connect(assetPathEdit, &PathEdit::editingFinished, this, [assetPathEdit, &sharedGroup] {
+        sharedGroup.asset_path = toCString(assetPathEdit->path());
+    });
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 }
 
