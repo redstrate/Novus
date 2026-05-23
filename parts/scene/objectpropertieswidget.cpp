@@ -809,11 +809,6 @@ void ObjectPropertiesWidget::addSoundSection(const physis_SoundInstanceObject &s
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto soundEffectParamEdit = new QLineEdit();
-    soundEffectParamEdit->setText(QString::number(sound.sound_effect_param));
-    soundEffectParamEdit->setReadOnly(true);
-    layout->addRow(i18n("Sound Effect Param"), soundEffectParamEdit);
-
     auto soundAssetPathEdit = new PathEdit();
     soundAssetPathEdit->setPath(QString::fromLatin1(sound.asset_path));
     soundAssetPathEdit->setReadOnly(true);
