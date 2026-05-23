@@ -5,5 +5,7 @@
 
 #include <QString>
 
-QString fromCString(const char *string);
-const char *toCString(const QString &value);
+#include "novuscommon_export.h"
+
+NOVUSCOMMON_EXPORT QString fromCString(const char *string);
+NOVUSCOMMON_EXPORT const char *toCString(const QString &value);
