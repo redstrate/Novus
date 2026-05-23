@@ -148,10 +148,15 @@ void ScenePart::save()
         const QDir targetDir = mods.constFirst().path;
         const QString newPath = targetDir.absoluteFilePath(path);
 
+        QFileInfo info(newPath);
+        QDir().mkpath(info.dir().path()); // Create directory tree within the mod.
+
         auto buffer = physis_lgb_write_to_buffer(m_cache.platform(), lgb);
         QFile file(newPath);
         if (file.open(QIODevice::WriteOnly)) {
             file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
+        } else {
+            qWarning() << "Failed to write LGB" << newPath << "because of:" << file.errorString();
         }
     }
 }
