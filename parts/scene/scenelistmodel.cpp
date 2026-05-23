@@ -438,7 +438,11 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         auto fileItem = new SceneTreeInformation();
         fileItem->type = TreeType::LgbFile;
         fileItem->parent = parentNode;
-        fileItem->name = name;
+        if (lgb.num_chunks > 0) {
+            fileItem->name = QString::fromUtf8(lgb.chunks[0].name);
+        } else {
+            fileItem->name = name;
+        }
         fileItem->row = parentNode->children.size();
         fileItem->data = name;
         parentNode->children.push_back(fileItem);
@@ -446,8 +450,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             auto &chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
-                // TODO: remove the const_cast later
-                addLayer(j, fileItem, const_cast<physis_Layer &>(chunk.layers[j]), scene);
+                addLayer(j, fileItem, chunk.layers[j], scene);
             }
         }
     }

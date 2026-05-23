@@ -12,6 +12,9 @@
 #include <QSplitter>
 
 #include "mapview.h"
+#include "settings.h"
+
+#include <QDir>
 
 ScenePart::ScenePart(FileCache &cache, bool fixedSize, QWidget *parent)
     : QWidget(parent)
@@ -128,6 +131,29 @@ void ScenePart::clear()
 {
     m_appState->clear();
     m_mapView->clear();
+}
+
+void ScenePart::save()
+{
+    const auto mods = getGameMods();
+    if (mods.isEmpty()) {
+        qWarning() << "No mod to write a file to!";
+        return;
+    }
+
+    auto &scene = m_appState->rootScene;
+    for (const auto &[path, lgb] : scene.lgbFiles) {
+        qInfo() << "Saving LGB" << path;
+
+        const QDir targetDir = mods.constFirst().path;
+        const QString newPath = targetDir.absoluteFilePath(path);
+
+        auto buffer = physis_lgb_write_to_buffer(Platform::Win32, lgb);
+        QFile file(newPath);
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
+        }
+    }
 }
 
 SceneState *ScenePart::sceneState() const

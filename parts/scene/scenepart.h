@@ -32,6 +32,7 @@ public:
     void selectObject(uint32_t objectId);
     QString lookupObjectName(uint32_t objectId);
     void clear();
+    void save();
 
     SceneState *sceneState() const;
     MapView *mapView() const;

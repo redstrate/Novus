@@ -147,6 +147,13 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("goto_object"), m_goToObjectAction);
 
+    m_saveAction = KStandardAction::save(
+        qApp,
+        [this] {
+            m_part->save();
+        },
+        actionCollection());
+
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 
     m_cameraPosLabel = new QLabel(i18n("..."));

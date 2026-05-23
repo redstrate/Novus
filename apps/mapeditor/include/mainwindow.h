@@ -41,4 +41,5 @@ private:
     QLabel *m_cameraPosLabel = nullptr;
     uint32_t m_lgbEventRange = 0;
     std::vector<int32_t> m_mapEffects;
+    QAction *m_saveAction = nullptr;
 };

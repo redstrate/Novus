@@ -242,8 +242,6 @@ void MainWindow::setupActions()
     m_saveAction = KStandardAction::save(
         qApp,
         [this] {
-            qInfo() << "Saving...";
-
             m_exdPart->save();
         },
         actionCollection());

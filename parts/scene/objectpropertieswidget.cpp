@@ -364,7 +364,7 @@ void ObjectPropertiesWidget::refreshDropInData(DropInObject *object)
     }
 }
 
-void ObjectPropertiesWidget::addCommonSection(const physis_InstanceObject &object)
+void ObjectPropertiesWidget::addCommonSection(physis_InstanceObject &object)
 {
     const auto section = new CollapseSection(i18n("Common"));
     m_layout->addWidget(section);
@@ -373,19 +373,13 @@ void ObjectPropertiesWidget::addCommonSection(const physis_InstanceObject &objec
     const auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto pos = glm::make_vec3(object.transform.translation);
-    const auto positionEdit = new Vector3Edit(pos);
-    positionEdit->setReadOnly(true);
+    const auto positionEdit = new Vector3Edit(reinterpret_cast<glm::vec3 &>(object.transform.translation));
     layout->addRow(i18n("Position"), positionEdit);
 
-    auto rotation = glm::make_vec3(object.transform.rotation);
-    const auto rotationEdit = new Vector3Edit(rotation);
-    rotationEdit->setReadOnly(true);
+    const auto rotationEdit = new Vector3Edit(reinterpret_cast<glm::vec3 &>(object.transform.rotation));
     layout->addRow(i18n("Rotation"), rotationEdit);
 
-    auto scale = glm::make_vec3(object.transform.scale);
-    const auto scaleEdit = new Vector3Edit(scale);
-    scaleEdit->setReadOnly(true);
+    const auto scaleEdit = new Vector3Edit(reinterpret_cast<glm::vec3 &>(object.transform.scale));
     layout->addRow(i18n("Scale"), scaleEdit);
 
     const auto idEdit = new QLineEdit();
@@ -573,7 +567,6 @@ void ObjectPropertiesWidget::addGameObjectSection(physis_GameInstanceObject &obj
     section->setLayout(layout);
 
     auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("ENpcResident"), QStringLiteral("ENpcBase"), QStringLiteral("EObj")}, object.base_id);
-    baseIdEdit->setReadOnly(true);
     layout->addRow(i18n("Base ID"), baseIdEdit);
 }
 
@@ -588,7 +581,6 @@ void ObjectPropertiesWidget::addSharedGroupSection(const physis_SharedGroupInsta
 
     auto assetPathEdit = new PathEdit();
     assetPathEdit->setPath(QString::fromLatin1(sharedGroup.asset_path));
-    assetPathEdit->setReadOnly(true);
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 }
 

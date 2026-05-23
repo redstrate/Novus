@@ -55,7 +55,7 @@ private:
     void refreshTeraData(const QString &path);
     void refreshDropInData(DropInObject *object);
 
-    void addCommonSection(const physis_InstanceObject &object);
+    void addCommonSection(physis_InstanceObject &object);
     void addBGSection(const physis_BGInstanceObject &bg);
     void addEventSection(physis_EventInstanceObject &eobj);
     void addPopRangeSection(const physis_PopRangeInstanceObject &pop);
