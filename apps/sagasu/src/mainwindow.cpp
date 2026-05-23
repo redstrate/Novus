@@ -276,7 +276,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
                 if (!importFileName.isEmpty() && !exportFileName.isEmpty()) {
                     auto mdl = mdlWidget->getModel(0).model;
                     importModel(mdl, importFileName);
-                    auto buffer = physis_mdl_write(&mdl);
+                    auto buffer = physis_mdl_write(m_cache.platform(), &mdl);
 
                     QFile file(exportFileName);
                     if (file.open(QIODevice::WriteOnly)) {

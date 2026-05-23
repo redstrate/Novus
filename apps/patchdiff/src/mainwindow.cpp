@@ -36,7 +36,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     m_diffTreeWidget = new DiffTreeWidget(m_database, &m_data, this);
     connect(m_diffTreeWidget, &DiffTreeWidget::bufferSelected, this, [this](physis_Buffer buffer) {
-        auto decompressedBlock = physis_sqpack_read_block(Platform::Win32, buffer);
+        auto decompressedBlock = physis_sqpack_read_block(m_data.platform, buffer);
         m_hexPart->loadFile(decompressedBlock);
     });
     layout->addWidget(m_diffTreeWidget);

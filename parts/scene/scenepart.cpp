@@ -148,7 +148,7 @@ void ScenePart::save()
         const QDir targetDir = mods.constFirst().path;
         const QString newPath = targetDir.absoluteFilePath(path);
 
-        auto buffer = physis_lgb_write_to_buffer(Platform::Win32, lgb);
+        auto buffer = physis_lgb_write_to_buffer(m_cache.platform(), lgb);
         QFile file(newPath);
         if (file.open(QIODevice::WriteOnly)) {
             file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);

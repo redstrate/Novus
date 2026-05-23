@@ -417,7 +417,7 @@ void SingleGearView::importModel(const QString &filename)
 
     const QFileInfo info(outputDirectory.absoluteFilePath(m_gearView->getLoadedGearPath()));
 
-    auto buffer = physis_mdl_write(&mdl.model);
+    auto buffer = physis_mdl_write(m_cache.platform(), &mdl.model);
     QFile file(info.absoluteFilePath());
 
     if (!QDir().exists(info.absolutePath()))
