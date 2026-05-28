@@ -16,7 +16,7 @@ SPDX-FileCopyrightText = "Joshua Goins <josh@redstrate.com>"
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
-path = ["apps/armoury/zone.xiv.armoury.svg", "apps/karuku/zone.xiv.karaku.svg", "apps/sdklauncher/zone.xiv.novus.svg", "apps/mapeditor/zone.xiv.mapeditor.svg", "apps/mdlviewer/zone.xiv.mdlviewer.svg", "apps/sagasu/zone.xiv.sagasu.svg", "resources/**"]
+path = ["apps/armoury/zone.xiv.novus.geareditor.svg", "apps/karuku/zone.xiv.novus.exceleditor.svg", "apps/sdklauncher/zone.xiv.novus.sdk.svg", "apps/mapeditor/zone.xiv.novus.mapeditor.svg", "apps/sagasu/zone.xiv.novus.dataexplorer.svg", "resources/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "Joshua Goins <josh@redstrate.com>"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
