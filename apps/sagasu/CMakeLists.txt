@@ -63,6 +63,6 @@ if (WIN32)
 
     install(FILES $<TARGET_RUNTIME_DLLS:novus-sagasu> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
-    install(FILES zone.xiv.sagasu.desktop DESTINATION ${KDE_INSTALL_APPDIR})
-    install(FILES zone.xiv.sagasu.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
+    install(FILES zone.xiv.novus.dataexplorer.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+    install(FILES zone.xiv.novus.dataexplorer.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 endif()

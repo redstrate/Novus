@@ -2,9 +2,9 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 [Desktop Entry]
 Name=Novus SDK
-Comment=FFXIV Model Viewer
-Exec=novus-mdlviewer %u
+Comment=Patch Diff
+Exec=novus-patchdiff %u
 Terminal=false
-Icon=zone.xiv.mdlviewer
+Icon=zone.xiv.novus.patchdiff
 Type=Application
 NoDisplay=true

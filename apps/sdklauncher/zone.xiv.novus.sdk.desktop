@@ -2,9 +2,8 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 [Desktop Entry]
 Name=Novus SDK
-Comment=FFXIV Gear Editor
-Exec=novus-armoury %u
+Comment=SDK Launcher
+Exec=novus-launcher %u
 Terminal=false
-Icon=zone.xiv.armoury
+Icon=zone.xiv.novus.sdk
 Type=Application
-NoDisplay=true

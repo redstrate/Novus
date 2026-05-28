@@ -2,9 +2,9 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 [Desktop Entry]
 Name=Novus SDK
-Comment=FFXIV Data Explorer
-Exec=novus-sagasu %u
+Comment=Gear Editor
+Exec=novus-armoury %u
 Terminal=false
-Icon=zone.xiv.sagasu
+Icon=zone.xiv.novus.geareditor
 Type=Application
 NoDisplay=true

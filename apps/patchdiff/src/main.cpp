@@ -17,7 +17,10 @@ int main(int argc, char *argv[])
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
-    customizeAboutData(QStringLiteral("novus"), QStringLiteral("zone.xiv.patchdiff"), QStringLiteral("Patch Diff"), i18n("Program to view FFXIV patches."));
+    customizeAboutData(QStringLiteral("novus"),
+                       QStringLiteral("zone.xiv.novus.patchdiff"),
+                       QStringLiteral("Patch Diff"),
+                       i18n("Program to view FFXIV patches."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

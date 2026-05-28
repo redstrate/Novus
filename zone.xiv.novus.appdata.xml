@@ -23,7 +23,13 @@
     <url type="bugtracker">https://github.com/redstrate/Novus/issues</url>
     <url type="contact">https://redstrate.com/contact</url>
     <url type="vcs-browser">https://github.com/redstrate/Novus</url>
-    <launchable type="desktop-id">zone.xiv.novus.desktop</launchable>
+    <launchable type="desktop-id">zone.xiv.novus.sdk.desktop</launchable>
+    <launchable type="desktop-id">zone.xiv.novus.exceleditor.desktop</launchable>
+    <launchable type="desktop-id">zone.xiv.novus.geareditor.desktop</launchable>
+    <launchable type="desktop-id">zone.xiv.novus.dataexplorer.desktop</launchable>
+    <launchable type="desktop-id">zone.xiv.novus.mapeditor.desktop</launchable>
+    <launchable type="desktop-id">zone.xiv.novus.enemyeditor.desktop</launchable>
+    <launchable type="desktop-id">zone.xiv.novus.patchdiff.desktop</launchable>
     <releases>
         <release version="0.1.0"/>
     </releases>
@@ -32,9 +38,9 @@
         <binary>novus-karuku</binary>
         <binary>novus-launcher</binary>
         <binary>novus-mapeditor</binary>
-        <binary>novus-mateditor</binary>
-        <binary>novus-mdlviewer</binary>
         <binary>novus-sagasu</binary>
+        <binary>novus-enemyeditor</binary>
+        <binary>novus-patchdiff</binary>
     </provides>
     <recommends>
         <display_length compare="ge">600</display_length>

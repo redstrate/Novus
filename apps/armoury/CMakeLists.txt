@@ -66,6 +66,6 @@ if (WIN32)
 
     install(FILES $<TARGET_RUNTIME_DLLS:novus-armoury> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
-    install(FILES zone.xiv.armoury.desktop DESTINATION ${KDE_INSTALL_APPDIR})
-    install(FILES zone.xiv.armoury.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
+    install(FILES zone.xiv.novus.geareditor.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+    install(FILES zone.xiv.novus.geareditor.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 endif()

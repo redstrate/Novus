@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
     customizeAboutData(QStringLiteral("novus"),
-                       QStringLiteral("zone.xiv.karaku"),
+                       QStringLiteral("zone.xiv.novus.exceleditor"),
                        QStringLiteral("Excel Editor"),
                        i18n("Program to view and edit FFXIV Excel files."));
 

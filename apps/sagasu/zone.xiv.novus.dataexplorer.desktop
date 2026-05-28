@@ -2,9 +2,9 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 [Desktop Entry]
 Name=Novus SDK
-Comment=FFXIV Data Editor
-Exec=novus-karaku %u
+Comment=Data Explorer
+Exec=novus-sagasu %u
 Terminal=false
-Icon=zone.xiv.karaku
+Icon=zone.xiv.novus.dataexplorer
 Type=Application
 NoDisplay=true

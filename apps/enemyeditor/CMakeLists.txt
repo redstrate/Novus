@@ -35,5 +35,5 @@ if (WIN32)
 
     install(FILES $<TARGET_RUNTIME_DLLS:novus-enemyeditor> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
-    install(FILES zone.xiv.enemyeditor.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+    install(FILES zone.xiv.novus.enemyeditor.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 endif()

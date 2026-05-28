@@ -2,8 +2,9 @@
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 [Desktop Entry]
 Name=Novus SDK
-Comment=Unofficial FFXIV SDK
-Exec=novus-launcher %u
+Comment=Excel Editor
+Exec=novus-karaku %u
 Terminal=false
-Icon=zone.xiv.novus
+Icon=zone.xiv.novus.exceleditor
 Type=Application
+NoDisplay=true

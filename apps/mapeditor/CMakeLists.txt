@@ -47,6 +47,6 @@ if (WIN32)
 
     install(FILES $<TARGET_RUNTIME_DLLS:novus-mapeditor> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
-    install(FILES zone.xiv.mapeditor.desktop DESTINATION ${KDE_INSTALL_APPDIR})
-    install(FILES zone.xiv.mapeditor.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
+    install(FILES zone.xiv.novus.mapeditor.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+    install(FILES zone.xiv.novus.mapeditor.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 endif()

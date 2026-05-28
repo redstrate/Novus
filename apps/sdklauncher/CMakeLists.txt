@@ -29,8 +29,8 @@ if (WIN32)
 
     install(FILES $<TARGET_RUNTIME_DLLS:novus-launcher> DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
-    install(FILES zone.xiv.novus.desktop DESTINATION ${KDE_INSTALL_APPDIR})
-    install(FILES zone.xiv.novus.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
+    install(FILES zone.xiv.novus.sdk.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+    install(FILES zone.xiv.novus.sdk.svg DESTINATION ${KDE_INSTALL_FULL_ICONDIR}/hicolor/scalable/apps)
 endif()
 
 ecm_add_app_icon(novus-launcher

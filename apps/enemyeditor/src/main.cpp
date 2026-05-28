@@ -17,7 +17,10 @@ int main(int argc, char *argv[])
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
-    customizeAboutData(QStringLiteral("novus"), QStringLiteral("zone.xiv.enemyeditor"), QStringLiteral("Enemy Editor"), i18n("Program to view FFXIV enemies."));
+    customizeAboutData(QStringLiteral("novus"),
+                       QStringLiteral("zone.xiv.novus.enemyeditor"),
+                       QStringLiteral("Enemy Editor"),
+                       i18n("Program to view FFXIV enemies."));
 
     // Default to a sensible message pattern
     if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {

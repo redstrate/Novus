@@ -35,4 +35,7 @@ if (WIN32)
             OUTPUT_NAME "PatchDiff")
 
     install(FILES $<TARGET_RUNTIME_DLLS:novus-patchdiff> DESTINATION ${CMAKE_INSTALL_BINDIR})
+else()
+    install(FILES zone.xiv.novus.patchdiff.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 endif()
+
