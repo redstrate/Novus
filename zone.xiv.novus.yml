@@ -25,8 +25,6 @@ finish-args:
   - --share=network
   # Rendering the 3D viewports
   - --device=dri
-  # Reading your game install, but we only need read-only access for that
-  - --filesystem=home:ro
 modules:
   - name: glm
     buildsystem: cmake-ninja
