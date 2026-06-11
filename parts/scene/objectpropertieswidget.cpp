@@ -487,6 +487,10 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
+    auto mapEdit = new ExcelEdit(m_appState, {QStringLiteral("Map")}, mapRange.map);
+    mapEdit->setReadOnly(true);
+    layout->addRow(i18n("Map"), mapEdit);
+
     auto placeNameBlock = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")}, mapRange.place_name_block);
     placeNameBlock->setReadOnly(true);
     layout->addRow(i18n("PlaceName Block"), placeNameBlock);
@@ -494,6 +498,31 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     auto placeNameSpot = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")}, mapRange.place_name_spot);
     placeNameSpot->setReadOnly(true);
     layout->addRow(i18n("PlaceName Spot"), placeNameSpot);
+
+    auto weatherEdit = new QLineEdit();
+    weatherEdit->setReadOnly(true);
+    weatherEdit->setText(QString::number(mapRange.weather));
+    layout->addRow(i18n("Weather"), weatherEdit);
+
+    auto bgmEdit = new QLineEdit();
+    bgmEdit->setReadOnly(true);
+    bgmEdit->setText(QString::number(mapRange.bgm));
+    layout->addRow(i18n("BGM"), bgmEdit);
+
+    auto unk1Edit = new QLineEdit();
+    unk1Edit->setReadOnly(true);
+    unk1Edit->setText(QString::number(mapRange.unk1));
+    layout->addRow(i18n("UNK1"), unk1Edit);
+
+    auto unk2Edit = new QLineEdit();
+    unk2Edit->setReadOnly(true);
+    unk2Edit->setText(QString::number(mapRange.unk2));
+    layout->addRow(i18n("UNK2"), unk2Edit);
+
+    auto housingBlockIdEdit = new QLineEdit();
+    housingBlockIdEdit->setReadOnly(true);
+    housingBlockIdEdit->setText(QString::number(mapRange.housing_block_id));
+    layout->addRow(i18n("Housing block ID"), housingBlockIdEdit);
 
     auto restBonusEffectiveCheckbox = new QCheckBox();
     restBonusEffectiveCheckbox->setChecked(mapRange.rest_bonus_effective);
@@ -505,6 +534,11 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     discoveryIdEdit->setText(QString::number(mapRange.discovery_id));
     layout->addRow(i18n("Discovery ID"), discoveryIdEdit);
 
+    auto mapEnabledCheckbox = new QCheckBox();
+    mapEnabledCheckbox->setChecked(mapRange.map_enabled);
+    mapEnabledCheckbox->setEnabled(false);
+    layout->addRow(i18n("Map Enabled"), mapEnabledCheckbox);
+
     auto placeNameEnabledCheckbox = new QCheckBox();
     placeNameEnabledCheckbox->setChecked(mapRange.place_name_enabled);
     placeNameEnabledCheckbox->setEnabled(false);
@@ -515,10 +549,55 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     discoveryEnabledCheckbox->setEnabled(false);
     layout->addRow(i18n("Discovery Enabled"), discoveryEnabledCheckbox);
 
+    auto bgmEnabledCheckbox = new QCheckBox();
+    bgmEnabledCheckbox->setChecked(mapRange.bgm_enabled);
+    bgmEnabledCheckbox->setEnabled(false);
+    layout->addRow(i18n("BGM Enabled"), bgmEnabledCheckbox);
+
+    auto weatherEnabled = new QCheckBox();
+    weatherEnabled->setChecked(mapRange.weather_enabled);
+    weatherEnabled->setEnabled(false);
+    layout->addRow(i18n("Weather Enabled"), weatherEnabled);
+
     auto restBonusEnabledCheckbox = new QCheckBox();
     restBonusEnabledCheckbox->setChecked(mapRange.rest_bonus_enabled);
     restBonusEnabledCheckbox->setEnabled(false);
     layout->addRow(i18n("Rest Bonus Enabled"), restBonusEnabledCheckbox);
+
+    auto bgmPlayZoneInEnabled = new QCheckBox();
+    bgmPlayZoneInEnabled->setChecked(mapRange.bgm_play_zone_in_only);
+    bgmPlayZoneInEnabled->setEnabled(false);
+    layout->addRow(i18n("BGM Play Zone In Enabled"), bgmPlayZoneInEnabled);
+
+    auto liftEnabledCheckbox = new QCheckBox();
+    liftEnabledCheckbox->setChecked(mapRange.lift_enabled);
+    liftEnabledCheckbox->setEnabled(false);
+    layout->addRow(i18n("Lift Enabled"), liftEnabledCheckbox);
+
+    auto housingEnabledCheckbox = new QCheckBox();
+    housingEnabledCheckbox->setChecked(mapRange.housing_enabled);
+    housingEnabledCheckbox->setEnabled(false);
+    layout->addRow(i18n("Housing Enabled"), housingEnabledCheckbox);
+
+    auto unk3Checkbox = new QCheckBox();
+    unk3Checkbox->setChecked(mapRange.unk3);
+    unk3Checkbox->setEnabled(false);
+    layout->addRow(i18n("UNK3"), unk3Checkbox);
+
+    auto unk4Checkbox = new QCheckBox();
+    unk4Checkbox->setChecked(mapRange.unk4);
+    unk4Checkbox->setEnabled(false);
+    layout->addRow(i18n("UNK4"), unk4Checkbox);
+
+    auto mountsAndOrnamentsDisabledCheckbox = new QCheckBox();
+    mountsAndOrnamentsDisabledCheckbox->setChecked(mapRange.mounts_and_ornaments_disabled);
+    mountsAndOrnamentsDisabledCheckbox->setEnabled(false);
+    layout->addRow(i18n("Mounts and Ornaments Disabled"), mountsAndOrnamentsDisabledCheckbox);
+
+    auto lalafellsOnlyCheckbox = new QCheckBox();
+    lalafellsOnlyCheckbox->setChecked(mapRange.lalafells_only);
+    lalafellsOnlyCheckbox->setEnabled(false);
+    layout->addRow(i18n("Lalafells Only"), lalafellsOnlyCheckbox);
 }
 
 void ObjectPropertiesWidget::addTriggerBoxSection(const physis_TriggerBoxInstanceObject &triggerBox)
@@ -884,6 +963,22 @@ void ObjectPropertiesWidget::addTargetMarker(const physis_TargetMarkerInstanceOb
     targetMarkerTypeEdit->setValue(targetMarker.target_market_type);
     targetMarkerTypeEdit->setEnabled(false);
     layout->addRow(i18n("Type"), targetMarkerTypeEdit);
+}
+
+void ObjectPropertiesWidget::addClientPath(const physis_ClientPathInstanceObject &clientPath)
+{
+    addPath(clientPath.parent_data);
+
+    auto section = new CollapseSection(i18n("Client Path"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+}
+
+void ObjectPropertiesWidget::addPath(const physis_PathInstanceObject &)
+{
+    auto section = new CollapseSection(i18n("Path"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
 }
 
 #include "moc_objectpropertieswidget.cpp"

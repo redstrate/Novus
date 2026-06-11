@@ -348,6 +348,9 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
             case physis_LayerEntry::Tag::TargetMarker:
                 objectName = i18n("Target Marker");
                 break;
+            case physis_LayerEntry::Tag::ClientPath:
+                objectName = i18n("Client Path");
+                break;
             default:
                 break;
             }

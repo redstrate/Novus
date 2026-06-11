@@ -5,6 +5,8 @@
 
 #include <QWidget>
 
+struct physis_PathInstanceObject;
+struct physis_ClientPathInstanceObject;
 struct physis_TargetMarkerInstanceObject;
 struct physis_TreasureInstanceObject;
 struct physis_LineVFXInstanceObject;
@@ -80,6 +82,8 @@ private:
     void addLineVFX(const physis_LineVFXInstanceObject &lineVfx);
     void addTreasure(physis_TreasureInstanceObject &treasure);
     void addTargetMarker(const physis_TargetMarkerInstanceObject &targetMarker);
+    void addClientPath(const physis_ClientPathInstanceObject &clientPath);
+    void addPath(const physis_PathInstanceObject &path);
 
     SceneState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;
