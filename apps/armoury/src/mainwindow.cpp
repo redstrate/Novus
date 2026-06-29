@@ -60,7 +60,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
         m_gearView->setFMVAvailable(!loading);
     });
     connect(m_gearView, &SingleGearView::addToFullModelViewer, m_fullModelViewer, &FullModelViewer::addGear);
-    connect(m_gearView, &SingleGearView::gearChanged, this, &KXmlGuiWindow::setWindowTitle);
+    connect(m_gearView, &SingleGearView::gearChanged, this, &KXmlGuiWindow::setPlainCaption);
 
     connect(m_gearView, &SingleGearView::doneLoadingModel, this, [this] {
         m_materialsView->clear();
@@ -76,7 +76,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     });
 
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("geareditor.rc"));
+    setupGUI(ToolBar | Keys | StatusBar | Save | Create, QStringLiteral("geareditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

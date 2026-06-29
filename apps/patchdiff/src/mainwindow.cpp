@@ -45,7 +45,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     layout->addWidget(m_hexPart);
 
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("patchdiff.rc"));
+    setupGUI(ToolBar | Keys | StatusBar | Save | Create, QStringLiteral("patchdiff.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -83,7 +83,7 @@ void MainWindow::setupActions()
 void MainWindow::openPatch(const QUrl &url)
 {
     m_diffTreeWidget->openPatch(url.toLocalFile());
-    setWindowTitle(url.toLocalFile());
+    setPlainCaption(url.toLocalFile());
 }
 
 #include "moc_mainwindow.cpp"

@@ -16,17 +16,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
-
     customizeAboutData(QStringLiteral("novus"),
                        QStringLiteral("zone.xiv.novus.dataexplorer"),
                        QStringLiteral("Data Explorer"),
                        i18n("Program to explore FFXIV data archives."));
-
-    // Default to a sensible message pattern
-    if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {
-        qputenv("QT_MESSAGE_PATTERN", "[%{time yyyy-MM-dd h:mm:ss.zzz}] %{if-category}[%{category}] %{endif}[%{type}] %{message}");
-    }
 
     QCommandLineParser parser;
     parser.addHelpOption();

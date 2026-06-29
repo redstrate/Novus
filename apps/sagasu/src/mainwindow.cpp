@@ -128,7 +128,7 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     refreshParts({}, {}, {});
 
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("dataexplorer.rc"));
+    setupGUI(Default, QStringLiteral("dataexplorer.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -158,7 +158,7 @@ QString MainWindow::getArguments() const
 void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString &path)
 {
     m_partHolder->clear();
-    setWindowTitle(path);
+    setPlainCaption(path);
 
     std::string pathStd = path.toStdString();
     if (indexPath.isEmpty()) {
@@ -258,7 +258,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
             for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                 materials[i] = {mdl.material_names[i], physis_material_parse(m_cache.platform(), m_cache.read(QString::fromUtf8(mdl.material_names[i])))};
             }
-            mdlWidget->addModel(mdl, false, transformation, QStringLiteral("mdl"), materials, 0);
+            mdlWidget->addModel(mdl, false, transformation, QStringLiteral("mdl"), materials);
             addTab(mdlWidget);
 
             auto importAction = m_fileActionsMenu->addAction(QStringLiteral("Import glTF"));

@@ -8,6 +8,10 @@
 #include "novus-version.h"
 #include "utility.h"
 
+#include <KLocalizedString>
+#include <QGuiApplication>
+#include <QIcon>
+
 #ifdef Q_OS_WIN
 #include <BreezeIcons>
 #include <QIcon>
@@ -15,6 +19,8 @@
 
 void customizeAboutData(const QString &componentName, const QString &desktopFilename, const QString &applicationTitle, const QString &applicationDescription)
 {
+    KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
+
     // TODO: we shouldn't do this here
 #ifdef Q_OS_WIN
     BreezeIcons::initIcons();
@@ -48,7 +54,7 @@ void customizeAboutData(const QString &componentName, const QString &desktopFile
                     QStringLiteral("Useful tool for figuring out shader keys"),
                     {},
                     QStringLiteral("https://github.com/NotNite/crcracker"));
-    about.setHomepage(QStringLiteral("https://xiv.zone/novus"));
+    about.setHomepage(QStringLiteral("https://xiv.zone/software/novus"));
     about.addComponent(QStringLiteral("Physis"),
                        QStringLiteral("Library for reading and writing FFXIV data"),
                        QStringLiteral("%1 (libphysis: %2)").arg(fromCString(physis_get_physis_version()), fromCString(physis_get_libphysis_version())),
@@ -89,11 +95,17 @@ void customizeAboutData(const QString &componentName, const QString &desktopFile
                        {},
                        QStringLiteral("https://github.com/Neargye/magic_enum"),
                        KAboutLicense::MIT);
-    about.setBugAddress(QByteArrayLiteral("https://github.com/redstrate/Novus/issues"));
+    about.setBugAddress(QByteArrayLiteral("https://github.com/redstrate/Novus/issues/new"));
     about.setComponentName(componentName);
-    about.setProgramLogo(desktopFilename);
     about.setDesktopFileName(desktopFilename);
     about.setOrganizationDomain(QByteArrayLiteral("xiv.zone"));
 
     KAboutData::setApplicationData(about);
+
+    QGuiApplication::setWindowIcon(QIcon::fromTheme(desktopFilename));
+
+    // Default to a sensible message pattern
+    if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {
+        qputenv("QT_MESSAGE_PATTERN", "[%{time yyyy-MM-dd h:mm:ss.zzz}] %{if-category}[%{category}] %{endif}[%{type}] %{message}");
+    }
 }

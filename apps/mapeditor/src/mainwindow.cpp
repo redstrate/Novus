@@ -38,7 +38,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     setCentralWidget(m_part);
 
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("mapeditor.rc"));
+    setupGUI(Default, QStringLiteral("mapeditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -193,7 +193,7 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
         qWarning() << "Failed to find lvb" << lvbPath;
     }
 
-    setWindowTitle(basePath);
+    setPlainCaption(basePath);
 
     m_goToEntranceAction->setEnabled(contentFinderCondition != 0);
     m_goToExitAction->setEnabled(contentFinderCondition != 0);

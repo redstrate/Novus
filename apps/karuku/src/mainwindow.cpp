@@ -55,7 +55,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, &MainWindow::jumpToSheet);
 
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("exceleditor.rc"));
+    setupGUI(ToolBar | Keys | Save | Create, QStringLiteral("exceleditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -85,7 +85,7 @@ void MainWindow::jumpToSheet(const QString &name)
 {
     if (name.isEmpty()) {
         m_exdPart->clear();
-        setWindowTitle({});
+        setPlainCaption({});
         return;
     }
 
@@ -95,7 +95,7 @@ void MainWindow::jumpToSheet(const QString &name)
     m_exdPart->loadSheet(name, file);
     m_sheetListWidget->goToSheet(name);
 
-    setWindowTitle(name);
+    setPlainCaption(name);
 }
 
 void MainWindow::jumpToSheetAndRow(const QString &name, const QString &rowQuery)
