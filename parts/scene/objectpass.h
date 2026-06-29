@@ -51,6 +51,10 @@ private:
     Texture m_directionalLightTexture;
     Texture m_lineLightTexture;
     Texture m_chairTexture;
+    Texture m_soundTexture;
+    Texture m_eobjTexture;
+    Texture m_poprangeTexture;
+    Texture m_envLocationTexture;
     VkSampler m_sampler = nullptr;
 
     QHash<VkImage, VkDescriptorSet> m_cachedBillboardTextures;

@@ -42,6 +42,10 @@ ObjectPass::ObjectPass(RenderManager *renderer, SceneState *appState)
     m_directionalLightTexture = addTexture(QStringLiteral(":/directional.png"));
     m_lineLightTexture = addTexture(QStringLiteral(":/line.png"));
     m_chairTexture = addTexture(QStringLiteral(":/chair.png"));
+    m_soundTexture = addTexture(QStringLiteral(":/sound.png"));
+    m_eobjTexture = addTexture(QStringLiteral(":/eobj.png"));
+    m_poprangeTexture = addTexture(QStringLiteral(":/poprange.png"));
+    m_envLocationTexture = addTexture(QStringLiteral(":/envlocation.png"));
 
     Primitives::Initialize(m_renderer);
 }
@@ -477,14 +481,16 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
         case physis_LayerEntry::Tag::PrefetchRange:
             decideBasedOnTrigger(object.data.prefetch_range._0.parent_data);
             break;
-        case physis_LayerEntry::Tag::PopRange:
-            for (uint32_t i = 0; i < object.data.pop_range._0.position_count; i++) {
-                setModel({object.data.pop_range._0.positions[i][0], object.data.pop_range._0.positions[i][1], object.data.pop_range._0.positions[i][2]});
-                Primitives::DrawSphere(commandBuffer);
+        case physis_LayerEntry::Tag::PopRange: {
+            // Only show positions when the PopRange is selected to reduce the noise...
+            if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
+                for (uint32_t i = 0; i < object.data.pop_range._0.position_count; i++) {
+                    setModel({object.data.pop_range._0.positions[i][0], object.data.pop_range._0.positions[i][1], object.data.pop_range._0.positions[i][2]});
+                    Primitives::DrawSphere(commandBuffer);
+                }
             }
-            setModel({}); // reset position
-            Primitives::DrawCube(commandBuffer); // draw normally for now
-            break;
+            drawBillboard(commandBuffer, camera, m_poprangeTexture, glm::vec4(1), pos);
+        } break;
         case physis_LayerEntry::Tag::LayLight: {
             const auto lightColor = glm::vec4(object.data.lay_light._0.diffuse_color_hdri.red / 255.0f,
                                               object.data.lay_light._0.diffuse_color_hdri.green / 255.0f,
@@ -519,6 +525,15 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
             break; // Don't render BG models because it also creates noise, and they have a visible model!
         case physis_LayerEntry::Tag::ChairMarker:
             drawBillboard(commandBuffer, camera, m_chairTexture, glm::vec4(1), pos);
+            break;
+        case physis_LayerEntry::Tag::Sound:
+            drawBillboard(commandBuffer, camera, m_soundTexture, glm::vec4(1), pos);
+            break;
+        case physis_LayerEntry::Tag::EventObject:
+            drawBillboard(commandBuffer, camera, m_eobjTexture, glm::vec4(1), pos);
+            break;
+        case physis_LayerEntry::Tag::EnvLocation:
+            drawBillboard(commandBuffer, camera, m_envLocationTexture, glm::vec4(1), pos);
             break;
         default:
             Primitives::DrawCube(commandBuffer);
