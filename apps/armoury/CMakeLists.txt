@@ -12,7 +12,6 @@ target_sources(novus-armoury
         include/gearlistwidget.h
         include/gearview.h
         include/mainwindow.h
-        include/metadataview.h
         include/penumbraapi.h
         include/settingswindow.h
         include/singlegearview.h
@@ -25,7 +24,6 @@ target_sources(novus-armoury
         src/gearview.cpp
         src/main.cpp
         src/mainwindow.cpp
-        src/metadataview.cpp
         src/penumbraapi.cpp
         src/settingswindow.cpp
         src/singlegearview.cpp)

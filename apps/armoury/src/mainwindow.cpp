@@ -45,12 +45,9 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     m_materialsView = new QTabWidget();
 
-    m_metadataView = new MetadataView();
-
     auto tabWidget = new QTabWidget();
     tabWidget->addTab(m_gearView, i18nc("@title:tab", "Models"));
     tabWidget->addTab(m_materialsView, i18nc("@title:tab", "Materials"));
-    tabWidget->addTab(m_metadataView, i18nc("@title:tab", "Metadata"));
     tabWidget->setDocumentMode(true); // Don't draw the borders
     tabWidget->tabBar()->setExpanding(true);
     dummyWidget->addWidget(tabWidget);
