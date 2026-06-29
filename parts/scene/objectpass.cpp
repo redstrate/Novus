@@ -46,6 +46,7 @@ ObjectPass::ObjectPass(RenderManager *renderer, SceneState *appState)
     m_eobjTexture = addTexture(QStringLiteral(":/eobj.png"));
     m_poprangeTexture = addTexture(QStringLiteral(":/poprange.png"));
     m_envLocationTexture = addTexture(QStringLiteral(":/envlocation.png"));
+    m_specularLightTexture = addTexture(QStringLiteral(":/specular.png"));
 
     Primitives::Initialize(m_renderer);
 }
@@ -515,6 +516,9 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                 break;
             case LightType::Line:
                 drawBillboard(commandBuffer, camera, m_lineLightTexture, lightColor, pos);
+                break;
+            case LightType::Specular:
+                drawBillboard(commandBuffer, camera, m_specularLightTexture, lightColor, pos);
                 break;
             default:
                 qWarning() << "Unsupported light type for billboard:" << static_cast<int>(object.data.lay_light._0.light_type);

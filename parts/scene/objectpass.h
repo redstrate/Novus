@@ -55,6 +55,7 @@ private:
     Texture m_eobjTexture;
     Texture m_poprangeTexture;
     Texture m_envLocationTexture;
+    Texture m_specularLightTexture;
     VkSampler m_sampler = nullptr;
 
     QHash<VkImage, VkDescriptorSet> m_cachedBillboardTextures;
