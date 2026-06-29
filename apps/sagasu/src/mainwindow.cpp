@@ -415,6 +415,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
             debugInformation.append(i18n("<truncated>"));
         }
         const auto debugInformationText = new QTextEdit();
+        debugInformationText->setReadOnly(true);
         debugInformationText->setText(debugInformation);
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting
