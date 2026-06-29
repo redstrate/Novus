@@ -17,6 +17,12 @@
       <text>Edit</text>
       <Action name="search" />
     </Menu>
+    <Menu name="view" >
+      <text>view</text>
+      <Action name="wireframe" />
+      <Action name="frustum_culling" />
+      <Action name="debug_frustum_culling" />
+    </Menu>
     <Menu name="navigate" >
       <text>Navigate</text>
       <Action name="goto_object" />

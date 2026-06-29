@@ -4,12 +4,11 @@
 #include "mdlpart.h"
 #include "glm/gtx/transform.hpp"
 
-#include <QJsonArray>
+#include <KLocalizedString>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QResizeEvent>
 #include <QVBoxLayout>
-#include <QVulkanInstance>
 #include <QVulkanWindow>
 #include <cmath>
 #include <glm/gtc/quaternion.hpp>
@@ -56,6 +55,27 @@ MDLPart::MDLPart(FileCache &cache, QWidget *parent)
 
     connect(this, &MDLPart::modelChanged, this, &MDLPart::reloadRenderer);
     connect(this, &MDLPart::skeletonChanged, this, &MDLPart::reloadBoneData);
+
+    m_wireframeAction = new QAction(i18n("Wireframe"));
+    m_wireframeAction->setCheckable(true);
+    m_wireframeAction->setChecked(m_renderer->scene.wireframe);
+    connect(m_wireframeAction, &QAction::toggled, this, [this](const bool toggled) {
+        m_renderer->scene.wireframe = toggled;
+    });
+
+    m_frustumCullingAction = new QAction(i18n("Frustum Culling"));
+    m_frustumCullingAction->setCheckable(true);
+    m_frustumCullingAction->setChecked(m_renderer->scene.frustumCulling);
+    connect(m_frustumCullingAction, &QAction::toggled, this, [this](const bool toggled) {
+        m_renderer->scene.frustumCulling = toggled;
+    });
+
+    m_debugFrustumCullingAction = new QAction(i18n("Draw Culling AABBs"));
+    m_debugFrustumCullingAction->setCheckable(true);
+    m_debugFrustumCullingAction->setChecked(m_renderer->scene.debugFrustumCulling);
+    connect(m_debugFrustumCullingAction, &QAction::toggled, this, [this](const bool toggled) {
+        m_renderer->scene.debugFrustumCulling = toggled;
+    });
 }
 
 MDLPart::~MDLPart()
@@ -77,7 +97,7 @@ DrawObject &MDLPart::getModel(const int index)
 
 void MDLPart::reloadModel(const int index)
 {
-    m_renderer->reloadDrawObject(*m_vkWindow->models[index].sourceObject, 0);
+    m_renderer->reloadDrawObject(*m_vkWindow->models[index].sourceObject);
 
     Q_EMIT modelChanged();
 }
@@ -93,7 +113,6 @@ void MDLPart::addModel(physis_MDL mdl,
                        Transformation transformation,
                        const QString &name,
                        std::vector<std::pair<std::string, physis_Material>> materials,
-                       int lod,
                        uint16_t fromBodyId,
                        uint16_t toBodyId)
 {
@@ -101,7 +120,7 @@ void MDLPart::addModel(physis_MDL mdl,
     if (m_vkWindow->sourceModels.contains(name)) {
         model = m_vkWindow->sourceModels[name];
     } else {
-        model = m_renderer->addDrawObject(mdl, lod, name.toStdString());
+        model = m_renderer->addDrawObject(mdl, name.toStdString());
         model->from_body_id = fromBodyId;
         model->to_body_id = toBodyId;
         model->skinned = skinned;
@@ -542,18 +561,6 @@ void MDLPart::addLight(const SceneLight &light)
     m_renderer->scene.lights.push_back(light);
 }
 
-void MDLPart::setWireframe(bool wireframe)
-{
-    Q_UNUSED(wireframe)
-    // renderer->wireframe = wireframe;
-}
-
-bool MDLPart::wireframe() const
-{
-    // return renderer->wireframe;
-    return false;
-}
-
 int MDLPart::numModels() const
 {
     return m_vkWindow->models.size();
@@ -567,6 +574,21 @@ RenderManager *MDLPart::manager() const
 QImage MDLPart::grab()
 {
     return m_renderer->grab(m_vkWindow->models);
+}
+
+QAction *MDLPart::wireframeAction()
+{
+    return m_wireframeAction;
+}
+
+QAction *MDLPart::frustumCullingAction()
+{
+    return m_frustumCullingAction;
+}
+
+QAction *MDLPart::debugFrustumCullingAction()
+{
+    return m_debugFrustumCullingAction;
 }
 
 bool MDLPart::modelExists(const QString &name)

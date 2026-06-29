@@ -6,11 +6,12 @@
 #include <vulkan/vulkan.h>
 
 struct Camera;
+struct Scene;
 
 class RendererPass
 {
 public:
     virtual ~RendererPass() = default;
 
-    virtual void render(VkCommandBuffer commandBuffer, Camera &camera) = 0;
+    virtual void render(VkCommandBuffer commandBuffer, Camera &camera, const Scene &scene, const std::vector<DrawObjectInstance> &models) = 0;
 };

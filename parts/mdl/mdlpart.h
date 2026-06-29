@@ -44,9 +44,6 @@ public:
 
     std::function<void()> requestUpdate;
 
-    void setWireframe(bool wireframe);
-    bool wireframe() const;
-
     int numModels() const;
 
     RenderManager *manager() const;
@@ -56,6 +53,10 @@ public:
     bool enableRacialDeform = true;
 
     QImage grab();
+
+    QAction *wireframeAction();
+    QAction *frustumCullingAction();
+    QAction *debugFrustumCullingAction();
 
 Q_SIGNALS:
     void modelChanged();
@@ -81,7 +82,6 @@ public Q_SLOTS:
                   Transformation transformation,
                   const QString &name,
                   std::vector<std::pair<std::string, physis_Material>> materials,
-                  int lod,
                   uint16_t fromBodyId = 101,
                   uint16_t toBodyId = 101);
 
@@ -129,4 +129,8 @@ private:
     VulkanWindow *m_vkWindow = nullptr;
     bool m_firstTimeSkeletonDataCalculated = false;
     std::unique_ptr<QVulkanInstance> m_instance;
+
+    QAction *m_wireframeAction = nullptr;
+    QAction *m_frustumCullingAction = nullptr;
+    QAction *m_debugFrustumCullingAction = nullptr;
 };

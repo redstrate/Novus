@@ -32,7 +32,7 @@ public:
 
     void resize() override;
 
-    void render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObjectInstance> &models) override;
+    void render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, std::vector<DrawObjectInstance> &models) override;
 
     Texture &getCompositeTexture() override;
 
@@ -64,7 +64,6 @@ private:
     VkPipeline m_pipelineWireframe = VK_NULL_HANDLE;
     VkPipeline m_skinnedPipelineWireframe = VK_NULL_HANDLE;
     VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
-    bool m_wireframe = false;
 
     VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
 

@@ -182,8 +182,7 @@ QImage EnemyModel::renderModel(const uint32_t id, const QString &mdlPath, const 
                          .scale = {1.0f / size[0], 1.0f / size[1], 1.0f / size[2]},
                      },
                      QStringLiteral("enemy"),
-                     {{mtrlPath.toStdString(), mtrl}},
-                     0);
+                     {{mtrlPath.toStdString(), mtrl}});
 
     auto image = m_part->grab();
     m_part->clear();

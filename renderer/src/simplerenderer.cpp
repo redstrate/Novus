@@ -8,9 +8,12 @@
 #include "camera.h"
 #include "device.h"
 #include "drawobject.h"
+#include "frustum.h"
 #include "scene.h"
 #include "shaderstructs.h"
 #include "swapchain.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 const size_t MAX_LIGHTS = 1024;
 
@@ -85,7 +88,7 @@ void SimpleRenderer::resize()
     m_device.nameObject(VK_OBJECT_TYPE_FRAMEBUFFER, reinterpret_cast<uint64_t>(m_framebuffer), "simple renderer framebuffer");
 }
 
-void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObjectInstance> &models)
+void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, std::vector<DrawObjectInstance> &models)
 {
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -113,20 +116,69 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
         lightCount = MAX_LIGHTS;
     }
     for (size_t i = 0; i < lightCount; i++) {
-        lights[i].directionOrPos = glm::vec4(scene.lights[i].position, static_cast<float>(scene.lights[i].type));
-        lights[i].colorIntensity = glm::vec4(scene.lights[i].color, scene.lights[i].intensity);
+        if (scene.lights[i].active) {
+            lights[i].directionOrPos = glm::vec4(scene.lights[i].position, static_cast<float>(scene.lights[i].type));
+            lights[i].colorIntensity = glm::vec4(scene.lights[i].color, scene.lights[i].intensity);
+        }
     }
     m_device.copyToBuffer(m_lightsBuffer, lights.data(), m_lightsBuffer.size);
 
-    for (const auto &model : models) {
+    const auto frustum = camera.frustum();
+
+    scene.culledObjects = 0;
+
+    for (auto &model : models) {
+        const auto distance = glm::distance(glm::make_vec3(model.transformation.translation), camera.position);
+
+        // Not sure if this is the intended use case of this property, but we can use it for some shitty culling
+        // Note that the 0.0 check is because terrain models usually have 0 here.
+        if (model.sourceObject->model.model_clip_out_of_distance > 0.0 && distance > model.sourceObject->model.model_clip_out_of_distance) {
+            scene.culledObjects++; // TODO: introduce a separate count?
+            continue;
+        }
+
+        // Shitty unoptimized frustum check
+        glm::vec4 boundMin = glm::make_vec4(model.sourceObject->model.bounding_box.min);
+        glm::vec4 boundMax = glm::make_vec4(model.sourceObject->model.bounding_box.max);
+
+        auto m = glm::mat4(1.0f);
+        m = glm::translate(m, glm::vec3(model.transformation.translation[0], model.transformation.translation[1], model.transformation.translation[2]));
+        m *= glm::mat4_cast(glm::quat(glm::vec3(model.transformation.rotation[0], model.transformation.rotation[1], model.transformation.rotation[2])));
+        m = glm::scale(m, glm::vec3(model.transformation.scale[0], model.transformation.scale[1], model.transformation.scale[2]));
+
+        glm::vec4 newBoundMin;
+        glm::vec4 newBoundMax;
+
+        newBoundMin = boundMin + glm::vec4(glm::make_vec3(model.transformation.translation), 0.0f);
+        newBoundMax = glm::vec4(glm::make_vec3(model.transformation.translation), 0.0f) + boundMax;
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                auto a = m[i][j] * boundMin[j];
+                auto b = m[i][j] * boundMax[j];
+                newBoundMin[i] += a < b ? a : b;
+                newBoundMax[i] += a < b ? b : a;
+            }
+        }
+
+        auto bounding_box = BoundingBox{
+            .min = {newBoundMin[0], newBoundMin[1], newBoundMin[2]},
+            .max = {newBoundMax[0], newBoundMax[1], newBoundMax[2]},
+        };
+        model.lastBoundingBox = bounding_box;
+        if (scene.frustumCulling && !test_aabb_frustum(frustum, bounding_box)) {
+            scene.culledObjects++;
+            continue;
+        }
+
         if (model.sourceObject->skinned) {
-            if (m_wireframe) {
+            if (scene.wireframe) {
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skinnedPipelineWireframe);
             } else {
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skinnedPipeline);
             }
         } else {
-            if (m_wireframe) {
+            if (scene.wireframe) {
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineWireframe);
             } else {
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
@@ -150,7 +202,8 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             vkUnmapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory);
         }
 
-        for (const auto &part : model.sourceObject->parts) {
+        const auto &lod = model.sourceObject->chooseLod(distance);
+        for (const auto &part : model.sourceObject->lods[lod].parts) {
             RenderMaterial material = {};
             if (static_cast<size_t>(part.materialIndex) < model.sourceObject->materials.size()) {
                 material = model.sourceObject->materials[part.materialIndex];
@@ -176,11 +229,6 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             glm::mat4 vp = camera.perspective * camera.view;
 
             vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
-
-            auto m = glm::mat4(1.0f);
-            m = glm::translate(m, glm::vec3(model.transformation.translation[0], model.transformation.translation[1], model.transformation.translation[2]));
-            m *= glm::mat4_cast(glm::quat(glm::vec3(model.transformation.rotation[0], model.transformation.rotation[1], model.transformation.rotation[2])));
-            m = glm::scale(m, glm::vec3(model.transformation.scale[0], model.transformation.scale[1], model.transformation.scale[2]));
 
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,

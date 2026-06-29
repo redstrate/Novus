@@ -779,6 +779,14 @@ void ObjectPropertiesWidget::addLightSection(const physis_LightInstanceObject &l
                                    .arg(light.diffuse_color_hdri.blue)
                                    .arg(light.diffuse_color_hdri.intensity));
     layout->addRow(i18n("Color"), diffuseColorLabel);
+
+    auto rangeRateLabel = new QLabel();
+    rangeRateLabel->setText(QString::number(light.range_rate));
+    layout->addRow(i18n("Range Rate"), rangeRateLabel);
+
+    auto attenuationLabel = new QLabel();
+    attenuationLabel->setText(QString::number(light.range_rate));
+    layout->addRow(i18n("Attenuation"), attenuationLabel);
 }
 
 void ObjectPropertiesWidget::addVfxSection(const physis_VfxInstanceObject &vfx)

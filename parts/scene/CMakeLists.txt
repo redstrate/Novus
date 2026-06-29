@@ -40,6 +40,15 @@ target_link_libraries(scenepart
         Qt6::Core
         Qt6::Widgets
         tinygltf)
+qt_add_resources(scenepart
+        PREFIX "/"
+        FILES
+        point.png
+        spot.png
+        plane.png
+        directional.png
+        line.png
+        chair.png)
 target_include_directories(scenepart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(scenepart PRIVATE TRANSLATION_DOMAIN="novus")
 

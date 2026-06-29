@@ -24,7 +24,7 @@ const int LIGHT_TYPE_POINT = 2;
 const int LIGHT_TYPE_SPOT = 3;
 
 // To make lights less intense.
-const float INTENSITY_FACTOR = 0.5;
+const float INTENSITY_FACTOR = 0.15;
 
 struct Light {
     vec4 directionOrPos;

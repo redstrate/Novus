@@ -119,14 +119,14 @@ void Primitives::Initialize(RenderManager *renderer)
                                                         7};
 
         constexpr std::array<float, 24> cube_vertices{
-            -1, -1, 0.5, // 0
-            1,  -1, 0.5, // 1
-            -1, 1,  0.5, // 2
-            1,  1,  0.5, // 3
-            -1, -1, -0.5, // 4
-            1,  -1, -0.5, // 5
-            -1, 1,  -0.5, // 6
-            1,  1,  -0.5 // 7
+            -1, -1, 1, // 0
+            1,  -1, 1, // 1
+            -1, 1,  1, // 2
+            1,  1,  1, // 3
+            -1, -1, -1, // 4
+            1,  -1, -1, // 5
+            -1, 1,  -1, // 6
+            1,  1,  -1 // 7
         };
 
         cube.indexCount = static_cast<uint32_t>(cube_indices.size());

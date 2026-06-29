@@ -38,8 +38,9 @@ private:
     QAction *m_gimmickListAction = nullptr;
     QAction *m_effectListAction = nullptr;
     QAction *m_goToObjectAction = nullptr;
+    QAction *m_closeAction = nullptr;
+    QAction *m_saveAction = nullptr;
     QLabel *m_cameraPosLabel = nullptr;
     uint32_t m_lgbEventRange = 0;
     std::vector<int32_t> m_mapEffects;
-    QAction *m_saveAction = nullptr;
 };

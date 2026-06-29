@@ -79,6 +79,7 @@ public:
     std::vector<std::pair<QString, DropIn>> dropIns;
     physis_Sgb sgb{}; // so it can be freed later
     uint32_t originatingSgbLayerId = 0;
+    uint32_t originatingSgbId = 0;
     std::unordered_map<std::string, physis_Material> cachedMaterials;
 
     /// Key is the ID of the SGB instance.
@@ -119,6 +120,9 @@ public:
     std::optional<QString> selectedTera;
     std::optional<DropInObject *> selectedDropInObject;
     QList<uint32_t> visibleTerrainPlates;
+    physis_Lcb loadedLcb{};
+
+    std::optional<BoundingBox> checkLightBoundingBox(uint32_t id, uint32_t sgbId) const;
 
     /**
      * @return The name for this Event NPC. If not found, then a generic one.

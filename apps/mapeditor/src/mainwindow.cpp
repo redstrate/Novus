@@ -46,6 +46,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 
     connect(m_part->sceneState(), &SceneState::selectionChanged, this, &MainWindow::updateActionState);
+    connect(m_part->sceneState(), &SceneState::mapLoaded, this, &MainWindow::updateActionState);
 
     updateActionState();
 
@@ -74,10 +75,19 @@ void MainWindow::setupActions()
             listWidget->show();
         },
         actionCollection());
-    KStandardAction::save(
+    m_saveAction = KStandardAction::save(
         qApp,
         [this] {
             m_part->sceneState()->saveDropIns();
+            m_part->save();
+        },
+        actionCollection());
+    m_closeAction = KStandardAction::close(
+        qApp,
+        [this] {
+            setPlainCaption({});
+            m_part->clear();
+            Q_EMIT m_part->sceneState()->mapLoaded();
         },
         actionCollection());
 
@@ -147,23 +157,22 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("goto_object"), m_goToObjectAction);
 
-    m_saveAction = KStandardAction::save(
-        qApp,
-        [this] {
-            m_part->save();
-        },
-        actionCollection());
-
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 
     m_cameraPosLabel = new QLabel(i18n("..."));
     statusBar()->addWidget(m_cameraPosLabel);
     connect(&m_part->mapView()->part(), &MDLPart::cameraMoved, this, [this] {
-        m_cameraPosLabel->setText(i18n("X: %1 Y: %2 Z: %3")
+        m_cameraPosLabel->setText(i18n("X: %1 Y: %2 Z: %3 Culled Objects: %5 Culled Lights: %6")
                                       .arg(m_part->mapView()->part().position.x)
                                       .arg(m_part->mapView()->part().position.y)
-                                      .arg(m_part->mapView()->part().position.z));
+                                      .arg(m_part->mapView()->part().position.z)
+                                      .arg(m_part->mapView()->part().manager()->scene.culledObjects)
+                                      .arg(m_part->mapView()->part().manager()->scene.culledLights));
     });
+
+    actionCollection()->addAction(QStringLiteral("wireframe"), m_part->mapView()->part().wireframeAction());
+    actionCollection()->addAction(QStringLiteral("frustum_culling"), m_part->mapView()->part().frustumCullingAction());
+    actionCollection()->addAction(QStringLiteral("debug_frustum_culling"), m_part->mapView()->part().debugFrustumCullingAction());
 }
 
 void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
@@ -234,6 +243,9 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
 void MainWindow::updateActionState()
 {
     m_centerObjectAction->setEnabled(m_part->sceneState()->selectedObject.has_value() || m_part->sceneState()->selectedDropInObject.has_value());
+    m_saveAction->setEnabled(!m_part->sceneState()->rootScene.lgbFiles.empty());
+    m_closeAction->setEnabled(!m_part->sceneState()->rootScene.lgbFiles.empty());
+    m_goToObjectAction->setEnabled(!m_part->sceneState()->rootScene.lgbFiles.empty());
 }
 
 #include "moc_mainwindow.cpp"

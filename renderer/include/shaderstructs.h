@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+
 // Structure definitions from https://github.com/Shaderlayan/Ouroboros
 // TODO: i think this is too small :-(
 struct CameraParameter {

@@ -477,7 +477,7 @@ void RenderManager::destroySwapchain(bool keepSwapchainObject)
     }
 }
 
-void RenderManager::render(const std::vector<DrawObjectInstance> &models)
+void RenderManager::render(std::vector<DrawObjectInstance> &models)
 {
     vkWaitForFences(m_device->device,
                     1,
@@ -523,7 +523,7 @@ void RenderManager::render(const std::vector<DrawObjectInstance> &models)
     // TODO: support the new renderer
     if (qgetenv("NOVUS_USE_NEW_RENDERER") != QByteArrayLiteral("1")) {
         for (const auto &pass : m_passes) {
-            pass->render(commandBuffer, camera);
+            pass->render(commandBuffer, camera, scene, models);
         }
 
         vkCmdEndRenderPass(commandBuffer);
@@ -602,65 +602,68 @@ VkRenderPass RenderManager::presentationRenderPass() const
     return m_renderPass;
 }
 
-DrawObject *RenderManager::addDrawObject(const physis_MDL &model, int lod, std::string name)
+DrawObject *RenderManager::addDrawObject(const physis_MDL &model, std::string name)
 {
     auto DrawObject = new ::DrawObject();
     DrawObject->model = model;
     DrawObject->name = name;
 
-    reloadDrawObject(*DrawObject, lod);
+    reloadDrawObject(*DrawObject);
 
     return DrawObject;
 }
 
-void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
+void RenderManager::reloadDrawObject(DrawObject &DrawObject)
 {
-    if (lod > DrawObject.model.num_lod)
-        return;
+    DrawObject.lods.clear();
 
-    DrawObject.parts.clear();
+    for (uint32_t lod = 0; lod < DrawObject.model.num_lod; lod++) {
+        RenderLod newLod;
+        newLod.range = DrawObject.model.lods[lod].model_lod_range;
 
-    for (uint32_t i = 0; i < DrawObject.model.lods[lod].num_parts; i++) {
-        RenderPart renderPart;
+        for (uint32_t i = 0; i < DrawObject.model.lods[lod].num_parts; i++) {
+            RenderPart renderPart;
 
-        const physis_Part part = DrawObject.model.lods[lod].parts[i];
+            const physis_Part part = DrawObject.model.lods[lod].parts[i];
 
-        renderPart.originalPart = part;
-        renderPart.materialIndex = part.material_index;
+            renderPart.originalPart = part;
+            renderPart.materialIndex = part.material_index;
 
-        if (qgetenv("NOVUS_USE_NEW_RENDERER") == QByteArrayLiteral("1")) {
-            renderPart.streamBuffer.resize(DrawObject.model.lods[lod].num_vertex_elements);
-            for (uint32_t j = 0; j < part.num_streams; j++) {
-                size_t size = part.stream_sizes[j];
-                auto buffer = m_device->createBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-                m_device->copyToBuffer(buffer, (void *)part.streams[j], size);
-                m_device->nameBuffer(buffer, "Stream Buffer for MDL");
+            if (qgetenv("NOVUS_USE_NEW_RENDERER") == QByteArrayLiteral("1")) {
+                renderPart.streamBuffer.resize(DrawObject.model.lods[lod].num_vertex_elements);
+                for (uint32_t j = 0; j < part.num_streams; j++) {
+                    size_t size = part.stream_sizes[j];
+                    auto buffer = m_device->createBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+                    m_device->copyToBuffer(buffer, (void *)part.streams[j], size);
+                    m_device->nameBuffer(buffer, "Stream Buffer for MDL");
 
-                renderPart.streamBuffer[j] = buffer;
-            }
-        } else {
-            if (part.num_vertices > 0) {
-                size_t vertexSize = part.num_vertices * sizeof(Vertex);
-                renderPart.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-                m_device->copyToBuffer(renderPart.vertexBuffer, (void *)part.vertices, vertexSize);
-                m_device->nameBuffer(renderPart.vertexBuffer, "Vertex Buffer for MDL");
+                    renderPart.streamBuffer[j] = buffer;
+                }
             } else {
-                qWarning() << DrawObject.name << "Lod" << lod << "Part" << i << "has zero vertices, is that supposed to happen?";
+                if (part.num_vertices > 0) {
+                    size_t vertexSize = part.num_vertices * sizeof(Vertex);
+                    renderPart.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+                    m_device->copyToBuffer(renderPart.vertexBuffer, (void *)part.vertices, vertexSize);
+                    m_device->nameBuffer(renderPart.vertexBuffer, "Vertex Buffer for MDL");
+                } else {
+                    qWarning() << DrawObject.name << "Lod" << lod << "Part" << i << "has zero vertices, is that supposed to happen?";
+                }
             }
+
+            if (part.num_indices > 0) {
+                size_t indexSize = part.num_indices * sizeof(uint16_t);
+                renderPart.indexBuffer = m_device->createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+                m_device->copyToBuffer(renderPart.indexBuffer, (void *)part.indices, indexSize);
+                m_device->nameBuffer(renderPart.indexBuffer, "Index Buffer for MDL");
+
+                renderPart.numIndices = part.num_indices;
+            } else {
+                qWarning() << DrawObject.name << "Lod" << lod << "Part" << i << "has zero indices, is that supposed to happen?";
+            }
+
+            newLod.parts.push_back(renderPart);
         }
-
-        if (part.num_indices > 0) {
-            size_t indexSize = part.num_indices * sizeof(uint16_t);
-            renderPart.indexBuffer = m_device->createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-            m_device->copyToBuffer(renderPart.indexBuffer, (void *)part.indices, indexSize);
-            m_device->nameBuffer(renderPart.indexBuffer, "Index Buffer for MDL");
-
-            renderPart.numIndices = part.num_indices;
-        } else {
-            qWarning() << DrawObject.name << "Lod" << lod << "Part" << i << "has zero indices, is that supposed to happen?";
-        }
-
-        DrawObject.parts.push_back(renderPart);
+        DrawObject.lods.push_back(newLod);
     }
 
     const size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
@@ -670,11 +673,13 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject, uint32_t lod)
 
 void RenderManager::destroyDrawObject(DrawObject &model)
 {
-    for (auto &part : model.parts) {
-        m_device->destroyBuffer(part.vertexBuffer);
-        m_device->destroyBuffer(part.indexBuffer);
-        for (auto &stream : part.streamBuffer) {
-            m_device->destroyBuffer(stream);
+    for (auto &lod : model.lods) {
+        for (auto &part : lod.parts) {
+            m_device->destroyBuffer(part.vertexBuffer);
+            m_device->destroyBuffer(part.indexBuffer);
+            for (auto &stream : part.streamBuffer) {
+                m_device->destroyBuffer(stream);
+            }
         }
     }
 
@@ -877,7 +882,7 @@ void RenderManager::freeResources()
     }
 }
 
-QImage RenderManager::grab(const std::vector<DrawObjectInstance> &models)
+QImage RenderManager::grab(std::vector<DrawObjectInstance> &models)
 {
     render(models);
 

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "frustum.h"
+
 #include <glm/mat4x4.hpp>
 
 struct Camera {
@@ -17,4 +19,9 @@ struct Camera {
 
     glm::mat4 perspective, view;
     glm::vec3 position;
+
+    CameraFrustum frustum()
+    {
+        return normalize_frustum(camera_extract_frustum(*this));
+    }
 };

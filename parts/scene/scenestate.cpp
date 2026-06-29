@@ -153,22 +153,28 @@ void SceneState::load(FileCache &cache, const physis_ScnSection &section)
 {
     rootScene.load(cache, section);
 
+    if (section.general.lcb_path) {
+        const auto buffer = cache.read(QString::fromStdString(section.general.lcb_path));
+        loadedLcb = physis_lcb_parse(cache.platform(), buffer);
+    }
+
     // Load terrain and bg by default
     for (int i = 0; i < rootScene.terrain.num_plates; i++) {
         visibleTerrainPlates.push_back(i);
     }
 
     for (const auto &[name, lgb] : rootScene.lgbFiles) {
-        if (name.endsWith(QStringLiteral("bg.lgb"))) {
-            for (uint32_t i = 0; i < lgb.num_chunks; i++) {
-                for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
-                    // Skip festival-specific layers
-                    if (lgb.chunks[i].layers[j].festival_id == 0) {
-                        visibleLayerIds.push_back(lgb.chunks[i].layers[j].id);
-                    }
+        for (uint32_t i = 0; i < lgb.num_chunks; i++) {
+            for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
+                // TODO: check layer visibility
+                // TODO: check layer sets
+                // TODO: how can we stop showing quest-specific layers?
+
+                // Skip festival-specific layers
+                if (lgb.chunks[i].layers[j].festival_id == 0) {
+                    visibleLayerIds.push_back(lgb.chunks[i].layers[j].id);
                 }
             }
-            break;
         }
     }
 
@@ -314,6 +320,7 @@ void SceneState::clear()
     selectedTera.reset();
     selectedDropInObject.reset();
     visibleTerrainPlates.clear();
+    loadedLcb = {};
 }
 
 void SceneState::showAll()
@@ -321,6 +328,33 @@ void SceneState::showAll()
     showAllInScene(rootScene);
 
     Q_EMIT visibleLayerIdsChanged();
+}
+
+std::optional<BoundingBox> SceneState::checkLightBoundingBox(const uint32_t id, const uint32_t sgbId) const
+{
+    for (uint32_t i = 0; i < loadedLcb.lcc_count; i++) {
+        for (uint32_t j = 0; j < loadedLcb.lccs[i].num_entries; j++) {
+            const auto &entry = loadedLcb.lccs[i].entries[j];
+
+            // SGB light case
+            if (entry.instance_id == sgbId && entry.sub_id == id) {
+                return BoundingBox{
+                    .min = {entry.min[0], entry.min[1], entry.min[2], 1.0f},
+                    .max = {entry.max[0], entry.max[1], entry.max[2], 1.0f},
+                };
+            }
+
+            // Normal light case
+            if (entry.instance_id == id) {
+                return BoundingBox{
+                    .min = {entry.min[0], entry.min[1], entry.min[2], 1.0f},
+                    .max = {entry.max[0], entry.max[1], entry.max[2], 1.0f},
+                };
+            }
+        }
+    }
+
+    return {};
 }
 
 QString SceneState::lookupENpcName(const uint32_t id) const
@@ -483,6 +517,7 @@ void ObjectScene::processSharedGroup(FileCache &cache, uint32_t instanceId, uint
     nestedScenes[instanceId].transformation = transformation;
     nestedScenes[instanceId].sgb = sgb;
     nestedScenes[instanceId].originatingSgbLayerId = layerId;
+    nestedScenes[instanceId].originatingSgbId = instanceId;
 }
 
 void ObjectScene::processScnLayerGroup(FileCache &cache, const physis_ScnLayerGroup &group)

@@ -10,6 +10,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "filecache.h"
+#include "frustum.h"
 #include "objectpass.h"
 #include "scenestate.h"
 
@@ -24,6 +25,9 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
     m_mdlPart->enableFreemode();
     connect(m_mdlPart, &MDLPart::initializeRender, this, [this, appState] {
         m_mdlPart->manager()->addPass(new ObjectPass(m_mdlPart->manager(), appState));
+    });
+    connect(m_mdlPart, &MDLPart::cameraMoved, this, [this] {
+        updateLightCulling();
     });
 
     auto layout = new QVBoxLayout();
@@ -90,7 +94,7 @@ void MapView::addTerrain(ObjectScene &scene)
                 .scale = {1, 1, 1},
             };
 
-            m_mdlPart->addModel(plateMdl, false, transformation, QStringLiteral("terapart%1").arg(i), materials, 0);
+            m_mdlPart->addModel(plateMdl, false, transformation, QStringLiteral("terapart%1").arg(i), materials);
 
             // We don't need this, and it will just take up memory
             physis_mdl_free(&plateMdl);
@@ -230,7 +234,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                             materials.push_back(std::make_pair(material_name, scene.cachedMaterials[material_name]));
                         }
 
-                        m_mdlPart->addModel(plateMdl, false, combinedTransform, QString::fromStdString(assetPath), materials, 0);
+                        m_mdlPart->addModel(plateMdl, false, combinedTransform, QString::fromStdString(assetPath), materials);
 
                         // We don't need this, and it will just take up memory
                         physis_mdl_free(&plateMdl);
@@ -244,6 +248,8 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
         } break;
         case physis_LayerEntry::Tag::LayLight: {
             SceneLight sceneLight;
+            sceneLight.id = object.instance_id;
+            sceneLight.parentSgbId = scene.originatingSgbId;
             sceneLight.position = glm::make_vec3(object.transform.translation);
             sceneLight.type = object.data.lay_light._0.light_type;
             sceneLight.color = glm::vec3(static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.red) / 255.0f,
@@ -255,6 +261,31 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
         } break;
         default:
             break;
+        }
+    }
+}
+
+void MapView::updateLightCulling()
+{
+    m_mdlPart->manager()->scene.culledLights = 0;
+
+    for (auto &light : m_mdlPart->manager()->scene.lights) {
+        if (light.id != 0) {
+            auto bounding_box = m_appState->checkLightBoundingBox(light.id, light.parentSgbId).value();
+            bounding_box.min[0] += light.position[0];
+            bounding_box.min[1] += light.position[1];
+            bounding_box.min[2] += light.position[2];
+            bounding_box.max[0] += light.position[0];
+            bounding_box.max[1] += light.position[1];
+            bounding_box.max[2] += light.position[2];
+            if (m_mdlPart->manager()->scene.frustumCulling && !test_aabb_frustum(m_mdlPart->manager()->camera.frustum(), bounding_box)) {
+                light.active = false;
+                m_mdlPart->manager()->scene.culledLights++;
+            } else {
+                light.active = true;
+            }
+        } else {
+            light.active = true;
         }
     }
 }

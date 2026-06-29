@@ -277,7 +277,7 @@ GameRenderer::GameRenderer(Device &device, FileCache &cache)
     createImageResources();
 }
 
-void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, const std::vector<DrawObjectInstance> &models)
+void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &scene, std::vector<DrawObjectInstance> &models)
 {
     Q_UNUSED(scene)
 
@@ -352,7 +352,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                     vkUnmapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory);
                 }
 
-                for (const auto &part : model.sourceObject->parts) {
+                const auto &lod = model.sourceObject->chooseLod(0.0f); // TODO: use lod
+                for (const auto &part : model.sourceObject->lods[lod].parts) {
                     RenderMaterial renderMaterial;
                     if (static_cast<size_t>(part.materialIndex + 1) > model.sourceObject->materials.size()) {
                         renderMaterial = model.sourceObject->materials[0]; // TODO: better fallback
@@ -595,7 +596,8 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
             const auto [colorAttachmentFormats, depthAttachmentFormat] = beginPass(commandBuffer, pass);
 
             for (auto &model : models) {
-                for (const auto &part : model.sourceObject->parts) {
+                const auto &lod = model.sourceObject->chooseLod(0.0f); // TODO: use lod
+                for (const auto &part : model.sourceObject->lods[lod].parts) {
                     RenderMaterial renderMaterial;
                     if (static_cast<size_t>(part.materialIndex + 1) > model.sourceObject->materials.size()) {
                         renderMaterial = model.sourceObject->materials[0]; // TODO: better fallback

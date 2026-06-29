@@ -3,8 +3,16 @@
 
 #pragma once
 
+#include "buffer.h"
 #include "shaderstructs.h"
 #include "texture.h"
+
+#include <QString>
+#include <array>
+#include <optional>
+#include <physis.hpp>
+#include <string>
+#include <vector>
 
 struct RenderPart {
     size_t numIndices;
@@ -37,10 +45,15 @@ struct RenderMaterial {
     Buffer materialBuffer;
 };
 
+struct RenderLod {
+    float range = 0.0f;
+    std::vector<RenderPart> parts;
+};
+
 struct DrawObject {
     std::string name;
     physis_MDL model;
-    std::vector<RenderPart> parts;
+    std::vector<RenderLod> lods;
     std::array<glm::mat3x4, JOINT_MATRIX_SIZE_DAWNTRAIL> boneData; // JOINT_MATRIX_SIZE_DAWNTRAIL
     std::vector<RenderMaterial> materials;
     bool skinned = false;
@@ -49,10 +62,22 @@ struct DrawObject {
     uint16_t to_body_id = 101;
 
     Buffer boneInfoBuffer;
+
+    size_t chooseLod(const float distance) const
+    {
+        for (size_t i = 0; i < lods.size(); i++) {
+            if (distance < lods[i].range) {
+                return i;
+            }
+        }
+
+        return lods.size() - 1;
+    }
 };
 
 struct DrawObjectInstance {
     QString name;
     DrawObject *sourceObject = nullptr;
     Transformation transformation;
+    BoundingBox lastBoundingBox{};
 };

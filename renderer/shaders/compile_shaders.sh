@@ -11,4 +11,6 @@ glslc dummy.frag -o dummy.frag.spv &&
 glslc blit.vert -o blit.vert.spv &&
 glslc blit.frag -o blit.frag.spv &&
 glslc debug.vert -o debug.vert.spv &&
-glslc debug.frag -o debug.frag.spv
+glslc debug.frag -o debug.frag.spv &&
+glslc billboard.vert -o billboard.vert.spv &&
+glslc billboard.frag -o billboard.frag.spv

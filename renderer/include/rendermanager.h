@@ -36,8 +36,8 @@ public:
 
     void destroySwapchain(bool keepSwapchainObject);
 
-    DrawObject *addDrawObject(const physis_MDL &model, int lod, std::string name);
-    void reloadDrawObject(DrawObject &model, uint32_t lod);
+    DrawObject *addDrawObject(const physis_MDL &model, std::string name);
+    void reloadDrawObject(DrawObject &model);
     void destroyDrawObject(DrawObject &model);
 
     /**
@@ -47,7 +47,7 @@ public:
      */
     Texture addGameTexture(physis_Texture gameTexture);
 
-    void render(const std::vector<DrawObjectInstance> &models);
+    void render(std::vector<DrawObjectInstance> &models);
 
     VkRenderPass presentationRenderPass() const;
 
@@ -66,7 +66,7 @@ public:
 
     void freeResources();
 
-    QImage grab(const std::vector<DrawObjectInstance> &models);
+    QImage grab(std::vector<DrawObjectInstance> &models);
 
 private:
     void updateCamera(Camera &camera);

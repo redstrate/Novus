@@ -347,12 +347,12 @@ void GearView::updatePart()
                     transformation.scale[1] = 1;
                     transformation.scale[2] = 1;
 
+                    // TODO: restroe manual lod control
                     m_mdlPart->addModel(mdl,
                                         true,
                                         transformation,
                                         sanitizeMdlPath(mdlPath),
                                         materials,
-                                        m_currentLod,
                                         physis_get_race_code(currentRace, currentTribe, currentGender),
                                         gearAddition.bodyId);
                     gearAddition.mdl = mdl;
@@ -410,7 +410,8 @@ void GearView::updatePart()
                 transformation.scale[1] = 1;
                 transformation.scale[2] = 1;
 
-                m_mdlPart->addModel(mdl, true, transformation, sanitizeMdlPath(mdlPath), materials, m_currentLod);
+                // TODO: restore manual lod control
+                m_mdlPart->addModel(mdl, true, transformation, sanitizeMdlPath(mdlPath), materials);
             }
         }
     };
