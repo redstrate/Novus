@@ -310,7 +310,6 @@ void ObjectPass::createBillboardPipeline()
 
     VkPipelineDepthStencilStateCreateInfo depthStencil = {};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = VK_TRUE;
     depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
     depthStencil.maxDepthBounds = 1.0f;
 
@@ -432,9 +431,9 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
         };
         setModel({});
 
-        glm::vec4 color = glm::vec4(1, 0, 0, 1);
+        glm::vec4 color = glm::vec4(1, 1, 1, 0.5);
         if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
-            color = glm::vec4(0, 1, 0, 1);
+            color = glm::vec4(1);
         }
 
         vkCmdPushConstants(commandBuffer,
@@ -466,7 +465,7 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
             }
         };
 
-        const auto pos = glm::vec3{object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]};
+        const auto pos = glm::make_vec3(object.transform.translation);
 
         switch (object.data.tag) {
         case physis_LayerEntry::Tag::MapRange:
@@ -489,13 +488,16 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                     Primitives::DrawSphere(commandBuffer);
                 }
             }
-            drawBillboard(commandBuffer, camera, m_poprangeTexture, glm::vec4(1), pos);
+            drawBillboard(commandBuffer, camera, m_poprangeTexture, color, pos);
         } break;
         case physis_LayerEntry::Tag::LayLight: {
-            const auto lightColor = glm::vec4(object.data.lay_light._0.diffuse_color_hdri.red / 255.0f,
-                                              object.data.lay_light._0.diffuse_color_hdri.green / 255.0f,
-                                              object.data.lay_light._0.diffuse_color_hdri.blue / 255.0f,
-                                              object.data.lay_light._0.diffuse_color_hdri.alpha / 255.0f);
+            auto lightColor = glm::vec4(object.data.lay_light._0.diffuse_color_hdri.red / 255.0f,
+                                        object.data.lay_light._0.diffuse_color_hdri.green / 255.0f,
+                                        object.data.lay_light._0.diffuse_color_hdri.blue / 255.0f,
+                                        object.data.lay_light._0.diffuse_color_hdri.alpha / 255.0f);
+            if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
+                lightColor = color;
+            }
             switch (object.data.lay_light._0.light_type) {
             case LightType::None:
                 break;
@@ -524,16 +526,16 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
         case physis_LayerEntry::Tag::BG:
             break; // Don't render BG models because it also creates noise, and they have a visible model!
         case physis_LayerEntry::Tag::ChairMarker:
-            drawBillboard(commandBuffer, camera, m_chairTexture, glm::vec4(1), pos);
+            drawBillboard(commandBuffer, camera, m_chairTexture, color, pos);
             break;
         case physis_LayerEntry::Tag::Sound:
-            drawBillboard(commandBuffer, camera, m_soundTexture, glm::vec4(1), pos);
+            drawBillboard(commandBuffer, camera, m_soundTexture, color, pos);
             break;
         case physis_LayerEntry::Tag::EventObject:
-            drawBillboard(commandBuffer, camera, m_eobjTexture, glm::vec4(1), pos);
+            drawBillboard(commandBuffer, camera, m_eobjTexture, color, pos);
             break;
         case physis_LayerEntry::Tag::EnvLocation:
-            drawBillboard(commandBuffer, camera, m_envLocationTexture, glm::vec4(1), pos);
+            drawBillboard(commandBuffer, camera, m_envLocationTexture, color, pos);
             break;
         default:
             Primitives::DrawCube(commandBuffer);
