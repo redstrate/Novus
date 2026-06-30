@@ -8,11 +8,14 @@
 #include <glm/detail/type_quat.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <imgui.h>
 
 #include "filecache.h"
 #include "frustum.h"
 #include "objectpass.h"
+#include "scenepart.h"
 #include "scenestate.h"
+#include "swapchain.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -29,6 +32,68 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
     connect(m_mdlPart, &MDLPart::cameraMoved, this, [this] {
         updateLightCulling();
     });
+    m_mdlPart->requestUpdate = [this] {
+        const auto drawNameplate = [this](const glm::vec3 position, const QString &name) {
+            const auto distance = glm::distance(m_mdlPart->manager()->camera.position, position);
+            if (distance > MAX_DEBUG_DRAW_DISTANCE) {
+                return;
+            }
+
+            const auto toObject = glm::normalize(m_mdlPart->manager()->camera.position - position);
+            const auto cameraForward = glm::normalize(glm::vec3(glm::inverse(m_mdlPart->manager()->camera.view)[2]));
+
+            if (glm::dot(toObject, cameraForward) < 0.0) {
+                return;
+            }
+
+            glm::vec4 pos = m_mdlPart->manager()->camera.perspective * m_mdlPart->manager()->camera.view * glm::vec4(position, 1);
+            pos.x /= pos.w;
+            pos.y /= pos.w;
+            pos.z /= pos.w;
+
+            const glm::vec2 screenSpacePos = {
+                ((pos.x + 1.0f) * 0.5f) * m_mdlPart->manager()->device().swapChain->extent.width,
+                ((pos.y + 1.0f) * 0.5f) * m_mdlPart->manager()->device().swapChain->extent.height,
+            };
+
+            // Flipped because the viewport is also flipped
+            ImGui::SetNextWindowBgAlpha(0.5f);
+            if (ImGui::Begin(name.toStdString().c_str(),
+                             nullptr,
+                             ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize
+                                 | ImGuiWindowFlags_NoSavedSettings)) {
+                ImGui::SetWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - screenSpacePos.x, screenSpacePos.y));
+                ImGui::Text("%s", name.toStdString().c_str());
+            }
+            ImGui::End();
+        };
+
+        const auto walkScene = [this, &drawNameplate](ObjectScene &scene) {
+            for (const auto &[_, lgb] : scene.lgbFiles) {
+                for (uint32_t i = 0; i < lgb.chunks->num_layers; i++) {
+                    for (uint32_t j = 0; j < lgb.chunks->layers[i].num_objects; j++) {
+                        const auto &object = lgb.chunks->layers[i].objects[j];
+                        switch (object.data.tag) {
+                        case physis_LayerEntry::Tag::EventObject: {
+                            const auto eobjName = object.data.event_object._0.parent_data.base_id;
+                            if (object.data.event_object._0.bound_instance_id != 0) {
+                                drawNameplate(glm::make_vec3(scene.locateGameObject(object.data.event_object._0.bound_instance_id).translation),
+                                              m_appState->lookupEObjName(eobjName) + QStringLiteral(" (Linked)"));
+                            }
+                            drawNameplate(glm::make_vec3(object.transform.translation), m_appState->lookupEObjName(eobjName));
+                        } break;
+                        default:
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // TOOD: embedded lgbs
+        };
+
+        walkScene(m_appState->rootScene);
+    };
 
     auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);

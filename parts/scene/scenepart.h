@@ -17,6 +17,9 @@ class SceneState;
 class ObjectPropertiesWidget;
 class VulkanWindow;
 
+// Cutoff before nameplates and billboards are drawn.
+constexpr float MAX_DEBUG_DRAW_DISTANCE = 50.0f;
+
 class ScenePart : public QWidget
 {
     Q_OBJECT

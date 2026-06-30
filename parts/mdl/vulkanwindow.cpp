@@ -210,7 +210,7 @@ void VulkanWindow::render()
     ImGui::SetCurrentContext(m_renderer->ctx);
 
     auto &io = ImGui::GetIO();
-    io.DisplaySize = ImVec2(width() * screen()->devicePixelRatio(), height() * screen()->devicePixelRatio());
+    io.DisplaySize = ImVec2(width(), height());
 
     ImGui::NewFrame();
 

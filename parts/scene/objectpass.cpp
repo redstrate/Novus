@@ -5,6 +5,7 @@
 #include "device.h"
 #include "primitives.h"
 #include "rendermanager.h"
+#include "scenepart.h"
 #include "simplerenderer.h"
 #include "swapchain.h"
 
@@ -550,6 +551,11 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
 
 void ObjectPass::drawBillboard(VkCommandBuffer commandBuffer, const Camera &camera, const Texture &texture, glm::vec4 color, glm::vec3 position)
 {
+    const auto distance = glm::distance(camera.position, position);
+    if (distance > MAX_DEBUG_DRAW_DISTANCE) {
+        return;
+    }
+
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_billboardPipeline);
     vkCmdBindDescriptorSets(commandBuffer,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
