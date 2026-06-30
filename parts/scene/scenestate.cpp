@@ -409,37 +409,43 @@ std::optional<BoundingBox> SceneState::checkLightBoundingBox(const uint32_t id, 
 
 QString SceneState::lookupENpcName(const uint32_t id) const
 {
-    auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
-    if (row.columns && strlen(row.columns[0].string._0) > 0) {
-        QString name = QString::fromLatin1(row.columns[0].string._0);
+    if (m_enpcResidentSheet.p_ptr) {
+        auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
+        if (row.columns && strlen(row.columns[0].string._0) > 0) {
+            QString name = QString::fromLatin1(row.columns[0].string._0);
+            physis_free_row(&row, m_enpcResidentSheet.pages[0].column_count);
+            return name;
+        }
         physis_free_row(&row, m_enpcResidentSheet.pages[0].column_count);
-        return name;
     }
-    physis_free_row(&row, m_enpcResidentSheet.pages[0].column_count);
     return i18n("Event NPC");
 }
 
 QString SceneState::lookupEObjName(const uint32_t id) const
 {
-    auto row = physis_excel_get_row(&m_eobjNameSheet, id);
-    if (row.columns && strlen(row.columns[0].string._0) > 0) {
-        QString name = QString::fromLatin1(row.columns[0].string._0);
+    if (m_eobjNameSheet.p_ptr) {
+        auto row = physis_excel_get_row(&m_eobjNameSheet, id);
+        if (row.columns && strlen(row.columns[0].string._0) > 0) {
+            QString name = QString::fromLatin1(row.columns[0].string._0);
+            physis_free_row(&row, m_eobjNameSheet.pages[0].column_count);
+            return name;
+        }
         physis_free_row(&row, m_eobjNameSheet.pages[0].column_count);
-        return name;
     }
-    physis_free_row(&row, m_eobjNameSheet.pages[0].column_count);
     return i18n("Event Object");
 }
 
 QString SceneState::lookupBNpcName(uint32_t id) const
 {
-    auto row = physis_excel_get_row(&m_bnpcNameSheet, id);
-    if (row.columns && strlen(row.columns[0].string._0) > 0) {
-        QString name = QString::fromLatin1(row.columns[0].string._0);
+    if (m_bnpcNameSheet.p_ptr) {
+        auto row = physis_excel_get_row(&m_bnpcNameSheet, id);
+        if (row.columns && strlen(row.columns[0].string._0) > 0) {
+            QString name = QString::fromLatin1(row.columns[0].string._0);
+            physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
+            return name;
+        }
         physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
-        return name;
     }
-    physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
     return i18n("Battle NPC");
 }
 

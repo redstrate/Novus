@@ -178,9 +178,9 @@ private:
     void processUpdateAnimation(ObjectScene &scene, float time);
     void showAllInScene(const ObjectScene &scene);
 
-    physis_ExcelSheet m_enpcResidentSheet;
-    physis_ExcelSheet m_eobjNameSheet;
-    physis_ExcelSheet m_bnpcNameSheet;
+    physis_ExcelSheet m_enpcResidentSheet{};
+    physis_ExcelSheet m_eobjNameSheet{};
+    physis_ExcelSheet m_bnpcNameSheet{};
     float m_longestAnimationTime = 0.0f;
     FileCache &m_cache;
 };

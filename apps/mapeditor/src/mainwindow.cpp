@@ -212,29 +212,32 @@ void MainWindow::openMap(const QString &basePath, const int territoryType, const
     if (contentFinderCondition != 0) {
         qInfo() << "This map contains a duty! CF:" << contentFinderCondition;
 
-        auto cfcExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/ContentFinderCondition.exh")));
-        if (cfcExh.p_ptr) {
-            auto cfcSheet = m_cache.readExcelSheet(QStringLiteral("ContentFinderCondition"), &cfcExh, getLanguage());
+        const auto buffer = m_cache.read(QStringLiteral("exd/ContentFinderCondition.exh"));
+        if (buffer.size > 0) {
+            const auto cfcExh = physis_exh_parse(m_cache.platform(), buffer);
+            if (cfcExh.p_ptr) {
+                auto cfcSheet = m_cache.readExcelSheet(QStringLiteral("ContentFinderCondition"), &cfcExh, getLanguage());
 
-            auto cfcRow = physis_excel_get_row(&cfcSheet, contentFinderCondition);
-            auto instanceContentId = cfcRow.columns[3].u_int16._0;
+                auto cfcRow = physis_excel_get_row(&cfcSheet, contentFinderCondition);
+                auto instanceContentId = cfcRow.columns[3].u_int16._0;
 
-            auto instanceContentExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/InstanceContent.exh")));
-            auto instanceContentSheet = m_cache.readExcelSheet(QStringLiteral("InstanceContent"), &instanceContentExh, Language::None);
+                auto instanceContentExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/InstanceContent.exh")));
+                auto instanceContentSheet = m_cache.readExcelSheet(QStringLiteral("InstanceContent"), &instanceContentExh, Language::None);
 
-            auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
+                auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
 
-            m_lgbEventRange = instanceContentRow.columns[7].u_int32._0;
+                m_lgbEventRange = instanceContentRow.columns[7].u_int32._0;
 
-            auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
+                auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
 
-            auto mapEffectExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/ContentDirectorManagedSG.exh")));
-            auto mapEffectSheet = m_cache.readExcelSheet(QStringLiteral("ContentDirectorManagedSG"), &mapEffectExh, Language::None);
+                auto mapEffectExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/ContentDirectorManagedSG.exh")));
+                auto mapEffectSheet = m_cache.readExcelSheet(QStringLiteral("ContentDirectorManagedSG"), &mapEffectExh, Language::None);
 
-            auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
-            for (size_t i = 0; i < effectCount; i++) {
-                auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
-                m_mapEffects.push_back(effectRow.columns[0].int32._0);
+                auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
+                for (size_t i = 0; i < effectCount; i++) {
+                    auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
+                    m_mapEffects.push_back(effectRow.columns[0].int32._0);
+                }
             }
         }
     }

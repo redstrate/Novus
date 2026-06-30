@@ -379,18 +379,18 @@ void MapView::updateLightCulling()
     for (auto &light : m_mdlPart->manager()->scene.lights) {
         // Update based on culling
         if (light.id != 0) {
-            auto bounding_box = m_appState->checkLightBoundingBox(light.id, light.parentSgbId).value();
-            bounding_box.min[0] += light.position[0];
-            bounding_box.min[1] += light.position[1];
-            bounding_box.min[2] += light.position[2];
-            bounding_box.max[0] += light.position[0];
-            bounding_box.max[1] += light.position[1];
-            bounding_box.max[2] += light.position[2];
-            if (m_mdlPart->manager()->scene.frustumCulling && !test_aabb_frustum(m_mdlPart->manager()->camera.frustum(), bounding_box)) {
-                light.active = false;
-                m_mdlPart->manager()->scene.culledLights++;
-                break;
-            } else {
+            if (auto bounding_box = m_appState->checkLightBoundingBox(light.id, light.parentSgbId)) {
+                bounding_box->min[0] += light.position[0];
+                bounding_box->min[1] += light.position[1];
+                bounding_box->min[2] += light.position[2];
+                bounding_box->max[0] += light.position[0];
+                bounding_box->max[1] += light.position[1];
+                bounding_box->max[2] += light.position[2];
+                if (m_mdlPart->manager()->scene.frustumCulling && !test_aabb_frustum(m_mdlPart->manager()->camera.frustum(), *bounding_box)) {
+                    light.active = false;
+                    m_mdlPart->manager()->scene.culledLights++;
+                    break;
+                }
                 light.active = true;
             }
         } else {
