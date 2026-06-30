@@ -48,6 +48,7 @@ ObjectPass::ObjectPass(RenderManager *renderer, SceneState *appState)
     m_poprangeTexture = addTexture(QStringLiteral(":/poprange.png"));
     m_envLocationTexture = addTexture(QStringLiteral(":/envlocation.png"));
     m_specularLightTexture = addTexture(QStringLiteral(":/specular.png"));
+    m_enpcTexture = addTexture(QStringLiteral(":/enpc.png"));
 
     Primitives::Initialize(m_renderer);
 }
@@ -541,6 +542,9 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
             break;
         case physis_LayerEntry::Tag::EnvLocation:
             drawBillboard(commandBuffer, camera, m_envLocationTexture, color, pos);
+            break;
+        case physis_LayerEntry::Tag::EventNPC:
+            drawBillboard(commandBuffer, camera, m_enpcTexture, color, pos);
             break;
         default:
             Primitives::DrawCube(commandBuffer);

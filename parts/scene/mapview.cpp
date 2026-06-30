@@ -33,7 +33,7 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
         updateLightCulling();
     });
     m_mdlPart->requestUpdate = [this] {
-        const auto drawNameplate = [this](const glm::vec3 position, const QString &name) {
+        const auto drawNameplate = [this](uint32_t id, const glm::vec3 position, const QString &name) {
             const auto distance = glm::distance(m_mdlPart->manager()->camera.position, position);
             if (distance > MAX_DEBUG_DRAW_DISTANCE) {
                 return;
@@ -63,7 +63,8 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
 
             // Flipped because the viewport is also flipped
             ImGui::SetNextWindowBgAlpha(0.5f);
-            if (ImGui::Begin(name.toStdString().c_str(),
+            ImGui::PushID(id);
+            if (ImGui::Begin(std::to_string(id).c_str(),
                              nullptr,
                              ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize
                                  | ImGuiWindowFlags_NoSavedSettings)) {
@@ -71,21 +72,31 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
                 ImGui::Text("%s", name.toStdString().c_str());
             }
             ImGui::End();
+            ImGui::PopID();
         };
 
         const auto walkScene = [this, &drawNameplate](ObjectScene &scene) {
             for (const auto &[_, lgb] : scene.lgbFiles) {
                 for (uint32_t i = 0; i < lgb.chunks->num_layers; i++) {
+                    if (!m_appState->visibleLayerIds.contains(lgb.chunks->layers[i].id)) {
+                        continue;
+                    }
+
                     for (uint32_t j = 0; j < lgb.chunks->layers[i].num_objects; j++) {
                         const auto &object = lgb.chunks->layers[i].objects[j];
                         switch (object.data.tag) {
                         case physis_LayerEntry::Tag::EventObject: {
                             const auto eobjName = object.data.event_object._0.parent_data.base_id;
                             if (object.data.event_object._0.bound_instance_id != 0) {
-                                drawNameplate(glm::make_vec3(scene.locateGameObject(object.data.event_object._0.bound_instance_id).translation),
+                                drawNameplate(object.data.event_object._0.bound_instance_id,
+                                              glm::make_vec3(scene.locateGameObject(object.data.event_object._0.bound_instance_id).translation),
                                               m_appState->lookupEObjName(eobjName) + QStringLiteral(" (Linked)"));
                             }
-                            drawNameplate(glm::make_vec3(object.transform.translation), m_appState->lookupEObjName(eobjName));
+                            drawNameplate(object.instance_id, glm::make_vec3(object.transform.translation), m_appState->lookupEObjName(eobjName));
+                        } break;
+                        case physis_LayerEntry::Tag::EventNPC: {
+                            const auto enpcName = object.data.event_npc._0.parent_data.parent_data.base_id;
+                            drawNameplate(object.instance_id, glm::make_vec3(object.transform.translation), m_appState->lookupENpcName(enpcName));
                         } break;
                         default:
                             break;

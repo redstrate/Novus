@@ -53,7 +53,8 @@ qt_add_resources(scenepart
         eobj.png
         poprange.png
         envlocation.png
-        specular.png)
+        specular.png
+        enpc.png)
 target_include_directories(scenepart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(scenepart PRIVATE TRANSLATION_DOMAIN="novus")
 
