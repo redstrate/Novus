@@ -555,7 +555,7 @@ void RenderManager::render(std::vector<DrawObjectInstance> &models)
     // Render offscreen texture, and overlay imgui
     if (m_imGuiPass != nullptr) {
         ImGui::SetCurrentContext(ctx);
-        m_imGuiPass->render(commandBuffer);
+        m_imGuiPass->render(imageIndex, commandBuffer);
     }
 
     vkCmdEndRenderPass(commandBuffer);

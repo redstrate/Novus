@@ -7,6 +7,7 @@
 #include "texture.h"
 
 #include <map>
+#include <vector>
 #include <vulkan/vulkan.h>
 
 class RenderManager;
@@ -17,7 +18,7 @@ public:
     explicit ImGuiPass(RenderManager &renderer);
     ~ImGuiPass();
 
-    void render(VkCommandBuffer commandBuffer);
+    void render(uint32_t imageIndex, VkCommandBuffer commandBuffer);
 
 private:
     void createDescriptorSetLayout();
@@ -31,7 +32,7 @@ private:
 
     Texture m_fontAtlas;
 
-    Buffer m_vertexBuffer, m_indexBuffer;
+    std::vector<Buffer> m_vertexBuffers, m_indexBuffers;
 
     std::map<VkImageView, VkDescriptorSet> m_descriptorSets = {};
 
