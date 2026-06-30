@@ -19,7 +19,10 @@
 
 void customizeAboutData(const QString &componentName, const QString &desktopFilename, const QString &applicationTitle, const QString &applicationDescription)
 {
-    KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
+    // Default to a sensible message pattern
+    if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {
+        qputenv("QT_MESSAGE_PATTERN", "[%{time yyyy-MM-dd h:mm:ss.zzz}] %{if-category}[%{category}] %{endif}[%{type}] %{message}");
+    }
 
     // TODO: we shouldn't do this here
 #ifdef Q_OS_WIN
@@ -103,9 +106,4 @@ void customizeAboutData(const QString &componentName, const QString &desktopFile
     KAboutData::setApplicationData(about);
 
     QGuiApplication::setWindowIcon(QIcon::fromTheme(desktopFilename));
-
-    // Default to a sensible message pattern
-    if (qEnvironmentVariableIsEmpty("QT_MESSAGE_PATTERN")) {
-        qputenv("QT_MESSAGE_PATTERN", "[%{time yyyy-MM-dd h:mm:ss.zzz}] %{if-category}[%{category}] %{endif}[%{type}] %{message}");
-    }
 }
