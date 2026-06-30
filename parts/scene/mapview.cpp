@@ -282,7 +282,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
 void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const Transformation &rootTransformation)
 {
     for (uint32_t z = 0; z < layer.object_set_referenced_count; z++) {
-        if (layer.object_set_referenced[z].asset_type == LayerEntryType::LayLight) {
+        if (layer.object_set_referenced[z].asset_type == LayerEntryType::Light) {
             const auto buffer = m_cache.read(QString::fromStdString(layer.object_set_referenced[z].obsb_path));
             const auto obsb = physis_obsb_parse(m_cache.platform(), buffer);
             for (uint32_t i = 0; i < obsb.envs_count; i++) {

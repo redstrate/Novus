@@ -914,10 +914,9 @@ void ObjectPropertiesWidget::addCollisionBox(const physis_CollisionBoxInstanceOb
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto assetPathEdit = new PathEdit();
-    assetPathEdit->setPath(QString::fromLatin1(collisionBox.collision_asset_path));
-    assetPathEdit->setReadOnly(true);
-    layout->addRow(i18n("Asset Path"), assetPathEdit);
+    auto assetPathEdit = new QLabel();
+    assetPathEdit->setText(QString::number(collisionBox.collision_asset_path_crc));
+    layout->addRow(i18n("PCB Path CRC"), assetPathEdit);
 }
 
 void ObjectPropertiesWidget::addDoorRange(const physis_DoorRangeInstanceObject &doorRange)
