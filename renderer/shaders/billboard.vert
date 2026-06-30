@@ -14,7 +14,7 @@ layout(std430, push_constant) uniform PushConstant{
 
 void main() {
     vec2 p = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
-    outUV = vec2(p.x, p.y);
+    outUV = vec2(1.0 - p.x, p.y);
 
     p = p * 2.0f + -1.0f;
     p *= scale.xy;
