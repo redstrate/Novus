@@ -56,6 +56,11 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
                 ((pos.y + 1.0f) * 0.5f) * m_mdlPart->manager()->device().swapChain->extent.height,
             };
 
+            if (screenSpacePos.x <= 0 || screenSpacePos.x >= m_mdlPart->manager()->device().swapChain->extent.width || screenSpacePos.y <= 0
+                || screenSpacePos.y >= m_mdlPart->manager()->device().swapChain->extent.height) {
+                return;
+            }
+
             // Flipped because the viewport is also flipped
             ImGui::SetNextWindowBgAlpha(0.5f);
             if (ImGui::Begin(name.toStdString().c_str(),
