@@ -47,6 +47,7 @@ private:
     ObjectPropertiesWidget *m_objectPropertiesWidget = nullptr;
     MapView *m_mapView = nullptr;
     QSlider *m_animationTimeSlider = nullptr;
+    QSlider *m_timeSlider = nullptr;
     physis_Sgb m_sgb{};
     physis_Lvb m_lvb{};
 };

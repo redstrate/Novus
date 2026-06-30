@@ -49,6 +49,26 @@ struct DropIn {
     QList<DropInLayer> layers;
 };
 
+struct OBSBPoint {
+    float time;
+    bool visible;
+};
+
+struct OBSBTimeline {
+    std::vector<OBSBPoint> points;
+
+    bool shouldBeVisible(const float time) const
+    {
+        for (const auto &point : points) {
+            if (time <= point.time) {
+                return point.visible;
+            }
+        }
+
+        return false;
+    }
+};
+
 /// Represents a "SCN1" section, which could be a complete level (LVB) or a prefab (SGB). These can also be infinitely nested.
 class ObjectScene
 {
@@ -81,6 +101,7 @@ public:
     uint32_t originatingSgbLayerId = 0;
     uint32_t originatingSgbId = 0;
     std::unordered_map<std::string, physis_Material> cachedMaterials;
+    std::unordered_map<uint32_t, OBSBTimeline> obsbTimelines;
 
     /// Key is the ID of the SGB instance.
     std::unordered_map<uint32_t, ObjectScene> nestedScenes;

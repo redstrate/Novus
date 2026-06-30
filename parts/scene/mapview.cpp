@@ -270,6 +270,32 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
 
 void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const Transformation &rootTransformation)
 {
+    for (uint32_t z = 0; z < layer.object_set_referenced_count; z++) {
+        if (layer.object_set_referenced[z].asset_type == LayerEntryType::LayLight) {
+            const auto buffer = m_cache.read(QString::fromStdString(layer.object_set_referenced[z].obsb_path));
+            const auto obsb = physis_obsb_parse(m_cache.platform(), buffer);
+            for (uint32_t i = 0; i < obsb.envs_count; i++) {
+                // TODO: pick weather
+                int section = 0;
+
+                for (uint32_t j = 0; j < obsb.envs[i].sections[section].timeline_count; j++) {
+                    const auto &timeline = obsb.envs[i].sections[section].timelines[j];
+                    if (timeline.tag == physis_EnvTimelineElement::Tag::ChangeVisibility) {
+                        OBSBTimeline newTimeline;
+
+                        for (uint32_t g = 0; g < timeline.change_visibility.point_count; g++) {
+                            newTimeline.points.push_back(
+                                OBSBPoint{.time = timeline.change_visibility.points[g].time, .visible = timeline.change_visibility.points[g].visible});
+                        }
+
+                        scene.obsbTimelines[layer.object_set_referenced[z].instance_id] = newTimeline;
+                    }
+                }
+            }
+            break;
+        }
+    }
+
     for (uint32_t z = 0; z < layer.num_objects; z++) {
         const auto object = layer.objects[z];
 
@@ -340,6 +366,7 @@ void MapView::updateLightCulling()
     m_mdlPart->manager()->scene.culledLights = 0;
 
     for (auto &light : m_mdlPart->manager()->scene.lights) {
+        // Update based on culling
         if (light.id != 0) {
             auto bounding_box = m_appState->checkLightBoundingBox(light.id, light.parentSgbId).value();
             bounding_box.min[0] += light.position[0];
@@ -351,11 +378,18 @@ void MapView::updateLightCulling()
             if (m_mdlPart->manager()->scene.frustumCulling && !test_aabb_frustum(m_mdlPart->manager()->camera.frustum(), bounding_box)) {
                 light.active = false;
                 m_mdlPart->manager()->scene.culledLights++;
+                break;
             } else {
                 light.active = true;
             }
         } else {
             light.active = true;
+        }
+
+        // Update based on OBSB
+        // TODO: check other things than root scene?
+        if (m_appState->rootScene.obsbTimelines.contains(light.id)) {
+            light.active = m_appState->rootScene.obsbTimelines[light.id].shouldBeVisible(m_mdlPart->manager()->scene.time);
         }
     }
 }

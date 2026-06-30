@@ -53,6 +53,16 @@ ScenePart::ScenePart(FileCache &cache, bool fixedSize, QWidget *parent)
     });
     sidebarLayout->addWidget(m_animationTimeSlider);
 
+    m_timeSlider = new QSlider(Qt::Orientation::Horizontal);
+    m_timeSlider->setMaximumWidth(400);
+    m_timeSlider->setMinimum(0);
+    m_timeSlider->setMaximum(86400);
+    connect(m_timeSlider, &QSlider::valueChanged, this, [this](const int value) {
+        m_mapView->part().manager()->scene.time = value;
+        Q_EMIT m_mapView->part().cameraMoved(); // FIXME: workaround because that's when lighting recalculations happen
+    });
+    sidebarLayout->addWidget(m_timeSlider);
+
     m_mapView = new MapView(m_cache, m_appState);
     splitter->addWidget(m_mapView);
     splitter->setStretchFactor(1, 1);

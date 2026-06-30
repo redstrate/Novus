@@ -176,16 +176,18 @@ void SceneState::load(FileCache &cache, const physis_ScnSection &section, int te
     }
 
     // If that fails, just tyr the territory type.
-    for (uint32_t i = 0; i < section.layer_sets.layer_set_count; i++) {
-        if (section.layer_sets.layer_sets[i].territory_type_id == territoryTypeHint) {
-            qInfo() << "Choosing layer set" << section.layer_sets.layer_sets[i].id << "because it matched a limited set of our criteria!";
-            idealLayerSet = section.layer_sets.layer_sets[i].id;
-            break;
+    if (!idealLayerSet) {
+        for (uint32_t i = 0; i < section.layer_sets.layer_set_count; i++) {
+            if (section.layer_sets.layer_sets[i].territory_type_id == territoryTypeHint) {
+                qInfo() << "Choosing layer set" << section.layer_sets.layer_sets[i].id << "because it matched a limited set of our criteria!";
+                idealLayerSet = section.layer_sets.layer_sets[i].id;
+                break;
+            }
         }
     }
 
     if (!idealLayerSet) {
-        qWarning() << "Did not find a layer set that matched our criteria. Layer visibility will be negatively affected.";
+        qWarning() << "Did not find a layer set that matched our criteria. Layer visibility will be negatively affected!";
     }
 
     for (const auto &[name, lgb] : rootScene.lgbFiles) {

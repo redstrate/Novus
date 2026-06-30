@@ -32,4 +32,6 @@ public:
 
     size_t culledObjects = 0;
     size_t culledLights = 0;
+
+    float time = 0.0f;
 };
