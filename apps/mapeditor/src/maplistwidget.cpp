@@ -82,17 +82,28 @@ MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
                 territoryIntendedUseString = QString::fromStdString(magic_enum::enum_name(*tiu).data());
             }
 
+            QString qPlaceRegion = QString::fromStdString(placeRegion);
+            QString qPlaceZone = QString::fromStdString(placeZone);
+            QString qPlaceName = QString::fromStdString(placeName);
+
+            QString completePlaceName;
+            if (!qPlaceRegion.isEmpty()) {
+                completePlaceName += qPlaceRegion + QStringLiteral(", ");
+            }
+            if (!qPlaceZone.isEmpty()) {
+                completePlaceName += qPlaceZone + QStringLiteral(", ");
+            }
+            if (!qPlaceName.isEmpty()) {
+                completePlaceName += qPlaceName + QStringLiteral(", ");
+            }
+            completePlaceName.resize(completePlaceName.size() - 2); // Remove last comma and space
+
             QStandardItem *item = new QStandardItem();
             item->setData(QString::fromStdString(bg));
             item->setData(contentFinderCondition, Qt::UserRole + 2);
             item->setData(i, Qt::UserRole + 3);
-            item->setText(QStringLiteral("%1 %2 %3 (%4, %5, %6)")
-                              .arg(QString::number(i))
-                              .arg(territoryIntendedUseString,
-                                   QString::fromStdString(bg),
-                                   QString::fromStdString(placeRegion),
-                                   QString::fromStdString(placeZone),
-                                   QString::fromStdString(placeName)));
+            item->setText(
+                QStringLiteral("%1 %2 %3 (%4)").arg(QString::number(i)).arg(territoryIntendedUseString, QString::fromStdString(bg), completePlaceName));
 
             originalModel->insertRow(originalModel->rowCount(), item);
 
