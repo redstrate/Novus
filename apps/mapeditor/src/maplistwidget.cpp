@@ -85,6 +85,7 @@ MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
             QStandardItem *item = new QStandardItem();
             item->setData(QString::fromStdString(bg));
             item->setData(contentFinderCondition, Qt::UserRole + 2);
+            item->setData(i, Qt::UserRole + 3);
             item->setText(QStringLiteral("%1 %2 %3 (%4, %5, %6)")
                               .arg(QString::number(i))
                               .arg(territoryIntendedUseString,
@@ -140,6 +141,11 @@ int MapListWidget::acceptedContentFinderCondition() const
     return m_acceptedContentFinderCondition;
 }
 
+int MapListWidget::acceptedTerritoryType() const
+{
+    return m_acceptedTerritoryType;
+}
+
 void MapListWidget::accept()
 {
     // Figure out the selection first
@@ -147,6 +153,7 @@ void MapListWidget::accept()
     if (index.isValid()) {
         m_acceptedMap = m_searchModel->mapToSource(index).data(Qt::UserRole + 1).toString();
         m_acceptedContentFinderCondition = m_searchModel->mapToSource(index).data(Qt::UserRole + 2).toInt();
+        m_acceptedTerritoryType = m_searchModel->mapToSource(index).data(Qt::UserRole + 3).toInt();
     }
 
     QDialog::accept();

@@ -70,7 +70,7 @@ void MainWindow::setupActions()
         [this] {
             auto listWidget = new MapListWidget(m_cache, this);
             connect(listWidget, &MapListWidget::accepted, this, [this, listWidget] {
-                openMap(listWidget->acceptedMap(), listWidget->acceptedContentFinderCondition());
+                openMap(listWidget->acceptedMap(), listWidget->acceptedTerritoryType(), listWidget->acceptedContentFinderCondition());
             });
             listWidget->show();
         },
@@ -175,7 +175,7 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("debug_frustum_culling"), m_part->mapView()->part().debugFrustumCullingAction());
 }
 
-void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
+void MainWindow::openMap(const QString &basePath, const int territoryType, const int contentFinderCondition)
 {
     m_part->clear();
     m_mapEffects.clear();
@@ -184,7 +184,7 @@ void MainWindow::openMap(const QString &basePath, int contentFinderCondition)
     const QString lvbPath = QStringLiteral("bg/%1.lvb").arg(basePath);
     auto lvbFile = m_cache.read(lvbPath);
     if (lvbFile.size > 0) {
-        m_part->loadLvb(lvbFile);
+        m_part->loadLvb(lvbFile, territoryType, contentFinderCondition);
 
         KConfig config(QStringLiteral("novusrc"));
         KConfigGroup game = config.group(QStringLiteral("MapEditor"));

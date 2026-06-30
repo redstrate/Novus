@@ -154,6 +154,11 @@ void ObjectPropertiesWidget::refreshLayerData(const physis_Layer &layer)
     const auto layout = new QFormLayout();
     section->setLayout(layout);
 
+    const auto idEdit = new QLineEdit();
+    idEdit->setText(QString::number(layer.id));
+    idEdit->setReadOnly(true);
+    layout->addRow(i18n("ID"), idEdit);
+
     const auto nameEdit = new QLineEdit();
     nameEdit->setText(QString::fromLatin1(layer.name));
     nameEdit->setReadOnly(true);
@@ -580,9 +585,9 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     layout->addRow(i18n("Housing Enabled"), housingEnabledCheckbox);
 
     auto unk3Checkbox = new QCheckBox();
-    unk3Checkbox->setChecked(mapRange.unk3);
+    unk3Checkbox->setChecked(mapRange.log_flying_height_max_err);
     unk3Checkbox->setEnabled(false);
-    layout->addRow(i18n("UNK3"), unk3Checkbox);
+    layout->addRow(i18n("Log Flying Height Max Err"), unk3Checkbox);
 
     auto unk4Checkbox = new QCheckBox();
     unk4Checkbox->setChecked(mapRange.unk4);

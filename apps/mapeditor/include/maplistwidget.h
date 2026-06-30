@@ -19,6 +19,7 @@ public:
 
     QString acceptedMap() const;
     int acceptedContentFinderCondition() const;
+    int acceptedTerritoryType() const;
 
     void accept() override;
 
@@ -28,5 +29,6 @@ private:
     FileCache &m_cache;
     QString m_acceptedMap;
     int m_acceptedContentFinderCondition = 0;
+    int m_acceptedTerritoryType = 0;
     QSortFilterProxyModel *m_searchModel = nullptr;
 };

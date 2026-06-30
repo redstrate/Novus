@@ -103,7 +103,7 @@ public:
     explicit SceneState(FileCache &cache, QObject *parent = nullptr);
     ~SceneState() override;
 
-    void load(FileCache &cache, const physis_ScnSection &section);
+    void load(FileCache &cache, const physis_ScnSection &section, int territoryTypeHint = 0, int contentFinderConditionHint = 0);
     void loadDropIn(const QString &path);
     void saveDropIns();
     void clear();

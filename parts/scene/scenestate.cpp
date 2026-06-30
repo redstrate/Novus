@@ -149,7 +149,7 @@ void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
     animation = Animation(*this);
 }
 
-void SceneState::load(FileCache &cache, const physis_ScnSection &section)
+void SceneState::load(FileCache &cache, const physis_ScnSection &section, int territoryTypeHint, int contentFinderConditionHint)
 {
     rootScene.load(cache, section);
 
@@ -163,11 +163,59 @@ void SceneState::load(FileCache &cache, const physis_ScnSection &section)
         visibleTerrainPlates.push_back(i);
     }
 
+    std::optional<uint32_t> idealLayerSet;
+
+    // First, find the ideal layer set based on territory type + content finder condition.
+    for (uint32_t i = 0; i < section.layer_sets.layer_set_count; i++) {
+        if (section.layer_sets.layer_sets[i].territory_type_id == territoryTypeHint
+            && section.layer_sets.layer_sets[i].content_finder_condition_id == contentFinderConditionHint) {
+            qInfo() << "Choosing layer set" << section.layer_sets.layer_sets[i].id << "because it matched our criteria!";
+            idealLayerSet = section.layer_sets.layer_sets[i].id;
+            break;
+        }
+    }
+
+    // If that fails, just tyr the territory type.
+    for (uint32_t i = 0; i < section.layer_sets.layer_set_count; i++) {
+        if (section.layer_sets.layer_sets[i].territory_type_id == territoryTypeHint) {
+            qInfo() << "Choosing layer set" << section.layer_sets.layer_sets[i].id << "because it matched a limited set of our criteria!";
+            idealLayerSet = section.layer_sets.layer_sets[i].id;
+            break;
+        }
+    }
+
+    if (!idealLayerSet) {
+        qWarning() << "Did not find a layer set that matched our criteria. Layer visibility will be negatively affected.";
+    }
+
     for (const auto &[name, lgb] : rootScene.lgbFiles) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
-                // TODO: check layer visibility
-                // TODO: check layer sets
+                if (!lgb.chunks[i].layers[j].visible) {
+                    continue;
+                }
+
+                if (idealLayerSet) {
+                    std::span layerSetIds(lgb.chunks[i].layers[j].layer_set_referenced_list.layer_set_ids,
+                                          lgb.chunks[i].layers[j].layer_set_referenced_list.layer_set_id_count);
+                    switch (lgb.chunks[i].layers[j].layer_set_referenced_list.referenced_type) {
+                    case LayerSetReferencedType::All:
+                        break;
+                    case LayerSetReferencedType::Include:
+                        if (std::ranges::find(layerSetIds, idealLayerSet) == layerSetIds.end()) {
+                            continue;
+                        }
+                        break;
+                    case LayerSetReferencedType::Exclude:
+                        if (std::ranges::find(layerSetIds, idealLayerSet) != layerSetIds.end()) {
+                            continue;
+                        }
+                        break;
+                    case LayerSetReferencedType::Undetermined:
+                        continue;
+                    }
+                }
+
                 // TODO: how can we stop showing quest-specific layers?
 
                 // Skip festival-specific layers

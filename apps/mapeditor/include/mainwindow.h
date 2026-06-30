@@ -27,7 +27,7 @@ public Q_SLOTS:
 
 private:
     void setupActions();
-    void openMap(const QString &basePath, int contentFinderCondition);
+    void openMap(const QString &basePath, int territoryType, int contentFinderCondition);
     void updateActionState();
 
     FileCache m_cache;
