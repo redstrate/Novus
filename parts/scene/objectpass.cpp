@@ -13,6 +13,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include "scenestate.h"
+#include "utility.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -348,11 +349,11 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
             const auto &chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
                 const auto &layer = chunk.layers[j];
-                if (!m_appState->visibleLayerIds.contains(layer.id)) {
+                if (!scene.isSgb() && !m_appState->visibleLayerIds.contains(layer.id)) {
                     continue;
                 }
 
-                addLayer(commandBuffer, camera, layer);
+                addLayer(commandBuffer, camera, layer, scene.combinedTransformation);
             }
         }
     }
@@ -360,11 +361,11 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
     for (const auto &lgb : scene.embeddedLgbs) {
         for (uint32_t j = 0; j < lgb.layer_count; j++) {
             const auto &layer = lgb.layers[j];
-            if (!m_appState->visibleLayerIds.contains(layer.id)) {
+            if (!scene.isSgb() && !m_appState->visibleLayerIds.contains(layer.id)) {
                 continue;
             }
 
-            addLayer(commandBuffer, camera, layer);
+            addLayer(commandBuffer, camera, layer, scene.combinedTransformation);
         }
     }
 
@@ -409,7 +410,7 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
     }
 }
 
-void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, const physis_Layer &layer)
+void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, const physis_Layer &layer, const Transformation &rootTransformation)
 {
     for (uint32_t z = 0; z < layer.num_objects; z++) {
         const auto &object = layer.objects[z];
@@ -420,12 +421,15 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
 
         vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &vp);
 
-        const auto setModel = [this, &object, &commandBuffer](const glm::vec3 relativePosition) {
+        const auto combinedTransform = addTransformation(rootTransformation, object.transform);
+
+        const auto setModel = [this, &combinedTransform, &commandBuffer](const glm::vec3 relativePosition) {
             auto m = glm::mat4(1.0f);
             m = glm::translate(m,
-                               glm::vec3{object.transform.translation[0], object.transform.translation[1], object.transform.translation[2]} + relativePosition);
-            m *= glm::mat4_cast(glm::quat(glm::vec3(object.transform.rotation[0], object.transform.rotation[1], object.transform.rotation[2])));
-            m = glm::scale(m, {object.transform.scale[0], object.transform.scale[1], object.transform.scale[2]});
+                               glm::vec3{combinedTransform.translation[0], combinedTransform.translation[1], combinedTransform.translation[2]}
+                                   + relativePosition);
+            m *= glm::mat4_cast(glm::quat(glm::vec3(combinedTransform.rotation[0], combinedTransform.rotation[1], combinedTransform.rotation[2])));
+            m = glm::scale(m, {combinedTransform.scale[0], combinedTransform.scale[1], combinedTransform.scale[2]});
 
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
@@ -470,7 +474,7 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
             }
         };
 
-        const auto pos = glm::make_vec3(object.transform.translation);
+        const auto pos = glm::make_vec3(combinedTransform.translation);
 
         switch (object.data.tag) {
         case physis_LayerEntry::Tag::MapRange:

@@ -31,7 +31,7 @@ private:
     void createPipeline();
     void createBillboardPipeline();
     void addScene(VkCommandBuffer commandBuffer, Camera &camera, const ObjectScene &scene);
-    void addLayer(VkCommandBuffer commandBuffer, const Camera &camera, const physis_Layer &layer);
+    void addLayer(VkCommandBuffer commandBuffer, const Camera &camera, const physis_Layer &layer, const Transformation &rootTransformation);
     void drawBillboard(VkCommandBuffer commandBuffer, const Camera &camera, const Texture &texture, glm::vec4 color, glm::vec3 position);
     Texture addTexture(const QString &path);
 

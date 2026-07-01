@@ -84,6 +84,7 @@ target_link_libraries(novus-common
         glm::glm
         magic_enum)
 target_compile_definitions(novus-common PRIVATE TRANSLATION_DOMAIN="novus")
+target_compile_definitions(novus-common PUBLIC GLM_FORCE_RADIANS GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_ENABLE_EXPERIMENTAL)
 set_target_properties(novus-common PROPERTIES
         EXPORT_NAME NovusCommon
 )

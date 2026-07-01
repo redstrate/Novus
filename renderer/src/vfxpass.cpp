@@ -6,6 +6,9 @@
 #include "rendermanager.h"
 #include "simplerenderer.h"
 
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 VfxPass::VfxPass(RenderManager &manager)
     : m_device(manager.device())
     , m_renderer(manager)
@@ -32,6 +35,13 @@ void VfxPass::render(VkCommandBuffer commandBuffer, Camera &camera, std::vector<
 
             const glm::mat4 vp = camera.perspective * camera.view;
             auto m = glm::mat4(1.0f);
+            m = glm::translate(
+                m,
+                glm::vec3{vfxInstance.transformation.translation[0], vfxInstance.transformation.translation[1], vfxInstance.transformation.translation[2]});
+            m *= glm::mat4_cast(
+                glm::quat(glm::vec3(vfxInstance.transformation.rotation[0], vfxInstance.transformation.rotation[1], vfxInstance.transformation.rotation[2])));
+            m = glm::scale(m, {vfxInstance.transformation.scale[0], vfxInstance.transformation.scale[1], vfxInstance.transformation.scale[2]});
+
             const auto mvp = vp * m;
             vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
 

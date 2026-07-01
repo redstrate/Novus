@@ -16,6 +16,7 @@
 #include "scenepart.h"
 #include "scenestate.h"
 #include "swapchain.h"
+#include "utility.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -78,7 +79,7 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
         const auto walkScene = [this, &drawNameplate](ObjectScene &scene) {
             for (const auto &[_, lgb] : scene.lgbFiles) {
                 for (uint32_t i = 0; i < lgb.chunks->num_layers; i++) {
-                    if (!m_appState->visibleLayerIds.contains(lgb.chunks->layers[i].id)) {
+                    if (!scene.isSgb() && !m_appState->visibleLayerIds.contains(lgb.chunks->layers[i].id)) {
                         continue;
                     }
 
@@ -197,51 +198,6 @@ void MapView::reloadMap()
     processScene(m_appState->rootScene, transformation);
 }
 
-glm::mat4 transformToMat4(const Transformation &transformation)
-{
-    glm::mat4 m(1.0f);
-    m = glm::translate(m, glm::vec3(transformation.translation[0], transformation.translation[1], transformation.translation[2]));
-    m *= glm::mat4_cast(glm::quat(glm::vec3(transformation.rotation[0], transformation.rotation[1], transformation.rotation[2])));
-    m = glm::scale(m, glm::vec3(transformation.scale[0], transformation.scale[1], transformation.scale[2]));
-
-    return m;
-}
-
-Transformation fromMat4(const glm::mat4 &m)
-{
-    glm::vec3 translation{};
-    glm::quat rotation{};
-    glm::vec3 scale{};
-    glm::vec3 skew{};
-    glm::vec4 perspective{};
-    glm::decompose(m, scale, rotation, translation, skew, perspective);
-
-    auto eulerAngles = glm::eulerAngles(rotation);
-
-    return Transformation{.translation = {translation[0], translation[1], translation[2]},
-                          .rotation =
-                              {
-                                  eulerAngles[0],
-                                  eulerAngles[1],
-                                  eulerAngles[2],
-                              },
-                          .scale = {
-                              scale[0],
-                              scale[1],
-                              scale[2],
-                          }};
-}
-
-Transformation addTransformation(const Transformation &a, const Transformation &b)
-{
-    // NOTE: I know this is stupid, but I plan on replacing this whole system eventually.
-
-    const auto aMat = transformToMat4(a);
-    const auto bMat = transformToMat4(b);
-
-    return fromMat4(aMat * bMat);
-}
-
 void MapView::processScene(ObjectScene &scene, const Transformation &rootTransformation)
 {
     scene.combinedTransformation = addTransformation(rootTransformation, scene.transformation);
@@ -357,7 +313,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
             SceneLight sceneLight;
             sceneLight.id = object.instance_id;
             sceneLight.parentSgbId = scene.originatingSgbId;
-            sceneLight.position = glm::make_vec3(object.transform.translation);
+            sceneLight.position = glm::make_vec3(combinedTransform.translation);
             sceneLight.type = object.data.lay_light._0.light_type;
             sceneLight.color = glm::vec3(static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.red) / 255.0f,
                                          static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.green) / 255.0f,
