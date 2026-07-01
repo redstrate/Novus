@@ -561,6 +561,35 @@ void MDLPart::addLight(const SceneLight &light)
     m_renderer->scene.lights.push_back(light);
 }
 
+void MDLPart::addVfx(physis_Avfx vfx, Transformation transformation, const QString &name)
+{
+    VfxObject *vfxObj = nullptr;
+    if (m_vkWindow->sourceVfx.contains(name)) {
+        vfxObj = m_vkWindow->sourceVfx[name];
+    } else {
+        std::vector<physis_Texture> textures;
+        for (uint32_t i = 0; i < vfx.texture_count; i++) {
+            auto buffer = m_cache.read(QString::fromStdString(vfx.textures[i]));
+            if (buffer.size > 0) {
+                textures.push_back(physis_texture_parse(m_cache.platform(), buffer));
+            }
+        }
+        vfxObj = m_renderer->addVFXObject(vfx, textures, name.toStdString());
+        m_vkWindow->sourceVfx[name] = vfxObj;
+    }
+
+    Q_ASSERT(vfxObj != nullptr);
+    m_vkWindow->vfx.push_back(VfxObjectInstance{name, vfxObj, transformation});
+
+    Q_EMIT modelChanged();
+}
+
+void MDLPart::addExistingVfx(const QString &name, Transformation transformation)
+{
+    auto vfx = m_vkWindow->sourceVfx[name];
+    m_vkWindow->vfx.push_back(VfxObjectInstance{name, vfx, transformation});
+}
+
 int MDLPart::numModels() const
 {
     return m_vkWindow->models.size();
@@ -573,7 +602,7 @@ RenderManager *MDLPart::manager() const
 
 QImage MDLPart::grab()
 {
-    return m_renderer->grab(m_vkWindow->models);
+    return m_renderer->grab(m_vkWindow->models, m_vkWindow->vfx);
 }
 
 QAction *MDLPart::wireframeAction()
@@ -594,6 +623,11 @@ QAction *MDLPart::debugFrustumCullingAction()
 bool MDLPart::modelExists(const QString &name)
 {
     return m_vkWindow->sourceModels.contains(name);
+}
+
+bool MDLPart::vfxExists(const QString &name)
+{
+    return m_vkWindow->sourceVfx.contains(name);
 }
 
 void MDLPart::addExistingModel(const QString &name, Transformation transformation)

@@ -18,6 +18,7 @@
 #include "pass.h"
 #include "simplerenderer.h"
 #include "swapchain.h"
+#include "vfxpass.h"
 
 #include <magic_enum/include/magic_enum.hpp>
 
@@ -164,6 +165,9 @@ RenderManager::RenderManager(FileCache &cache)
     for (auto extension : extensionProperties) {
         if (!strcmp(extension.extensionName, "VK_KHR_portability_subset"))
             deviceExtensions.push_back("VK_KHR_portability_subset");
+        // For VK_FORMAT_A8_UNORM (VFX)
+        if (!strcmp(extension.extensionName, "VK_KHR_maintenance5"))
+            deviceExtensions.push_back("VK_KHR_maintenance5");
     }
 
     uint32_t graphicsFamilyIndex = 0, presentFamilyIndex = 0;
@@ -404,6 +408,7 @@ bool RenderManager::initSwapchain(VkSurfaceKHR surface, int width, int height)
     m_renderer->resize();
     destroyBlitPipeline();
     initBlitPipeline(); // this creates a desc set for the renderer's offscreen texture. need to make sure we regen it
+    m_vfxPass = new VfxPass(*this);
 
     m_framebuffers.resize(m_device->swapChain->swapchainImages.size());
     for (size_t i = 0; i < m_device->swapChain->swapchainImages.size(); i++) {
@@ -477,7 +482,7 @@ void RenderManager::destroySwapchain(bool keepSwapchainObject)
     }
 }
 
-void RenderManager::render(std::vector<DrawObjectInstance> &models)
+void RenderManager::render(std::vector<DrawObjectInstance> &models, std::vector<VfxObjectInstance> &vfx)
 {
     vkWaitForFences(m_device->device,
                     1,
@@ -518,6 +523,8 @@ void RenderManager::render(std::vector<DrawObjectInstance> &models)
     updateCamera(camera);
 
     m_renderer->render(commandBuffer, camera, scene, models);
+
+    m_vfxPass->render(commandBuffer, camera, vfx);
 
     // render extra passes
     // TODO: support the new renderer
@@ -684,6 +691,56 @@ void RenderManager::destroyDrawObject(DrawObject &model)
     }
 
     m_device->destroyBuffer(model.boneInfoBuffer);
+}
+
+VfxObject *RenderManager::addVFXObject(const physis_Avfx &vfx, std::vector<physis_Texture> textures, std::string name)
+{
+    auto VfxObject = new ::VfxObject();
+    VfxObject->vfx = vfx;
+    VfxObject->name = name;
+    VfxObject->textures = textures;
+
+    reloadVFXObject(*VfxObject);
+
+    return VfxObject;
+}
+
+void RenderManager::reloadVFXObject(VfxObject &vfx)
+{
+    for (uint32_t i = 0; i < vfx.vfx.model_count; i++) {
+        const auto &model = vfx.vfx.models[i];
+        auto &drawModel = vfx.models.emplace_back();
+
+        if (model.vertex_count > 0) {
+            size_t vertexSize = model.vertex_count * sizeof(DrawVertex);
+            drawModel.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            m_device->copyToBuffer(drawModel.vertexBuffer, model.vertices, vertexSize);
+            m_device->nameBuffer(drawModel.vertexBuffer, "Vertex Buffer for VFX");
+        } else {
+            qWarning() << vfx.name << "Model" << i << "has zero vertices, is that supposed to happen?";
+        }
+
+        if (model.index_count > 0) {
+            size_t indexSize = model.index_count * sizeof(uint16_t);
+            drawModel.indexBuffer = m_device->createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+            m_device->copyToBuffer(drawModel.indexBuffer, model.indices, indexSize);
+            m_device->nameBuffer(drawModel.indexBuffer, "Index Buffer for VFX");
+
+            drawModel.numIndices = model.index_count;
+        } else {
+            qWarning() << vfx.name << "Model" << i << "has zero indices, is that supposed to happen?";
+        }
+    }
+
+    for (const auto &texture : vfx.textures) {
+        vfx.gameTextures.push_back(addGameTexture(texture));
+    }
+}
+
+void RenderManager::destroyVFXObject(VfxObject &vfx)
+{
+    // TODO: stub
+    Q_UNUSED(vfx)
 }
 
 Texture RenderManager::addGameTexture(physis_Texture gameTexture)
@@ -882,9 +939,9 @@ void RenderManager::freeResources()
     }
 }
 
-QImage RenderManager::grab(std::vector<DrawObjectInstance> &models)
+QImage RenderManager::grab(std::vector<DrawObjectInstance> &models, std::vector<VfxObjectInstance> &vfx)
 {
-    render(models);
+    render(models, vfx);
 
     // Source for the copy is the last rendered swapchain image
     VkImage srcImage = m_device->swapChain->swapchainImages[m_device->swapChain->currentFrame];

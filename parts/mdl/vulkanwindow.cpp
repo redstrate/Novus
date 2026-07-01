@@ -274,7 +274,7 @@ void VulkanWindow::render()
         m_renderer->camera.position = m_part->position + position;
     }
 
-    m_renderer->render(models);
+    m_renderer->render(models, vfx);
     m_instance->presentQueued(this);
     requestUpdate();
 }

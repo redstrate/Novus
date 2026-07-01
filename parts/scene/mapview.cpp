@@ -251,7 +251,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
     for (const auto &layerGroup : scene.embeddedLgbs) {
         for (uint32_t j = 0; j < layerGroup.layer_count; j++) {
             const auto layer = layerGroup.layers[j];
-            if (!scene.isSgb() && m_appState->visibleLayerIds.contains(layer.id)) {
+            if (!scene.isSgb() && !m_appState->visibleLayerIds.contains(layer.id)) {
                 continue;
             }
 
@@ -365,6 +365,27 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
             sceneLight.intensity = object.data.lay_light._0.diffuse_color_hdri.intensity;
 
             m_mdlPart->addLight(sceneLight);
+        } break;
+        case physis_LayerEntry::Tag::Vfx: {
+            std::string assetPath = object.data.vfx._0.asset_path;
+            if (!assetPath.empty()) {
+                if (!m_mdlPart->vfxExists(QString::fromStdString(assetPath))) {
+                    auto avfxFile = m_cache.read(QString::fromStdString(assetPath));
+                    if (avfxFile.size == 0) {
+                        qWarning() << "Could not find" << assetPath;
+                        continue;
+                    }
+
+                    auto avfx = physis_avfx_parse(m_cache.platform(), avfxFile);
+                    if (avfx.model_count > 0) {
+                        m_mdlPart->addVfx(avfx, combinedTransform, QString::fromStdString(assetPath));
+                    } else {
+                        qWarning() << "Failed to load" << assetPath;
+                    }
+                } else {
+                    m_mdlPart->addExistingVfx(QString::fromStdString(assetPath), combinedTransform);
+                }
+            }
         } break;
         default:
             break;

@@ -71,6 +71,7 @@ public Q_SLOTS:
 
     // TODO: all of this API is terrible and should be redone
     bool modelExists(const QString &name);
+    bool vfxExists(const QString &name);
 
     /**
      * @brief Adds a new model to the scene.
@@ -90,6 +91,10 @@ public Q_SLOTS:
     void removeModel(const physis_MDL &mdl);
 
     void addLight(const SceneLight &light);
+
+    void addVfx(physis_Avfx vfx, Transformation transformation, const QString &name);
+
+    void addExistingVfx(const QString &name, Transformation transformation);
 
     /// Sets the skeleton any skinned MDLs should bind to.
     void setSkeleton(physis_Skeleton skeleton);

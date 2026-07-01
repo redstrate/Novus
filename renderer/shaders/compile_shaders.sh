@@ -13,4 +13,6 @@ glslc blit.frag -o blit.frag.spv &&
 glslc debug.vert -o debug.vert.spv &&
 glslc debug.frag -o debug.frag.spv &&
 glslc billboard.vert -o billboard.vert.spv &&
-glslc billboard.frag -o billboard.frag.spv
+glslc billboard.frag -o billboard.frag.spv &&
+glslc vfx.vert -o vfx.vert.spv &&
+glslc vfx.frag -o vfx.frag.spv

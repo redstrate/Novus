@@ -155,7 +155,9 @@ void SceneState::load(FileCache &cache, const physis_ScnSection &section, int te
 
     if (section.general.lcb_path) {
         const auto buffer = cache.read(QString::fromStdString(section.general.lcb_path));
-        loadedLcb = physis_lcb_parse(cache.platform(), buffer);
+        if (buffer.size > 0) {
+            loadedLcb = physis_lcb_parse(cache.platform(), buffer);
+        }
     }
 
     // Load terrain and bg by default
@@ -190,41 +192,51 @@ void SceneState::load(FileCache &cache, const physis_ScnSection &section, int te
         qWarning() << "Did not find a layer set that matched our criteria. Layer visibility will be negatively affected!";
     }
 
+    const auto checkLayer = [this, &idealLayerSet](const auto &layer) {
+        if (!layer.visible) {
+            return;
+        }
+
+        if (idealLayerSet) {
+            std::span layerSetIds(layer.layer_set_referenced_list.layer_set_ids, layer.layer_set_referenced_list.layer_set_id_count);
+            switch (layer.layer_set_referenced_list.referenced_type) {
+            case LayerSetReferencedType::All:
+                break;
+            case LayerSetReferencedType::Include:
+                if (std::ranges::find(layerSetIds, idealLayerSet) == layerSetIds.end()) {
+                    return;
+                }
+                break;
+            case LayerSetReferencedType::Exclude:
+                if (std::ranges::find(layerSetIds, idealLayerSet) != layerSetIds.end()) {
+                    return;
+                }
+                break;
+            case LayerSetReferencedType::Undetermined:
+            default:
+                return;
+            }
+        }
+
+        // TODO: how can we stop showing quest-specific layers?
+
+        // Skip festival-specific layers
+        if (layer.festival_id == 0) {
+            visibleLayerIds.push_back(layer.id);
+        }
+    };
+
     for (const auto &[name, lgb] : rootScene.lgbFiles) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
-                if (!lgb.chunks[i].layers[j].visible) {
-                    continue;
-                }
-
-                if (idealLayerSet) {
-                    std::span layerSetIds(lgb.chunks[i].layers[j].layer_set_referenced_list.layer_set_ids,
-                                          lgb.chunks[i].layers[j].layer_set_referenced_list.layer_set_id_count);
-                    switch (lgb.chunks[i].layers[j].layer_set_referenced_list.referenced_type) {
-                    case LayerSetReferencedType::All:
-                        break;
-                    case LayerSetReferencedType::Include:
-                        if (std::ranges::find(layerSetIds, idealLayerSet) == layerSetIds.end()) {
-                            continue;
-                        }
-                        break;
-                    case LayerSetReferencedType::Exclude:
-                        if (std::ranges::find(layerSetIds, idealLayerSet) != layerSetIds.end()) {
-                            continue;
-                        }
-                        break;
-                    case LayerSetReferencedType::Undetermined:
-                        continue;
-                    }
-                }
-
-                // TODO: how can we stop showing quest-specific layers?
-
-                // Skip festival-specific layers
-                if (lgb.chunks[i].layers[j].festival_id == 0) {
-                    visibleLayerIds.push_back(lgb.chunks[i].layers[j].id);
-                }
+                checkLayer(lgb.chunks[i].layers[j]);
             }
+        }
+    }
+
+    for (const auto &lgb : rootScene.embeddedLgbs) {
+        for (uint32_t j = 0; j < lgb.layer_count; j++) {
+            checkLayer(lgb.layers[j]);
         }
     }
 

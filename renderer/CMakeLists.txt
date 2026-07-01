@@ -28,6 +28,8 @@ target_sources(renderer
         include/swapchain.h
         include/texture.h
         include/frustum.h
+        include/vfxpass.h
+        include/vfxobject.h
 
         src/device.cpp
         src/gamerenderer.cpp
@@ -38,7 +40,8 @@ target_sources(renderer
         src/shadermanager.cpp
         src/simplerenderer.cpp
         src/swapchain.cpp
-        src/frustum.cpp)
+        src/frustum.cpp
+        src/vfxpass.cpp)
 qt_add_resources(renderer
         "shaders"
         PREFIX "/"
@@ -54,7 +57,9 @@ qt_add_resources(renderer
         shaders/debug.vert.spv
         shaders/debug.frag.spv
         shaders/billboard.vert.spv
-        shaders/billboard.frag.spv)
+        shaders/billboard.frag.spv
+        shaders/vfx.vert.spv
+        shaders/vfx.frag.spv)
 target_include_directories(renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(renderer
         PUBLIC

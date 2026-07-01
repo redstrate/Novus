@@ -24,6 +24,8 @@ public:
     std::vector<DrawObjectInstance> models;
     std::unordered_map<QString, DrawObject *> sourceModels;
     bool freeMode = false;
+    std::vector<VfxObjectInstance> vfx;
+    std::unordered_map<QString, VfxObject *> sourceVfx;
 
 private:
     bool m_initialized = false;

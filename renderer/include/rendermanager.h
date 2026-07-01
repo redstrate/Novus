@@ -4,12 +4,9 @@
 #pragma once
 
 #include <array>
-#include <map>
 #include <vector>
 
 #include <QImage>
-#include <QString>
-#include <glm/ext/matrix_float4x4.hpp>
 #include <physis.hpp>
 #include <vulkan/vulkan.h>
 
@@ -17,12 +14,14 @@
 #include "device.h"
 #include "drawobject.h"
 #include "scene.h"
+#include "vfxobject.h"
 
 class FileCache;
 class ImGuiPass;
 struct ImGuiContext;
 class BaseRenderer;
 class RendererPass;
+class VfxPass;
 
 /// Render 3D scenes made up of FFXIV game objects
 class RenderManager
@@ -40,6 +39,10 @@ public:
     void reloadDrawObject(DrawObject &model);
     void destroyDrawObject(DrawObject &model);
 
+    VfxObject *addVFXObject(const physis_Avfx &vfx, std::vector<physis_Texture> textures, std::string name);
+    void reloadVFXObject(VfxObject &vfx);
+    void destroyVFXObject(VfxObject &vfx);
+
     /**
      * @brief Converts the @p gameTexture to the renderable kind.
      *
@@ -47,7 +50,7 @@ public:
      */
     Texture addGameTexture(physis_Texture gameTexture);
 
-    void render(std::vector<DrawObjectInstance> &models);
+    void render(std::vector<DrawObjectInstance> &models, std::vector<VfxObjectInstance> &vfx);
 
     VkRenderPass presentationRenderPass() const;
 
@@ -66,7 +69,7 @@ public:
 
     void freeResources();
 
-    QImage grab(std::vector<DrawObjectInstance> &models);
+    QImage grab(std::vector<DrawObjectInstance> &models, std::vector<VfxObjectInstance> &vfx);
 
 private:
     void updateCamera(Camera &camera);
@@ -89,4 +92,5 @@ private:
     BaseRenderer *m_renderer = nullptr;
     FileCache &m_cache;
     std::vector<RendererPass *> m_passes;
+    VfxPass *m_vfxPass = nullptr;
 };
