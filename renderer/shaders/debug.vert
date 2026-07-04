@@ -5,13 +5,17 @@
 
 layout(location = 0) in vec3 inPosition;
 
+layout(location = 0) out vec3 outPosition;
+
 layout(std430, push_constant) uniform PushConstant {
 	mat4 vp, model;
 	vec4 color;
+	bool discardCubeLines;
 };
 
 void main() {
     vec4 bPos = model * vec4(inPosition, 1.0);
 
     gl_Position = vp * bPos;
+    outPosition = inPosition;
 }

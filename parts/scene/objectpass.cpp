@@ -111,6 +111,14 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera, const Sce
                                    sizeof(glm::vec4),
                                    &color);
 
+                const auto discardCubeLines = true;
+                vkCmdPushConstants(commandBuffer,
+                                   m_pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                   sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+                                   sizeof(bool),
+                                   &discardCubeLines);
+
                 Primitives::DrawCube(commandBuffer);
             }
         }
@@ -189,7 +197,7 @@ void ObjectPass::createPipeline()
     dynamicState.pDynamicStates = dynamicStates.data();
 
     VkPushConstantRange pushConstant = {};
-    pushConstant.size = sizeof(glm::mat4) * 2 + sizeof(glm::vec4);
+    pushConstant.size = sizeof(glm::mat4) * 2 + sizeof(glm::vec4) + sizeof(bool);
     pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -388,9 +396,9 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
                                    sizeof(glm::mat4),
                                    &m);
 
-                glm::vec4 color = glm::vec4(1, 0, 0, 1);
+                glm::vec4 color = glm::vec4(0.5, 0.5, 0.5, 1);
                 if (m_appState->selectedDropInObject && m_appState->selectedDropInObject.value() == &object) {
-                    color = glm::vec4(0, 1, 0, 1);
+                    color = glm::vec4(1, 0, 0, 1);
                 }
 
                 vkCmdPushConstants(commandBuffer,
@@ -399,6 +407,14 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
                                    sizeof(glm::mat4) * 2,
                                    sizeof(glm::vec4),
                                    &color);
+
+                const auto discardCubeLines = true;
+                vkCmdPushConstants(commandBuffer,
+                                   m_pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                   sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+                                   sizeof(bool),
+                                   &discardCubeLines);
 
                 Primitives::DrawCube(commandBuffer);
             }
@@ -442,9 +458,16 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
         };
         setModel({});
 
-        glm::vec4 color = glm::vec4(1, 1, 1, 0.5);
+        // Used for billboards
+        glm::vec4 billboardColor = glm::vec4(1, 1, 1, 0.5);
         if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
-            color = glm::vec4(1);
+            billboardColor = glm::vec4(1);
+        }
+
+        // Used for debug meshes
+        glm::vec4 debugColor = glm::vec4(0.5, 0.5, 0.5, 1.0);
+        if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
+            debugColor = glm::vec4(1, 0, 0, 1);
         }
 
         vkCmdPushConstants(commandBuffer,
@@ -452,13 +475,29 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                            sizeof(glm::mat4) * 2,
                            sizeof(glm::vec4),
-                           &color);
+                           &debugColor);
 
-        const auto decideBasedOnTrigger = [commandBuffer](const physis_TriggerBoxInstanceObject &trigger) {
+        const auto decideBasedOnTrigger = [this, commandBuffer](const physis_TriggerBoxInstanceObject &trigger) {
+            auto discardCubeLines = false;
+            vkCmdPushConstants(commandBuffer,
+                               m_pipelineLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                               sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+                               sizeof(bool),
+                               &discardCubeLines);
+
             switch (trigger.trigger_box_shape) {
-            case TriggerBoxShape::Box:
+            case TriggerBoxShape::Box: {
+                discardCubeLines = true;
+                vkCmdPushConstants(commandBuffer,
+                                   m_pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                   sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+                                   sizeof(bool),
+                                   &discardCubeLines);
+
                 Primitives::DrawCube(commandBuffer);
-                break;
+            } break;
             case TriggerBoxShape::Sphere:
                 Primitives::DrawSphere(commandBuffer);
                 break;
@@ -491,6 +530,9 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
         case physis_LayerEntry::Tag::PrefetchRange:
             decideBasedOnTrigger(object.data.prefetch_range._0.parent_data);
             break;
+        case physis_LayerEntry::Tag::CollisionBox:
+            decideBasedOnTrigger(object.data.collision_box._0.parent_data);
+            break;
         case physis_LayerEntry::Tag::PopRange: {
             // Only show positions when the PopRange is selected to reduce the noise...
             if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
@@ -499,7 +541,7 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                     Primitives::DrawSphere(commandBuffer);
                 }
             }
-            drawBillboard(commandBuffer, camera, m_poprangeTexture, color, pos);
+            drawBillboard(commandBuffer, camera, m_poprangeTexture, billboardColor, pos);
         } break;
         case physis_LayerEntry::Tag::LayLight: {
             auto lightColor = glm::vec4(object.data.lay_light._0.diffuse_color_hdri.red / 255.0f,
@@ -507,7 +549,7 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                                         object.data.lay_light._0.diffuse_color_hdri.blue / 255.0f,
                                         object.data.lay_light._0.diffuse_color_hdri.alpha / 255.0f);
             if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
-                lightColor = color;
+                lightColor = billboardColor;
             }
             switch (object.data.lay_light._0.light_type) {
             case LightType::None:
@@ -535,34 +577,41 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                 break;
             }
         } break;
-        case physis_LayerEntry::Tag::SharedGroup:
-            break; // Don't render SGBs because it just creates noise, it has visible child objects anyway!
         case physis_LayerEntry::Tag::BG:
-            break; // Don't render BG models because it also creates noise, and they have a visible model!
+        case physis_LayerEntry::Tag::SharedGroup:
+            break;
         case physis_LayerEntry::Tag::ChairMarker:
-            drawBillboard(commandBuffer, camera, m_chairTexture, color, pos);
+            drawBillboard(commandBuffer, camera, m_chairTexture, billboardColor, pos);
             break;
         case physis_LayerEntry::Tag::Sound:
-            drawBillboard(commandBuffer, camera, m_soundTexture, color, pos);
+            drawBillboard(commandBuffer, camera, m_soundTexture, billboardColor, pos);
             break;
         case physis_LayerEntry::Tag::EventObject:
-            drawBillboard(commandBuffer, camera, m_eobjTexture, color, pos);
+            drawBillboard(commandBuffer, camera, m_eobjTexture, billboardColor, pos);
             break;
         case physis_LayerEntry::Tag::EnvLocation:
-            drawBillboard(commandBuffer, camera, m_envLocationTexture, color, pos);
+            drawBillboard(commandBuffer, camera, m_envLocationTexture, billboardColor, pos);
             break;
         case physis_LayerEntry::Tag::EventNPC:
-            drawBillboard(commandBuffer, camera, m_enpcTexture, color, pos);
+            drawBillboard(commandBuffer, camera, m_enpcTexture, billboardColor, pos);
             break;
         case physis_LayerEntry::Tag::Vfx:
-            drawBillboard(commandBuffer, camera, m_avfxTexture, color, pos);
+            drawBillboard(commandBuffer, camera, m_avfxTexture, billboardColor, pos);
             break;
         case physis_LayerEntry::Tag::TargetMarker:
-            drawBillboard(commandBuffer, camera, m_targetMarkerTexture, color, pos);
+            drawBillboard(commandBuffer, camera, m_targetMarkerTexture, billboardColor, pos);
             break;
-        default:
+        default: {
+            const auto discardCubeLines = true;
+            vkCmdPushConstants(commandBuffer,
+                               m_pipelineLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                               sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+                               sizeof(bool),
+                               &discardCubeLines);
+
             Primitives::DrawCube(commandBuffer);
-            break;
+        } break;
         }
     }
 }
