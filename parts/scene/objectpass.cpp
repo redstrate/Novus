@@ -405,8 +405,10 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
         }
     }
 
-    for (const auto &[_, scene] : scene.nestedScenes) {
-        addScene(commandBuffer, camera, scene);
+    for (const auto &[_, nestedScene] : scene.nestedScenes) {
+        if (!scene.isSgb() && m_appState->visibleLayerIds.contains(nestedScene.originatingSgbLayerId)) {
+            addScene(commandBuffer, camera, nestedScene);
+        }
     }
 }
 
