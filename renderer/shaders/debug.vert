@@ -10,7 +10,7 @@ layout(location = 0) out vec3 outPosition;
 layout(std430, push_constant) uniform PushConstant {
 	mat4 vp, model;
 	vec4 color;
-	bool discardCubeLines;
+	vec4 discardCubeLines;
 };
 
 void main() {

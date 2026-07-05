@@ -204,6 +204,11 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
 
         const auto &lod = model.sourceObject->chooseLod(distance);
         for (const auto &part : model.sourceObject->lods[lod].parts) {
+            // not sure why this happens
+            if (part.numIndices == 0 || part.vertexBuffer.buffer == VK_NULL_HANDLE) {
+                continue;
+            }
+
             RenderMaterial material = {};
             if (static_cast<size_t>(part.materialIndex) < model.sourceObject->materials.size()) {
                 material = model.sourceObject->materials[part.materialIndex];

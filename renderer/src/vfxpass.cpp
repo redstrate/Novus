@@ -25,6 +25,10 @@ void VfxPass::render(VkCommandBuffer commandBuffer, Camera &camera, std::vector<
 
     for (const auto &vfxInstance : vfx) {
         for (const auto &model : vfxInstance.sourceObject->models) {
+            if (model.numIndices == 0) {
+                continue;
+            }
+
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
             auto texture = vfxInstance.sourceObject->gameTextures[0];

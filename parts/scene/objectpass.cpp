@@ -111,12 +111,12 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera, const Sce
                                    sizeof(glm::vec4),
                                    &color);
 
-                const auto discardCubeLines = true;
+                const auto discardCubeLines = glm::vec4(1);
                 vkCmdPushConstants(commandBuffer,
                                    m_pipelineLayout,
                                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                    sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
-                                   sizeof(bool),
+                                   sizeof(glm::vec4),
                                    &discardCubeLines);
 
                 Primitives::DrawCube(commandBuffer);
@@ -197,7 +197,7 @@ void ObjectPass::createPipeline()
     dynamicState.pDynamicStates = dynamicStates.data();
 
     VkPushConstantRange pushConstant = {};
-    pushConstant.size = sizeof(glm::mat4) * 2 + sizeof(glm::vec4) + sizeof(bool);
+    pushConstant.size = sizeof(glm::mat4) * 2 + sizeof(glm::vec4) * 2;
     pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -408,12 +408,12 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
                                    sizeof(glm::vec4),
                                    &color);
 
-                const auto discardCubeLines = true;
+                const auto discardCubeLines = glm::vec4(1);
                 vkCmdPushConstants(commandBuffer,
                                    m_pipelineLayout,
                                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                    sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
-                                   sizeof(bool),
+                                   sizeof(glm::vec4),
                                    &discardCubeLines);
 
                 Primitives::DrawCube(commandBuffer);
@@ -478,22 +478,22 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                            &debugColor);
 
         const auto decideBasedOnTrigger = [this, commandBuffer](const physis_TriggerBoxInstanceObject &trigger) {
-            auto discardCubeLines = false;
+            auto discardCubeLines = glm::vec4(0);
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
-                               sizeof(bool),
+                               sizeof(glm::vec4),
                                &discardCubeLines);
 
             switch (trigger.trigger_box_shape) {
             case TriggerBoxShape::Box: {
-                discardCubeLines = true;
+                discardCubeLines = glm::vec4(1);
                 vkCmdPushConstants(commandBuffer,
                                    m_pipelineLayout,
                                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                    sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
-                                   sizeof(bool),
+                                   sizeof(glm::vec4),
                                    &discardCubeLines);
 
                 Primitives::DrawCube(commandBuffer);
@@ -544,7 +544,7 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                                        m_pipelineLayout,
                                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                        sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
-                                       sizeof(bool),
+                                       sizeof(glm::vec4),
                                        &discardCubeLines);
                     Primitives::DrawCube(commandBuffer);
                 }
@@ -610,12 +610,12 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
             drawBillboard(commandBuffer, camera, m_targetMarkerTexture, billboardColor, pos);
             break;
         default: {
-            const auto discardCubeLines = true;
+            const auto discardCubeLines = glm::vec4(1);
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
-                               sizeof(bool),
+                               sizeof(glm::vec4),
                                &discardCubeLines);
 
             Primitives::DrawCube(commandBuffer);

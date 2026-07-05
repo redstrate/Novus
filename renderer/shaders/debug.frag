@@ -10,11 +10,11 @@ layout(location = 0) out vec4 outColor;
 layout(std430, push_constant) uniform PushConstant {
 	mat4 vp, model;
 	vec4 color;
-	bool discardCubeLines;
+	vec4 discardCubeLines;
 };
 
 void main() {
-    if (discardCubeLines && length(vec3(notEqual(abs(inPosition), vec3(1.0)))) > 1.0) {
+    if (discardCubeLines.x == 1.0 && length(vec3(notEqual(abs(inPosition), vec3(1.0)))) > 1.0) {
         discard;
     } else {
         outColor = color;
