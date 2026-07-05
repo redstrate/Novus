@@ -95,7 +95,7 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
                             }
                             drawNameplate(object.instance_id, glm::make_vec3(object.transform.translation), m_appState->lookupEObjName(eobjName));
                         } break;
-                        case physis_LayerEntry::Tag::EventNPC: {
+                        case physis_LayerEntry::Tag::EventNpc: {
                             const auto enpcName = object.data.event_npc._0.parent_data.parent_data.base_id;
                             drawNameplate(object.instance_id, glm::make_vec3(object.transform.translation), m_appState->lookupENpcName(enpcName));
                         } break;
@@ -269,8 +269,8 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
         const auto combinedTransform = addTransformation(rootTransformation, object.transform);
 
         switch (object.data.tag) {
-        case physis_LayerEntry::Tag::BG: {
-            std::string assetPath = object.data.bg._0.asset_path;
+        case physis_LayerEntry::Tag::BgPart: {
+            std::string assetPath = object.data.bg_part._0.asset_path;
             if (!assetPath.empty()) {
                 if (!m_mdlPart->modelExists(QString::fromStdString(assetPath))) {
                     auto plateMdlFile = m_cache.read(QString::fromStdString(assetPath));
@@ -309,16 +309,16 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                 }
             }
         } break;
-        case physis_LayerEntry::Tag::LayLight: {
+        case physis_LayerEntry::Tag::Light: {
             SceneLight sceneLight;
             sceneLight.id = object.instance_id;
             sceneLight.parentSgbId = scene.originatingSgbId;
             sceneLight.position = glm::make_vec3(combinedTransform.translation);
-            sceneLight.type = object.data.lay_light._0.light_type;
-            sceneLight.color = glm::vec3(static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.red) / 255.0f,
-                                         static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.green) / 255.0f,
-                                         static_cast<float>(object.data.lay_light._0.diffuse_color_hdri.blue) / 255.0f);
-            sceneLight.intensity = object.data.lay_light._0.diffuse_color_hdri.intensity;
+            sceneLight.type = object.data.light._0.light_type;
+            sceneLight.color = glm::vec3(static_cast<float>(object.data.light._0.diffuse_color_hdri.red) / 255.0f,
+                                         static_cast<float>(object.data.light._0.diffuse_color_hdri.green) / 255.0f,
+                                         static_cast<float>(object.data.light._0.diffuse_color_hdri.blue) / 255.0f);
+            sceneLight.intensity = object.data.light._0.diffuse_color_hdri.intensity;
 
             m_mdlPart->addLight(sceneLight);
         } break;
@@ -336,7 +336,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                     if (avfx.model_count > 0) {
                         m_mdlPart->addVfx(avfx, combinedTransform, QString::fromStdString(assetPath));
                     } else {
-                        qWarning() << "Failed to load" << assetPath;
+                        qWarning() << "AVFX" << assetPath << "has no models and won't be seen, as we don't support emitter-only stuff yet";
                     }
                 } else {
                     m_mdlPart->addExistingVfx(QString::fromStdString(assetPath), combinedTransform);

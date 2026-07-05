@@ -441,13 +441,13 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
 
         const auto combinedTransform = addTransformation(rootTransformation, object.transform);
 
-        const auto setModel = [this, &combinedTransform, &commandBuffer](const glm::vec3 relativePosition) {
+        const auto setModel = [this, &combinedTransform, &commandBuffer](const glm::vec3 relativePosition, glm::vec3 scaleMultiplier = glm::vec3(1)) {
             auto m = glm::mat4(1.0f);
             m = glm::translate(m,
                                glm::vec3{combinedTransform.translation[0], combinedTransform.translation[1], combinedTransform.translation[2]}
                                    + relativePosition);
             m *= glm::mat4_cast(glm::quat(glm::vec3(combinedTransform.rotation[0], combinedTransform.rotation[1], combinedTransform.rotation[2])));
-            m = glm::scale(m, {combinedTransform.scale[0], combinedTransform.scale[1], combinedTransform.scale[2]});
+            m = glm::scale(m, glm::vec3{combinedTransform.scale[0], combinedTransform.scale[1], combinedTransform.scale[2]} * scaleMultiplier);
 
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
@@ -537,21 +537,29 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
             // Only show positions when the PopRange is selected to reduce the noise...
             if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
                 for (uint32_t i = 0; i < object.data.pop_range._0.position_count; i++) {
-                    setModel({object.data.pop_range._0.positions[i][0], object.data.pop_range._0.positions[i][1], object.data.pop_range._0.positions[i][2]});
-                    Primitives::DrawSphere(commandBuffer);
+                    setModel({object.data.pop_range._0.positions[i][0], object.data.pop_range._0.positions[i][1], object.data.pop_range._0.positions[i][2]},
+                             glm::vec3(0.1));
+                    const auto discardCubeLines = false;
+                    vkCmdPushConstants(commandBuffer,
+                                       m_pipelineLayout,
+                                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                       sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+                                       sizeof(bool),
+                                       &discardCubeLines);
+                    Primitives::DrawCube(commandBuffer);
                 }
             }
             drawBillboard(commandBuffer, camera, m_poprangeTexture, billboardColor, pos);
         } break;
-        case physis_LayerEntry::Tag::LayLight: {
-            auto lightColor = glm::vec4(object.data.lay_light._0.diffuse_color_hdri.red / 255.0f,
-                                        object.data.lay_light._0.diffuse_color_hdri.green / 255.0f,
-                                        object.data.lay_light._0.diffuse_color_hdri.blue / 255.0f,
-                                        object.data.lay_light._0.diffuse_color_hdri.alpha / 255.0f);
+        case physis_LayerEntry::Tag::Light: {
+            auto lightColor = glm::vec4(object.data.light._0.diffuse_color_hdri.red / 255.0f,
+                                        object.data.light._0.diffuse_color_hdri.green / 255.0f,
+                                        object.data.light._0.diffuse_color_hdri.blue / 255.0f,
+                                        object.data.light._0.diffuse_color_hdri.alpha / 255.0f);
             if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
                 lightColor = billboardColor;
             }
-            switch (object.data.lay_light._0.light_type) {
+            switch (object.data.light._0.light_type) {
             case LightType::None:
                 break;
             case LightType::Directional:
@@ -573,11 +581,11 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                 drawBillboard(commandBuffer, camera, m_specularLightTexture, lightColor, pos);
                 break;
             default:
-                qWarning() << "Unsupported light type for billboard:" << static_cast<int>(object.data.lay_light._0.light_type);
+                qWarning() << "Unsupported light type for billboard:" << static_cast<int>(object.data.light._0.light_type);
                 break;
             }
         } break;
-        case physis_LayerEntry::Tag::BG:
+        case physis_LayerEntry::Tag::BgPart:
         case physis_LayerEntry::Tag::SharedGroup:
             break;
         case physis_LayerEntry::Tag::ChairMarker:
@@ -592,7 +600,7 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
         case physis_LayerEntry::Tag::EnvLocation:
             drawBillboard(commandBuffer, camera, m_envLocationTexture, billboardColor, pos);
             break;
-        case physis_LayerEntry::Tag::EventNPC:
+        case physis_LayerEntry::Tag::EventNpc:
             drawBillboard(commandBuffer, camera, m_enpcTexture, billboardColor, pos);
             break;
         case physis_LayerEntry::Tag::Vfx:

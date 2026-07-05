@@ -77,23 +77,23 @@ void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
     addCommonSection(object);
 
     switch (object.data.tag) {
-    case physis_LayerEntry::Tag::BG:
-        addBGSection(object.data.bg._0);
+    case physis_LayerEntry::Tag::BgPart:
+        addBgPartSection(object.data.bg_part._0);
         break;
-    case physis_LayerEntry::Tag::LayLight:
-        addLightSection(object.data.lay_light._0);
+    case physis_LayerEntry::Tag::Light:
+        addLightSection(object.data.light._0);
         break;
     case physis_LayerEntry::Tag::Vfx:
         addVfxSection(object.data.vfx._0);
         break;
     case physis_LayerEntry::Tag::EventObject:
-        addEventSection(object.data.event_object._0);
+        addEventObjectSection(object.data.event_object._0);
         break;
     case physis_LayerEntry::Tag::PopRange:
         addPopRangeSection(object.data.pop_range._0);
         break;
-    case physis_LayerEntry::Tag::EventNPC:
-        addEventNPCSection(object.data.event_npc._0);
+    case physis_LayerEntry::Tag::EventNpc:
+        addEventNpcSection(object.data.event_npc._0);
         break;
     case physis_LayerEntry::Tag::MapRange:
         addMapRangeSection(object.data.map_range._0);
@@ -126,19 +126,25 @@ void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
         addSoundSection(object.data.sound._0);
         break;
     case physis_LayerEntry::Tag::CollisionBox:
-        addCollisionBox(object.data.collision_box._0);
+        addCollisionBoxSection(object.data.collision_box._0);
         break;
     case physis_LayerEntry::Tag::DoorRange:
-        addDoorRange(object.data.door_range._0);
+        addDoorRangeSection(object.data.door_range._0);
         break;
     case physis_LayerEntry::Tag::LineVFX:
-        addLineVFX(object.data.line_vfx._0);
+        addLineVFXSection(object.data.line_vfx._0);
         break;
     case physis_LayerEntry::Tag::Treasure:
-        addTreasure(object.data.treasure._0);
+        addTreasureSection(object.data.treasure._0);
         break;
     case physis_LayerEntry::Tag::TargetMarker:
-        addTargetMarker(object.data.target_marker._0);
+        addTargetMarkerSection(object.data.target_marker._0);
+        break;
+    case physis_LayerEntry::Tag::CullingBox:
+        addCullingBoxSection(object.data.culling_box._0);
+        break;
+    case physis_LayerEntry::Tag::ClickableRange:
+        addClickableRange(object.data.clickable_range._0);
         break;
     default:
         break;
@@ -394,7 +400,7 @@ void ObjectPropertiesWidget::addCommonSection(physis_InstanceObject &object)
     layout->addRow(i18n("Instance ID"), idEdit);
 }
 
-void ObjectPropertiesWidget::addBGSection(const physis_BGInstanceObject &bg)
+void ObjectPropertiesWidget::addBgPartSection(const physis_BgPartInstanceObject &bg)
 {
     auto section = new CollapseSection(i18n("BG"));
     m_layout->addWidget(section);
@@ -412,9 +418,14 @@ void ObjectPropertiesWidget::addBGSection(const physis_BGInstanceObject &bg)
     collisionEdit->setPath(QString::fromLatin1(bg.collision_asset_path));
     collisionEdit->setReadOnly(true);
     layout->addRow(i18n("Collision Asset Path"), collisionEdit);
+
+    auto collisionTypeEdit = new EnumEdit<ModelCollisionType>();
+    collisionTypeEdit->setValue(bg.collision_type);
+    collisionTypeEdit->setEnabled(false);
+    layout->addRow(i18n("Collision Type"), collisionTypeEdit);
 }
 
-void ObjectPropertiesWidget::addEventSection(physis_EventInstanceObject &eobj)
+void ObjectPropertiesWidget::addEventObjectSection(physis_EventObjectInstanceObject &eobj)
 {
     addGameObjectSection(eobj.parent_data);
 
@@ -428,10 +439,6 @@ void ObjectPropertiesWidget::addEventSection(physis_EventInstanceObject &eobj)
     auto boundIdEdit = new ObjectIdEdit(m_appState);
     boundIdEdit->setObjectId(eobj.bound_instance_id);
     layout->addRow(i18n("Bound ID"), boundIdEdit);
-
-    auto instanceIdEdit = new ObjectIdEdit(m_appState);
-    instanceIdEdit->setObjectId(eobj.linked_instance_id);
-    layout->addRow(i18n("Linked ID"), instanceIdEdit);
 }
 
 void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObject &pop)
@@ -443,25 +450,10 @@ void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObj
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto typeEdit = new QLineEdit();
-    switch (pop.pop_type) {
-    case PopType::PC:
-        typeEdit->setText(i18n("PC"));
-        break;
-    case PopType::Npc:
-        typeEdit->setText(i18n("NPC"));
-        break;
-    case PopType::Content:
-        typeEdit->setText(i18n("Content"));
-        break;
-    }
-    typeEdit->setReadOnly(true);
+    auto typeEdit = new EnumEdit<PopType>();
+    typeEdit->setValue(pop.pop_type);
+    typeEdit->setEnabled(false);
     layout->addRow(i18n("Type"), typeEdit);
-
-    auto indexEdit = new QLineEdit();
-    indexEdit->setText(QString::number(pop.index));
-    indexEdit->setReadOnly(true);
-    layout->addRow(i18n("Index"), indexEdit);
 
     auto innerRadiusRatioEdit = new QLineEdit();
     innerRadiusRatioEdit->setText(QString::number(pop.inner_radius_ratio));
@@ -469,9 +461,9 @@ void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObj
     layout->addRow(i18n("Inner Radius Ratio"), innerRadiusRatioEdit);
 }
 
-void ObjectPropertiesWidget::addEventNPCSection(physis_ENPCInstanceObject &enpc)
+void ObjectPropertiesWidget::addEventNpcSection(physis_EventNpcInstanceObject &enpc)
 {
-    addNPCSection(enpc.parent_data);
+    addCharacterSection(enpc.parent_data);
 
     auto section = new CollapseSection(i18n("Event NPC"));
     m_layout->addWidget(section);
@@ -630,11 +622,11 @@ void ObjectPropertiesWidget::addTriggerBoxSection(const physis_TriggerBoxInstanc
     layout->addRow(i18n("Enabled"), enabledCheckBox);
 }
 
-void ObjectPropertiesWidget::addNPCSection(physis_NPCInstanceObject &npc)
+void ObjectPropertiesWidget::addCharacterSection(physis_CharacterInstanceObject &character)
 {
-    addGameObjectSection(npc.parent_data);
+    addGameObjectSection(character.parent_data);
 
-    auto section = new CollapseSection(i18n("NPC"));
+    auto section = new CollapseSection(i18n("Character"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
@@ -642,7 +634,7 @@ void ObjectPropertiesWidget::addNPCSection(physis_NPCInstanceObject &npc)
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addGameObjectSection(physis_GameInstanceObject &object)
+void ObjectPropertiesWidget::addGameObjectSection(physis_GameObjectInstanceObject &object)
 {
     auto section = new CollapseSection(i18n("Game Object"));
     m_layout->addWidget(section);
@@ -651,7 +643,9 @@ void ObjectPropertiesWidget::addGameObjectSection(physis_GameInstanceObject &obj
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("ENpcResident"), QStringLiteral("ENpcBase"), QStringLiteral("EObj")}, object.base_id);
+    auto baseIdEdit = new ExcelEdit(m_appState,
+                                    {QStringLiteral("ENpcResident"), QStringLiteral("ENpcBase"), QStringLiteral("EObj"), QStringLiteral("Treasure")},
+                                    object.base_id);
     layout->addRow(i18n("Base ID"), baseIdEdit);
 }
 
@@ -732,19 +726,37 @@ void ObjectPropertiesWidget::addEventRangeSection(const physis_EventRangeInstanc
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
-    setLayout(layout);
+    section->setLayout(layout);
 }
 
 void ObjectPropertiesWidget::addChairMarkerSection(const physis_ChairMarkerInstanceObject &chairMarker)
 {
-    Q_UNUSED(chairMarker);
-
     auto section = new CollapseSection(i18n("Chair Marker"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
-    setLayout(layout);
+    section->setLayout(layout);
+
+    auto leftEnableCheckBox = new QCheckBox();
+    leftEnableCheckBox->setChecked(chairMarker.left_enable);
+    leftEnableCheckBox->setEnabled(false);
+    layout->addRow(i18n("Left Enable"), leftEnableCheckBox);
+
+    auto rightEnableCheckBox = new QCheckBox();
+    rightEnableCheckBox->setChecked(chairMarker.right_enable);
+    rightEnableCheckBox->setEnabled(false);
+    layout->addRow(i18n("Right Enable"), rightEnableCheckBox);
+
+    auto backEnableCheckBox = new QCheckBox();
+    backEnableCheckBox->setChecked(chairMarker.back_enable);
+    backEnableCheckBox->setEnabled(false);
+    layout->addRow(i18n("Back Enable"), backEnableCheckBox);
+
+    auto chairTypeEdit = new EnumEdit<ChairType>();
+    chairTypeEdit->setValue(chairMarker.chair_type);
+    chairTypeEdit->setEnabled(false);
+    layout->addRow(i18n("Chair Type"), chairTypeEdit);
 }
 
 void ObjectPropertiesWidget::addPrefetchRangeSection(const physis_PrefetchRangeInstanceObject &prefetchRange)
@@ -903,7 +915,7 @@ void ObjectPropertiesWidget::addSoundSection(const physis_SoundInstanceObject &s
     layout->addRow(i18n("Asset Path"), soundAssetPathEdit);
 }
 
-void ObjectPropertiesWidget::addCollisionBox(const physis_CollisionBoxInstanceObject &collisionBox)
+void ObjectPropertiesWidget::addCollisionBoxSection(const physis_CollisionBoxInstanceObject &collisionBox)
 {
     addTriggerBoxSection(collisionBox.parent_data);
 
@@ -914,21 +926,24 @@ void ObjectPropertiesWidget::addCollisionBox(const physis_CollisionBoxInstanceOb
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto assetPathEdit = new QLabel();
-    assetPathEdit->setText(QString::number(collisionBox.collision_asset_path_crc));
-    layout->addRow(i18n("PCB Path CRC"), assetPathEdit);
+    auto assetPathEdit = new PathEdit();
+    assetPathEdit->setPath(QString::fromStdString(collisionBox.collision_asset_path));
+    layout->addRow(i18n("Collision Asset Path"), assetPathEdit);
 }
 
-void ObjectPropertiesWidget::addDoorRange(const physis_DoorRangeInstanceObject &doorRange)
+void ObjectPropertiesWidget::addDoorRangeSection(const physis_DoorRangeInstanceObject &doorRange)
 {
-    addTriggerBoxSection(doorRange.parent_data);
+    addRangeSection(doorRange.parent_data);
 
     auto section = new CollapseSection(i18n("Door Range"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addLineVFX(const physis_LineVFXInstanceObject &lineVfx)
+void ObjectPropertiesWidget::addLineVFXSection(const physis_LineVFXInstanceObject &lineVfx)
 {
     auto section = new CollapseSection(i18n("Line VFX"));
     m_layout->addWidget(section);
@@ -943,21 +958,19 @@ void ObjectPropertiesWidget::addLineVFX(const physis_LineVFXInstanceObject &line
     layout->addRow(i18n("Line Style"), lineStyleEdit);
 }
 
-void ObjectPropertiesWidget::addTreasure(physis_TreasureInstanceObject &treasure)
+void ObjectPropertiesWidget::addTreasureSection(physis_TreasureInstanceObject &treasure)
 {
+    addGameObjectSection(treasure.parent_data);
+
     auto section = new CollapseSection(i18n("Treasure"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
     auto layout = new QFormLayout();
     section->setLayout(layout);
-
-    const auto baseIdEdit = new ExcelEdit(m_appState, {QStringLiteral("Treasure")}, treasure.base_id);
-    baseIdEdit->setReadOnly(true);
-    layout->addRow(i18n("Base ID"), baseIdEdit);
 }
 
-void ObjectPropertiesWidget::addTargetMarker(const physis_TargetMarkerInstanceObject &targetMarker)
+void ObjectPropertiesWidget::addTargetMarkerSection(const physis_TargetMarkerInstanceObject &targetMarker)
 {
     auto section = new CollapseSection(i18n("Target Marker"));
     m_layout->addWidget(section);
@@ -977,20 +990,62 @@ void ObjectPropertiesWidget::addTargetMarker(const physis_TargetMarkerInstanceOb
     layout->addRow(i18n("Type"), targetMarkerTypeEdit);
 }
 
-void ObjectPropertiesWidget::addClientPath(const physis_ClientPathInstanceObject &clientPath)
+void ObjectPropertiesWidget::addClientPathSection(const physis_ClientPathInstanceObject &clientPath)
 {
-    addPath(clientPath.parent_data);
+    addPathSection(clientPath.parent_data);
 
     auto section = new CollapseSection(i18n("Client Path"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addPath(const physis_PathInstanceObject &)
+void ObjectPropertiesWidget::addPathSection(const physis_PathInstanceObject &)
 {
     auto section = new CollapseSection(i18n("Path"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addRangeSection(const physis_RangeInstanceObject &range)
+{
+    Q_UNUSED(range)
+
+    auto section = new CollapseSection(i18n("Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addCullingBoxSection(const physis_CullingBoxInstanceObject &cullingBox)
+{
+    Q_UNUSED(cullingBox)
+
+    auto section = new CollapseSection(i18n("Culling Box"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addClickableRange(const physis_ClickableRangeInstanceObject &clickableRange)
+{
+    addRangeSection(clickableRange.parent_data);
+
+    auto section = new CollapseSection(i18n("Clickable Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
 }
 
 #include "moc_objectpropertieswidget.cpp"

@@ -236,7 +236,9 @@ void MainWindow::openMap(const QString &basePath, const int territoryType, const
                 auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
                 for (size_t i = 0; i < effectCount; i++) {
                     auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
-                    m_mapEffects.push_back(effectRow.columns[0].int32._0);
+                    if (effectRow.columns) {
+                        m_mapEffects.push_back(effectRow.columns[0].int32._0);
+                    }
                 }
             }
         }

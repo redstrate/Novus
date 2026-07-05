@@ -281,10 +281,10 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
             objectName = i18n("Unknown Object");
 
             switch (object.data.tag) {
-            case physis_LayerEntry::Tag::BG:
-                objectName = i18n("BG Model");
+            case physis_LayerEntry::Tag::BgPart:
+                objectName = i18n("Bg Part");
                 break;
-            case physis_LayerEntry::Tag::LayLight:
+            case physis_LayerEntry::Tag::Light:
                 objectName = i18n("Light");
                 break;
             case physis_LayerEntry::Tag::Vfx: {
@@ -298,7 +298,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
             case physis_LayerEntry::Tag::PopRange:
                 objectName = i18n("Pop Range");
                 break;
-            case physis_LayerEntry::Tag::EventNPC:
+            case physis_LayerEntry::Tag::EventNpc:
                 // Give the ENPC an actual name.
                 objectName = m_appState->lookupENpcName(object.data.event_npc._0.parent_data.parent_data.base_id);
                 break;
@@ -343,13 +343,19 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
                 objectName = i18n("Line VFX");
                 break;
             case physis_LayerEntry::Tag::Treasure:
-                objectName = i18n("Treasure (%1)").arg(object.data.treasure._0.base_id);
+                objectName = i18n("Treasure (%1)").arg(object.data.treasure._0.parent_data.base_id);
                 break;
             case physis_LayerEntry::Tag::TargetMarker:
                 objectName = i18n("Target Marker");
                 break;
             case physis_LayerEntry::Tag::ClientPath:
                 objectName = i18n("Client Path");
+                break;
+            case physis_LayerEntry::Tag::CullingBox:
+                objectName = i18n("Culling Box");
+                break;
+            case physis_LayerEntry::Tag::ClickableRange:
+                objectName = i18n("Clickable Range");
                 break;
             default:
                 break;

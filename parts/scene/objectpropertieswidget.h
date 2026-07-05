@@ -5,6 +5,9 @@
 
 #include <QWidget>
 
+struct physis_ClickableRangeInstanceObject;
+struct physis_CullingBoxInstanceObject;
+struct physis_RangeInstanceObject;
 struct physis_PathInstanceObject;
 struct physis_ClientPathInstanceObject;
 struct physis_TargetMarkerInstanceObject;
@@ -26,19 +29,19 @@ struct physis_EventRangeInstanceObject;
 struct physis_ExitRangeInstanceObject;
 struct physis_AetheryteInstanceObject;
 struct physis_SharedGroupInstanceObject;
-struct physis_GameInstanceObject;
-struct physis_NPCInstanceObject;
+struct physis_GameObjectInstanceObject;
+struct physis_CharacterInstanceObject;
 struct physis_TriggerBoxInstanceObject;
 struct physis_MapRangeInstanceObject;
 struct physis_Layer;
 struct physis_PopRangeInstanceObject;
-struct physis_EventInstanceObject;
+struct physis_EventObjectInstanceObject;
 class QVBoxLayout;
 struct physis_InstanceObject;
-struct physis_BGInstanceObject;
+struct physis_BgPartInstanceObject;
 class SceneState;
 class QLineEdit;
-struct physis_ENPCInstanceObject;
+struct physis_EventNpcInstanceObject;
 
 class ObjectPropertiesWidget : public QWidget
 {
@@ -58,14 +61,14 @@ private:
     void refreshDropInData(DropInObject *object);
 
     void addCommonSection(physis_InstanceObject &object);
-    void addBGSection(const physis_BGInstanceObject &bg);
-    void addEventSection(physis_EventInstanceObject &eobj);
+    void addBgPartSection(const physis_BgPartInstanceObject &bg);
+    void addEventObjectSection(physis_EventObjectInstanceObject &eobj);
     void addPopRangeSection(const physis_PopRangeInstanceObject &pop);
-    void addEventNPCSection(physis_ENPCInstanceObject &enpc);
+    void addEventNpcSection(physis_EventNpcInstanceObject &enpc);
     void addMapRangeSection(physis_MapRangeInstanceObject &mapRange);
     void addTriggerBoxSection(const physis_TriggerBoxInstanceObject &triggerBox);
-    void addNPCSection(physis_NPCInstanceObject &npc);
-    void addGameObjectSection(physis_GameInstanceObject &object);
+    void addCharacterSection(physis_CharacterInstanceObject &character);
+    void addGameObjectSection(physis_GameObjectInstanceObject &object);
     void addSharedGroupSection(physis_SharedGroupInstanceObject &sharedGroup);
     void addAetheryteSection(physis_AetheryteInstanceObject &aetheryte);
     void addExitRangeSection(const physis_ExitRangeInstanceObject &exitRange);
@@ -77,13 +80,16 @@ private:
     void addEnvSetSection(const physis_EnvSetInstanceObject &envSet);
     void addEnvLocationSection(const physis_EnvLocationObject &envLocation);
     void addSoundSection(const physis_SoundInstanceObject &sound);
-    void addCollisionBox(const physis_CollisionBoxInstanceObject &collisionBox);
-    void addDoorRange(const physis_DoorRangeInstanceObject &doorRange);
-    void addLineVFX(const physis_LineVFXInstanceObject &lineVfx);
-    void addTreasure(physis_TreasureInstanceObject &treasure);
-    void addTargetMarker(const physis_TargetMarkerInstanceObject &targetMarker);
-    void addClientPath(const physis_ClientPathInstanceObject &clientPath);
-    void addPath(const physis_PathInstanceObject &path);
+    void addCollisionBoxSection(const physis_CollisionBoxInstanceObject &collisionBox);
+    void addDoorRangeSection(const physis_DoorRangeInstanceObject &doorRange);
+    void addLineVFXSection(const physis_LineVFXInstanceObject &lineVfx);
+    void addTreasureSection(physis_TreasureInstanceObject &treasure);
+    void addTargetMarkerSection(const physis_TargetMarkerInstanceObject &targetMarker);
+    void addClientPathSection(const physis_ClientPathInstanceObject &clientPath);
+    void addPathSection(const physis_PathInstanceObject &path);
+    void addRangeSection(const physis_RangeInstanceObject &range);
+    void addCullingBoxSection(const physis_CullingBoxInstanceObject &cullingBox);
+    void addClickableRange(const physis_ClickableRangeInstanceObject &clickableRange);
 
     SceneState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;
