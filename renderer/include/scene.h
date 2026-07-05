@@ -27,7 +27,7 @@ public:
     std::vector<SceneLight> lights;
 
     bool wireframe = false;
-    bool frustumCulling = false;
+    bool frustumCulling = true;
     bool debugFrustumCulling = false;
 
     size_t culledObjects = 0;
