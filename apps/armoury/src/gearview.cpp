@@ -474,20 +474,20 @@ void GearView::resetMdlPart()
     m_mdlPart->manager()->scene.lights.clear();
 
     SceneLight keyLight;
-    keyLight.type = LightType::Point;
+    keyLight.type = LightShape::Point;
     keyLight.position = glm::vec3(-5, 5, 5);
     keyLight.intensity = 5.0f;
     m_mdlPart->manager()->scene.lights.push_back(keyLight);
 
     SceneLight backLight;
-    backLight.type = LightType::Point;
+    backLight.type = LightShape::Point;
     backLight.position = glm::vec3(-5, 5, -5);
     backLight.color = glm::vec3(1, 0, 0);
     backLight.intensity = 2.0f;
     m_mdlPart->manager()->scene.lights.push_back(backLight);
 
     SceneLight fillLight;
-    fillLight.type = LightType::Point;
+    fillLight.type = LightShape::Point;
     fillLight.position = glm::vec3(5, 5, 5);
     fillLight.color = glm::vec3(0, 0, 1);
     fillLight.intensity = 3.0f;

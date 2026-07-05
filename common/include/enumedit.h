@@ -24,7 +24,7 @@ public:
         itemsLayout->addWidget(m_comboBox);
 
         for (auto [type, name] : magic_enum::enum_entries<E>()) {
-            m_comboBox->addItem(QString::fromLatin1(name.data()));
+            m_comboBox->addItem(QString::fromLatin1(name.data()), static_cast<int>(type));
         }
 
         connect(m_comboBox, &QComboBox::currentIndexChanged, this, &EnumEdit::editingFinished);
@@ -34,7 +34,7 @@ public:
     void setValue(const E &value)
     {
         QSignalBlocker blocker(m_comboBox);
-        m_comboBox->setCurrentIndex(static_cast<int>(value));
+        m_comboBox->setCurrentIndex(m_comboBox->findData(static_cast<int>(value)));
     }
 
     void resetValue()

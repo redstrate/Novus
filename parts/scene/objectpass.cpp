@@ -552,36 +552,36 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
             drawBillboard(commandBuffer, camera, m_poprangeTexture, billboardColor, pos);
         } break;
         case physis_LayerEntry::Tag::Light: {
-            auto lightColor = glm::vec4(object.data.light._0.diffuse_color_hdri.red / 255.0f,
-                                        object.data.light._0.diffuse_color_hdri.green / 255.0f,
-                                        object.data.light._0.diffuse_color_hdri.blue / 255.0f,
-                                        object.data.light._0.diffuse_color_hdri.alpha / 255.0f);
+            auto lightColor = glm::vec4(object.data.light._0.color.red / 255.0f,
+                                        object.data.light._0.color.green / 255.0f,
+                                        object.data.light._0.color.blue / 255.0f,
+                                        object.data.light._0.color.alpha / 255.0f);
             if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
                 lightColor = billboardColor;
             }
-            switch (object.data.light._0.light_type) {
-            case LightType::None:
+            switch (object.data.light._0.shape) {
+            case LightShape::None:
                 break;
-            case LightType::Directional:
+            case LightShape::World:
                 drawBillboard(commandBuffer, camera, m_directionalLightTexture, lightColor, pos);
                 break;
-            case LightType::Point:
+            case LightShape::Point:
                 drawBillboard(commandBuffer, camera, m_pointLightTexture, lightColor, pos);
                 break;
-            case LightType::Spot:
+            case LightShape::Spot:
                 drawBillboard(commandBuffer, camera, m_spotLightTexture, lightColor, pos);
                 break;
-            case LightType::Plane:
+            case LightShape::Flat:
                 drawBillboard(commandBuffer, camera, m_planeLightTexture, lightColor, pos);
                 break;
-            case LightType::Line:
+            case LightShape::Line:
                 drawBillboard(commandBuffer, camera, m_lineLightTexture, lightColor, pos);
                 break;
-            case LightType::Specular:
+            case LightShape::Specular:
                 drawBillboard(commandBuffer, camera, m_specularLightTexture, lightColor, pos);
                 break;
             default:
-                qWarning() << "Unsupported light type for billboard:" << static_cast<int>(object.data.light._0.light_type);
+                qWarning() << "Unsupported light type for billboard:" << static_cast<int>(object.data.light._0.shape);
                 break;
             }
         } break;

@@ -11,7 +11,7 @@ struct SceneLight {
     bool active = true;
     uint32_t id = 0;
     uint32_t parentSgbId = 0;
-    LightType type;
+    LightShape type;
     glm::vec3 position;
     glm::vec3 color{1.0f};
     float intensity = 2.0f;

@@ -314,11 +314,11 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
             sceneLight.id = object.instance_id;
             sceneLight.parentSgbId = scene.originatingSgbId;
             sceneLight.position = glm::make_vec3(combinedTransform.translation);
-            sceneLight.type = object.data.light._0.light_type;
-            sceneLight.color = glm::vec3(static_cast<float>(object.data.light._0.diffuse_color_hdri.red) / 255.0f,
-                                         static_cast<float>(object.data.light._0.diffuse_color_hdri.green) / 255.0f,
-                                         static_cast<float>(object.data.light._0.diffuse_color_hdri.blue) / 255.0f);
-            sceneLight.intensity = object.data.light._0.diffuse_color_hdri.intensity;
+            sceneLight.type = object.data.light._0.shape;
+            sceneLight.color = glm::vec3(static_cast<float>(object.data.light._0.color.red) / 255.0f,
+                                         static_cast<float>(object.data.light._0.color.green) / 255.0f,
+                                         static_cast<float>(object.data.light._0.color.blue) / 255.0f);
+            sceneLight.intensity = object.data.light._0.color.intensity;
 
             m_mdlPart->addLight(sceneLight);
         } break;

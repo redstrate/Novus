@@ -426,6 +426,30 @@ void ObjectPropertiesWidget::addBgPartSection(const physis_BgPartInstanceObject 
     collisionTypeEdit->setValue(bg.collision_type);
     collisionTypeEdit->setEnabled(false);
     layout->addRow(i18n("Collision Type"), collisionTypeEdit);
+
+    auto visibleCheck = new QCheckBox();
+    visibleCheck->setChecked(bg.visible);
+    layout->addRow(i18n("Visible"), visibleCheck);
+
+    auto worldShadowModeEdit = new EnumEdit<ShadowMode>();
+    worldShadowModeEdit->setValue(bg.world_light_shadow_mode);
+    worldShadowModeEdit->setEnabled(false);
+    layout->addRow(i18n("World Light Shadows"), worldShadowModeEdit);
+
+    auto objectShadowModeEdit = new EnumEdit<ShadowMode>();
+    objectShadowModeEdit->setValue(bg.object_light_shadow_mode);
+    objectShadowModeEdit->setEnabled(false);
+    layout->addRow(i18n("Object Light Shadows"), objectShadowModeEdit);
+
+    auto fadeOutDistanceLabel = new QLineEdit();
+    fadeOutDistanceLabel->setText(QString::number(bg.fade_out_distance));
+    fadeOutDistanceLabel->setReadOnly(true);
+    layout->addRow(i18n("Fade out distance"), fadeOutDistanceLabel);
+
+    auto boundingSphereSizeLabel = new QLineEdit();
+    boundingSphereSizeLabel->setText(QString::number(bg.fade_out_distance));
+    boundingSphereSizeLabel->setReadOnly(true);
+    layout->addRow(i18n("Bounding sphere size"), boundingSphereSizeLabel);
 }
 
 void ObjectPropertiesWidget::addEventObjectSection(physis_EventObjectInstanceObject &eobj)
@@ -787,26 +811,54 @@ void ObjectPropertiesWidget::addLightSection(const physis_LightInstanceObject &l
     auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    auto lightTypeEdit = new EnumEdit<LightType>();
-    lightTypeEdit->setValue(light.light_type);
-    lightTypeEdit->setEnabled(false);
-    layout->addRow(i18n("Light Type"), lightTypeEdit);
-
-    auto diffuseColorLabel = new QLabel();
-    diffuseColorLabel->setText(QStringLiteral("%1 %2 %3 %4")
-                                   .arg(light.diffuse_color_hdri.red)
-                                   .arg(light.diffuse_color_hdri.green)
-                                   .arg(light.diffuse_color_hdri.blue)
-                                   .arg(light.diffuse_color_hdri.intensity));
-    layout->addRow(i18n("Color"), diffuseColorLabel);
-
-    auto rangeRateLabel = new QLabel();
-    rangeRateLabel->setText(QString::number(light.range_rate));
-    layout->addRow(i18n("Range Rate"), rangeRateLabel);
+    auto shapeEdit = new EnumEdit<LightShape>();
+    shapeEdit->setValue(light.shape);
+    shapeEdit->setEnabled(false);
+    layout->addRow(i18n("Shape"), shapeEdit);
 
     auto attenuationLabel = new QLabel();
-    attenuationLabel->setText(QString::number(light.range_rate));
+    attenuationLabel->setText(QString::number(light.range));
     layout->addRow(i18n("Attenuation"), attenuationLabel);
+
+    auto rangeLabel = new QLabel();
+    rangeLabel->setText(QString::number(light.range));
+    layout->addRow(i18n("Range"), rangeLabel);
+
+    auto coefficientLabel = new QLabel();
+    coefficientLabel->setText(QString::number(light.attenuation_cone_coefficient));
+    layout->addRow(i18n("Cone Coefficient"), coefficientLabel);
+
+    auto spotAngleLabel = new QLabel();
+    spotAngleLabel->setText(QString::number(light.spot_angle));
+    layout->addRow(i18n("Spot Angle"), spotAngleLabel);
+
+    auto texturePathEdit = new PathEdit();
+    texturePathEdit->setPath(QString::fromStdString(light.texture_path));
+    layout->addRow(i18n("Texture Path"), texturePathEdit);
+
+    auto colorLabel = new QLabel();
+    colorLabel->setText(QStringLiteral("%1 %2 %3 %4").arg(light.color.red).arg(light.color.green).arg(light.color.blue).arg(light.color.intensity));
+    layout->addRow(i18n("Color"), colorLabel);
+
+    auto specularHighlightsCheck = new QCheckBox();
+    specularHighlightsCheck->setChecked(light.enable_specular_highlights);
+    layout->addRow(i18n("Specular Highlights"), specularHighlightsCheck);
+
+    auto bgPartsShadowsCheck = new QCheckBox();
+    bgPartsShadowsCheck->setChecked(light.enable_bg_parts_shadows);
+    layout->addRow(i18n("BgPart Shadows"), bgPartsShadowsCheck);
+
+    auto characterShadowsCheck = new QCheckBox();
+    characterShadowsCheck->setChecked(light.enable_character_shadows);
+    layout->addRow(i18n("Character Shadows"), characterShadowsCheck);
+
+    auto shadowPlaneNearLabel = new QLabel();
+    shadowPlaneNearLabel->setText(QString::number(light.shadow_plane_near));
+    layout->addRow(i18n("Shadow Plane Near"), shadowPlaneNearLabel);
+
+    auto flatSkewAngleLabel = new QLabel();
+    flatSkewAngleLabel->setText(QStringLiteral("%1 %2").arg(light.flat_light_skew_angle[0]).arg(light.flat_light_skew_angle[1]));
+    layout->addRow(i18n("Flat Skew Angle"), flatSkewAngleLabel);
 }
 
 void ObjectPropertiesWidget::addVfxSection(const physis_VfxInstanceObject &vfx)
