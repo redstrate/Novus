@@ -357,6 +357,9 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
             case physis_LayerEntry::Tag::ClickableRange:
                 objectName = i18n("Clickable Range");
                 break;
+            case physis_LayerEntry::Tag::BattleNpc:
+                objectName = i18n("Battle NPC");
+                break;
             default:
                 break;
             }

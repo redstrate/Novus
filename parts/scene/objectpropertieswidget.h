@@ -5,6 +5,7 @@
 
 #include <QWidget>
 
+struct physis_BattleNpcInstanceObject;
 struct physis_ClickableRangeInstanceObject;
 struct physis_CullingBoxInstanceObject;
 struct physis_RangeInstanceObject;
@@ -89,7 +90,8 @@ private:
     void addPathSection(const physis_PathInstanceObject &path);
     void addRangeSection(const physis_RangeInstanceObject &range);
     void addCullingBoxSection(const physis_CullingBoxInstanceObject &cullingBox);
-    void addClickableRange(const physis_ClickableRangeInstanceObject &clickableRange);
+    void addClickableRangeSection(const physis_ClickableRangeInstanceObject &clickableRange);
+    void addBattleNpcSection(physis_BattleNpcInstanceObject &battleNpc);
 
     SceneState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;

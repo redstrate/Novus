@@ -144,7 +144,10 @@ void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
         addCullingBoxSection(object.data.culling_box._0);
         break;
     case physis_LayerEntry::Tag::ClickableRange:
-        addClickableRange(object.data.clickable_range._0);
+        addClickableRangeSection(object.data.clickable_range._0);
+        break;
+    case physis_LayerEntry::Tag::BattleNpc:
+        addBattleNpcSection(object.data.battle_npc._0);
         break;
     default:
         break;
@@ -1036,7 +1039,7 @@ void ObjectPropertiesWidget::addCullingBoxSection(const physis_CullingBoxInstanc
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addClickableRange(const physis_ClickableRangeInstanceObject &clickableRange)
+void ObjectPropertiesWidget::addClickableRangeSection(const physis_ClickableRangeInstanceObject &clickableRange)
 {
     addRangeSection(clickableRange.parent_data);
 
@@ -1046,6 +1049,21 @@ void ObjectPropertiesWidget::addClickableRange(const physis_ClickableRangeInstan
 
     auto layout = new QFormLayout();
     section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addBattleNpcSection(physis_BattleNpcInstanceObject &battleNpc)
+{
+    addCharacterSection(battleNpc.parent_data);
+
+    auto section = new CollapseSection(i18n("Battle Npc"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    auto nameIdEdit = new ExcelEdit(m_appState, {QStringLiteral("BNpcName")}, battleNpc.name_id);
+    layout->addRow(i18n("Name ID"), nameIdEdit);
 }
 
 #include "moc_objectpropertieswidget.cpp"
