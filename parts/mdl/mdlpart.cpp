@@ -355,7 +355,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
             newMaterial.specularTexture = createOrCacheTexture(t);
         } else if (usage == "g_SamplerIndex") {
             newMaterial.indexTexture = createOrCacheTexture(t);
-        } else if (usage == "g_SamplerColorMap1" || usage == "g_SamplerNormalMap1" || usage == "g_SamplerSpecularMap1") {
+        } else if (usage.starts_with("g_")) {
             // Intentionally ignored as we don't support these yet
         } else {
             qWarning() << "Unknown texture usage:" << usage << sampler.texture_usage << "from" << path << "Please report this is a bug!";

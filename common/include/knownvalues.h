@@ -483,6 +483,9 @@ constexpr std::array names = {
     "g_Transparency",
     "g_UseSubSurfaceRate",
     "g_VertexMovementScale",
+    "g_SeaWaveScale",
+    "g_RLRReflectionPower",
+    "g_WaveletFadeDistance",
 
     // Samplers
     "g_SamplerViewPosition",
@@ -550,6 +553,17 @@ constexpr std::array names = {
     "g_SamplerRefractionMap",
     "g_VertexMovementMaxLength",
     "g_SamplerFlow",
+    "g_SamplerWaveMap1",
+    "g_WaterDeepColor",
+    "g_WaveletSinParam",
+    "g_SoftEadgDistance",
+    "g_CausticsPower",
+    "g_MultiDetailNormalScale",
+    "g_MultiDetailID",
+    "g_EmissiveGlarePower",
+    "g_DetailOmniVerMatrix",
+    "g_Sampler0",
+    "g_Sampler1",
 
     // Passes
     "PASS_Z_OPAQUE",
