@@ -54,6 +54,8 @@ FileCache::~FileCache()
     for (const auto &buffer : m_cachedBuffers) {
         physis_free_file(&buffer);
     }
+
+    physis_custom_free(&m_customResource);
 }
 
 physis_Buffer &FileCache::read(const QString &path)

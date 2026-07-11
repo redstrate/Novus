@@ -34,6 +34,7 @@ class DiffTreeModel : public QAbstractItemModel
 
 public:
     explicit DiffTreeModel(HashDatabase &database, physis_SqPackResource *data, QObject *parent = nullptr);
+    ~DiffTreeModel() override;
 
     enum CustomRoles {
         PathRole = Qt::UserRole,
@@ -60,4 +61,5 @@ private:
     HashDatabase &m_database;
     QHash<uint32_t, TreeInformation *> m_knownDirHashes;
     QHash<uint32_t, TreeInformation *> m_knownIndexHashes;
+    std::optional<physis_ZiPatch> m_patch;
 };

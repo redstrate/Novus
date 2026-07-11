@@ -12,7 +12,7 @@ HexPart::HexPart(QWidget *parent)
 
 void HexPart::loadFile(physis_Buffer buffer)
 {
-    setDocument(QHexDocument::fromMemory<QMemoryRefBuffer>(reinterpret_cast<char *>(buffer.data), buffer.size));
+    setDocument(QHexDocument::fromMemory<QMemoryRefBuffer>(reinterpret_cast<char *>(buffer.data), buffer.size, this));
     setReadOnly(true);
 }
 

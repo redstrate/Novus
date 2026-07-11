@@ -20,13 +20,13 @@ DiffTreeWidget::DiffTreeWidget(HashDatabase &database, physis_SqPackResource *da
     layout->setSpacing(0);
     setLayout(layout);
 
-    m_searchModel = new QSortFilterProxyModel();
+    m_searchModel = new QSortFilterProxyModel(this);
     m_searchModel->setRecursiveFilteringEnabled(true);
     m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     m_searchEdit = new QLineEdit();
 
-    auto searchTimer = new QTimer();
+    auto searchTimer = new QTimer(this);
     searchTimer->setSingleShot(true);
     searchTimer->setInterval(1500);
     connect(searchTimer, &QTimer::timeout, m_searchModel, [this] {
@@ -41,7 +41,7 @@ DiffTreeWidget::DiffTreeWidget(HashDatabase &database, physis_SqPackResource *da
     });
     layout->addWidget(m_searchEdit);
 
-    m_treeWidget = new QTreeView();
+    m_treeWidget = new QTreeView(this);
     m_treeWidget->setModel(m_searchModel);
     layout->addWidget(m_treeWidget);
 
@@ -58,7 +58,7 @@ DiffTreeWidget::DiffTreeWidget(HashDatabase &database, physis_SqPackResource *da
 void DiffTreeWidget::refreshModel()
 {
     // TODO: this should really be handled by the proxy
-    m_fileModel = new DiffTreeModel(m_database, m_data);
+    m_fileModel = new DiffTreeModel(m_database, m_data, this);
     m_searchModel->setSourceModel(m_fileModel);
 }
 

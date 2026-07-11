@@ -11,6 +11,15 @@
 #include <QFileInfo>
 #include <QIcon>
 
+void deleteTree(TreeInformation *node)
+{
+    for (auto child : node->children) {
+        Q_ASSERT(child->parent == node); // To double-check our own shitty code
+        deleteTree(child);
+        delete child;
+    }
+}
+
 DiffTreeModel::DiffTreeModel(HashDatabase &database, physis_SqPackResource *data, QObject *parent)
     : QAbstractItemModel(parent)
     , gameData(data)
@@ -18,6 +27,17 @@ DiffTreeModel::DiffTreeModel(HashDatabase &database, physis_SqPackResource *data
 {
     rootItem = new TreeInformation();
     rootItem->type = TreeType::Root;
+}
+
+DiffTreeModel::~DiffTreeModel()
+{
+    deleteTree(rootItem);
+    delete rootItem;
+    rootItem = nullptr;
+
+    if (m_patch) {
+        physis_patch_free(&*m_patch);
+    }
 }
 
 int DiffTreeModel::rowCount(const QModelIndex &parent) const
@@ -146,15 +166,21 @@ void DiffTreeModel::openPatch(const QString &path)
 {
     beginResetModel();
 
+    if (rootItem) {
+        deleteTree(rootItem);
+        delete rootItem;
+        rootItem = nullptr;
+    }
+
     rootItem = new TreeInformation();
     rootItem->type = TreeType::Root;
 
-    const auto patch = physis_patch_parse(path.toStdString().c_str());
+    m_patch = physis_patch_parse(path.toStdString().c_str());
 
     SqpkTargetInfo targetInfo{};
 
-    for (uint32_t i = 0; i < patch.num_chunks; i++) {
-        const auto chunk = patch.chunks[i];
+    for (uint32_t i = 0; i < m_patch->num_chunks; i++) {
+        const auto chunk = m_patch->chunks[i];
         switch (chunk.chunk_type.tag) {
         case physis_ZiPatchChunkType::Tag::Sqpk: {
             const auto sqpk = chunk.chunk_type.sqpk._0;
@@ -164,10 +190,10 @@ void DiffTreeModel::openPatch(const QString &path)
 
                 const auto indexPath = physis_patch_index_path(targetInfo, addData.main_id, addData.sub_id, 0); // don't need the file ID for index files
                 const auto baseItem = addIndexPath(QString::fromStdString(indexPath));
-
                 const auto indexGamePath = QDir(getGameDirectory()).absoluteFilePath(QString::fromStdString(indexPath));
+                physis_free_string(indexPath);
 
-                const auto indexFile = physis_index_parse(gameData->platform, indexGamePath.toStdString().c_str());
+                auto indexFile = physis_index_parse(gameData->platform, indexGamePath.toStdString().c_str());
                 if (indexFile.p_ptr) {
                     auto hash = physis_index_hash_from_offset(indexFile, addData.block_offset);
 
@@ -204,6 +230,8 @@ void DiffTreeModel::openPatch(const QString &path)
                     } else {
                         qWarning() << "Could not find parent item for" << hash.split_path.path << "item will not be added!";
                     }
+
+                    physis_index_free(&indexFile);
                 } else {
                     qWarning() << "Could not read index file" << indexGamePath;
                 }
