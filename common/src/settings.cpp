@@ -276,11 +276,11 @@ QString getOpenFileName(QWidget *parent, const QString &configKey, const QString
     QFileDialog dialog(parent);
     dialog.setDirectory(dialogGroup.readEntry(configKey, QDir::homePath()));
     dialog.setSupportedSchemes(QStringList(QStringLiteral("file")));
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.selectFile(fileName);
     dialog.setWindowTitle(caption);
     dialog.setNameFilter(filter);
     dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
 
     const auto result = dialog.exec();
     dialogGroup.writeEntry(configKey, dialog.directoryUrl().toLocalFile());
