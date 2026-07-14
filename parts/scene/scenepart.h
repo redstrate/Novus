@@ -30,7 +30,7 @@ public:
     ~ScenePart() override;
 
     void loadSgb(physis_Buffer file);
-    void loadLvb(physis_Buffer file, int territoryTypeHint = 0, int contentFinderConditionHint = 0);
+    bool loadLvb(physis_Buffer file, int territoryTypeHint = 0, int contentFinderConditionHint = 0);
     void focusSearchField();
     void selectObject(uint32_t objectId);
     QString lookupObjectName(uint32_t objectId);

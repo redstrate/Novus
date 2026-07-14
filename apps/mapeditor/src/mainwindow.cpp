@@ -184,7 +184,9 @@ void MainWindow::openMap(const QString &basePath, const int territoryType, const
     const QString lvbPath = QStringLiteral("bg/%1.lvb").arg(basePath);
     auto lvbFile = m_cache.read(lvbPath);
     if (lvbFile.size > 0) {
-        m_part->loadLvb(lvbFile, territoryType, contentFinderCondition);
+        if (!m_part->loadLvb(lvbFile, territoryType, contentFinderCondition)) {
+            qWarning() << "Failed to parse LVB:" << lvbPath;
+        }
 
         KConfig config(QStringLiteral("novusrc"));
         KConfigGroup game = config.group(QStringLiteral("MapEditor"));
@@ -199,7 +201,7 @@ void MainWindow::openMap(const QString &basePath, const int territoryType, const
 
         Q_EMIT m_part->sceneState()->mapLoaded();
     } else {
-        qWarning() << "Failed to find lvb" << lvbPath;
+        qWarning() << "Failed to find LVB" << lvbPath;
     }
 
     setPlainCaption(basePath);

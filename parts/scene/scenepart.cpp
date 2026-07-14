@@ -110,16 +110,18 @@ void ScenePart::loadSgb(physis_Buffer file)
     }
 }
 
-void ScenePart::loadLvb(physis_Buffer file, int territoryTypeHint, int contentFinderConditionHint)
+bool ScenePart::loadLvb(physis_Buffer file, int territoryTypeHint, int contentFinderConditionHint)
 {
     physis_lvb_free(&m_lvb); // free any previous ones
     m_lvb = physis_lvb_parse(m_cache.platform(), file);
     if (m_lvb.sections) {
         // TODO: read all sections?
         m_appState->load(m_cache, m_lvb.sections[0], territoryTypeHint, contentFinderConditionHint);
-    } else {
-        qWarning() << "Failed to parse lvb";
+
+        return true;
     }
+
+    return false;
 }
 
 void ScenePart::focusSearchField()
