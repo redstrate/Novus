@@ -7,6 +7,7 @@
 #include <complex>
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
+#include <numbers>
 #include <sys/stat.h>
 
 Sphere Primitives::sphere;
