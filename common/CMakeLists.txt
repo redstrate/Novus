@@ -13,6 +13,7 @@ file (GENERATE
 #define DATAEXPLORER_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-sagasu>\")\n\
 #define ENEMYEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-enemyeditor>\")\n\
 #define PATCHDIFF_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-patchdiff>\")\n\
+#define LUADEC_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:luadec>\")\n\
         "
 )
 
