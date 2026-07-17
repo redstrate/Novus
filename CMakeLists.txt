@@ -62,3 +62,5 @@ kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)
 if (NOT WIN32)
     install(FILES zone.xiv.novus.appdata.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
 endif()
+
+install(TARGETS luadec ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
