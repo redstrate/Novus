@@ -23,7 +23,7 @@ Schema::Schema(const QString &path)
 
     const auto tree = ryml::parse_in_place(bytes.data());
     if (tree.has_child(tree.root_id(), "fields")) {
-        ryml::ConstNodeRef fields = tree["fields"];
+        const ryml::ConstNodeRef fields = tree["fields"];
         for (const auto &node : fields) {
             Field field;
             field.name = QString::fromLatin1(node["name"].val());
@@ -55,7 +55,7 @@ Schema::Schema(const QString &path)
         }
 
         if (tree.has_child(tree.root_id(), "displayField")) {
-            ryml::ConstNodeRef displayField = tree["displayField"];
+            const ryml::ConstNodeRef displayField = tree["displayField"];
             m_displayField = QString::fromLatin1(displayField.val());
         }
     } else {

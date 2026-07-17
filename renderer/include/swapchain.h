@@ -18,10 +18,10 @@ public:
     void resize(VkSurfaceKHR surface, int width, int height);
 
     VkSwapchainKHR swapchain = VK_NULL_HANDLE;
-    VkExtent2D extent;
+    VkExtent2D extent{};
     std::vector<VkImage> swapchainImages;
     std::vector<VkImageView> swapchainViews;
-    std::array<VkFence, 3> inFlightFences;
+    std::array<VkFence, 3> inFlightFences{};
     std::vector<VkSemaphore> imageAvailableSemaphores, renderFinishedSemaphores;
     uint32_t maxImages = 0;
     uint32_t currentFrame = 0;

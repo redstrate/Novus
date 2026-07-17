@@ -3,7 +3,6 @@
 
 #include "rendermanager.h"
 
-#include <QDebug>
 #include <QFile>
 #include <array>
 #include <fstream>
@@ -22,33 +21,32 @@
 
 #include <magic_enum/include/magic_enum.hpp>
 
-VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
+VkResult CreateDebugUtilsMessengerEXT(const VkInstance instance,
                                       const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
                                       const VkAllocationCallbacks *pAllocator,
                                       VkDebugUtilsMessengerEXT *pCallback)
 {
     // Note: It seems that static_cast<...> doesn't work. Use the C-style forced
     // cast.
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    const auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
     if (func != nullptr) {
         return func(instance, pCreateInfo, pAllocator, pCallback);
-    } else {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
+    return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT messenger, const VkAllocationCallbacks *pAllocator)
+void DestroyDebugUtilsMessengerEXT(const VkInstance instance, const VkDebugUtilsMessengerEXT messenger, const VkAllocationCallbacks *pAllocator)
 {
     // Note: It seems that static_cast<...> doesn't work. Use the C-style forced
     // cast.
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    const auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
     if (func != nullptr) {
         func(instance, messenger, pAllocator);
     }
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                             VkDebugUtilsMessageTypeFlagsEXT messageType,
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(const VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                             const VkDebugUtilsMessageTypeFlagsEXT messageType,
                                              const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
                                              void *pUserData)
 {
@@ -75,7 +73,7 @@ RenderManager::RenderManager(FileCache &cache)
 
     ImGui::StyleColorsDark();
 
-    std::vector<const char *> instanceExtensions = {"VK_EXT_debug_utils"};
+    std::vector instanceExtensions = {"VK_EXT_debug_utils"};
 
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
@@ -161,7 +159,7 @@ RenderManager::RenderManager(FileCache &cache)
 
     // we want to choose the portability subset on platforms that
     // support it, this is a requirement of the portability spec
-    std::vector<const char *> deviceExtensions = {"VK_KHR_swapchain"};
+    std::vector deviceExtensions = {"VK_KHR_swapchain"};
     for (auto extension : extensionProperties) {
         if (!strcmp(extension.extensionName, "VK_KHR_portability_subset"))
             deviceExtensions.push_back("VK_KHR_portability_subset");
@@ -383,7 +381,7 @@ bool RenderManager::initSwapchain(VkSurfaceKHR surface, int width, int height)
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
 
-    std::array<VkAttachmentDescription, 1> attachments = {colorAttachment};
+    std::array attachments = {colorAttachment};
 
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -427,12 +425,12 @@ bool RenderManager::initSwapchain(VkSurfaceKHR surface, int width, int height)
     return true;
 }
 
-void RenderManager::resize(VkSurfaceKHR surface, int width, int height)
+void RenderManager::resize(const VkSurfaceKHR surface, const int width, const int height)
 {
     initSwapchain(surface, width, height);
 }
 
-void RenderManager::destroySwapchain(bool keepSwapchainObject)
+void RenderManager::destroySwapchain(const bool keepSwapchainObject)
 {
     if (!m_device || !m_device->swapChain) {
         return;
@@ -482,7 +480,7 @@ void RenderManager::destroySwapchain(bool keepSwapchainObject)
     }
 }
 
-void RenderManager::render(std::vector<DrawObjectInstance> &models, std::vector<VfxObjectInstance> &vfx)
+void RenderManager::render(std::vector<DrawObjectInstance> &models, const std::vector<VfxObjectInstance> &vfx)
 {
     vkWaitForFences(m_device->device,
                     1,
@@ -491,18 +489,18 @@ void RenderManager::render(std::vector<DrawObjectInstance> &models, std::vector<
                     std::numeric_limits<uint64_t>::max());
 
     uint32_t imageIndex = 0;
-    VkResult result = vkAcquireNextImageKHR(m_device->device,
-                                            m_device->swapChain->swapchain,
-                                            std::numeric_limits<uint64_t>::max(),
-                                            m_device->swapChain->imageAvailableSemaphores[m_device->swapChain->currentFrame],
-                                            VK_NULL_HANDLE,
-                                            &imageIndex);
+    const VkResult result = vkAcquireNextImageKHR(m_device->device,
+                                                  m_device->swapChain->swapchain,
+                                                  std::numeric_limits<uint64_t>::max(),
+                                                  m_device->swapChain->imageAvailableSemaphores[m_device->swapChain->currentFrame],
+                                                  VK_NULL_HANDLE,
+                                                  &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         return;
     }
 
-    VkCommandBuffer commandBuffer = m_commandBuffers[m_device->swapChain->currentFrame];
+    const VkCommandBuffer commandBuffer = m_commandBuffers[m_device->swapChain->currentFrame];
 
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -571,15 +569,15 @@ void RenderManager::render(std::vector<DrawObjectInstance> &models, std::vector<
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {m_device->swapChain->imageAvailableSemaphores[m_device->swapChain->currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    const VkSemaphore waitSemaphores[] = {m_device->swapChain->imageAvailableSemaphores[m_device->swapChain->currentFrame]};
+    constexpr VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    VkSemaphore signalSemaphores[] = {m_device->swapChain->renderFinishedSemaphores[imageIndex]};
+    const VkSemaphore signalSemaphores[] = {m_device->swapChain->renderFinishedSemaphores[imageIndex]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -594,7 +592,7 @@ void RenderManager::render(std::vector<DrawObjectInstance> &models, std::vector<
 
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
-    VkSwapchainKHR swapChains[] = {m_device->swapChain->swapchain};
+    const VkSwapchainKHR swapChains[] = {m_device->swapChain->swapchain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
@@ -609,9 +607,9 @@ VkRenderPass RenderManager::presentationRenderPass() const
     return m_renderPass;
 }
 
-DrawObject *RenderManager::addDrawObject(const physis_MDL &model, std::string name)
+DrawObject *RenderManager::addDrawObject(const physis_MDL &model, const std::string &name) const
 {
-    auto DrawObject = new ::DrawObject();
+    const auto DrawObject = new ::DrawObject();
     DrawObject->model = model;
     DrawObject->name = name;
 
@@ -620,7 +618,7 @@ DrawObject *RenderManager::addDrawObject(const physis_MDL &model, std::string na
     return DrawObject;
 }
 
-void RenderManager::reloadDrawObject(DrawObject &DrawObject)
+void RenderManager::reloadDrawObject(DrawObject &DrawObject) const
 {
     DrawObject.lods.clear();
 
@@ -639,18 +637,18 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject)
             if (qgetenv("NOVUS_USE_NEW_RENDERER") == QByteArrayLiteral("1")) {
                 renderPart.streamBuffer.resize(DrawObject.model.lods[lod].num_vertex_elements);
                 for (uint32_t j = 0; j < part.num_streams; j++) {
-                    size_t size = part.stream_sizes[j];
+                    const size_t size = part.stream_sizes[j];
                     auto buffer = m_device->createBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-                    m_device->copyToBuffer(buffer, (void *)part.streams[j], size);
+                    m_device->copyToBuffer(buffer, part.streams[j], size);
                     m_device->nameBuffer(buffer, "Stream Buffer for MDL");
 
                     renderPart.streamBuffer[j] = buffer;
                 }
             } else {
                 if (part.num_vertices > 0) {
-                    size_t vertexSize = part.num_vertices * sizeof(Vertex);
+                    const size_t vertexSize = part.num_vertices * sizeof(Vertex);
                     renderPart.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-                    m_device->copyToBuffer(renderPart.vertexBuffer, (void *)part.vertices, vertexSize);
+                    m_device->copyToBuffer(renderPart.vertexBuffer, part.vertices, vertexSize);
                     m_device->nameBuffer(renderPart.vertexBuffer, "Vertex Buffer for MDL");
                 } else {
                     qWarning() << DrawObject.name << "Lod" << lod << "Part" << i << "has zero vertices, is that supposed to happen?";
@@ -658,9 +656,9 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject)
             }
 
             if (part.num_indices > 0) {
-                size_t indexSize = part.num_indices * sizeof(uint16_t);
+                const size_t indexSize = part.num_indices * sizeof(uint16_t);
                 renderPart.indexBuffer = m_device->createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-                m_device->copyToBuffer(renderPart.indexBuffer, (void *)part.indices, indexSize);
+                m_device->copyToBuffer(renderPart.indexBuffer, part.indices, indexSize);
                 m_device->nameBuffer(renderPart.indexBuffer, "Index Buffer for MDL");
 
                 renderPart.numIndices = part.num_indices;
@@ -673,12 +671,12 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject)
         DrawObject.lods.push_back(newLod);
     }
 
-    const size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
+    constexpr size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
     DrawObject.boneInfoBuffer = m_device->createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     m_device->nameBuffer(DrawObject.boneInfoBuffer, "Bone Info Buffer for MDL");
 }
 
-void RenderManager::destroyDrawObject(DrawObject &model)
+void RenderManager::destroyDrawObject(DrawObject &model) const
 {
     for (auto &lod : model.lods) {
         for (auto &part : lod.parts) {
@@ -693,9 +691,9 @@ void RenderManager::destroyDrawObject(DrawObject &model)
     m_device->destroyBuffer(model.boneInfoBuffer);
 }
 
-VfxObject *RenderManager::addVFXObject(const physis_Avfx &vfx, std::vector<physis_Texture> textures, std::string name)
+VfxObject *RenderManager::addVFXObject(const physis_Avfx &vfx, const std::vector<physis_Texture> &textures, const std::string &name) const
 {
-    auto VfxObject = new ::VfxObject();
+    const auto VfxObject = new ::VfxObject();
     VfxObject->vfx = vfx;
     VfxObject->name = name;
     VfxObject->textures = textures;
@@ -705,14 +703,14 @@ VfxObject *RenderManager::addVFXObject(const physis_Avfx &vfx, std::vector<physi
     return VfxObject;
 }
 
-void RenderManager::reloadVFXObject(VfxObject &vfx)
+void RenderManager::reloadVFXObject(VfxObject &vfx) const
 {
     for (uint32_t i = 0; i < vfx.vfx.model_count; i++) {
         const auto &model = vfx.vfx.models[i];
         auto &drawModel = vfx.models.emplace_back();
 
         if (model.vertex_count > 0) {
-            size_t vertexSize = model.vertex_count * sizeof(DrawVertex);
+            const size_t vertexSize = model.vertex_count * sizeof(DrawVertex);
             drawModel.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
             m_device->copyToBuffer(drawModel.vertexBuffer, model.vertices, vertexSize);
             m_device->nameBuffer(drawModel.vertexBuffer, "Vertex Buffer for VFX");
@@ -721,7 +719,7 @@ void RenderManager::reloadVFXObject(VfxObject &vfx)
         }
 
         if (model.index_count > 0) {
-            size_t indexSize = model.index_count * sizeof(uint16_t);
+            const size_t indexSize = model.index_count * sizeof(uint16_t);
             drawModel.indexBuffer = m_device->createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
             m_device->copyToBuffer(drawModel.indexBuffer, model.indices, indexSize);
             m_device->nameBuffer(drawModel.indexBuffer, "Index Buffer for VFX");
@@ -737,28 +735,28 @@ void RenderManager::reloadVFXObject(VfxObject &vfx)
     }
 }
 
-void RenderManager::destroyVFXObject(VfxObject &vfx)
+void RenderManager::destroyVFXObject(const VfxObject &vfx)
 {
     // TODO: stub
     Q_UNUSED(vfx)
 }
 
-Texture RenderManager::addGameTexture(physis_Texture gameTexture)
+Texture RenderManager::addGameTexture(const physis_Texture &gameTexture) const
 {
     return m_device->addGameTexture(gameTexture);
 }
 
-Device &RenderManager::device()
+Device &RenderManager::device() const
 {
     return *m_device;
 }
 
-VkSampler RenderManager::defaultSampler()
+VkSampler RenderManager::defaultSampler() const
 {
     return m_sampler;
 }
 
-void RenderManager::updateCamera(Camera &camera)
+void RenderManager::updateCamera(Camera &camera) const
 {
     camera.aspectRatio = static_cast<float>(m_device->swapChain->extent.width) / static_cast<float>(m_device->swapChain->extent.height);
     camera.perspective = glm::infinitePerspective(glm::radians(camera.fieldOfView), camera.aspectRatio, camera.nearPlane);
@@ -794,7 +792,7 @@ void RenderManager::initBlitPipeline()
     fragmentShaderStageInfo.module = blitFragmentShader;
     fragmentShaderStageInfo.pName = "main";
 
-    std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
+    std::array shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -909,7 +907,7 @@ void RenderManager::initBlitPipeline()
     vkDestroyShaderModule(m_device->device, blitFragmentShader, nullptr);
 }
 
-void RenderManager::destroyBlitPipeline()
+void RenderManager::destroyBlitPipeline() const
 {
     if (m_pipeline == VK_NULL_HANDLE) {
         return;
@@ -927,12 +925,12 @@ void RenderManager::addPass(RendererPass *pass)
     m_passes.push_back(pass);
 }
 
-BaseRenderer *RenderManager::renderer()
+BaseRenderer *RenderManager::renderer() const
 {
     return m_renderer;
 }
 
-void RenderManager::freeResources()
+void RenderManager::freeResources() const
 {
     if (m_renderer) {
         m_renderer->freeResources();
@@ -1086,8 +1084,8 @@ QImage RenderManager::grab(std::vector<DrawObjectInstance> &models, std::vector<
     vkGetImageSubresourceLayout(m_device->device, dstImage, &subResource, &subResourceLayout);
 
     // Map image memory so we can start copying from it
-    const char *data;
-    vkMapMemory(m_device->device, dstImageMemory, 0, VK_WHOLE_SIZE, 0, (void **)&data);
+    char *data;
+    vkMapMemory(m_device->device, dstImageMemory, 0, VK_WHOLE_SIZE, 0, reinterpret_cast<void **>(&data));
     data += subResourceLayout.offset;
 
     QImage image(imageCreateCI.extent.width, imageCreateCI.extent.height, QImage::Format_RGBA8888);

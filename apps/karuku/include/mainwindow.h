@@ -29,7 +29,7 @@ public Q_SLOTS:
 
 private:
     void setupActions();
-    void updateDocumentActions();
+    void updateDocumentActions() const;
 
     FileCache m_cache;
     QNetworkAccessManager *m_mgr = nullptr;

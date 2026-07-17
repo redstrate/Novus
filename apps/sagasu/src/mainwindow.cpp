@@ -10,7 +10,6 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QLabel>
-#include <QMenuBar>
 #include <QMessageBox>
 #include <QNetworkReply>
 #include <QSplitter>
@@ -36,10 +35,8 @@
 #include "texpart.h"
 
 #include <QInputDialog>
-#include <QStringListModel>
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/FoldingRegion>
 #include <KSyntaxHighlighting/Repository>
 #include <KSyntaxHighlighting/SyntaxHighlighter>
@@ -53,10 +50,9 @@
 #include "settings.h"
 #include "tmbpart.h"
 
-#include <KConfig>
 #include <KConfigGroup>
 
-MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
+MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data)
     : m_cache(data)
 {
     setMinimumSize(1280, 720);
@@ -67,23 +63,23 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
 
     m_offsetLabel = new QLabel(i18n("Offset: Unknown"));
     statusBar()->addWidget(m_offsetLabel);
-    auto separatorLine = new QFrame();
+    const auto separatorLine = new QFrame();
     separatorLine->setFrameShape(QFrame::VLine);
     statusBar()->addWidget(separatorLine);
     m_hashLabel = new QLabel(i18n("Hash: Unknown"));
     statusBar()->addWidget(m_hashLabel);
-    auto separatorLine2 = new QFrame();
+    const auto separatorLine2 = new QFrame();
     separatorLine2->setFrameShape(QFrame::VLine);
     statusBar()->addWidget(separatorLine2);
     m_fileTypeLabel = new QLabel(i18n("File Type: Unknown"));
     statusBar()->addWidget(m_fileTypeLabel);
 
-    auto dummyWidget = new QSplitter();
+    const auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
     m_tree = new FileTreeWindow(m_database, gamePath, m_cache);
-    connect(m_tree, &FileTreeWindow::extractFile, this, [this](const QString &path, const QString &indexPath, Hash hash) {
+    connect(m_tree, &FileTreeWindow::extractFile, this, [this](const QString &path, const QString &indexPath, const Hash hash) {
         const QFileInfo info(path);
 
         const QString savePath = getSaveFileName(this,
@@ -113,7 +109,7 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
             }
         }
     });
-    connect(m_tree, &FileTreeWindow::pathSelected, this, [this](const QString &indexPath, Hash hash, const QString &path) {
+    connect(m_tree, &FileTreeWindow::pathSelected, this, [this](const QString &indexPath, const Hash hash, const QString &path) {
         m_currentPath = path;
         refreshParts(indexPath, hash, path);
     });
@@ -138,14 +134,14 @@ MainWindow::MainWindow(const QString &gamePath, physis_SqPackResource data)
     // Open paths in our own instance (see PathEdit)
     PathEdit::handler()->setEmitSignal(true);
     connect(PathEdit::handler(), &OpenPathHandler::pathOpened, this, [this](const QString &path) {
-        m_tree->selectPath(path);
+        Q_UNUSED(m_tree->selectPath(path));
     });
 
-    auto openInWidget = new OpenInWidget(this);
+    const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 }
 
-bool MainWindow::selectPath(const QString &path)
+bool MainWindow::selectPath(const QString &path) const
 {
     return m_tree->selectPath(path);
 }
@@ -276,7 +272,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
                 if (!importFileName.isEmpty() && !exportFileName.isEmpty()) {
                     auto mdl = mdlWidget->getModel(0).model;
                     importModel(mdl, importFileName);
-                    auto buffer = physis_mdl_write(m_cache.platform(), &mdl);
+                    const auto buffer = physis_mdl_write(m_cache.platform(), &mdl);
 
                     QFile file(exportFileName);
                     if (file.open(QIODevice::WriteOnly)) {
@@ -332,7 +328,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
             // TOOD: this doesn't work for some names!
             const auto baseName = originalPath.split(QStringLiteral("_")).constFirst();
             const auto newName = QStringLiteral("%1.exh").arg(baseName);
-            m_tree->selectPath(newName);
+            Q_UNUSED(m_tree->selectPath(newName));
         });
         exdLayout->addWidget(goToButton, 0, Qt::AlignHCenter | Qt::AlignTop);
 
@@ -422,7 +418,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         KSyntaxHighlighting::Repository repository;
 
         auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(debugInformationText->document());
-        highlighter->setTheme((debugInformationText->palette().color(QPalette::Base).lightness() < 128)
+        highlighter->setTheme(debugInformationText->palette().color(QPalette::Base).lightness() < 128
                                   ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
                                   : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
 
@@ -447,10 +443,10 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
 void MainWindow::setupActions()
 {
-    auto openList = new QAction(i18nc("@action:inmenu", "Import Path List…"));
+    const auto openList = new QAction(i18nc("@action:inmenu", "Import Path List…"));
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
-        auto fileName = getOpenFileName(this, QStringLiteral("DataExplorerPathListFile"), i18nc("@title:window", "Open Path List"));
+        const auto fileName = getOpenFileName(this, QStringLiteral("DataExplorerPathListFile"), i18nc("@title:window", "Open Path List"));
 
         QMessageBox::warning(this,
                              i18nc("@title:window", "Import Warning"),
@@ -475,7 +471,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("import_list"), openList);
 
-    auto downloadList = new QAction(i18nc("@action:inmenu", "Download Path List…"));
+    const auto downloadList = new QAction(i18nc("@action:inmenu", "Download Path List…"));
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
         const int ret =
@@ -501,7 +497,7 @@ void MainWindow::setupActions()
         connect(reply, &QNetworkReply::finished, this, [this, reply] {
             qInfo() << "Finished downloading path list!";
 
-            QTemporaryDir tempDir;
+            const QTemporaryDir tempDir;
 
             QFile file(tempDir.filePath(QStringLiteral("CurrentPathListWithHashes.zip")));
             if (!file.open(QIODevice::WriteOnly)) {
@@ -518,7 +514,7 @@ void MainWindow::setupActions()
                 return;
             }
 
-            const KArchiveFile *root = dynamic_cast<const KArchiveFile *>(archive.directory()->entry(QStringLiteral("CurrentPathListWithHashes.csv")));
+            const auto root = dynamic_cast<const KArchiveFile *>(archive.directory()->entry(QStringLiteral("CurrentPathListWithHashes.csv")));
             m_database.importFileList(root->data());
             m_tree->refreshModel();
 
@@ -533,7 +529,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
 
-    auto manualAdd = new QAction(i18nc("@action:inmenu", "Manually Add Path…"));
+    const auto manualAdd = new QAction(i18nc("@action:inmenu", "Manually Add Path…"));
     manualAdd->setIcon(QIcon::fromTheme(QStringLiteral("document-new-symbolic")));
     connect(manualAdd, &QAction::triggered, [this] {
         bool ok = false;
@@ -543,7 +539,7 @@ void MainWindow::setupActions()
             QString filename;
             QString foldername;
             if (path.contains(QStringLiteral("/"))) {
-                int lastSlash = path.lastIndexOf(QStringLiteral("/"));
+                const int lastSlash = path.lastIndexOf(QStringLiteral("/"));
                 filename = path.sliced(lastSlash + 1, path.length() - lastSlash - 1);
                 foldername = path.left(lastSlash);
             } else {
@@ -559,7 +555,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("manual_add"), manualAdd);
 
-    auto showUnknown = new QAction(i18nc("@action:inmenu", "Show Unknown Files/Folders"));
+    const auto showUnknown = new QAction(i18nc("@action:inmenu", "Show Unknown Files/Folders"));
     KActionCollection::setDefaultShortcut(showUnknown, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_U));
     showUnknown->setCheckable(true);
     showUnknown->setIcon(QIcon::fromTheme(QStringLiteral("view-hidden-symbolic")));
@@ -568,20 +564,20 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("show_unknown"), showUnknown);
 
-    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"));
+    const auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"));
     focusSearch->setIcon(QIcon::fromTheme(QStringLiteral("search-symbolic")));
     KActionCollection::setDefaultShortcut(focusSearch, QKeySequence(Qt::CTRL | Qt::Key_F));
     connect(focusSearch, &QAction::triggered, m_tree, &FileTreeWindow::focusSearchField);
     actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 
-    auto goToPath = new QAction(i18nc("@action:inmenu", "Go to Path…"));
+    const auto goToPath = new QAction(i18nc("@action:inmenu", "Go to Path…"));
     goToPath->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
     KActionCollection::setDefaultShortcut(goToPath, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
     connect(goToPath, &QAction::triggered, [this] {
         bool ok = false;
         const QString path = QInputDialog::getText(this, i18n("Go to Path…"), i18n("Path:"), QLineEdit::Normal, QString{}, &ok);
         if (ok && !path.isEmpty()) {
-            m_tree->selectPath(path);
+            Q_UNUSED(m_tree->selectPath(path));
         }
     });
     actionCollection()->addAction(QStringLiteral("go_to_path"), goToPath);

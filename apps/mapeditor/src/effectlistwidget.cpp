@@ -10,17 +10,17 @@
 
 #include <KLocalizedString>
 
-EffectListWidget::EffectListWidget(SceneState *state, std::vector<int32_t> effects, QWidget *parent)
+EffectListWidget::EffectListWidget(SceneState *state, const std::vector<int32_t> &effects, QWidget *parent)
     : QDialog(parent)
 {
     setMinimumSize(QSize(640, 480));
     setWindowTitle(i18n("Map Effects"));
 
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    auto listWidget = new QListWidget();
+    const auto listWidget = new QListWidget();
     listWidget->setEditTriggers(QListWidget::EditTrigger::NoEditTriggers);
 
     connect(listWidget, &QListWidget::activated, this, [state](const QModelIndex &index) {
@@ -30,7 +30,7 @@ EffectListWidget::EffectListWidget(SceneState *state, std::vector<int32_t> effec
 
     for (const auto &objectId : effects) {
         if (objectId > 0) {
-            auto item = new QListWidgetItem(QString::number(objectId));
+            const auto item = new QListWidgetItem(QString::number(objectId));
             item->setData(Qt::UserRole, objectId);
             listWidget->addItem(item);
         }

@@ -7,9 +7,6 @@
 
 #include <KLocalizedString>
 #include <QCheckBox>
-#include <QFile>
-#include <QGroupBox>
-#include <QLabel>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <physis.hpp>
@@ -32,10 +29,10 @@ class SearchSettingsPopup : public QDialog
     Q_OBJECT
 
 public:
-    SearchSettingsPopup(EXDPart::SearchSettings settings, QAbstractItemModel *columnModel, QWidget *parent)
+    SearchSettingsPopup(const EXDPart::SearchSettings settings, const QAbstractItemModel *columnModel, QWidget *parent)
         : QDialog(parent, Qt::Popup)
     {
-        auto layout = new QFormLayout();
+        const auto layout = new QFormLayout();
         setLayout(layout);
 
         m_columnBox = new QComboBox();
@@ -116,7 +113,7 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
     , m_preferredLanguage(getLanguage())
     , m_resolver(resolver)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
@@ -128,7 +125,7 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
     connect(m_filterEdit, &QLineEdit::textEdited, this, &EXDPart::filterData);
     layout->addWidget(m_filterEdit);
 
-    auto searchSettingsAction = new QAction(QIcon::fromTheme(QStringLiteral("settings-configure-symbolic")), i18n("Search Settings"), this);
+    const auto searchSettingsAction = new QAction(QIcon::fromTheme(QStringLiteral("settings-configure-symbolic")), i18n("Search Settings"), this);
     connect(searchSettingsAction, &QAction::triggered, this, [this] {
         const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(0));
         if (!tableWidget) {
@@ -214,7 +211,7 @@ EXDPart::~EXDPart()
     physis_exh_free(&m_exh);
 }
 
-void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
+void EXDPart::loadSheet(const QString &name, const physis_Buffer buffer)
 {
     m_name = name;
 
@@ -249,7 +246,7 @@ void EXDPart::loadSheet(const QString &name, physis_Buffer buffer)
     }
 }
 
-void EXDPart::goToRow(const QString &query)
+void EXDPart::goToRow(const QString &query) const
 {
     for (uint32_t i = 0; i < m_exh.page_count; i++) {
         const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(i));
@@ -268,7 +265,7 @@ void EXDPart::goToRow(const QString &query)
     }
 }
 
-void EXDPart::resetSorting()
+void EXDPart::resetSorting() const
 {
     const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->currentWidget());
     Q_ASSERT(tableWidget);
@@ -276,22 +273,22 @@ void EXDPart::resetSorting()
     tableWidget->sortByColumn(-1, Qt::AscendingOrder);
 }
 
-void EXDPart::clear()
+void EXDPart::clear() const
 {
     m_pageTabWidget->clear();
 }
 
-void EXDPart::focusFilterField()
+void EXDPart::focusFilterField() const
 {
     m_filterEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }
 
-void EXDPart::setReadOnly(bool readOnly)
+void EXDPart::setReadOnly(const bool readOnly)
 {
     m_readOnly = readOnly;
 }
 
-void EXDPart::save()
+void EXDPart::save() const
 {
     const auto mods = getGameMods();
     if (mods.isEmpty()) {
@@ -351,7 +348,7 @@ QAction *EXDPart::selectLanguageAction() const
     return m_selectLanguage;
 }
 
-QAction *EXDPart::saveCsvAction()
+QAction *EXDPart::saveCsvAction() const
 {
     return m_saveCsvAction;
 }
@@ -395,17 +392,17 @@ void EXDPart::loadTables()
     m_sheet = m_cache.readExcelSheet(m_name, &m_exh, getSuitableLanguage(m_exh));
 
     for (uint32_t i = 0; i < m_sheet.page_count; i++) {
-        auto tableWidget = new ExcelTableView();
+        const auto tableWidget = new ExcelTableView();
         connect(tableWidget, &ExcelTableView::requestJump, this, &EXDPart::requestJump);
 
-        auto excelModel = new ExcelModel(m_exh, m_sheet.pages[i], schema, m_resolver, getSuitableLanguage(m_exh), this);
+        const auto excelModel = new ExcelModel(m_exh, m_sheet.pages[i], schema, m_resolver, getSuitableLanguage(m_exh), this);
         connect(excelModel, &ExcelModel::modified, this, [this] {
             m_modified = true;
             Q_EMIT modified();
         });
 
         // Wrap it in a sortfilterproxy so we get column sorting for free
-        auto proxyModel = new QSortFilterProxyModel(this);
+        const auto proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setSourceModel(excelModel);
 
         tableWidget->setModel(proxyModel);
@@ -433,7 +430,7 @@ void EXDPart::loadTables()
     m_pageTabWidget->tabBar()->setVisible(m_exh.page_count > 1);
 }
 
-void EXDPart::filterData(const QString &pattern)
+void EXDPart::filterData(const QString &pattern) const
 {
     for (uint32_t i = 0; i < m_exh.page_count; i++) {
         const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(i));
@@ -441,7 +438,7 @@ void EXDPart::filterData(const QString &pattern)
             continue;
         }
 
-        auto model = qobject_cast<QSortFilterProxyModel *>(tableWidget->model());
+        const auto model = qobject_cast<QSortFilterProxyModel *>(tableWidget->model());
 
         if (m_searchSettings.enableRegex) {
             model->setFilterRegularExpression(pattern);
@@ -461,7 +458,7 @@ void EXDPart::setSearchSettings(const SearchSettings newSettings)
             continue;
         }
 
-        auto model = qobject_cast<QSortFilterProxyModel *>(tableWidget->model());
+        const auto model = qobject_cast<QSortFilterProxyModel *>(tableWidget->model());
         model->setFilterKeyColumn(m_searchSettings.column);
         model->setFilterCaseSensitivity(m_searchSettings.caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
     }

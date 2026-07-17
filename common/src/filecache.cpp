@@ -14,7 +14,7 @@
 
 using namespace Qt::StringLiterals;
 
-FileCache::FileCache(physis_SqPackResource data)
+FileCache::FileCache(const physis_SqPackResource data)
     : m_data(data)
 {
     // Custom resource used for reading and parsing Excel files and other nonsense
@@ -89,7 +89,7 @@ physis_Buffer &FileCache::read(const QString &path)
     return m_cachedBuffers[normalizedPath];
 }
 
-physis_ExcelSheet FileCache::readExcelSheet(const QString &name, const physis_EXH *exh, const Language language)
+physis_ExcelSheet FileCache::readExcelSheet(const QString &name, const physis_EXH *exh, const Language language) const
 {
     // Pass through our custom file loading mechanism
     return physis_custom_read_excel_sheet(&m_customResource, name.toStdString().c_str(), exh, language);
@@ -110,7 +110,7 @@ bool FileCache::exists(const QString &path)
     QMutexLocker locker(&m_existMutex);
 
     if (!m_cachedExist.contains(path)) {
-        std::string pathstd = path.toStdString();
+        const std::string pathstd = path.toStdString();
         m_cachedExist[path] = physis_sqpack_exists(&m_data, pathstd.c_str());
     }
 

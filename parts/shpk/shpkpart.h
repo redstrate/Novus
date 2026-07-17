@@ -27,12 +27,12 @@ public:
     void load(Platform platform, physis_Buffer buffer);
 
 private:
-    void loadShader(const QModelIndex &index);
-    void loadNode(const QModelIndex &index);
+    void loadShader(const QModelIndex &index) const;
+    void loadNode(const QModelIndex &index) const;
     void loadPass(const QModelIndex &index);
-    void goToVertexShader(int index);
-    void goToPixelShader(int index);
-    void clearLayout(QLayout *layout);
+    void goToVertexShader(int index) const;
+    void goToPixelShader(int index) const;
+    static void clearLayout(QLayout *layout);
 
     QTabWidget *m_pageTabWidget = nullptr;
 
@@ -78,7 +78,7 @@ private:
     QListWidget *m_scalarsListWidget;
     QListWidget *m_texturesListWidget;
 
-    physis_SHPK m_shpk;
+    physis_SHPK m_shpk{};
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
     KSyntaxHighlighting::Repository m_repository;

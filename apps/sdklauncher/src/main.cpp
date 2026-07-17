@@ -17,7 +17,7 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    const QApplication app(argc, argv);
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
             KConfig config(QStringLiteral("novusrc"));
             KConfigGroup game = config.group(QStringLiteral("Game"));
 
-            auto gameInstalls = getGameInstalls();
+            const auto gameInstalls = getGameInstalls();
 
             game.writeEntry("CurrentInstall", gameInstalls.constFirst().uuid.toString());
             config.sync();

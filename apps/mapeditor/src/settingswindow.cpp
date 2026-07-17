@@ -8,7 +8,6 @@
 #include <KLocalizedString>
 #include <QFileDialog>
 #include <QFormLayout>
-#include <QGroupBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -17,26 +16,26 @@ SettingsWindow::SettingsWindow(QWidget *parent)
 {
     setWindowTitle(i18n("Settings"));
 
-    auto layout = new QFormLayout();
+    const auto layout = new QFormLayout();
     setLayout(layout);
 
     KConfig config(QStringLiteral("novusrc"));
-    KConfigGroup game = config.group(QStringLiteral("MapEditor"));
+    const KConfigGroup game = config.group(QStringLiteral("MapEditor"));
 
     m_dropinsLineEdit = new QLineEdit();
     m_dropinsLineEdit->setText(game.readEntry("DropInsPath"));
     m_dropinsLineEdit->setClearButtonEnabled(true);
     layout->addRow(i18n("Drop-ins"), m_dropinsLineEdit);
 
-    auto bottomButtonLayout = new QHBoxLayout();
+    const auto bottomButtonLayout = new QHBoxLayout();
     layout->addRow(bottomButtonLayout);
 
-    auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), i18n("Cancel"));
+    const auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), i18n("Cancel"));
     connect(cancelButton, &QPushButton::clicked, this, &QWidget::close);
     bottomButtonLayout->addWidget(cancelButton);
     bottomButtonLayout->addStretch(1);
 
-    auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), i18n("Apply"));
+    const auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), i18n("Apply"));
     connect(saveButton, &QPushButton::clicked, this, [this] {
         applySettings();
         close();
@@ -44,7 +43,7 @@ SettingsWindow::SettingsWindow(QWidget *parent)
     bottomButtonLayout->addWidget(saveButton);
 }
 
-void SettingsWindow::applySettings()
+void SettingsWindow::applySettings() const
 {
     KConfig config(QStringLiteral("novusrc"));
     KConfigGroup game = config.group(QStringLiteral("MapEditor"));

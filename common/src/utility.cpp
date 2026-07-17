@@ -17,8 +17,8 @@ QString fromCString(const char *string)
 
 const char *toCString(const QString &value)
 {
-    std::string stdStringData = value.toStdString();
-    char *cStringData = reinterpret_cast<char *>(malloc(stdStringData.length() + 1));
+    const std::string stdStringData = value.toStdString();
+    const auto cStringData = static_cast<char *>(malloc(stdStringData.length() + 1));
     strcpy(cStringData, stdStringData.data());
 
     return cStringData;

@@ -166,7 +166,7 @@ FileType FileTypes::getFileType(const QString &extension)
     return extensionToType.value(extension, FileType::Unknown);
 }
 
-QString FileTypes::getFiletypeName(FileType fileType)
+QString FileTypes::getFiletypeName(const FileType fileType)
 {
     if (typeToName.contains(fileType)) {
         return typeToName.value(fileType);
@@ -174,7 +174,7 @@ QString FileTypes::getFiletypeName(FileType fileType)
     return typeToName.value(FileType::Unknown);
 }
 
-QString FileTypes::getFiletypeIcon(FileType fileType)
+QString FileTypes::getFiletypeIcon(const FileType fileType)
 {
     if (typeToIcon.contains(fileType)) {
         return typeToIcon.value(fileType);
@@ -182,7 +182,7 @@ QString FileTypes::getFiletypeIcon(FileType fileType)
     return typeToIcon.value(FileType::Unknown);
 }
 
-QString FileTypes::printDebugInformation(FileType fileType, Platform platform, physis_Buffer buffer)
+QString FileTypes::printDebugInformation(const FileType fileType, const Platform platform, const physis_Buffer buffer)
 {
     if (typeToDebug.contains(fileType)) {
         const auto stringPtr = typeToDebug[fileType](platform, buffer);
@@ -193,7 +193,7 @@ QString FileTypes::printDebugInformation(FileType fileType, Platform platform, p
     return i18n("No debug information available. If this is unexpected, please report this a bug (and include the file path!)");
 }
 
-FileType FileTypes::guessFileType(physis_Buffer buffer)
+FileType FileTypes::guessFileType(const physis_Buffer buffer)
 {
     std::array<uint8_t, 4> magic{};
     if (buffer.size >= 4) {

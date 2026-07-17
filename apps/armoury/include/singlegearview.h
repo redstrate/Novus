@@ -43,7 +43,7 @@ public Q_SLOTS:
     void setFMVAvailable(bool available);
 
 private Q_SLOTS:
-    void reloadGear();
+    void reloadGear() const;
 
 private:
     void importModel(const QString &filename);

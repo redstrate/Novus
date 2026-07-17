@@ -17,7 +17,7 @@ class ExcelEdit : public QWidget
     Q_OBJECT
 
 public:
-    explicit ExcelEdit(SceneState *state, const QStringList &excelSheets, uint32_t &rowId, QWidget *parent = nullptr);
+    explicit ExcelEdit(const SceneState *state, const QStringList &excelSheets, uint32_t &rowId, QWidget *parent = nullptr);
 
     void setReadOnly(bool readOnly);
 

@@ -13,7 +13,7 @@ class RaceTreeData : public QObject
     Q_OBJECT
 
 public:
-    RaceTreeData(Race race, Tribe subrace)
+    RaceTreeData(const Race race, const Tribe subrace)
         : race(race)
         , subrace(subrace)
     {
@@ -33,7 +33,7 @@ public:
     void load(Platform platform, physis_Buffer file);
 
 private:
-    void loadRaceData(Race race, Tribe subrace);
+    void loadRaceData(Race race, Tribe subrace) const;
 
     physis_CMP m_cmp{};
 

@@ -3,9 +3,6 @@
 
 #include "luabpart.h"
 
-#include <QFile>
-#include <QJsonArray>
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
 #include <QTemporaryFile>
@@ -17,7 +14,6 @@
 #include "scriptprocessor.h"
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/FoldingRegion>
 #include <KSyntaxHighlighting/Repository>
 #include <KSyntaxHighlighting/SyntaxHighlighter>
@@ -27,7 +23,7 @@
 LuabPart::LuabPart(QWidget *parent)
     : QWidget(parent)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
 
     m_codeEdit = new QTextEdit();
@@ -38,7 +34,7 @@ LuabPart::LuabPart(QWidget *parent)
     setLayout(layout);
 }
 
-void LuabPart::load(physis_Buffer buffer)
+void LuabPart::load(const physis_Buffer buffer) const
 {
     QTemporaryFile temporaryFile;
     if (temporaryFile.open()) {
@@ -60,10 +56,10 @@ void LuabPart::load(physis_Buffer buffer)
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting
-        KSyntaxHighlighting::Repository repository;
+        const KSyntaxHighlighting::Repository repository;
 
-        auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_codeEdit->document());
-        highlighter->setTheme((m_codeEdit->palette().color(QPalette::Base).lightness() < 128)
+        const auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_codeEdit->document());
+        highlighter->setTheme(m_codeEdit->palette().color(QPalette::Base).lightness() < 128
                                   ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
                                   : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
 

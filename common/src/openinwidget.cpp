@@ -15,7 +15,7 @@ OpenInWidget::OpenInWidget(QObject *target)
 {
     QMenu *menu = addMenu(i18n("Open In"));
 
-    auto enableModsAction = menu->addAction(i18n("Enable Mods"));
+    const auto enableModsAction = menu->addAction(i18n("Enable Mods"));
     enableModsAction->setCheckable(true);
     enableModsAction->setChecked(gameModsEnabled());
     connect(enableModsAction, &QAction::triggered, this, [this](const bool checked) {
@@ -34,7 +34,7 @@ OpenInWidget::OpenInWidget(QObject *target)
         if (install.uuid.toString() == getGameUUID()) {
             menu->setTitle(gameModsEnabled() ? i18n("%1 (Modded)").arg(install.label) : install.label);
         } else {
-            QAction *action = menu->addAction(install.label);
+            const QAction *action = menu->addAction(install.label);
             connect(action, &QAction::triggered, this, [target, install] {
                 QString arguments;
                 QMetaObject::invokeMethod(target, "getArguments", qReturnArg(arguments));

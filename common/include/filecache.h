@@ -21,7 +21,7 @@ public:
 
     [[nodiscard]] bool exists(const QString &path);
     [[nodiscard]] physis_Buffer &read(const QString &path);
-    [[nodiscard]] physis_ExcelSheet readExcelSheet(const QString &name, const physis_EXH *exh, Language language);
+    [[nodiscard]] physis_ExcelSheet readExcelSheet(const QString &name, const physis_EXH *exh, Language language) const;
 
     [[nodiscard]] Platform platform() const;
 
@@ -34,5 +34,5 @@ private:
     physis_SqPackResource m_data;
     QMutex m_bufferMutex, m_existMutex;
     QMap<QString, QString> m_modFileOverrides;
-    physis_CustomResource m_customResource;
+    physis_CustomResource m_customResource{};
 };

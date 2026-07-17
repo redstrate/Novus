@@ -13,7 +13,7 @@
 
 Q_DECLARE_METATYPE(Hash)
 
-FileTreeModel::FileTreeModel(HashDatabase &database, bool showUnknown, const QString &gamePath, FileCache &cache, QObject *parent)
+FileTreeModel::FileTreeModel(HashDatabase &database, const bool showUnknown, const QString &gamePath, FileCache &cache, QObject *parent)
     : QAbstractItemModel(parent)
     , m_cache(cache)
     , m_database(database)
@@ -100,7 +100,7 @@ int FileTreeModel::columnCount(const QModelIndex &parent) const
     return 1;
 }
 
-QModelIndex FileTreeModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex FileTreeModel::index(const int row, const int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return {};
@@ -112,7 +112,7 @@ QModelIndex FileTreeModel::index(int row, int column, const QModelIndex &parent)
     else
         parentItem = static_cast<TreeInformation *>(parent.internalPointer());
 
-    TreeInformation *childItem = parentItem->children[row];
+    const TreeInformation *childItem = parentItem->children[row];
     if (childItem)
         return createIndex(row, column, childItem);
 
@@ -125,8 +125,8 @@ QModelIndex FileTreeModel::parent(const QModelIndex &index) const
     if (!index.isValid())
         return {};
 
-    auto childItem = static_cast<TreeInformation *>(index.internalPointer());
-    TreeInformation *parentItem = childItem->parent;
+    const auto childItem = static_cast<TreeInformation *>(index.internalPointer());
+    const TreeInformation *parentItem = childItem->parent;
 
     if (parentItem == m_rootItem)
         return {};
@@ -134,12 +134,12 @@ QModelIndex FileTreeModel::parent(const QModelIndex &index) const
     return createIndex(parentItem->row, index.column(), parentItem);
 }
 
-QVariant FileTreeModel::data(const QModelIndex &index, int role) const
+QVariant FileTreeModel::data(const QModelIndex &index, const int role) const
 {
     if (!index.isValid())
         return {};
 
-    auto item = static_cast<TreeInformation *>(index.internalPointer());
+    const auto item = static_cast<TreeInformation *>(index.internalPointer());
     if (role == PathRole) {
         if (item->name.isEmpty()) {
             return {};
@@ -158,33 +158,38 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
         }
 
         return path;
-    } else if (role == IsUnknownRole) {
+    }
+    if (role == IsUnknownRole) {
         return item->name.isEmpty(); // unknown files/folders have no name (obviously, we don't know what its named!)
-    } else if (role == IsFolderRole) {
+    }
+    if (role == IsFolderRole) {
         return item->type == TreeType::Folder;
-    } else if (role == HashRole) {
+    }
+    if (role == HashRole) {
         return QVariant::fromValue(item->originalHash);
-    } else if (role == IndexPathRole) {
+    }
+    if (role == IndexPathRole) {
         return item->indexPath;
-    } else if (role == Qt::DisplayRole) {
+    }
+    if (role == Qt::DisplayRole) {
         if (item->type == TreeType::Folder) {
             if (item->name.isEmpty()) {
                 return i18n("Unknown Folder (%1)").arg(item->hash);
-            } else {
-                return item->name;
             }
-        } else if (item->type == TreeType::File) {
+            return item->name;
+        }
+        if (item->type == TreeType::File) {
             if (item->name.isEmpty()) {
                 return i18n("Unknown File (%1)").arg(item->hash);
-            } else {
-                return item->name;
             }
+            return item->name;
         }
     } else if (role == Qt::DecorationRole) {
         if (item->type == TreeType::Folder) {
             return QIcon::fromTheme(QStringLiteral("folder-symbolic"));
-        } else if (item->type == TreeType::File) {
-            QFileInfo info(item->name);
+        }
+        if (item->type == TreeType::File) {
+            const QFileInfo info(item->name);
             const FileType type = FileTypes::getFileType(info.completeSuffix());
 
             return QIcon::fromTheme(FileTypes::getFiletypeIcon(type));
@@ -194,7 +199,7 @@ QVariant FileTreeModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-QVariant FileTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant FileTreeModel::headerData(const int section, const Qt::Orientation orientation, const int role) const
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
@@ -207,7 +212,7 @@ QVariant FileTreeModel::headerData(int section, Qt::Orientation orientation, int
 
 QModelIndex FileTreeModel::search(const QString &path) const
 {
-    const auto list = match(index(0, 0), PathRole, path, 1, Qt::MatchExactly | Qt::MatchRecursive);
+    const auto list = match(index(0, 0, {}), PathRole, path, 1, Qt::MatchExactly | Qt::MatchRecursive);
     if (list.isEmpty()) {
         return {};
     }
@@ -244,7 +249,12 @@ void FileTreeModel::addKnownFolder(const QString &string)
     }
 }
 
-void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, const QString &realName, uint32_t nameHash, Hash originalHash, const QString &indexPath)
+void FileTreeModel::addFile(TreeInformation *parentItem,
+                            const uint32_t name,
+                            const QString &realName,
+                            const uint32_t nameHash,
+                            const Hash originalHash,
+                            const QString &indexPath) const
 {
     if (realName.isEmpty() && !m_showUnknown) {
         return;
@@ -259,7 +269,7 @@ void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, const QS
         return;
     }
 
-    auto fileItem = new TreeInformation();
+    const auto fileItem = new TreeInformation();
     fileItem->hash = name;
     fileItem->name = realName;
     fileItem->type = TreeType::File;
@@ -272,13 +282,13 @@ void FileTreeModel::addFile(TreeInformation *parentItem, uint32_t name, const QS
     parentItem->children.push_back(fileItem);
 }
 
-void FileTreeModel::addUnknownFolder(TreeInformation *parentItem, uint32_t name)
+void FileTreeModel::addUnknownFolder(TreeInformation *parentItem, const uint32_t name)
 {
     if (!m_showUnknown) {
         return;
     }
 
-    auto folderItem = new TreeInformation();
+    const auto folderItem = new TreeInformation();
     folderItem->hash = name;
     folderItem->type = TreeType::Folder;
     folderItem->parent = parentItem;

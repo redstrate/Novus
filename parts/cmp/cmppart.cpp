@@ -33,22 +33,22 @@ CmpPart::CmpPart(QWidget *parent)
     setLayout(m_layout);
 }
 
-void CmpPart::load(Platform platform, physis_Buffer file)
+void CmpPart::load(const Platform platform, const physis_Buffer file)
 {
     m_cmp = physis_cmp_parse(platform, file);
 
-    auto raceListWidget = new QTreeWidget();
+    const auto raceListWidget = new QTreeWidget();
     raceListWidget->setMaximumWidth(200);
     raceListWidget->setHeaderLabel(i18nc("@title:column", "Race"));
     m_layout->addWidget(raceListWidget);
 
     for (const auto &race : raceTree) {
-        auto item = new QTreeWidgetItem();
+        const auto item = new QTreeWidgetItem();
         item->setText(0, QLatin1String(magic_enum::enum_name(race.baseRace).data()));
         raceListWidget->addTopLevelItem(item);
 
-        for (auto subrace : race.subRaces) {
-            auto subItem = new QTreeWidgetItem();
+        for (const auto subrace : race.subRaces) {
+            const auto subItem = new QTreeWidgetItem();
             subItem->setText(0, QLatin1String(magic_enum::enum_name(subrace).data()));
             subItem->setData(0, Qt::UserRole, QVariant::fromValue(new RaceTreeData(race.baseRace, subrace)));
             item->addChild(subItem);
@@ -57,16 +57,16 @@ void CmpPart::load(Platform platform, physis_Buffer file)
 
     raceListWidget->expandAll();
 
-    connect(raceListWidget, &QTreeWidget::itemClicked, [this](QTreeWidgetItem *item, int column) {
+    connect(raceListWidget, &QTreeWidget::itemClicked, [this](const QTreeWidgetItem *item, const int column) {
         Q_UNUSED(column)
-        if (auto treeData = qvariant_cast<RaceTreeData *>(item->data(0, Qt::UserRole))) {
+        if (const auto treeData = qvariant_cast<RaceTreeData *>(item->data(0, Qt::UserRole))) {
             loadRaceData(treeData->race, treeData->subrace);
         }
     });
 
-    auto detailBox = new QGroupBox();
+    const auto detailBox = new QGroupBox();
     m_layout->addWidget(detailBox);
-    auto detailBoxLayout = new QFormLayout();
+    const auto detailBoxLayout = new QFormLayout();
     detailBox->setLayout(detailBoxLayout);
 
     m_maleMinSize = new QDoubleSpinBox();
@@ -114,9 +114,9 @@ void CmpPart::load(Platform platform, physis_Buffer file)
     loadRaceData(Race::Hyur, Tribe::Midlander);
 }
 
-void CmpPart::loadRaceData(Race race, Tribe subrace)
+void CmpPart::loadRaceData(const Race race, const Tribe subrace) const
 {
-    auto raceData = physis_cmp_get_racial_scaling_parameters(m_cmp, race, subrace);
+    const auto raceData = physis_cmp_get_racial_scaling_parameters(m_cmp, race, subrace);
 
     m_maleMinSize->setValue(raceData.male_min_size);
     m_maleMaxSize->setValue(raceData.male_max_size);

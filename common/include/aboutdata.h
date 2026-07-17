@@ -4,7 +4,6 @@
 #pragma once
 
 #include <KAboutData>
-#include <QString>
 
 #include "novuscommon_export.h"
 

@@ -9,7 +9,7 @@
 
 void exportModel(const QString &name, const physis_MDL &model, const physis_Skeleton *skeleton, const std::vector<BoneData> &boneData, const QString &fileName)
 {
-    const int selectedLod = 0;
+    constexpr int selectedLod = 0;
 
     const physis_LOD &lod = model.lods[selectedLod];
 
@@ -298,9 +298,9 @@ void exportModel(const QString &name, const physis_MDL &model, const physis_Skel
                 vertex.bone_id[3]++;
 
                 // Do the reverse of what we do in importing, because we need to get the tangent from the binormal.
-                const glm::vec3 normal = glm::vec3(vertex.normal[0], vertex.normal[1], vertex.normal[2]);
-                const glm::vec4 tangent = glm::vec4(vertex.bitangent[0], vertex.bitangent[1], vertex.bitangent[2], vertex.bitangent[3]);
-                const glm::vec3 bitangent = glm::cross(glm::vec3(tangent), normal) * tangent.w;
+                const auto normal = glm::vec3(vertex.normal[0], vertex.normal[1], vertex.normal[2]);
+                const auto tangent = glm::vec4(vertex.bitangent[0], vertex.bitangent[1], vertex.bitangent[2], vertex.bitangent[3]);
+                const auto bitangent = glm::cross(glm::vec3(tangent), normal) * tangent.w;
 
                 const float handedness = glm::dot(glm::cross(bitangent, glm::vec3(tangent)), normal) > 0 ? 1 : -1;
 

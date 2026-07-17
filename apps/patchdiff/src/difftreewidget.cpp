@@ -15,7 +15,7 @@ DiffTreeWidget::DiffTreeWidget(HashDatabase &database, physis_SqPackResource *da
     , m_data(data)
     , m_database(database)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
@@ -62,7 +62,7 @@ void DiffTreeWidget::refreshModel()
     m_searchModel->setSourceModel(m_fileModel);
 }
 
-void DiffTreeWidget::openPatch(const QString &path)
+void DiffTreeWidget::openPatch(const QString &path) const
 {
     m_fileModel->openPatch(path);
 }

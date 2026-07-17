@@ -10,7 +10,7 @@ Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
     : EditWidget(parent)
     , m_vec(vec)
 {
-    auto itemsLayout = new QHBoxLayout(this);
+    const auto itemsLayout = new QHBoxLayout(this);
 
     m_spinBoxes.x = new QDoubleSpinBox();
     m_spinBoxes.y = new QDoubleSpinBox();
@@ -33,21 +33,21 @@ Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
     m_spinBoxes.y->setValue(vec.y);
     m_spinBoxes.z->setValue(vec.z);
 
-    connect(m_spinBoxes.x, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
+    connect(m_spinBoxes.x, &QDoubleSpinBox::valueChanged, [this, &vec](const double d) {
         vec.x = d;
         Q_EMIT onValueChanged();
     });
-    connect(m_spinBoxes.y, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
+    connect(m_spinBoxes.y, &QDoubleSpinBox::valueChanged, [this, &vec](const double d) {
         vec.y = d;
         Q_EMIT onValueChanged();
     });
-    connect(m_spinBoxes.z, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &vec](double d) {
+    connect(m_spinBoxes.z, &QDoubleSpinBox::valueChanged, [this, &vec](const double d) {
         vec.z = d;
         Q_EMIT onValueChanged();
     });
 }
 
-void Vector3Edit::setVector(glm::vec3 &vec)
+void Vector3Edit::setVector(const glm::vec3 &vec) const
 {
     this->m_vec = vec;
     m_spinBoxes.x->setValue(vec.x);
@@ -55,7 +55,7 @@ void Vector3Edit::setVector(glm::vec3 &vec)
     m_spinBoxes.z->setValue(vec.z);
 }
 
-void Vector3Edit::setReadOnly(const bool readOnly)
+void Vector3Edit::setReadOnly(const bool readOnly) const
 {
     m_spinBoxes.x->setReadOnly(readOnly);
     m_spinBoxes.y->setReadOnly(readOnly);

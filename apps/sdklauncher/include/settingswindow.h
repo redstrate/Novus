@@ -3,10 +3,6 @@
 
 #pragma once
 
-#include "enumedit.h"
-#include "settings.h"
-
-#include <QLineEdit>
 #include <QWidget>
 
 class QPushButton;

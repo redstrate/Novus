@@ -7,7 +7,6 @@
 #include <physis.hpp>
 
 #include "filecache.h"
-#include "mdlexport.h"
 #include "rendermanager.h"
 
 class QSlider;
@@ -31,11 +30,11 @@ public:
 
     void loadSgb(physis_Buffer file);
     bool loadLvb(physis_Buffer file, int territoryTypeHint = 0, int contentFinderConditionHint = 0);
-    void focusSearchField();
-    void selectObject(uint32_t objectId);
-    QString lookupObjectName(uint32_t objectId);
-    void clear();
-    void save();
+    void focusSearchField() const;
+    void selectObject(uint32_t objectId) const;
+    QString lookupObjectName(uint32_t objectId) const;
+    void clear() const;
+    void save() const;
 
     SceneState *sceneState() const;
     MapView *mapView() const;

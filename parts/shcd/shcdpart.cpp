@@ -12,7 +12,6 @@
 #include <spirv_glsl.hpp>
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/FoldingRegion>
 #include <KSyntaxHighlighting/SyntaxHighlighter>
 #include <KSyntaxHighlighting/Theme>
@@ -21,7 +20,7 @@
 SHCDPart::SHCDPart(QWidget *parent)
     : QWidget(parent)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
@@ -31,7 +30,7 @@ SHCDPart::SHCDPart(QWidget *parent)
     layout->addWidget(m_shaderTextEdit);
 }
 
-void SHCDPart::load(Platform platform, physis_Buffer buffer)
+void SHCDPart::load(const Platform platform, const physis_Buffer buffer)
 {
     m_shcd = physis_shcd_parse(platform, buffer);
     if (m_shcd.len == 0) {
@@ -42,9 +41,9 @@ void SHCDPart::load(Platform platform, physis_Buffer buffer)
     try {
         dxvk::DxbcReader reader(reinterpret_cast<const char *>(m_shcd.bytecode), m_shcd.len);
 
-        dxvk::DxbcModule module(reader);
+        const dxvk::DxbcModule module(reader);
 
-        dxvk::DxbcModuleInfo info;
+        const dxvk::DxbcModuleInfo info;
         auto result = module.compile(info, "test");
 
         spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
@@ -61,8 +60,8 @@ void SHCDPart::load(Platform platform, physis_Buffer buffer)
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting
-        auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_shaderTextEdit->document());
-        highlighter->setTheme((m_shaderTextEdit->palette().color(QPalette::Base).lightness() < 128)
+        const auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_shaderTextEdit->document());
+        highlighter->setTheme(m_shaderTextEdit->palette().color(QPalette::Base).lightness() < 128
                                   ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
                                   : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
 

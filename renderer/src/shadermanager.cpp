@@ -17,8 +17,6 @@
 
 #include "device.h"
 
-#include <ranges>
-
 ShaderManager::ShaderManager(Device &device)
     : m_device(device)
 {
@@ -28,27 +26,27 @@ spirv_cross::CompilerGLSL ShaderManager::getShaderModuleTest(const physis_Shader
 {
     dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
 
-    dxvk::DxbcModule module(reader);
+    const dxvk::DxbcModule module(reader);
 
-    dxvk::DxbcModuleInfo info;
+    const dxvk::DxbcModuleInfo info;
     auto result = module.compile(info, "test");
 
     return {result.code.data(), result.code.dwords()};
 }
 
-std::string ShaderManager::getShaderModuleResources(const physis_Shader &shader, int i)
+std::string ShaderManager::getShaderModuleResources(const physis_Shader &shader, const int i)
 {
     dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
 
-    dxvk::DxbcModule module(reader);
+    const dxvk::DxbcModule module(reader);
 
-    dxvk::DxbcModuleInfo info;
+    const dxvk::DxbcModuleInfo info;
     auto result = module.compile(info, "test");
 
     return module.isgn()->findByRegister(i)->semanticName;
 }
 
-VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel)
+VkShaderModule ShaderManager::convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel) const
 {
     dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader.bytecode), shader.len);
 
@@ -122,20 +120,20 @@ std::vector<uint32_t> ShaderManager::compileGLSL(const std::string_view sourceSt
 
     const char *InputCString = sourceString.data();
 
-    EShLanguage sourceLanguage = EShLanguage::EShLangVertex;
+    EShLanguage sourceLanguage = EShLangVertex;
     switch (stage) {
     case ShaderStage::Vertex:
-        sourceLanguage = EShLanguage::EShLangVertex;
+        sourceLanguage = EShLangVertex;
         break;
     case ShaderStage::Pixel:
-        sourceLanguage = EShLanguage::EShLangFragment;
+        sourceLanguage = EShLangFragment;
         break;
     }
 
     glslang::TShader shader(sourceLanguage);
     shader.setStrings(&InputCString, 1);
 
-    int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
+    constexpr int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
 
     shader.setEnvInput(glslang::EShSourceGlsl, sourceLanguage, glslang::EShClientVulkan, ClientInputSemanticsVersion);
 

@@ -70,7 +70,7 @@ Track::Track(const int32_t tmfcId, const QHash<physis_Attribute, FCurve> &curves
 
 void Track::applyTransformation(const float time, Transformation &existingTransformation) const
 {
-    const auto applyIfExisting = [this, time](auto &value, physis_Attribute attribute) {
+    const auto applyIfExisting = [this, time](auto &value, const physis_Attribute attribute) {
         if (m_fCurves.contains(attribute)) {
             value = m_fCurves[attribute].atTime(time);
         }
@@ -110,7 +110,7 @@ void Animation::update(ObjectScene &scene, const float time)
             bool found = false;
             // TODO: searches through embedded LGBs, but it really should be all objects maybe?
             // We really need a proper scene graph anyhow
-            for (auto &lgb : scene.embeddedLgbs) {
+            for (const auto &lgb : scene.embeddedLgbs) {
                 for (uint32_t i = 0; i < lgb.layer_count; i++) {
                     for (uint32_t j = 0; j < lgb.layers[i].num_objects; j++) {
                         track->applyTransformation(time, lgb.layers[i].objects[j].transform);

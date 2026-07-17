@@ -73,21 +73,21 @@ public:
     int columnCount(const QModelIndex &parent) const override;
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;
-    QModelIndex parent(const QModelIndex &child) const override;
+    QModelIndex parent(const QModelIndex &index) const override;
 
     QVariant data(const QModelIndex &index, int role) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
     QHash<int, QByteArray> roleNames() const override;
 
-    std::optional<physis_InstanceObject *> objectAt(const QModelIndex &index) const;
-    std::optional<physis_Layer const *> layerAt(const QModelIndex &index) const;
-    std::optional<physis_ScnTimeline const *> timelineAt(const QModelIndex &index) const;
-    std::optional<ScnSGActionControllerDescriptor const *> actionAt(const QModelIndex &index) const;
-    std::optional<QString> lgbAt(const QModelIndex &index) const;
-    std::optional<QString> teraAt(const QModelIndex &index) const;
-    std::optional<DropInObject *> dropInObjectAt(const QModelIndex &index) const;
+    static std::optional<physis_InstanceObject *> objectAt(const QModelIndex &index);
+    static std::optional<physis_Layer const *> layerAt(const QModelIndex &index);
+    static std::optional<physis_ScnTimeline const *> timelineAt(const QModelIndex &index);
+    static std::optional<ScnSGActionControllerDescriptor const *> actionAt(const QModelIndex &index);
+    static std::optional<QString> lgbAt(const QModelIndex &index);
+    static std::optional<QString> teraAt(const QModelIndex &index);
+    static std::optional<DropInObject *> dropInObjectAt(const QModelIndex &index);
 
 private:
     void refresh();

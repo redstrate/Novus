@@ -4,13 +4,8 @@
 #pragma once
 
 #include <QDebug>
-#include <string_view>
 
 #include <glm/glm.hpp>
-#include <physis.hpp>
-#include <spirv.hpp>
-#include <spirv_cross.hpp>
-#include <spirv_glsl.hpp>
 #include <vulkan/vulkan.h>
 
 #include "baserenderer.h"
@@ -28,7 +23,7 @@ class SimpleRenderer : public BaseRenderer
 {
 public:
     explicit SimpleRenderer(Device &device);
-    ~SimpleRenderer();
+    ~SimpleRenderer() override;
 
     void resize() override;
 
@@ -38,8 +33,8 @@ public:
 
     Device &device() override;
 
-    VkFramebuffer framebuffer();
-    VkRenderPass renderPass();
+    VkFramebuffer framebuffer() const;
+    VkRenderPass renderPass() const;
 
     void freeResources() override;
 
@@ -50,11 +45,11 @@ private:
     void initTextures(int width, int height);
 
     void destroyTextures();
-    void destroyPipelines();
-    void destroyDescriptors();
-    void destroyRenderPass();
+    void destroyPipelines() const;
+    void destroyDescriptors() const;
+    void destroyRenderPass() const;
 
-    VkDescriptorSet createDescriptorFor(const DrawObject &model, const RenderMaterial &material);
+    VkDescriptorSet createDescriptorFor(const DrawObject &model, const RenderMaterial &material) const;
 
     Texture m_dummyTex;
     VkSampler m_sampler = VK_NULL_HANDLE;

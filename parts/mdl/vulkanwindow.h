@@ -6,7 +6,6 @@
 #include <QElapsedTimer>
 #include <QWindow>
 
-#include "imgui.h"
 #include "mdlpart.h"
 
 class VulkanWindow : public QWindow
@@ -14,10 +13,7 @@ class VulkanWindow : public QWindow
 public:
     VulkanWindow(MDLPart *part, RenderManager *renderer, QVulkanInstance *instance);
 
-    void exposeEvent(QExposeEvent *) override;
-
     bool eventFilter(QObject *watched, QEvent *event) override;
-    bool event(QEvent *e) override;
 
     void render();
 
@@ -26,6 +22,12 @@ public:
     bool freeMode = false;
     std::vector<VfxObjectInstance> vfx;
     std::unordered_map<QString, VfxObject *> sourceVfx;
+
+protected:
+    void exposeEvent(QExposeEvent *) override;
+    bool event(QEvent *e) override;
+
+    friend class MDLPart;
 
 private:
     bool m_initialized = false;

@@ -7,7 +7,6 @@
 
 #include <QComboBox>
 #include <QFormLayout>
-#include <QJsonArray>
 #include <QMap>
 #include <QTabWidget>
 #include <QWidget>
@@ -25,19 +24,19 @@ public:
     ~EXDPart() override;
 
     void loadSheet(const QString &name, physis_Buffer buffer);
-    void goToRow(const QString &query);
-    void resetSorting();
-    void clear();
-    void focusFilterField();
+    void goToRow(const QString &query) const;
+    void resetSorting() const;
+    void clear() const;
+    void focusFilterField() const;
     void setReadOnly(bool readOnly);
-    void save();
+    void save() const;
 
     void setPreferredLanguage(Language language);
     Language preferredLanguage() const;
 
     QList<QPair<QString, Language>> availableLanguages() const;
     QAction *selectLanguageAction() const;
-    QAction *saveCsvAction();
+    QAction *saveCsvAction() const;
     QString name() const;
 
     QString selectedRow() const;
@@ -55,7 +54,7 @@ Q_SIGNALS:
 
 private:
     void loadTables();
-    void filterData(const QString &pattern);
+    void filterData(const QString &pattern) const;
     void setSearchSettings(SearchSettings newSettings);
 
     FileCache &m_cache;

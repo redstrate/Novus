@@ -9,10 +9,10 @@
 #include <QStringListModel>
 #include <QVBoxLayout>
 
-SheetListWidget::SheetListWidget(physis_SqPackResource *data, QWidget *parent)
+SheetListWidget::SheetListWidget(const physis_SqPackResource *data, QWidget *parent)
     : QWidget(parent)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
@@ -31,12 +31,12 @@ SheetListWidget::SheetListWidget(physis_SqPackResource *data, QWidget *parent)
     });
     layout->addWidget(m_searchEdit);
 
-    auto originalModel = new QStringListModel(this);
+    const auto originalModel = new QStringListModel(this);
     searchModel->setSourceModel(originalModel);
 
     QStringList list;
 
-    auto names = physis_sqpack_get_all_sheet_names(data);
+    const auto names = physis_sqpack_get_all_sheet_names(data);
     for (uint32_t i = 0; i < names.name_count; i++) {
         list.push_back(QString::fromStdString(names.names[i]));
     }
@@ -56,12 +56,12 @@ SheetListWidget::SheetListWidget(physis_SqPackResource *data, QWidget *parent)
     layout->addWidget(m_listWidget);
 }
 
-void SheetListWidget::focusSearchField()
+void SheetListWidget::focusSearchField() const
 {
     m_searchEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }
 
-void SheetListWidget::goToSheet(const QString &name)
+void SheetListWidget::goToSheet(const QString &name) const
 {
     const auto indices = m_listWidget->model()->match(m_listWidget->model()->index(0, 0), Qt::DisplayRole, name);
     if (indices.isEmpty()) {

@@ -47,7 +47,7 @@ public:
     /// Returns an inclusive list of LoDs supported by the current gearset.
     int lodCount() const;
 
-    void exportModel(const QString &fileName);
+    void exportModel(const QString &fileName) const;
 
     MDLPart &part() const;
 
@@ -81,18 +81,18 @@ public Q_SLOTS:
     void setGender(Gender gender);
     void setLevelOfDetail(int lod);
 
-    void setFace(int bodyVer);
-    void setHair(int bodyVer);
-    void setEar(int bodyVer);
-    void setTail(int bodyVer);
+    void setFace(int faceCode);
+    void setHair(int hairCode);
+    void setEar(int earCode);
+    void setTail(int tailCode);
 
-    void reloadRaceDeforms();
+    void reloadRaceDeforms() const;
 
 protected:
     void changeEvent(QEvent *) override;
 
 private:
-    void resetMdlPart();
+    void resetMdlPart() const;
 
     int m_currentLod = 0;
 

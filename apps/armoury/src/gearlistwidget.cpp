@@ -15,7 +15,7 @@ GearListWidget::GearListWidget(FileCache &cache, QWidget *parent)
     : QWidget(parent)
     , m_cache(cache)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
@@ -24,7 +24,7 @@ GearListWidget::GearListWidget(FileCache &cache, QWidget *parent)
     searchModel->setRecursiveFilteringEnabled(true);
     searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
-    auto searchEdit = new QLineEdit();
+    const auto searchEdit = new QLineEdit();
     searchEdit->setPlaceholderText(i18nc("@info:placeholder Search through items", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
@@ -38,7 +38,7 @@ GearListWidget::GearListWidget(FileCache &cache, QWidget *parent)
     m_listWidget->setModel(searchModel);
 
     connect(m_listWidget, &QTreeView::clicked, [this, searchModel, originalModel](const QModelIndex &item) {
-        if (auto gear = originalModel->getGearFromIndex(searchModel->mapToSource(item))) {
+        if (const auto gear = originalModel->getGearFromIndex(searchModel->mapToSource(item))) {
             Q_EMIT gearSelected(*gear);
         }
     });

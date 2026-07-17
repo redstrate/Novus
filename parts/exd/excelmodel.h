@@ -18,7 +18,7 @@ class ExcelModel : public QAbstractTableModel
 public:
     ExcelModel(const physis_EXH &exh,
                const physis_ExcelSheetPage &page,
-               Schema schema,
+               const Schema &schema,
                AbstractExcelResolver *resolver,
                Language language,
                QObject *parent = nullptr);

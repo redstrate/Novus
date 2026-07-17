@@ -9,25 +9,25 @@
 #include <QFormLayout>
 #include <QLineEdit>
 
-EnemyInfoWindow::EnemyInfoWindow(uint32_t id, const QString &mdlPath, const QString &mtrlPath, QWidget *parent)
+EnemyInfoWindow::EnemyInfoWindow(const uint32_t id, const QString &mdlPath, const QString &mtrlPath, QWidget *parent)
     : QDialog(parent)
 {
-    auto layout = new QFormLayout();
+    const auto layout = new QFormLayout();
     setLayout(layout);
 
-    auto idEdit = new QLineEdit();
+    const auto idEdit = new QLineEdit();
     idEdit->setText(QString::number(id));
     idEdit->setReadOnly(true);
 
     layout->addRow(i18n("ID"), idEdit);
 
-    auto mdlPathEdit = new PathEdit();
+    const auto mdlPathEdit = new PathEdit();
     mdlPathEdit->setPath(mdlPath);
     mdlPathEdit->setReadOnly(true);
 
     layout->addRow(i18n("MDL"), mdlPathEdit);
 
-    auto mtrlPathEdit = new PathEdit();
+    const auto mtrlPathEdit = new PathEdit();
     mtrlPathEdit->setPath(mtrlPath);
     mtrlPathEdit->setReadOnly(true);
 

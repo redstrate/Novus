@@ -16,7 +16,7 @@ VfxPass::VfxPass(RenderManager &manager)
     createPipeline();
 }
 
-void VfxPass::render(VkCommandBuffer commandBuffer, Camera &camera, std::vector<VfxObjectInstance> &vfx)
+void VfxPass::render(const VkCommandBuffer commandBuffer, const Camera &camera, const std::vector<VfxObjectInstance> &vfx)
 {
     VkDebugUtilsLabelEXT labelExt{};
     labelExt.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
@@ -49,7 +49,7 @@ void VfxPass::render(VkCommandBuffer commandBuffer, Camera &camera, std::vector<
             const auto mvp = vp * m;
             vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
 
-            const VkDeviceSize offsets[] = {0};
+            constexpr VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &model.vertexBuffer.buffer, offsets);
             vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
@@ -89,7 +89,7 @@ void VfxPass::createPipeline()
     fragmentShaderStageInfo.module = debugFragmentShader;
     fragmentShaderStageInfo.pName = "main";
 
-    const std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
+    const std::array shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
     VkVertexInputBindingDescription vertexBindingDescription = {};
     vertexBindingDescription.stride = sizeof(DrawVertex);
@@ -147,7 +147,7 @@ void VfxPass::createPipeline()
     colorBlending.attachmentCount = 1;
     colorBlending.pAttachments = &colorBlendAttachment;
 
-    const std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    constexpr std::array dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -197,7 +197,7 @@ void VfxPass::createPipeline()
     vkDestroyShaderModule(m_device.device, debugFragmentShader, nullptr);
 }
 
-void VfxPass::addTexture(Texture texture)
+void VfxPass::addTexture(const Texture &texture)
 {
     VkDescriptorSet set;
 

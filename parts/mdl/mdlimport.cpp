@@ -71,7 +71,7 @@ void importModel(physis_MDL &existingModel, const QString &filename)
 
         const QStringList lodPartNumber = parts[2].split(QLatin1Char('.'));
 
-        const int lodNumber = 0;
+        constexpr int lodNumber = 0;
         const uint32_t partNumber = lodPartNumber[0].toInt();
         const uint32_t submeshNumber = lodPartNumber[1].toInt();
 
@@ -109,8 +109,7 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 const auto &positionView = model.bufferViews[positionAccessor.bufferView];
                 const auto &positionBuffer = model.buffers[positionView.buffer];
 
-                return (positionBuffer.data.data() + (positionAccessor.ByteStride(positionView) * index) + positionView.byteOffset
-                        + positionAccessor.byteOffset);
+                return positionBuffer.data.data() + positionAccessor.ByteStride(positionView) * index + positionView.byteOffset + positionAccessor.byteOffset;
             };
 
             // All the accessors are mapped to the same buffer vertex view
@@ -131,13 +130,13 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             std::vector<Vertex> newVertices;
             for (size_t i = 0; i < positionAccessor.count; i++) {
                 // vertex data
-                glm::vec3 const *positionData = reinterpret_cast<glm::vec3 const *>(getAccessor("POSITION", i));
-                glm::vec3 const *normalData = reinterpret_cast<glm::vec3 const *>(getAccessor("NORMAL", i));
-                glm::vec2 const *uv0Data = reinterpret_cast<glm::vec2 const *>(getAccessor("TEXCOORD_0", i));
-                glm::vec2 const *uv1Data = reinterpret_cast<glm::vec2 const *>(getAccessor("TEXCOORD_1", i));
-                glm::vec4 const *weightsData = reinterpret_cast<glm::vec4 const *>(getAccessor("WEIGHTS_0", i));
-                uint8_t const *jointsData = reinterpret_cast<uint8_t const *>(getAccessor("JOINTS_0", i));
-                glm::vec4 const *tangent1Data = reinterpret_cast<glm::vec4 const *>(getAccessor("TANGENT", i));
+                auto positionData = reinterpret_cast<glm::vec3 const *>(getAccessor("POSITION", i));
+                auto normalData = reinterpret_cast<glm::vec3 const *>(getAccessor("NORMAL", i));
+                auto uv0Data = reinterpret_cast<glm::vec2 const *>(getAccessor("TEXCOORD_0", i));
+                auto uv1Data = reinterpret_cast<glm::vec2 const *>(getAccessor("TEXCOORD_1", i));
+                auto weightsData = reinterpret_cast<glm::vec4 const *>(getAccessor("WEIGHTS_0", i));
+                auto jointsData = getAccessor("JOINTS_0", i);
+                auto tangent1Data = reinterpret_cast<glm::vec4 const *>(getAccessor("TANGENT", i));
 
                 // Replace position data
                 Vertex vertex{};
@@ -162,7 +161,7 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 vertex.bone_weight[3] = weightsData->w;
 
                 // calculate binormal, because glTF won't give us those!!
-                const glm::vec3 normal = glm::vec3(vertex.normal[0], vertex.normal[1], vertex.normal[2]);
+                const auto normal = glm::vec3(vertex.normal[0], vertex.normal[1], vertex.normal[2]);
                 const glm::vec4 tangent = *tangent1Data;
                 const glm::vec3 bitangent = glm::cross(normal, glm::vec3(tangent));
 
@@ -175,14 +174,14 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                 vertex.bitangent[3] = handedness;
 
                 if (colorAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-                    unsigned short const *colorData = reinterpret_cast<unsigned short const *>(getAccessor("COLOR_0", i));
+                    auto colorData = reinterpret_cast<unsigned short const *>(getAccessor("COLOR_0", i));
 
                     vertex.color[0] = static_cast<float>(*colorData) / std::numeric_limits<unsigned short>::max();
                     vertex.color[1] = static_cast<float>(*(colorData + 1)) / std::numeric_limits<unsigned short>::max();
                     vertex.color[2] = static_cast<float>(*(colorData + 2)) / std::numeric_limits<unsigned short>::max();
                     vertex.color[3] = static_cast<float>(*(colorData + 3)) / std::numeric_limits<unsigned short>::max();
                 } else {
-                    glm::vec4 const *colorData = reinterpret_cast<glm::vec4 const *>(getAccessor("COLOR_0", i));
+                    auto colorData = reinterpret_cast<glm::vec4 const *>(getAccessor("COLOR_0", i));
                     vertex.color[0] = colorData->x;
                     vertex.color[1] = colorData->y;
                     vertex.color[2] = colorData->z;
@@ -222,11 +221,10 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                     qInfo() << "- Importing shape" << shapeTargetName << "for" << partNumber << submeshNumber;
 
                     Shape *targetShape;
-                    if (auto it = std::find_if(shapes.begin(),
-                                               shapes.end(),
-                                               [shapeTargetName](const Shape &shape) {
-                                                   return shape.name == shapeTargetName;
-                                               });
+                    if (auto it = std::ranges::find_if(shapes,
+                                                       [shapeTargetName](const Shape &shape) {
+                                                           return shape.name == shapeTargetName;
+                                                       });
                         it != shapes.end()) {
                         targetShape = &*it;
                     } else {
@@ -234,11 +232,10 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                     }
 
                     ShapeMesh *targetShapeMesh;
-                    if (auto it = std::find_if(targetShape->meshes.begin(),
-                                               targetShape->meshes.end(),
-                                               [partNumber](const ShapeMesh &shape) {
-                                                   return shape.affected_part == partNumber;
-                                               });
+                    if (auto it = std::ranges::find_if(targetShape->meshes,
+                                                       [partNumber](const ShapeMesh &shape) {
+                                                           return shape.affected_part == partNumber;
+                                                       });
                         it != targetShape->meshes.end()) {
                         targetShapeMesh = &*it;
                     } else {
@@ -254,8 +251,8 @@ void importModel(physis_MDL &existingModel, const QString &filename)
                     std::vector<NewShapeValue> morphedVertices;
 
                     for (size_t i = 0; i < positionMorphAccessor.count; i++) {
-                        auto ptr = (positionMorphBuffer.data.data() + (positionMorphAccessor.ByteStride(positionMorphView) * i) + positionMorphView.byteOffset
-                                    + positionMorphAccessor.byteOffset);
+                        auto ptr = positionMorphBuffer.data.data() + positionMorphAccessor.ByteStride(positionMorphView) * i + positionMorphView.byteOffset
+                            + positionMorphAccessor.byteOffset;
 
                         // vertex data
                         auto const positionData = *reinterpret_cast<glm::vec3 const *>(ptr);
@@ -323,12 +320,12 @@ void importModel(physis_MDL &existingModel, const QString &filename)
         size_t vertex_offset = 0;
 
         // Turn 0.3, 0.2, 0.1 into 0.1, 0.2, 0.3 so they're all in the combined vertex list correctly
-        std::sort(part.subMeshes.begin(), part.subMeshes.end(), [](const ProcessedSubMesh &a, const ProcessedSubMesh &b) {
+        std::ranges::sort(part.subMeshes, [](const ProcessedSubMesh &a, const ProcessedSubMesh &b) {
             return a.subMeshIndex < b.subMeshIndex;
         });
 
         for (auto &submesh : part.subMeshes) {
-            std::copy(submesh.vertices.cbegin(), submesh.vertices.cend(), std::back_inserter(combinedVertices));
+            std::ranges::copy(std::as_const(submesh.vertices), std::back_inserter(combinedVertices));
 
             for (unsigned int indice : submesh.indices) {
                 // if the buffers are duplicate and shared (like when exporting from Novus)
@@ -364,13 +361,13 @@ void importModel(physis_MDL &existingModel, const QString &filename)
     for (auto &shape : shapes) {
         qInfo() << "Adding shape mesh" << shape.name;
 
-        std::sort(shape.meshes.begin(), shape.meshes.end(), [](const ShapeMesh &a, const ShapeMesh &b) {
+        std::ranges::sort(shape.meshes, [](const ShapeMesh &a, const ShapeMesh &b) {
             return a.affected_part < b.affected_part;
         });
 
         int j = 0;
         for (auto &shapeMesh : shape.meshes) {
-            std::sort(shapeMesh.submeshes.begin(), shapeMesh.submeshes.end(), [](const ShapeSubmesh &a, const ShapeSubmesh &b) {
+            std::ranges::sort(shapeMesh.submeshes, [](const ShapeSubmesh &a, const ShapeSubmesh &b) {
                 return a.affected_submesh < b.affected_submesh;
             });
 
@@ -379,11 +376,10 @@ void importModel(physis_MDL &existingModel, const QString &filename)
             size_t index_offset = 0;
 
             for (auto &submesh : processingParts[shapeMesh.affected_part].subMeshes) {
-                if (auto it = std::find_if(shapeMesh.submeshes.cbegin(),
-                                           shapeMesh.submeshes.cend(),
-                                           [submesh](const ShapeSubmesh &a) {
-                                               return a.affected_submesh == submesh.subMeshIndex;
-                                           });
+                if (auto it = std::ranges::find_if(std::as_const(shapeMesh.submeshes),
+                                                   [submesh](const ShapeSubmesh &a) {
+                                                       return a.affected_submesh == submesh.subMeshIndex;
+                                                   });
                     it != shapeMesh.submeshes.cend()) {
                     for (auto &shapeValue : it->values) {
                         combinedValues.push_back(NewShapeValue{.base_index = static_cast<uint32_t>(index_offset + shapeValue.base_index),

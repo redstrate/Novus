@@ -16,7 +16,7 @@ class ObjectIdEdit : public QWidget
 public:
     explicit ObjectIdEdit(SceneState *state, QWidget *parent = nullptr);
 
-    void setObjectId(uint32_t id);
+    void setObjectId(uint32_t objectId);
 
 private:
     QLineEdit *m_lineEdit = nullptr;

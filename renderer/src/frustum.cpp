@@ -50,7 +50,7 @@ CameraFrustum extract_frustum(glm::mat4 combined)
     return frustum;
 }
 
-CameraFrustum camera_extract_frustum(Camera &cam)
+CameraFrustum camera_extract_frustum(const Camera &cam)
 {
     const glm::mat4 combined = cam.perspective * cam.view;
 
@@ -84,7 +84,7 @@ bool test_aabb_frustum(const CameraFrustum &frustum, const BoundingBox &aabb)
         int out = 0;
 
         for (const auto point : get_points(aabb))
-            out += (distance_to_point(frustum.planes[i], point) < 0.0) ? 1 : 0;
+            out += distance_to_point(frustum.planes[i], point) < 0.0 ? 1 : 0;
 
         if (out == 8)
             return false;
@@ -93,13 +93,13 @@ bool test_aabb_frustum(const CameraFrustum &frustum, const BoundingBox &aabb)
     return true;
 }
 
-bool intersects(const BoundingBox a, const BoundingBox b)
+bool intersects(const BoundingBox &a, const BoundingBox &b)
 {
     return glm::all(glm::lessThanEqual(glm::make_vec3(a.min), glm::make_vec3(b.max)))
         && glm::all(glm::greaterThanEqual(glm::make_vec3(a.max), glm::make_vec3(b.min)));
 }
 
-bool contains(const BoundingBox box, const glm::vec3 &point)
+bool contains(const BoundingBox &box, const glm::vec3 &point)
 {
     return intersects(box, BoundingBox{.min = {point[0], point[1], point[2]}, .max = {point[0], point[1], point[2]}});
 }

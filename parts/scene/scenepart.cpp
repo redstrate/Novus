@@ -16,24 +16,24 @@
 
 #include <QDir>
 
-ScenePart::ScenePart(FileCache &cache, bool fixedSize, QWidget *parent)
+ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
     : QWidget(parent)
     , m_cache(cache)
     , m_appState(new SceneState(m_cache, this))
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
 
-    auto splitter = new QSplitter();
+    const auto splitter = new QSplitter();
     splitter->setChildrenCollapsible(false);
     layout->addWidget(splitter);
 
-    auto sidebarWidget = new QWidget();
+    const auto sidebarWidget = new QWidget();
     splitter->addWidget(sidebarWidget);
 
-    auto sidebarLayout = new QVBoxLayout();
+    const auto sidebarLayout = new QVBoxLayout();
     sidebarLayout->setContentsMargins(0, 0, 0, 0);
     sidebarLayout->setSpacing(0);
     sidebarWidget->setLayout(sidebarLayout);
@@ -92,7 +92,7 @@ ScenePart::~ScenePart()
     physis_sgb_free(&m_sgb);
 }
 
-void ScenePart::loadSgb(physis_Buffer file)
+void ScenePart::loadSgb(const physis_Buffer file)
 {
     physis_sgb_free(&m_sgb); // free any previous ones
     m_sgb = physis_sgb_parse(m_cache.platform(), file);
@@ -110,7 +110,7 @@ void ScenePart::loadSgb(physis_Buffer file)
     }
 }
 
-bool ScenePart::loadLvb(physis_Buffer file, int territoryTypeHint, int contentFinderConditionHint)
+bool ScenePart::loadLvb(const physis_Buffer file, const int territoryTypeHint, const int contentFinderConditionHint)
 {
     physis_lvb_free(&m_lvb); // free any previous ones
     m_lvb = physis_lvb_parse(m_cache.platform(), file);
@@ -124,28 +124,28 @@ bool ScenePart::loadLvb(physis_Buffer file, int territoryTypeHint, int contentFi
     return false;
 }
 
-void ScenePart::focusSearchField()
+void ScenePart::focusSearchField() const
 {
     m_sceneListWidget->focusSearchField();
 }
 
-void ScenePart::selectObject(const uint32_t objectId)
+void ScenePart::selectObject(const uint32_t objectId) const
 {
     m_sceneListWidget->selectObject(objectId);
 }
 
-QString ScenePart::lookupObjectName(const uint32_t objectId)
+QString ScenePart::lookupObjectName(const uint32_t objectId) const
 {
     return m_sceneListWidget->lookupObjectName(objectId);
 }
 
-void ScenePart::clear()
+void ScenePart::clear() const
 {
     m_appState->clear();
     m_mapView->clear();
 }
 
-void ScenePart::save()
+void ScenePart::save() const
 {
     const auto mods = getGameMods();
     if (mods.isEmpty()) {
@@ -163,7 +163,7 @@ void ScenePart::save()
         QFileInfo info(newPath);
         QDir().mkpath(info.dir().path()); // Create directory tree within the mod.
 
-        auto buffer = physis_lgb_write_to_buffer(m_cache.platform(), lgb);
+        const auto buffer = physis_lgb_write_to_buffer(m_cache.platform(), lgb);
         QFile file(newPath);
         if (file.open(QIODevice::WriteOnly)) {
             file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);

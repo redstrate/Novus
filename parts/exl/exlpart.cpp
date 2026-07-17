@@ -5,8 +5,6 @@
 
 #include <KLocalizedString>
 #include <QFile>
-#include <QJsonArray>
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QVBoxLayout>
 #include <physis.hpp>
@@ -14,16 +12,16 @@
 EXLPart::EXLPart(QWidget *parent)
     : QWidget(parent)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     m_tableWidget = new QTableWidget();
     layout->addWidget(m_tableWidget);
     setLayout(layout);
 }
 
-void EXLPart::load(Platform platform, physis_Buffer file)
+void EXLPart::load(const Platform platform, const physis_Buffer file) const
 {
-    auto exl = physis_exl_parse(platform, file);
+    const auto exl = physis_exl_parse(platform, file);
     if (exl.entry_count > 0) {
         m_tableWidget->clear();
         m_tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -34,8 +32,8 @@ void EXLPart::load(Platform platform, physis_Buffer file)
         m_tableWidget->setHorizontalHeaderLabels({i18nc("@title:column", "Key"), i18nc("@title:column", "Value")});
 
         for (int i = 0; i < exl.entry_count; i++) {
-            auto keyItem = new QTableWidgetItem(QLatin1String(exl.entry_keys[i]));
-            auto valueItem = new QTableWidgetItem(QString::number(exl.entry_values[i]));
+            const auto keyItem = new QTableWidgetItem(QLatin1String(exl.entry_keys[i]));
+            const auto valueItem = new QTableWidgetItem(QString::number(exl.entry_values[i]));
 
             m_tableWidget->setItem(i, 0, keyItem);
             m_tableWidget->setItem(i, 1, valueItem);

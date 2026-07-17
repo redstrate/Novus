@@ -78,10 +78,10 @@ SceneState::~SceneState()
 ObjectScene::~ObjectScene()
 {
     physis_sgb_free(&sgb);
-    for (const auto &[_, lgb] : lgbFiles) {
+    for (const auto &lgb : lgbFiles | std::views::values) {
         physis_lgb_free(&lgb);
     }
-    for (const auto &[_, material] : cachedMaterials) {
+    for (const auto &material : cachedMaterials | std::views::values) {
         physis_mtrl_free(&material);
     }
 }
@@ -93,7 +93,7 @@ void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
     QString bgPath = QStringLiteral("%1/bgplate/").arg(section.general.bg_path);
 
     terrainPath = bgPath + QStringLiteral("terrain.tera");
-    auto tera_buffer = cache.read(terrainPath);
+    const auto tera_buffer = cache.read(terrainPath);
     if (tera_buffer.size > 0) {
         terrain = physis_terrain_parse(cache.platform(), tera_buffer);
     }
@@ -125,10 +125,10 @@ void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
     }
 
     // Process nested shared groups
-    for (const auto &[name, lgb] : lgbFiles) {
+    for (const auto &lgb : lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
-                auto layer = lgb.chunks[i].layers[j];
+                const auto layer = lgb.chunks[i].layers[j];
                 for (uint32_t h = 0; h < layer.num_objects; h++) {
                     if (layer.objects[h].data.tag == physis_LayerEntry::Tag::SharedGroup) {
                         processSharedGroup(cache,
@@ -149,7 +149,7 @@ void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
     animation = Animation(*this);
 }
 
-void SceneState::load(FileCache &cache, const physis_ScnSection &section, int territoryTypeHint, int contentFinderConditionHint)
+void SceneState::load(FileCache &cache, const physis_ScnSection &section, const int territoryTypeHint, const int contentFinderConditionHint)
 {
     rootScene.load(cache, section);
 
@@ -226,7 +226,7 @@ void SceneState::load(FileCache &cache, const physis_ScnSection &section, int te
         }
     };
 
-    for (const auto &[name, lgb] : rootScene.lgbFiles) {
+    for (const auto &lgb : rootScene.lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
                 checkLayer(lgb.chunks[i].layers[j]);
@@ -302,7 +302,7 @@ void SceneState::loadDropIn(const QString &path)
                         dropIn.layers.push_back(layer);
                     }
 
-                    rootScene.dropIns.push_back({path, dropIn});
+                    rootScene.dropIns.emplace_back(path, dropIn);
                 }
             }
         }
@@ -323,7 +323,7 @@ void SceneState::saveDropIns()
             QJsonArray objArray;
             for (const auto &object : layer.objects) {
                 QJsonObject objObj;
-                objObj["instance_id"_L1] = (qint64)object.instanceId;
+                objObj["instance_id"_L1] = static_cast<qint64>(object.instanceId);
                 objObj["position"_L1] = QJsonObject{
                     {"x"_L1, object.position[0]},
                     {"y"_L1, object.position[1]},
@@ -334,21 +334,21 @@ void SceneState::saveDropIns()
                 if (const auto data = std::get_if<DropInGatheringPoint>(&object.data)) {
                     objObj["data"_L1] = QJsonObject{
                         {"type"_L1, "gathering_point"_L1},
-                        {"base_id"_L1, (qint64)data->baseId},
+                        {"base_id"_L1, static_cast<qint64>(data->baseId)},
                     };
                 } else if (const auto data = std::get_if<DropInBattleNpc>(&object.data)) {
                     objObj["data"_L1] = QJsonObject{
                         {"type"_L1, "battle_npc"_L1},
-                        {"base_id"_L1, (qint64)data->baseId},
-                        {"name_id"_L1, (qint64)data->nameId},
-                        {"hp"_L1, (qint64)data->hp},
-                        {"level"_L1, (qint64)data->level},
+                        {"base_id"_L1, static_cast<qint64>(data->baseId)},
+                        {"name_id"_L1, static_cast<qint64>(data->nameId)},
+                        {"hp"_L1, static_cast<qint64>(data->hp)},
+                        {"level"_L1, static_cast<qint64>(data->level)},
                         {"nonpop"_L1, data->nonpop},
-                        {"aggression_mode"_L1, (qint64)data->aggressionMode},
-                        {"gimmick_id"_L1, (qint64)data->gimmickId},
-                        {"max_links"_L1, (qint64)data->maxLinks},
-                        {"link_family"_L1, (qint64)data->linkFamily},
-                        {"link_range"_L1, (qint64)data->linkRange},
+                        {"aggression_mode"_L1, static_cast<qint64>(data->aggressionMode)},
+                        {"gimmick_id"_L1, static_cast<qint64>(data->gimmickId)},
+                        {"max_links"_L1, static_cast<qint64>(data->maxLinks)},
+                        {"link_family"_L1, static_cast<qint64>(data->linkFamily)},
+                        {"link_range"_L1, static_cast<qint64>(data->linkRange)},
                     };
                 }
 
@@ -422,7 +422,7 @@ std::optional<BoundingBox> SceneState::checkLightBoundingBox(const uint32_t id, 
 QString SceneState::lookupENpcName(const uint32_t id) const
 {
     if (m_enpcResidentSheet.p_ptr) {
-        auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
+        const auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
         if (row.columns && strlen(row.columns[0].string._0) > 0) {
             QString name = QString::fromLatin1(row.columns[0].string._0);
             physis_free_row(&row, m_enpcResidentSheet.pages[0].column_count);
@@ -436,7 +436,7 @@ QString SceneState::lookupENpcName(const uint32_t id) const
 QString SceneState::lookupEObjName(const uint32_t id) const
 {
     if (m_eobjNameSheet.p_ptr) {
-        auto row = physis_excel_get_row(&m_eobjNameSheet, id);
+        const auto row = physis_excel_get_row(&m_eobjNameSheet, id);
         if (row.columns && strlen(row.columns[0].string._0) > 0) {
             QString name = QString::fromLatin1(row.columns[0].string._0);
             physis_free_row(&row, m_eobjNameSheet.pages[0].column_count);
@@ -447,10 +447,10 @@ QString SceneState::lookupEObjName(const uint32_t id) const
     return i18n("Event Object");
 }
 
-QString SceneState::lookupBNpcName(uint32_t id) const
+QString SceneState::lookupBNpcName(const uint32_t id) const
 {
     if (m_bnpcNameSheet.p_ptr) {
-        auto row = physis_excel_get_row(&m_bnpcNameSheet, id);
+        const auto row = physis_excel_get_row(&m_bnpcNameSheet, id);
         if (row.columns && strlen(row.columns[0].string._0) > 0) {
             QString name = QString::fromLatin1(row.columns[0].string._0);
             physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
@@ -480,23 +480,23 @@ void SceneState::processLongestAnimationTime(const ObjectScene &scene)
 {
     m_longestAnimationTime = std::max(m_longestAnimationTime, scene.animation.duration());
 
-    for (const auto &[_, nestedScene] : scene.nestedScenes) {
+    for (const auto &nestedScene : scene.nestedScenes | std::views::values) {
         processLongestAnimationTime(nestedScene);
     }
 }
 
-void SceneState::processUpdateAnimation(ObjectScene &scene, float time)
+void SceneState::processUpdateAnimation(ObjectScene &scene, const float time)
 {
     scene.animation.update(scene, time);
 
-    for (auto &[_, nestedScene] : scene.nestedScenes) {
+    for (auto &nestedScene : scene.nestedScenes | std::views::values) {
         processUpdateAnimation(nestedScene, time);
     }
 }
 
 void SceneState::showAllInScene(const ObjectScene &scene)
 {
-    for (const auto &[_, lgb] : scene.lgbFiles) {
+    for (const auto &lgb : scene.lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
                 visibleLayerIds.push_back(lgb.chunks[i].layers[j].id);
@@ -510,7 +510,7 @@ void SceneState::showAllInScene(const ObjectScene &scene)
         }
     }
 
-    for (const auto &[_, nestedScene] : scene.nestedScenes) {
+    for (const auto &nestedScene : scene.nestedScenes | std::views::values) {
         showAllInScene(nestedScene);
     }
 }
@@ -519,7 +519,7 @@ Transformation ObjectScene::locateGameObject(const uint32_t instanceId) const
 {
     // TODO: support everything else within ObjectScene, nested transforms etc
 
-    for (const auto &[_, lgb] : lgbFiles) {
+    for (const auto &lgb : lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
                 for (uint32_t z = 0; z < lgb.chunks[i].layers[j].num_objects; z++) {
@@ -540,7 +540,7 @@ Transformation ObjectScene::locateGameObjectByBaseId(const uint32_t baseId) cons
 {
     // TODO: support everything else within ObjectScene, nested transforms etc
 
-    for (const auto &[_, lgb] : lgbFiles) {
+    for (const auto &lgb : lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
                 for (uint32_t z = 0; z < lgb.chunks[i].layers[j].num_objects; z++) {
@@ -566,7 +566,11 @@ bool ObjectScene::isSgb() const
     return sgb.section_count > 0;
 }
 
-void ObjectScene::processSharedGroup(FileCache &cache, uint32_t instanceId, uint32_t layerId, const Transformation &transformation, const char *path)
+void ObjectScene::processSharedGroup(FileCache &cache,
+                                     const uint32_t instanceId,
+                                     const uint32_t layerId,
+                                     const Transformation &transformation,
+                                     const char *path)
 {
     const auto sgbFile = cache.read(QString::fromStdString(path));
     if (sgbFile.size == 0) {

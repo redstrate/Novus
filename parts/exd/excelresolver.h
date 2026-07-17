@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <QStringList>
 #include <QVariant>
 
 #include "physis.hpp"

@@ -8,7 +8,6 @@
 
 #include <glm/glm.hpp>
 #include <physis.hpp>
-#include <spirv.hpp>
 #include <spirv_cross.hpp>
 #include <spirv_glsl.hpp>
 #include <vulkan/vulkan.h>
@@ -17,7 +16,6 @@
 #include "buffer.h"
 #include "drawobject.h"
 #include "shadermanager.h"
-#include "shaderstructs.h"
 #include "texture.h"
 
 class FileCache;
@@ -42,8 +40,8 @@ public:
 
 private:
     struct RequestedBinding {
-        VkDescriptorType type;
-        VkShaderStageFlags stageFlags;
+        VkDescriptorType type = VK_DESCRIPTOR_TYPE_SAMPLER;
+        VkShaderStageFlags stageFlags = VK_SHADER_STAGE_ALL;
         bool used = false;
         std::string originalName; // as seen in the HLSL
 
@@ -73,8 +71,8 @@ private:
         physis_Shader vertexShader, pixelShader;
     };
 
-    std::pair<std::vector<VkFormat>, VkFormat> beginPass(VkCommandBuffer commandBuffer, std::string_view passName);
-    void endPass(VkCommandBuffer commandBuffer);
+    std::pair<std::vector<VkFormat>, VkFormat> beginPass(VkCommandBuffer commandBuffer, std::string_view passName) const;
+    void endPass(VkCommandBuffer commandBuffer) const;
     CachedPipeline &bindPipeline(VkCommandBuffer commandBuffer,
                                  std::string_view passName,
                                  physis_Shader &vertexShader,
@@ -87,9 +85,9 @@ private:
 
     void createImageResources();
 
-    physis_SHPK m_directionalLightningShpk;
-    physis_SHPK m_createViewPositionShpk;
-    physis_SHPK m_backgroundShpk;
+    physis_SHPK m_directionalLightningShpk{};
+    physis_SHPK m_createViewPositionShpk{};
+    physis_SHPK m_backgroundShpk{};
 
     // combined vertex + pixel code length
     std::unordered_map<uint32_t, CachedPipeline> m_cachedPipelines;
@@ -99,12 +97,12 @@ private:
     ShaderManager m_shaderManager;
 
     VkDescriptorSet
-    createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, size_t i, const RenderMaterial *material, std::string_view pass);
+    createDescriptorFor(const DrawObject *object, const CachedPipeline &cachedPipeline, size_t i, const RenderMaterial *material, std::string_view pass) const;
     void bindDescriptorSets(VkCommandBuffer commandBuffer,
                             CachedPipeline &pipeline,
                             const DrawObject *object,
                             const RenderMaterial *material,
-                            std::string_view pass);
+                            std::string_view pass) const;
 
     Buffer g_CameraParameter;
     Buffer g_InstanceParameter;
@@ -133,8 +131,8 @@ private:
     Texture m_ZBuffer; // what is this?
     Texture m_dummyTex;
     Texture m_blackTex;
-    VkSampler m_sampler;
-    VkSampler m_normalSampler;
+    VkSampler m_sampler = VK_NULL_HANDLE;
+    VkSampler m_normalSampler = VK_NULL_HANDLE;
     Buffer m_dummyBuffer;
     Texture m_tileNormal;
     Texture m_tileOrb;

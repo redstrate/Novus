@@ -175,7 +175,7 @@ Q_SIGNALS:
 
 private:
     void processLongestAnimationTime(const ObjectScene &scene);
-    void processUpdateAnimation(ObjectScene &scene, float time);
+    static void processUpdateAnimation(ObjectScene &scene, float time);
     void showAllInScene(const ObjectScene &scene);
 
     physis_ExcelSheet m_enpcResidentSheet{};

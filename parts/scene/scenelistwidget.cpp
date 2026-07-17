@@ -17,7 +17,7 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     : QWidget(parent)
     , m_appState(appState)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
@@ -42,7 +42,7 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     treeWidget->header()->setStretchLastSection(false);
     treeWidget->header()->setSectionsMovable(false);
     connect(treeWidget, &QTreeView::activated, this, [this](const QModelIndex &index) {
-        auto originalIndex = m_searchModel->mapToSource(index);
+        const auto originalIndex = m_searchModel->mapToSource(index);
         m_appState->selectedObject = m_objectListModel->objectAt(originalIndex);
         m_appState->selectedLayer = m_objectListModel->layerAt(originalIndex);
         m_appState->selectedTimeline = m_objectListModel->timelineAt(originalIndex);
@@ -63,17 +63,17 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     m_searchModel->setSourceModel(m_objectListModel);
 }
 
-void SceneListWidget::expandToDepth(const int depth)
+void SceneListWidget::expandToDepth(const int depth) const
 {
     treeWidget->expandToDepth(depth);
 }
 
-void SceneListWidget::focusSearchField()
+void SceneListWidget::focusSearchField() const
 {
     m_searchEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }
 
-void SceneListWidget::selectObject(uint32_t objectId)
+void SceneListWidget::selectObject(const uint32_t objectId) const
 {
     m_searchEdit->clear(); // Clear the search field so all items are visible again.
 
@@ -104,7 +104,7 @@ void SceneListWidget::selectObject(uint32_t objectId)
     Q_EMIT treeWidget->activated(index);
 }
 
-QString SceneListWidget::lookupObjectName(uint32_t objectId)
+QString SceneListWidget::lookupObjectName(const uint32_t objectId) const
 {
     auto indices = m_objectListModel->match(m_objectListModel->index(0, 0, {}),
                                             SceneListModel::SceneListRoles::ObjectIdRole,

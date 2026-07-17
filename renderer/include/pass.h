@@ -6,7 +6,7 @@
 #include <vulkan/vulkan.h>
 
 struct Camera;
-struct Scene;
+class Scene;
 
 class RendererPass
 {

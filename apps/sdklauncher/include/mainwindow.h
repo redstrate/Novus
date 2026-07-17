@@ -18,7 +18,7 @@ public Q_SLOTS:
 
 private:
     void setupActions();
-    void refreshGameInstalls();
+    void refreshGameInstalls() const;
 
     QComboBox *m_gameInstallCombo;
 };

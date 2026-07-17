@@ -20,7 +20,7 @@ public:
     explicit QuaternionEdit(glm::quat &quat, QWidget *parent = nullptr);
     ~QuaternionEdit() override = default;
 
-    void setQuat(glm::quat &quat);
+    void setQuat(const glm::quat &quat) const;
 
 private:
     struct {

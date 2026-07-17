@@ -3,21 +3,14 @@
 
 #pragma once
 
-#include <QDebug>
-#include <string_view>
-
-#include <glm/glm.hpp>
 #include <physis.hpp>
-#include <spirv.hpp>
-#include <spirv_cross.hpp>
-#include <spirv_glsl.hpp>
 #include <vulkan/vulkan.h>
 
 class Renderer;
 struct DrawObjectInstance;
 struct Camera;
-class Texture;
-struct Scene;
+struct Texture;
+class Scene;
 class Device;
 
 /// Base class for all rendering implementations

@@ -11,8 +11,8 @@ public:
     explicit PenumbraApi(QObject *parent = nullptr);
 
 public Q_SLOTS:
-    void redrawAll();
-    void openWindow();
+    void redrawAll() const;
+    void openWindow() const;
 
 private:
     QNetworkAccessManager *m_mgr = nullptr;

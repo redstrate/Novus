@@ -5,9 +5,7 @@
 
 #include <vulkan/vulkan.h>
 
-class Texture
-{
-public:
+struct Texture {
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkImageSubresourceRange range{};
     VkImage image = VK_NULL_HANDLE;

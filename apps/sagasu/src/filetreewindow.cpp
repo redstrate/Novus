@@ -16,7 +16,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     , m_gamePath(gamePath)
     , m_database(database)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
@@ -48,7 +48,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 
     m_treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_treeWidget, &QTreeView::customContextMenuRequested, this, [this](const QPoint &pos) {
-        auto index = m_treeWidget->indexAt(pos);
+        const auto index = m_treeWidget->indexAt(pos);
 
         if (index.isValid()) {
             const auto path = m_searchModel->data(index, FileTreeModel::CustomRoles::PathRole).toString();
@@ -57,13 +57,13 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
             const auto indexPath = m_searchModel->data(index, FileTreeModel::CustomRoles::IndexPathRole).toString();
             const auto hash = m_searchModel->data(index, FileTreeModel::CustomRoles::HashRole).value<Hash>();
 
-            auto menu = new QMenu();
+            const auto menu = new QMenu();
 
             // It doesn't make sense to copy file paths for... a file or folder that doesn't have a path.
             if (!isUnknown) {
-                auto copyFilePathAction = menu->addAction(i18nc("@action:inmenu", "Copy Location"));
+                const auto copyFilePathAction = menu->addAction(i18nc("@action:inmenu", "Copy Location"));
                 copyFilePathAction->setIcon(QIcon::fromTheme(QStringLiteral("edit-copy-path-symbolic")));
-                connect(copyFilePathAction, &QAction::triggered, this, [this, path] {
+                connect(copyFilePathAction, &QAction::triggered, this, [path] {
                     QClipboard *clipboard = QGuiApplication::clipboard();
                     clipboard->setText(path);
                 });
@@ -71,7 +71,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 
             // It doesn't make sense to extract folders
             if (!isFolder) {
-                auto extractAction = menu->addAction(i18nc("@action:inmenu", "Extract…"));
+                const auto extractAction = menu->addAction(i18nc("@action:inmenu", "Extract…"));
                 extractAction->setIcon(QIcon::fromTheme(QStringLiteral("archive-extract-symbolic")));
                 connect(extractAction, &QAction::triggered, this, [this, path, indexPath, hash] {
                     Q_EMIT extractFile(path, indexPath, hash);
@@ -107,13 +107,13 @@ void FileTreeWindow::refreshModel()
     m_searchModel->setSourceModel(m_fileModel);
 }
 
-void FileTreeWindow::setShowUnknown(bool show)
+void FileTreeWindow::setShowUnknown(const bool show)
 {
     m_showUnknown = show;
     refreshModel();
 }
 
-bool FileTreeWindow::selectPath(const QString &path)
+bool FileTreeWindow::selectPath(const QString &path) const
 {
     const auto index = m_fileModel->search(path);
     if (index.isValid()) {
@@ -127,7 +127,7 @@ bool FileTreeWindow::selectPath(const QString &path)
     return false;
 }
 
-void FileTreeWindow::focusSearchField()
+void FileTreeWindow::focusSearchField() const
 {
     m_searchEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }

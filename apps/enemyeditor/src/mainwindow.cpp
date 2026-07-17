@@ -7,16 +7,11 @@
 #include "enemymodel.h"
 
 #include <KActionCollection>
-#include <KLocalizedString>
-#include <QAction>
 #include <QApplication>
-#include <QCheckBox>
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QHBoxLayout>
-#include <QLabel>
 #include <QListWidget>
-#include <QMenuBar>
 #include <QTableView>
 #include <physis.hpp>
 
@@ -24,27 +19,26 @@
 #include "openinwidget.h"
 
 #include <QHeaderView>
-#include <QInputDialog>
 
-MainWindow::MainWindow(physis_SqPackResource data)
+MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
 {
     setMinimumSize(640, 480);
 
-    auto dummyWidget = new QWidget();
+    const auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
 
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     dummyWidget->setLayout(layout);
 
-    auto model = new EnemyModel(m_cache);
+    const auto model = new EnemyModel(m_cache);
 
     m_part = new MDLPart(m_cache);
     m_part->minimumCameraDistance = 0.05f;
 
-    auto skelName = physis_skeleton_path(Race::Hyur, Tribe::Midlander, Gender::Male);
+    const auto skelName = physis_skeleton_path(Race::Hyur, Tribe::Midlander, Gender::Male);
     m_part->setSkeleton(physis_skeleton_parse(m_cache.platform(), m_cache.read(QString::fromUtf8(skelName))));
 
     m_tableView = new QTableView();
@@ -60,7 +54,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
         const auto mdlPath = index.data(EnemyModel::CustomRole::MdlPath).value<QString>();
         const auto mtrlPath = index.data(EnemyModel::CustomRole::MtrlPath).value<QString>();
 
-        auto window = new EnemyInfoWindow(id, mdlPath, mtrlPath, this);
+        const auto window = new EnemyInfoWindow(id, mdlPath, mtrlPath, this);
         window->open();
     });
 
@@ -72,11 +66,11 @@ MainWindow::MainWindow(physis_SqPackResource data)
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 
-    auto openInWidget = new OpenInWidget(this);
+    const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 }
 
-void MainWindow::setupActions()
+void MainWindow::setupActions() const
 {
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
 }

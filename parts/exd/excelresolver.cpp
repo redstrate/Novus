@@ -5,12 +5,11 @@
 
 #include "filecache.h"
 #include "magic_enum.hpp"
-#include "schema.h"
 #include "settings.h"
 
 #include <KLocalizedString>
 
-ScopedExelRow::ScopedExelRow(const physis_ExcelRow &row, uint32_t columnCount)
+ScopedExelRow::ScopedExelRow(const physis_ExcelRow &row, const uint32_t columnCount)
     : m_row(row)
     , m_columnCount(columnCount)
 {
@@ -35,7 +34,7 @@ AbstractExcelResolver::resolveRow(const QStringList &sheetNames, const uint32_t 
     return std::nullopt;
 }
 
-physis_Field *AbstractExcelResolver::translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, uint32_t column)
+physis_Field *AbstractExcelResolver::translateSchemaColumn(const QString &sheetName, physis_ExcelRow const *row, const uint32_t column)
 {
     Q_UNUSED(sheetName)
     Q_UNUSED(column)
@@ -144,7 +143,7 @@ std::optional<uint32_t> CachingExcelResolver::hasRow(const physis_EXH &exh, cons
     return std::nullopt;
 }
 
-Language CachingExcelResolver::getSuitableLanguage(const physis_EXH &pExh, Language preferredLanguage)
+Language CachingExcelResolver::getSuitableLanguage(const physis_EXH &pExh, const Language preferredLanguage)
 {
     // Find the preferred language first (if not None, to handle none->localized sheet cases)
     if (preferredLanguage != Language::None) {

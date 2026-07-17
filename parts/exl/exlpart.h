@@ -14,7 +14,7 @@ class EXLPart : public QWidget
 public:
     explicit EXLPart(QWidget *parent = nullptr);
 
-    void load(Platform platform, physis_Buffer file);
+    void load(Platform platform, physis_Buffer file) const;
 
 private:
     QTableWidget *m_tableWidget = nullptr;

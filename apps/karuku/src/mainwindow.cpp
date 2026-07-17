@@ -11,10 +11,8 @@
 #include <QApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QHBoxLayout>
 #include <QInputDialog>
 #include <QListWidget>
-#include <QMenuBar>
 #include <QMessageBox>
 #include <QNetworkReply>
 #include <QSplitter>
@@ -29,14 +27,14 @@
 
 #include <QLineEdit>
 
-MainWindow::MainWindow(physis_SqPackResource data)
+MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
 {
     setMinimumSize(1280, 720);
 
     m_mgr = new QNetworkAccessManager(this);
 
-    auto dummyWidget = new QSplitter();
+    const auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
@@ -62,7 +60,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 
-    auto openInWidget = new OpenInWidget(this);
+    const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 
     updateDocumentActions();
@@ -73,7 +71,7 @@ MainWindow::~MainWindow() = default;
 QString MainWindow::getArguments() const
 {
     if (m_exdPart) {
-        if (auto query = m_exdPart->selectedRow(); !query.isEmpty()) {
+        if (const auto query = m_exdPart->selectedRow(); !query.isEmpty()) {
             return QStringLiteral("%1#%2").arg(m_exdPart->name()).arg(query);
         }
         return m_exdPart->name();
@@ -89,9 +87,9 @@ void MainWindow::jumpToSheet(const QString &name)
         return;
     }
 
-    auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
+    const auto path = QStringLiteral("exd/%1.exh").arg(name.toLower());
 
-    auto file = m_cache.read(path);
+    const auto file = m_cache.read(path);
     m_exdPart->loadSheet(name, file);
     m_sheetListWidget->goToSheet(name);
 
@@ -106,7 +104,7 @@ void MainWindow::jumpToSheetAndRow(const QString &name, const QString &rowQuery)
 
 static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath)
 {
-    QFileInfo srcFileInfo(srcFilePath);
+    const QFileInfo srcFileInfo(srcFilePath);
     if (srcFileInfo.isDir()) {
         const QDir targetDir(tgtFilePath);
         const QDir sourceDir(srcFilePath);
@@ -128,10 +126,10 @@ static bool copyDirectory(const QString &srcFilePath, const QString &tgtFilePath
 
 void MainWindow::setupActions()
 {
-    auto openList = new QAction(i18nc("@action:inmenu", "Import Schema…"), this);
+    const auto openList = new QAction(i18nc("@action:inmenu", "Import Schema…"), this);
     openList->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
     connect(openList, &QAction::triggered, [this] {
-        auto fileName = QFileDialog::getExistingDirectory(nullptr, i18nc("@title:window", "Open Schema Directory"), QStringLiteral("~"));
+        const auto fileName = QFileDialog::getExistingDirectory(nullptr, i18nc("@title:window", "Open Schema Directory"), QStringLiteral("~"));
 
         const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
@@ -149,7 +147,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("import_list"), openList);
 
-    auto downloadList = new QAction(i18nc("@action:inmenu", "Download Schema…"), this);
+    const auto downloadList = new QAction(i18nc("@action:inmenu", "Download Schema…"), this);
     downloadList->setIcon(QIcon::fromTheme(QStringLiteral("download-symbolic")));
     connect(downloadList, &QAction::triggered, [this] {
         const int ret = QMessageBox::information(
@@ -174,7 +172,7 @@ void MainWindow::setupActions()
         connect(reply, &QNetworkReply::finished, this, [this, reply] {
             qInfo() << "Finished downloading definitions!";
 
-            QTemporaryDir tempDir;
+            const QTemporaryDir tempDir;
 
             QFile file(tempDir.filePath(QStringLiteral("latest.zip")));
             if (!file.open(QIODevice::WriteOnly)) {
@@ -191,7 +189,7 @@ void MainWindow::setupActions()
                 return;
             }
 
-            const KArchiveDirectory *root = dynamic_cast<const KArchiveDirectory *>(archive.directory());
+            const auto root = archive.directory();
 
             const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
             const QDir definitionsDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
@@ -212,7 +210,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("download_list"), downloadList);
 
-    auto goToRow = new QAction(i18nc("@action:inmenu", "To Row…"), this);
+    const auto goToRow = new QAction(i18nc("@action:inmenu", "To Row…"), this);
     goToRow->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
     KActionCollection::setDefaultShortcut(goToRow, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_G));
     connect(goToRow, &QAction::triggered, [this] {
@@ -227,13 +225,13 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("select_language"), m_exdPart->selectLanguageAction());
     actionCollection()->addAction(QStringLiteral("save_csv"), m_exdPart->saveCsvAction());
 
-    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"), this);
+    const auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"), this);
     focusSearch->setIcon(QIcon::fromTheme(QStringLiteral("search-symbolic")));
     KActionCollection::setDefaultShortcut(focusSearch, QKeySequence(Qt::CTRL | Qt::Key_F));
     connect(focusSearch, &QAction::triggered, m_sheetListWidget, &SheetListWidget::focusSearchField);
     actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 
-    auto focusFilter = new QAction(i18nc("@action:inmenu", "Filter"), this);
+    const auto focusFilter = new QAction(i18nc("@action:inmenu", "Filter"), this);
     focusFilter->setIcon(QIcon::fromTheme(QStringLiteral("view-filter-symbolic")));
     KActionCollection::setDefaultShortcut(focusFilter, QKeySequence(Qt::CTRL | Qt::Key_I));
     connect(focusFilter, &QAction::triggered, m_exdPart, &EXDPart::focusFilterField);
@@ -255,7 +253,7 @@ void MainWindow::setupActions()
         actionCollection());
 }
 
-void MainWindow::updateDocumentActions()
+void MainWindow::updateDocumentActions() const
 {
     m_saveAction->setEnabled(m_exdPart->isModified());
 }

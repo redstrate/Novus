@@ -3,7 +3,6 @@
 
 #include "gearview.h"
 
-#include <QThreadPool>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <imgui.h>
@@ -15,26 +14,26 @@ GearView::GearView(FileCache &cache, QWidget *parent)
     : QFrame(parent)
     , m_cache(cache)
 {
-    setFrameShape(QFrame::Shape::Panel);
-    setFrameShadow(QFrame::Shadow::Sunken);
+    setFrameShape(Panel);
+    setFrameShadow(Sunken);
 
     m_mdlPart = new MDLPart(m_cache);
     reloadRaceDeforms();
 
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_mdlPart);
     setLayout(layout);
 
     m_mdlPart->requestUpdate = [this] {
-        auto &io = ImGui::GetIO();
+        const auto &io = ImGui::GetIO();
         if (m_updating) {
             if (ImGui::Begin("Loading", nullptr, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs)) {
                 ImGui::SetWindowPos(ImVec2(0, 0));
                 ImGui::SetWindowSize(io.DisplaySize);
 
                 // TODO: localize
-                const char *loadingLabel{"Loading gear..."};
+                const auto loadingLabel{"Loading gear..."};
                 ImGui::SetCursorPosX((io.DisplaySize.x - ImGui::CalcTextSize(loadingLabel).x) * 0.5f);
                 ImGui::SetCursorPosY((io.DisplaySize.y - ImGui::CalcTextSize(loadingLabel).y) * 0.5f);
                 ImGui::Text("%s", loadingLabel);
@@ -65,9 +64,9 @@ std::vector<std::pair<Race, Tribe>> GearView::supportedRaces() const
 {
     std::vector<std::pair<Race, Tribe>> races;
     for (const auto &gear : m_loadedGears) {
-        for (const auto &[race, race_name] : magic_enum::enum_entries<Race>()) {
+        for (const auto &race : magic_enum::enum_entries<Race>() | std::views::keys) {
             for (const auto subrace : physis_get_supported_tribes(race).subraces) {
-                auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, race, subrace, currentGender, gear.info.slot);
+                const auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, race, subrace, currentGender, gear.info.slot);
 
                 if (m_cache.exists(QLatin1String(equip_path)))
                     races.emplace_back(race, subrace);
@@ -82,8 +81,8 @@ std::vector<Gender> GearView::supportedGenders() const
 {
     std::vector<Gender> genders;
     for (const auto &gear : m_loadedGears) {
-        for (auto [gender, gender_name] : magic_enum::enum_entries<Gender>()) {
-            auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, currentRace, Tribe::Midlander, currentGender, gear.info.slot);
+        for (auto gender : magic_enum::enum_entries<Gender>() | std::views::keys) {
+            const auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, currentRace, Tribe::Midlander, currentGender, gear.info.slot);
 
             if (m_cache.exists(QLatin1String(equip_path)))
                 genders.push_back(gender);
@@ -98,7 +97,7 @@ int GearView::lodCount() const
     return m_maxLod;
 }
 
-void GearView::exportModel(const QString &fileName)
+void GearView::exportModel(const QString &fileName) const
 {
     m_mdlPart->exportModel(fileName);
 }
@@ -130,7 +129,7 @@ void GearView::removeGear(GearInfo &gear)
     Q_EMIT gearChanged();
 }
 
-void GearView::setRace(Race race)
+void GearView::setRace(const Race race)
 {
     if (currentRace == race) {
         return;
@@ -154,7 +153,7 @@ void GearView::setRace(Race race)
     Q_EMIT raceChanged();
 }
 
-void GearView::setTribe(Tribe subrace)
+void GearView::setTribe(const Tribe subrace)
 {
     if (currentTribe == subrace) {
         return;
@@ -170,7 +169,7 @@ void GearView::setTribe(Tribe subrace)
     Q_EMIT subraceChanged();
 }
 
-void GearView::setGender(Gender gender)
+void GearView::setGender(const Gender gender)
 {
     if (currentGender == gender) {
         return;
@@ -183,7 +182,7 @@ void GearView::setGender(Gender gender)
     Q_EMIT genderChanged();
 }
 
-void GearView::setLevelOfDetail(int lod)
+void GearView::setLevelOfDetail(const int lod)
 {
     if (m_currentLod == lod) {
         return;
@@ -213,7 +212,7 @@ void GearView::setFace(const int faceCode)
     Q_EMIT faceChanged();
 }
 
-void GearView::setHair(int hairCode)
+void GearView::setHair(const int hairCode)
 {
     if (m_hair == hairCode) {
         return;
@@ -261,11 +260,11 @@ void GearView::setTail(const int tailCode)
     Q_EMIT tailChanged();
 }
 
-void GearView::reloadRaceDeforms()
+void GearView::reloadRaceDeforms() const
 {
     qDebug() << "Loading race deform matrices for " << magic_enum::enum_name(currentRace).data() << magic_enum::enum_name(currentTribe).data()
              << magic_enum::enum_name(currentGender).data();
-    QString skelName = QString::fromStdString(physis_skeleton_path(currentRace, currentTribe, currentGender));
+    const QString skelName = QString::fromStdString(physis_skeleton_path(currentRace, currentTribe, currentGender));
     m_mdlPart->setSkeleton(physis_skeleton_parse(m_cache.platform(), m_cache.read(skelName)));
 }
 
@@ -329,12 +328,12 @@ void GearView::updatePart()
 
                         if (m_cache.exists(QLatin1String(mtrl_path.c_str()))) {
                             auto mat = physis_material_parse(m_cache.platform(), m_cache.read(QLatin1String(mtrl_path.c_str())));
-                            materials.push_back(std::make_pair(mtrl_path, mat));
+                            materials.emplace_back(std::make_pair(mtrl_path, mat));
                         }
 
                         if (m_cache.exists(QLatin1String(skinmtrl_path.c_str()))) {
                             auto mat = physis_material_parse(m_cache.platform(), m_cache.read(QLatin1String(skinmtrl_path.c_str())));
-                            materials.push_back(std::make_pair(mtrl_path, mat));
+                            materials.emplace_back(std::make_pair(mtrl_path, mat));
                         }
                     }
 
@@ -367,17 +366,17 @@ void GearView::updatePart()
         }
 
         for (auto &queuedRemoval : m_queuedGearRemovals) {
-            auto it = std::find_if(m_loadedGears.cbegin(), m_loadedGears.cend(), [queuedRemoval](const LoadedGear &other) {
+            auto it = std::ranges::find_if(std::as_const(m_loadedGears), [queuedRemoval](const LoadedGear &other) {
                 return queuedRemoval.info == other.info;
             });
 
             if (it != m_loadedGears.cend()) {
-                m_mdlPart->removeModel((*it).mdl);
-                m_loadedGears.erase(std::remove_if(m_loadedGears.begin(),
-                                                   m_loadedGears.end(),
-                                                   [queuedRemoval](const LoadedGear &other) {
-                                                       return queuedRemoval.info == other.info;
-                                                   }),
+                m_mdlPart->removeModel(it->mdl);
+                m_loadedGears.erase(std::ranges::remove_if(m_loadedGears,
+                                                           [queuedRemoval](const LoadedGear &other) {
+                                                               return queuedRemoval.info == other.info;
+                                                           })
+                                        .begin(),
                                     m_loadedGears.end());
             }
         }
@@ -386,12 +385,12 @@ void GearView::updatePart()
         m_queuedGearRemovals.clear();
     }
 
-    const auto loadBodyPart = [this, &sanitizeMdlPath](int index, CharacterCategory category, auto build_material_path_func) {
+    const auto loadBodyPart = [this, &sanitizeMdlPath](int index, const CharacterCategory category, auto build_material_path_func) {
         const auto mdlPath = QLatin1String(physis_build_character_path(category, index, currentRace, currentTribe, currentGender));
-        auto mdl_data = m_cache.read(mdlPath);
+        const auto mdl_data = m_cache.read(mdlPath);
 
         if (mdl_data.size > 0) {
-            auto mdl = physis_mdl_parse(m_cache.platform(), mdl_data);
+            const auto mdl = physis_mdl_parse(m_cache.platform(), mdl_data);
             if (mdl.p_ptr != nullptr) {
                 std::vector<std::pair<std::string, physis_Material>> materials;
                 for (uint32_t i = 0; i < mdl.num_material_names; i++) {
@@ -401,7 +400,7 @@ void GearView::updatePart()
 
                     if (m_cache.exists(QLatin1String(skinmtrl_path.c_str()))) {
                         auto mat = physis_material_parse(m_cache.platform(), m_cache.read(QLatin1String(skinmtrl_path.c_str())));
-                        materials.push_back(std::make_pair(skinmtrl_path, mat));
+                        materials.emplace_back(std::make_pair(skinmtrl_path, mat));
                     }
                 }
 
@@ -466,7 +465,7 @@ void GearView::changeEvent(QEvent *event)
     QFrame::changeEvent(event);
 }
 
-void GearView::resetMdlPart()
+void GearView::resetMdlPart() const
 {
     m_mdlPart->clear();
 

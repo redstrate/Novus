@@ -15,7 +15,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-const size_t MAX_LIGHTS = 1024;
+constexpr size_t MAX_LIGHTS = 1024;
 
 struct ShaderLight {
     glm::vec4 directionOrPos;
@@ -45,7 +45,7 @@ SimpleRenderer::SimpleRenderer(Device &device)
 
 SimpleRenderer::~SimpleRenderer()
 {
-    for (const auto &[_, descriptor] : m_cachedDescriptors) {
+    for (const auto &descriptor : m_cachedDescriptors | std::views::values) {
         vkFreeDescriptorSets(m_device.device, m_device.descriptorPool, 1, &descriptor);
     }
 
@@ -72,7 +72,7 @@ void SimpleRenderer::resize()
     initPipeline();
     initTextures(m_device.swapChain->extent.width, m_device.swapChain->extent.height);
 
-    std::array<VkImageView, 2> attachments = {m_compositeTexture.imageView, m_depthTexture.imageView};
+    const std::array attachments = {m_compositeTexture.imageView, m_depthTexture.imageView};
 
     VkFramebufferCreateInfo framebufferInfo = {};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -187,7 +187,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
 
         // copy bone data
         {
-            const size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
+            constexpr size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
             void *mapped_data = nullptr;
             vkMapMemory(m_device.device, model.sourceObject->boneInfoBuffer.memory, 0, bufferSize, 0, &mapped_data);
 
@@ -242,7 +242,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
                                sizeof(glm::mat4),
                                &m);
 
-            glm::vec4 viewPos = glm::vec4(-camera.position, 0.0f);
+            auto viewPos = glm::vec4(-camera.position, 0.0f);
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -308,7 +308,7 @@ void SimpleRenderer::initRenderPass()
     subpass.pColorAttachments = &colorAttachmentRef;
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-    std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+    const std::array attachments = {colorAttachment, depthAttachment};
 
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -347,7 +347,7 @@ void SimpleRenderer::initPipeline()
     fragmentShaderStageInfo.module = meshFragmentModule;
     fragmentShaderStageInfo.pName = "main";
 
-    std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
+    std::array shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
     VkVertexInputBindingDescription binding = {};
     binding.stride = sizeof(Vertex);
@@ -442,7 +442,7 @@ void SimpleRenderer::initPipeline()
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 
     VkPushConstantRange pushConstantRange = {};
-    pushConstantRange.size = (sizeof(glm::mat4) * 2) + sizeof(glm::vec4) + sizeof(int);
+    pushConstantRange.size = sizeof(glm::mat4) * 2 + sizeof(glm::vec4) + sizeof(int);
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -556,7 +556,7 @@ void SimpleRenderer::initDescriptors()
     vkCreateDescriptorSetLayout(m_device.device, &layoutInfo, nullptr, &m_setLayout);
 }
 
-void SimpleRenderer::initTextures(int width, int height)
+void SimpleRenderer::initTextures(const int width, const int height)
 {
     m_compositeTexture = m_device.createTexture(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     m_device.nameTexture(m_compositeTexture, "Composite Texture");
@@ -571,7 +571,7 @@ void SimpleRenderer::destroyTextures()
     m_device.destroyTexture(m_compositeTexture);
 }
 
-void SimpleRenderer::destroyPipelines()
+void SimpleRenderer::destroyPipelines() const
 {
     if (m_pipelineWireframe == VK_NULL_HANDLE) {
         return;
@@ -584,21 +584,21 @@ void SimpleRenderer::destroyPipelines()
     vkDestroyPipelineLayout(m_device.device, m_pipelineLayout, nullptr);
 }
 
-void SimpleRenderer::destroyDescriptors()
+void SimpleRenderer::destroyDescriptors() const
 {
     if (m_setLayout != VK_NULL_HANDLE) {
         vkDestroyDescriptorSetLayout(m_device.device, m_setLayout, nullptr);
     }
 }
 
-void SimpleRenderer::destroyRenderPass()
+void SimpleRenderer::destroyRenderPass() const
 {
     if (m_renderPass != VK_NULL_HANDLE) {
         vkDestroyRenderPass(m_device.device, m_renderPass, nullptr);
     }
 }
 
-VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, const RenderMaterial &material)
+VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, const RenderMaterial &material) const
 {
     VkDescriptorSet set;
 
@@ -614,9 +614,9 @@ VkDescriptorSet SimpleRenderer::createDescriptorFor(const DrawObject &model, con
         return VK_NULL_HANDLE;
     }
 
-    m_device.nameObject(VK_OBJECT_TYPE_DESCRIPTOR_SET, reinterpret_cast<uint64_t>(set), material.path.c_str());
+    m_device.nameObject(VK_OBJECT_TYPE_DESCRIPTOR_SET, reinterpret_cast<uint64_t>(set), material.path);
 
-    const size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
+    constexpr size_t bufferSize = sizeof(glm::mat3x4) * JOINT_MATRIX_SIZE_DAWNTRAIL;
 
     std::vector<VkWriteDescriptorSet> writes;
 
@@ -789,12 +789,12 @@ Device &SimpleRenderer::device()
     return m_device;
 }
 
-VkFramebuffer SimpleRenderer::framebuffer()
+VkFramebuffer SimpleRenderer::framebuffer() const
 {
     return m_framebuffer;
 }
 
-VkRenderPass SimpleRenderer::renderPass()
+VkRenderPass SimpleRenderer::renderPass() const
 {
     return m_renderPass;
 }
@@ -803,7 +803,7 @@ void SimpleRenderer::freeResources()
 {
     m_device.waitForIdle();
 
-    for (const auto &[_, descriptor] : m_cachedDescriptors) {
+    for (const auto &descriptor : m_cachedDescriptors | std::views::values) {
         vkFreeDescriptorSets(m_device.device, m_device.descriptorPool, 1, &descriptor);
     }
     m_cachedDescriptors.clear();

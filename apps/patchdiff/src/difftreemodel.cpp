@@ -11,9 +11,9 @@
 #include <QFileInfo>
 #include <QIcon>
 
-void deleteTree(TreeInformation *node)
+void deleteTree(const TreeInformation *node)
 {
-    for (auto child : node->children) {
+    for (const auto child : node->children) {
         Q_ASSERT(child->parent == node); // To double-check our own shitty code
         deleteTree(child);
         delete child;
@@ -60,7 +60,7 @@ int DiffTreeModel::columnCount(const QModelIndex &parent) const
     return 1;
 }
 
-QModelIndex DiffTreeModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex DiffTreeModel::index(const int row, const int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return {};
@@ -72,7 +72,7 @@ QModelIndex DiffTreeModel::index(int row, int column, const QModelIndex &parent)
     else
         parentItem = static_cast<TreeInformation *>(parent.internalPointer());
 
-    TreeInformation *childItem = parentItem->children[row];
+    const TreeInformation *childItem = parentItem->children[row];
     if (childItem)
         return createIndex(row, column, childItem);
 
@@ -85,8 +85,8 @@ QModelIndex DiffTreeModel::parent(const QModelIndex &index) const
     if (!index.isValid())
         return {};
 
-    auto childItem = static_cast<TreeInformation *>(index.internalPointer());
-    TreeInformation *parentItem = childItem->parent;
+    const auto childItem = static_cast<TreeInformation *>(index.internalPointer());
+    const TreeInformation *parentItem = childItem->parent;
 
     if (parentItem == rootItem)
         return {};
@@ -94,7 +94,7 @@ QModelIndex DiffTreeModel::parent(const QModelIndex &index) const
     return createIndex(parentItem->row, index.column(), parentItem);
 }
 
-QVariant DiffTreeModel::data(const QModelIndex &index, int role) const
+QVariant DiffTreeModel::data(const QModelIndex &index, const int role) const
 {
     if (!index.isValid())
         return {};
@@ -138,20 +138,20 @@ QVariant DiffTreeModel::data(const QModelIndex &index, int role) const
             return QIcon::fromTheme(QStringLiteral("folder-symbolic"));
         }
         if (item->type == TreeType::File) {
-            QFileInfo info(item->name);
+            const QFileInfo info(item->name);
             const FileType type = FileTypes::getFileType(info.completeSuffix());
 
             return QIcon::fromTheme(FileTypes::getFiletypeIcon(type));
         }
     }
-    if (role == CustomRoles::BufferRole) {
+    if (role == BufferRole) {
         return QVariant::fromValue(item->buffer);
     }
 
     return {};
 }
 
-QVariant DiffTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant DiffTreeModel::headerData(const int section, const Qt::Orientation orientation, const int role) const
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {

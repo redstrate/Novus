@@ -35,7 +35,7 @@ GimmickListWidget::GimmickListWidget(ScenePart *part, SceneState *state, QWidget
         Q_EMIT state->selectObject(objectId);
     });
 
-    for (const auto &[_, lgb] : state->rootScene.lgbFiles) {
+    for (const auto &lgb : state->rootScene.lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             for (uint32_t j = 0; j < lgb.chunks[i].num_layers; j++) {
                 for (uint32_t l = 0; l < lgb.chunks[i].layers[j].num_objects; l++) {

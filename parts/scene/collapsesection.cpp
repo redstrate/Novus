@@ -9,7 +9,7 @@
 #include <QPainter>
 #include <QStyleOption>
 
-CollapseSection::CollapseSection(QString label, bool closable)
+CollapseSection::CollapseSection(const QString &label, const bool closable)
     : m_label(label)
     , m_closable(closable)
 {
@@ -51,7 +51,7 @@ void CollapseSection::mouseMoveEvent(QMouseEvent *event)
     Q_UNUSED(event)
 
     if (m_closable) {
-        QRect r(width() - 20, 0, width(), 25); // close button
+        const QRect r(width() - 20, 0, width(), 25); // close button
 
         if (r.contains(mapFromGlobal(QCursor::pos())))
             m_closeButtonHovered = true;
@@ -66,7 +66,7 @@ void CollapseSection::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event)
 
-    QRect r(0, 0, width() - 20, 30); // header
+    const QRect r(0, 0, width() - 20, 30); // header
 
     if (r.contains(mapFromGlobal(QCursor::pos()))) {
         if (!m_collapsed) {
@@ -79,7 +79,7 @@ void CollapseSection::mousePressEvent(QMouseEvent *event)
     }
 
     if (m_closable) {
-        QRect r(width() - 20, 0, width(), 25); // close button
+        const QRect r(width() - 20, 0, width(), 25); // close button
 
         if (r.contains(mapFromGlobal(QCursor::pos())))
             Q_EMIT closeRequested();

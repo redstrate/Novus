@@ -5,7 +5,7 @@
 
 #include "device.h"
 
-SwapChain::SwapChain(Device &device, VkSurfaceKHR surface, int width, int height)
+SwapChain::SwapChain(Device &device, const VkSurfaceKHR surface, const int width, const int height)
     : m_device(device)
 {
     resize(surface, width, height);

@@ -11,7 +11,7 @@ QuaternionEdit::QuaternionEdit(glm::quat &quat, QWidget *parent)
     : EditWidget(parent)
     , m_quat(quat)
 {
-    auto itemsLayout = new QHBoxLayout(this);
+    const auto itemsLayout = new QHBoxLayout(this);
 
     m_spinBoxes.x = new QDoubleSpinBox();
     m_spinBoxes.y = new QDoubleSpinBox();
@@ -39,7 +39,7 @@ QuaternionEdit::QuaternionEdit(glm::quat &quat, QWidget *parent)
     m_spinBoxes.y->setValue(euler.y);
     m_spinBoxes.z->setValue(euler.z);
 
-    connect(m_spinBoxes.x, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
+    connect(m_spinBoxes.x, &QDoubleSpinBox::valueChanged, [this](const double d) {
         auto euler = glm::eulerAngles(this->m_quat);
         euler.x = glm::radians(d);
 
@@ -47,7 +47,7 @@ QuaternionEdit::QuaternionEdit(glm::quat &quat, QWidget *parent)
 
         Q_EMIT onValueChanged();
     });
-    connect(m_spinBoxes.y, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
+    connect(m_spinBoxes.y, &QDoubleSpinBox::valueChanged, [this](const double d) {
         auto euler = glm::eulerAngles(this->m_quat);
         euler.y = glm::radians(d);
 
@@ -55,7 +55,7 @@ QuaternionEdit::QuaternionEdit(glm::quat &quat, QWidget *parent)
 
         Q_EMIT onValueChanged();
     });
-    connect(m_spinBoxes.z, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
+    connect(m_spinBoxes.z, &QDoubleSpinBox::valueChanged, [this](const double d) {
         auto euler = glm::eulerAngles(this->m_quat);
         euler.z = glm::radians(d);
 
@@ -65,7 +65,7 @@ QuaternionEdit::QuaternionEdit(glm::quat &quat, QWidget *parent)
     });
 }
 
-void QuaternionEdit::setQuat(glm::quat &quat)
+void QuaternionEdit::setQuat(const glm::quat &quat) const
 {
     this->m_quat = quat;
     auto euler = glm::eulerAngles(quat);

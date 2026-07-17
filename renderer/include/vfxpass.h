@@ -18,11 +18,11 @@ class VfxPass
 public:
     explicit VfxPass(RenderManager &manager);
 
-    void render(VkCommandBuffer commandBuffer, Camera &camera, std::vector<VfxObjectInstance> &vfx);
+    void render(VkCommandBuffer commandBuffer, const Camera &camera, const std::vector<VfxObjectInstance> &vfx);
 
 private:
     void createPipeline();
-    void addTexture(Texture texture);
+    void addTexture(const Texture &texture);
 
     Device &m_device;
     RenderManager &m_renderer;

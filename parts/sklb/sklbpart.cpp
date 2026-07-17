@@ -14,9 +14,9 @@
 #include "quaternionedit.h"
 #include "vec3edit.h"
 
-void addItem(physis_Skeleton &skeleton, physis_Bone &bone, QTreeWidget *widget, QTreeWidgetItem *parent_item = nullptr)
+void addItem(physis_Skeleton &skeleton, const physis_Bone &bone, QTreeWidget *widget, QTreeWidgetItem *parent_item = nullptr)
 {
-    auto item = new QTreeWidgetItem();
+    const auto item = new QTreeWidgetItem();
     item->setText(0, QLatin1String(bone.name));
 
     if (parent_item == nullptr) {
@@ -34,7 +34,7 @@ void addItem(physis_Skeleton &skeleton, physis_Bone &bone, QTreeWidget *widget, 
 SklbPart::SklbPart(QWidget *parent)
     : QWidget(parent)
 {
-    auto layout = new QHBoxLayout();
+    const auto layout = new QHBoxLayout();
     setLayout(layout);
 
     m_boneListWidget = new QTreeWidget();
@@ -46,9 +46,9 @@ SklbPart::SklbPart(QWidget *parent)
     m_transformLayout = new QVBoxLayout();
     layout->addLayout(m_transformLayout);
 
-    auto transformGroup = new QGroupBox(i18nc("@title:group", "Bone Transform"));
+    const auto transformGroup = new QGroupBox(i18nc("@title:group", "Bone Transform"));
     m_transformLayout->addWidget(transformGroup);
-    auto transformGroupLayout = new QFormLayout();
+    const auto transformGroupLayout = new QFormLayout();
     transformGroup->setLayout(transformGroupLayout);
 
     m_posEdit = new Vector3Edit(m_currentPosition);
@@ -78,7 +78,7 @@ SklbPart::SklbPart(QWidget *parent)
     connect(m_boneListWidget, &QTreeWidget::itemClicked, this, &SklbPart::treeItemClicked);
 }
 
-void SklbPart::treeItemClicked(QTreeWidgetItem *item, int column)
+void SklbPart::treeItemClicked(const QTreeWidgetItem *item, const int column)
 {
     for (uint32_t i = 0; i < m_skeleton.num_bones; i++) {
         if (strcmp(m_skeleton.bones[i].name, item->text(column).toStdString().c_str()) == 0) {
@@ -134,7 +134,7 @@ void SklbPart::treeItemClicked(QTreeWidgetItem *item, int column)
     }
 }
 
-void SklbPart::clear()
+void SklbPart::clear() const
 {
     m_boneListWidget->clear();
 }
@@ -146,12 +146,12 @@ void SklbPart::load(physis_Skeleton file)
     m_skeleton = file;
 }
 
-void SklbPart::load_pbd(physis_PBD deformer, int from_body_id, int to_body_id)
+void SklbPart::load_pbd(const physis_PBD deformer, const int from_body_id, const int to_body_id)
 {
     if (m_racePosEdit == nullptr && m_raceRotationEdit == nullptr && m_raceScaleEdit == nullptr) {
-        auto raceTransformGroup = new QGroupBox(i18nc("@title:group", "Race Transform"));
+        const auto raceTransformGroup = new QGroupBox(i18nc("@title:group", "Race Transform"));
         m_transformLayout->addWidget(raceTransformGroup);
-        auto raceTransformGroupLayout = new QFormLayout();
+        const auto raceTransformGroupLayout = new QFormLayout();
         raceTransformGroup->setLayout(raceTransformGroupLayout);
 
         m_racePosEdit = new Vector3Edit(m_currentPosition);

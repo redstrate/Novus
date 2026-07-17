@@ -3,7 +3,6 @@
 
 #include "mainwindow.h"
 
-#include <QHBoxLayout>
 #include <QListWidget>
 #include <QTableWidget>
 #include <QTimer>
@@ -14,7 +13,6 @@
 #include <QApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QMenuBar>
 #include <QSplitter>
 #include <magic_enum.hpp>
 
@@ -25,17 +23,17 @@
 #include "penumbraapi.h"
 #include "settingswindow.h"
 
-MainWindow::MainWindow(physis_SqPackResource data)
+MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
     , m_api(new PenumbraApi(this))
 {
     setMinimumSize(QSize(800, 600));
 
-    auto dummyWidget = new QSplitter();
+    const auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
 
-    auto gearListWidget = new GearListWidget(m_cache);
+    const auto gearListWidget = new GearListWidget(m_cache);
     gearListWidget->setMaximumWidth(350);
     dummyWidget->addWidget(gearListWidget);
 
@@ -45,7 +43,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     m_materialsView = new QTabWidget();
 
-    auto tabWidget = new QTabWidget();
+    const auto tabWidget = new QTabWidget();
     tabWidget->addTab(m_gearView, i18nc("@title:tab", "Models"));
     tabWidget->addTab(m_materialsView, i18nc("@title:tab", "Materials"));
     tabWidget->setDocumentMode(true); // Don't draw the borders
@@ -63,8 +61,8 @@ MainWindow::MainWindow(physis_SqPackResource data)
         m_materialsView->clear();
 
         int i = 0;
-        for (auto material : m_gearView->getLoadedMaterials()) {
-            auto materialView = new MtrlPart(m_cache);
+        for (const auto &material : m_gearView->getLoadedMaterials()) {
+            const auto materialView = new MtrlPart(m_cache);
             materialView->load(material);
             m_materialsView->addTab(materialView, i18n("Material %1", i)); // TODO: it would be nice to get the actual material name here
 
@@ -80,13 +78,13 @@ MainWindow::MainWindow(physis_SqPackResource data)
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 
-    auto openInWidget = new OpenInWidget(this);
+    const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 }
 
 void MainWindow::configure()
 {
-    auto settingsWindow = new SettingsWindow();
+    const auto settingsWindow = new SettingsWindow();
     settingsWindow->show();
 }
 
@@ -99,7 +97,7 @@ void MainWindow::setupActions()
     showFMVAction->setText(i18n("&Full Model Viewer"));
     showFMVAction->setCheckable(true);
     showFMVAction->setIcon(QIcon::fromTheme(QStringLiteral("user-symbolic")));
-    connect(showFMVAction, &QAction::toggled, [this](bool toggled) {
+    connect(showFMVAction, &QAction::toggled, [this](const bool toggled) {
         if (toggled) {
             m_fullModelViewer->show();
         } else {
@@ -111,20 +109,20 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("show_fmv"), showFMVAction);
 
-    auto cmpEditorAction = new QAction(this);
+    const auto cmpEditorAction = new QAction(this);
     cmpEditorAction->setText(i18n("&CMP Editor"));
     cmpEditorAction->setIcon(QIcon::fromTheme(QStringLiteral("document-edit")));
     connect(cmpEditorAction, &QAction::triggered, [this] {
-        auto cmpEditor = new CmpEditor(m_cache);
+        const auto cmpEditor = new CmpEditor(m_cache);
         cmpEditor->show();
     });
     actionCollection()->addAction(QStringLiteral("cmp_editor"), cmpEditorAction);
 
-    auto redrawAction = new QAction(i18nc("@action:inmenu", "Redraw All"));
+    const auto redrawAction = new QAction(i18nc("@action:inmenu", "Redraw All"));
     connect(redrawAction, &QAction::triggered, m_api, &PenumbraApi::redrawAll);
     actionCollection()->addAction(QStringLiteral("redraw_all"), redrawAction);
 
-    auto openWindowAction = new QAction(i18nc("@action:inmenu", "Open Window"));
+    const auto openWindowAction = new QAction(i18nc("@action:inmenu", "Open Window"));
     connect(openWindowAction, &QAction::triggered, m_api, &PenumbraApi::openWindow);
     actionCollection()->addAction(QStringLiteral("open_window"), openWindowAction);
 }

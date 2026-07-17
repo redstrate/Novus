@@ -115,7 +115,7 @@ int GearListModel::columnCount(const QModelIndex &parent) const
     return 1;
 }
 
-QModelIndex GearListModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex GearListModel::index(const int row, const int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return {};
@@ -127,7 +127,7 @@ QModelIndex GearListModel::index(int row, int column, const QModelIndex &parent)
     else
         parentItem = static_cast<SceneTreeInformation *>(parent.internalPointer());
 
-    SceneTreeInformation *childItem = parentItem->children[row];
+    const SceneTreeInformation *childItem = parentItem->children[row];
     if (childItem)
         return createIndex(row, column, childItem);
     return {};
@@ -138,8 +138,8 @@ QModelIndex GearListModel::parent(const QModelIndex &index) const
     if (!index.isValid())
         return {};
 
-    auto childItem = static_cast<SceneTreeInformation *>(index.internalPointer());
-    SceneTreeInformation *parentItem = childItem->parent;
+    const auto childItem = static_cast<SceneTreeInformation *>(index.internalPointer());
+    const SceneTreeInformation *parentItem = childItem->parent;
 
     if (parentItem == m_rootItem)
         return {};
@@ -147,12 +147,12 @@ QModelIndex GearListModel::parent(const QModelIndex &index) const
     return createIndex(parentItem->row, 0, parentItem);
 }
 
-QVariant GearListModel::data(const QModelIndex &index, int role) const
+QVariant GearListModel::data(const QModelIndex &index, const int role) const
 {
     if (!index.isValid())
         return {};
 
-    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
 
     if (item->type == TreeType::Category) {
         if (role == Qt::DisplayRole) {
@@ -161,7 +161,8 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
     } else if (item->type == TreeType::Item) {
         if (role == Qt::DisplayRole) {
             return item->gear->name;
-        } else if (role == Qt::DecorationRole) {
+        }
+        if (role == Qt::DecorationRole) {
             // TODO: cache these images in memory
             const QString iconName = QString::number(item->gear->icon);
             const QString iconBaseNum = QString::number(item->gear->icon).left(2).leftJustified(iconName.length(), QLatin1Char('0'));
@@ -169,12 +170,12 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
             const QString iconFolder = QStringLiteral("ui/icon/%1").arg(iconBaseNum, 6, QLatin1Char('0'));
             const QString iconFile = QStringLiteral("%1.tex").arg(iconName, 6, QLatin1Char('0'));
 
-            auto texFile = m_cache.read(QStringLiteral("%1/%2").arg(iconFolder, iconFile));
+            const auto texFile = m_cache.read(QStringLiteral("%1/%2").arg(iconFolder, iconFile));
             if (texFile.data != nullptr) {
-                auto tex = physis_texture_parse(m_cache.platform(), texFile);
+                const auto tex = physis_texture_parse(m_cache.platform(), texFile);
                 if (tex.p_ptr != nullptr) {
-                    auto rgba = physis_texture_to_rgba(tex);
-                    QImage image(rgba.rgba, static_cast<int>(tex.width), static_cast<int>(tex.height), QImage::Format_RGBA8888);
+                    const auto rgba = physis_texture_to_rgba(tex);
+                    const QImage image(rgba.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
 
                     QPixmap pixmap;
                     pixmap.convertFromImage(image);
@@ -190,7 +191,7 @@ QVariant GearListModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-QVariant GearListModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant GearListModel::headerData(const int section, const Qt::Orientation orientation, const int role) const
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
@@ -203,7 +204,7 @@ QVariant GearListModel::headerData(int section, Qt::Orientation orientation, int
 
 std::optional<GearInfo> GearListModel::getGearFromIndex(const QModelIndex &index)
 {
-    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item->type == TreeType::Item) {
         return item->gear;
     }

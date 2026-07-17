@@ -10,9 +10,9 @@
 #include <QFileInfo>
 #include <QIcon>
 
-void deleteTree(SceneTreeInformation *node)
+void deleteTree(const SceneTreeInformation *node)
 {
-    for (auto child : node->children) {
+    for (const auto child : node->children) {
         Q_ASSERT(child->parent == node); // To double-check our own shitty code
         deleteTree(child);
         delete child;
@@ -49,7 +49,7 @@ int SceneListModel::columnCount(const QModelIndex &parent) const
     return 2;
 }
 
-QModelIndex SceneListModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex SceneListModel::index(const int row, const int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return {};
@@ -61,7 +61,7 @@ QModelIndex SceneListModel::index(int row, int column, const QModelIndex &parent
     else
         parentItem = static_cast<SceneTreeInformation *>(parent.internalPointer());
 
-    SceneTreeInformation *childItem = parentItem->children[row];
+    const SceneTreeInformation *childItem = parentItem->children[row];
     if (childItem)
         return createIndex(row, column, childItem);
     return {};
@@ -72,8 +72,8 @@ QModelIndex SceneListModel::parent(const QModelIndex &index) const
     if (!index.isValid())
         return {};
 
-    auto childItem = static_cast<SceneTreeInformation *>(index.internalPointer());
-    SceneTreeInformation *parentItem = childItem->parent;
+    const auto childItem = static_cast<SceneTreeInformation *>(index.internalPointer());
+    const SceneTreeInformation *parentItem = childItem->parent;
 
     if (parentItem == &m_rootItem)
         return {};
@@ -81,13 +81,13 @@ QModelIndex SceneListModel::parent(const QModelIndex &index) const
     return createIndex(parentItem->row, 0, parentItem);
 }
 
-QVariant SceneListModel::data(const QModelIndex &index, int role) const
+QVariant SceneListModel::data(const QModelIndex &index, const int role) const
 {
     if (!index.isValid())
         return {};
 
-    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
-    if (role == SceneListRoles::ObjectIdRole) {
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (role == ObjectIdRole) {
         return item->id;
     }
     if (index.column() == 0) {
@@ -132,12 +132,13 @@ QVariant SceneListModel::data(const QModelIndex &index, int role) const
     return {};
 }
 
-QVariant SceneListModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant SceneListModel::headerData(const int section, const Qt::Orientation orientation, const int role) const
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         if (section == 0) {
             return i18nc("@title:column Object name", "Name");
-        } else if (section == 1) {
+        }
+        if (section == 1) {
             return i18nc("@title:column If the layer is visible", "Visible");
         }
     }
@@ -147,16 +148,16 @@ QVariant SceneListModel::headerData(int section, Qt::Orientation orientation, in
 
 Qt::ItemFlags SceneListModel::flags(const QModelIndex &index) const
 {
-    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (index.column() == 1 && (item->type == TreeType::Layer || item->type == TreeType::Plate))
         return QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
 
     return QAbstractItemModel::flags(index);
 }
 
-bool SceneListModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool SceneListModel::setData(const QModelIndex &index, const QVariant &value, const int role)
 {
-    auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (index.column() == 1) {
         if (item->type == TreeType::Layer) {
             if (value.value<Qt::CheckState>() == Qt::Checked) {
@@ -184,7 +185,7 @@ QHash<int, QByteArray> SceneListModel::roleNames() const
     };
 }
 
-std::optional<physis_InstanceObject *> SceneListModel::objectAt(const QModelIndex &index) const
+std::optional<physis_InstanceObject *> SceneListModel::objectAt(const QModelIndex &index)
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Object) {
@@ -193,7 +194,7 @@ std::optional<physis_InstanceObject *> SceneListModel::objectAt(const QModelInde
     return std::nullopt;
 }
 
-std::optional<physis_Layer const *> SceneListModel::layerAt(const QModelIndex &index) const
+std::optional<physis_Layer const *> SceneListModel::layerAt(const QModelIndex &index)
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Layer) {
@@ -202,7 +203,7 @@ std::optional<physis_Layer const *> SceneListModel::layerAt(const QModelIndex &i
     return std::nullopt;
 }
 
-std::optional<physis_ScnTimeline const *> SceneListModel::timelineAt(const QModelIndex &index) const
+std::optional<physis_ScnTimeline const *> SceneListModel::timelineAt(const QModelIndex &index)
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Timeline) {
@@ -211,7 +212,7 @@ std::optional<physis_ScnTimeline const *> SceneListModel::timelineAt(const QMode
     return std::nullopt;
 }
 
-std::optional<ScnSGActionControllerDescriptor const *> SceneListModel::actionAt(const QModelIndex &index) const
+std::optional<ScnSGActionControllerDescriptor const *> SceneListModel::actionAt(const QModelIndex &index)
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Action) {
@@ -220,7 +221,7 @@ std::optional<ScnSGActionControllerDescriptor const *> SceneListModel::actionAt(
     return std::nullopt;
 }
 
-std::optional<QString> SceneListModel::lgbAt(const QModelIndex &index) const
+std::optional<QString> SceneListModel::lgbAt(const QModelIndex &index)
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::LgbFile) {
@@ -229,7 +230,7 @@ std::optional<QString> SceneListModel::lgbAt(const QModelIndex &index) const
     return std::nullopt;
 }
 
-std::optional<QString> SceneListModel::teraAt(const QModelIndex &index) const
+std::optional<QString> SceneListModel::teraAt(const QModelIndex &index)
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::TeraFile) {
@@ -238,7 +239,7 @@ std::optional<QString> SceneListModel::teraAt(const QModelIndex &index) const
     return std::nullopt;
 }
 
-std::optional<DropInObject *> SceneListModel::dropInObjectAt(const QModelIndex &index) const
+std::optional<DropInObject *> SceneListModel::dropInObjectAt(const QModelIndex &index)
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::DropInObject) {
@@ -385,7 +386,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
 void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene &scene)
 {
     if (scene.terrain.num_plates > 0) {
-        auto terrainItem = new SceneTreeInformation();
+        const auto terrainItem = new SceneTreeInformation();
         terrainItem->type = TreeType::TeraFile;
         terrainItem->parent = parentNode;
         terrainItem->name = i18n("Terrain");
@@ -405,8 +406,8 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         }
     }
 
-    if (scene.embeddedTimelines.length() > 0) {
-        auto timelinesItem = new SceneTreeInformation();
+    if (!scene.embeddedTimelines.empty()) {
+        const auto timelinesItem = new SceneTreeInformation();
         timelinesItem->type = TreeType::Timelines;
         timelinesItem->parent = parentNode;
         timelinesItem->name = i18n("Timelines");
@@ -424,8 +425,8 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         }
     }
 
-    if (scene.actionDescriptors.size() > 0) {
-        auto actionsItem = new SceneTreeInformation();
+    if (!scene.actionDescriptors.empty()) {
+        const auto actionsItem = new SceneTreeInformation();
         actionsItem->type = TreeType::Actions;
         actionsItem->parent = parentNode;
         actionsItem->name = i18n("Actions");
@@ -460,7 +461,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         parentNode->children.push_back(fileItem);
 
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
-            auto &chunk = lgb.chunks[i];
+            const auto &chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
                 addLayer(j, fileItem, chunk.layers[j], scene);
             }
@@ -484,15 +485,15 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
     }
 
     /// Drop-ins
-    if (scene.dropIns.size() > 0) {
-        auto dropinsItem = new SceneTreeInformation();
+    if (!scene.dropIns.empty()) {
+        const auto dropinsItem = new SceneTreeInformation();
         dropinsItem->type = TreeType::DropIns;
         dropinsItem->parent = parentNode;
         dropinsItem->name = i18n("Drop-ins");
         dropinsItem->row = parentNode->children.size();
         parentNode->children.push_back(dropinsItem);
 
-        for (auto &[_, dropIn] : scene.dropIns) {
+        for (auto &dropIn : scene.dropIns | std::views::values) {
             for (uint32_t i = 0; i < dropIn.layers.size(); i++) {
                 auto &layer = dropIn.layers[i];
 
@@ -514,7 +515,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
                     dropinItem->id = dropInObject.instanceId;
                     if (std::holds_alternative<DropInGatheringPoint>(dropInObject.data)) {
                         dropinItem->name = i18n("Gathering Point");
-                    } else if (auto data = std::get_if<DropInBattleNpc>(&dropInObject.data)) {
+                    } else if (const auto data = std::get_if<DropInBattleNpc>(&dropInObject.data)) {
                         dropinItem->name = m_appState->lookupBNpcName(data->nameId) + (data->nonpop ? i18n(" (Nonpop)") : QString());
                     }
                     dropinItem->row = j;

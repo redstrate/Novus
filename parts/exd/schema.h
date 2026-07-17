@@ -3,9 +3,6 @@
 
 #pragma once
 
-#include <physis.hpp>
-
-#include <QString>
 #include <QStringList>
 
 class Schema

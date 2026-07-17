@@ -8,7 +8,6 @@
 #include "novus-version.h"
 #include "utility.h"
 
-#include <KLocalizedString>
 #include <QGuiApplication>
 #include <QIcon>
 

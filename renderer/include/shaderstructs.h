@@ -32,7 +32,7 @@ struct CameraParameter {
     glm::vec4 m_unknown3; // zeroes i saw!
 };
 
-const int JOINT_MATRIX_SIZE_DAWNTRAIL = 256;
+constexpr int JOINT_MATRIX_SIZE_DAWNTRAIL = 256;
 
 struct CameraLight {
     glm::vec4 m_DiffuseSpecular;

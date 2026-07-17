@@ -76,21 +76,21 @@ EnemyModel::EnemyModel(FileCache &cache)
     m_part->setMinimumSize(128 / m_part->devicePixelRatio(), 128 / m_part->devicePixelRatio());
     m_part->show();
 
-    auto bnpcBaseExhFile = m_cache.read(QStringLiteral("exd/BNpcBase.exh"));
-    auto bnpcBaseExh = physis_exh_parse(m_cache.platform(), bnpcBaseExhFile);
+    const auto bnpcBaseExhFile = m_cache.read(QStringLiteral("exd/BNpcBase.exh"));
+    const auto bnpcBaseExh = physis_exh_parse(m_cache.platform(), bnpcBaseExhFile);
 
-    auto modelCharaExhFile = m_cache.read(QStringLiteral("exd/ModelChara.exh"));
-    auto modelCharaExh = physis_exh_parse(m_cache.platform(), modelCharaExhFile);
+    const auto modelCharaExhFile = m_cache.read(QStringLiteral("exd/ModelChara.exh"));
+    const auto modelCharaExh = physis_exh_parse(m_cache.platform(), modelCharaExhFile);
 
-    auto bnpcBaseSheet = m_cache.readExcelSheet(QStringLiteral("BNpcBase"), &bnpcBaseExh, Language::None);
-    auto modelCharaSheet = m_cache.readExcelSheet(QStringLiteral("ModelChara"), &modelCharaExh, Language::None);
+    const auto bnpcBaseSheet = m_cache.readExcelSheet(QStringLiteral("BNpcBase"), &bnpcBaseExh, Language::None);
+    const auto modelCharaSheet = m_cache.readExcelSheet(QStringLiteral("ModelChara"), &modelCharaExh, Language::None);
 
     for (uint32_t i = 0; i < bnpcBaseSheet.page_count; i++) {
         for (uint32_t j = 0; j < bnpcBaseSheet.pages[i].entry_count; j++) {
             const auto entry = bnpcBaseSheet.pages[i].entries[j];
 
             const auto modelCharaId = entry.subrows[0].columns[5].u_int16._0;
-            auto modelCharaRow = physis_excel_get_row(&modelCharaSheet, modelCharaId);
+            const auto modelCharaRow = physis_excel_get_row(&modelCharaSheet, modelCharaId);
 
             const auto modelCharaType = static_cast<ModelCharaType>(modelCharaRow.columns[0].u_int8._0);
             if (modelCharaType == ModelCharaType::UnknownA || modelCharaType == ModelCharaType::UnknownB || modelCharaType == ModelCharaType::UnknownC) {
@@ -100,7 +100,7 @@ EnemyModel::EnemyModel(FileCache &cache)
             const auto modelCharaModel = modelCharaRow.columns[1].u_int16._0;
             const auto modelCharaBase = modelCharaRow.columns[2].u_int8._0;
             // TODO: some assumption about this is wrong...
-            const auto modelCharaVariant = 1; // modelCharaRow.columns[3].u_int8._0;
+            constexpr auto modelCharaVariant = 1; // modelCharaRow.columns[3].u_int8._0;
 
             m_enemies.push_back(new Enemy{.id = entry.row_id,
                                           .image = {},
@@ -122,7 +122,7 @@ int EnemyModel::columnCount(const QModelIndex &parent) const
     return 8;
 }
 
-QVariant EnemyModel::data(const QModelIndex &index, int role) const
+QVariant EnemyModel::data(const QModelIndex &index, const int role) const
 {
     const int realRow = index.row() * 8 + index.column();
     auto &enemy = m_enemies[realRow];
@@ -132,13 +132,13 @@ QVariant EnemyModel::data(const QModelIndex &index, int role) const
         }
         return enemy->image;
     }
-    if (role == CustomRole::IdRole) {
+    if (role == IdRole) {
         return enemy->id;
     }
-    if (role == CustomRole::MdlPath) {
+    if (role == MdlPath) {
         return enemy->mdlPath;
     }
-    if (role == CustomRole::MtrlPath) {
+    if (role == MtrlPath) {
         return enemy->mtrlPath;
     }
     return {};

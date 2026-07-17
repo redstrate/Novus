@@ -4,7 +4,6 @@
 #pragma once
 
 #include <QWidget>
-#include <optional>
 #include <physis.hpp>
 
 #include "mdlexport.h"
@@ -22,8 +21,8 @@ public:
     explicit MDLPart(FileCache &cache, QWidget *parent = nullptr);
     ~MDLPart() override;
 
-    void exportModel(const QString &fileName);
-    DrawObject &getModel(int index);
+    void exportModel(const QString &fileName) const;
+    DrawObject &getModel(int index) const;
     void reloadModel(int index);
 
     int lastX = -1;
@@ -52,11 +51,11 @@ public:
 
     bool enableRacialDeform = true;
 
-    QImage grab();
+    QImage grab() const;
 
-    QAction *wireframeAction();
-    QAction *frustumCullingAction();
-    QAction *debugFrustumCullingAction();
+    QAction *wireframeAction() const;
+    QAction *frustumCullingAction() const;
+    QAction *debugFrustumCullingAction() const;
 
 Q_SIGNALS:
     void modelChanged();
@@ -70,34 +69,34 @@ public Q_SLOTS:
     void clear();
 
     // TODO: all of this API is terrible and should be redone
-    bool modelExists(const QString &name);
-    bool vfxExists(const QString &name);
+    bool modelExists(const QString &name) const;
+    bool vfxExists(const QString &name) const;
 
     /**
      * @brief Adds a new model to the scene.
      *
      * @note The @p mdl and @p materials must be freed by the caller, but only when you are completely done with the MDLPart.
      */
-    void addModel(physis_MDL mdl,
+    void addModel(const physis_MDL &mdl,
                   bool skinned,
-                  Transformation transformation,
+                  const Transformation &transformation,
                   const QString &name,
                   std::vector<std::pair<std::string, physis_Material>> materials,
                   uint16_t fromBodyId = 101,
                   uint16_t toBodyId = 101);
 
-    void addExistingModel(const QString &name, Transformation transformation);
+    void addExistingModel(const QString &name, const Transformation &transformation) const;
 
     void removeModel(const physis_MDL &mdl);
 
-    void addLight(const SceneLight &light);
+    void addLight(const SceneLight &light) const;
 
-    void addVfx(physis_Avfx vfx, Transformation transformation, const QString &name);
+    void addVfx(const physis_Avfx &vfx, const Transformation &transformation, const QString &name);
 
-    void addExistingVfx(const QString &name, Transformation transformation);
+    void addExistingVfx(const QString &name, const Transformation &transformation) const;
 
     /// Sets the skeleton any skinned MDLs should bind to.
-    void setSkeleton(physis_Skeleton skeleton);
+    void setSkeleton(physis_Skeleton newSkeleton);
 
     /// Clears the current skeleton.
     void clearSkeleton();
@@ -113,16 +112,16 @@ protected:
 private:
     void destroyObjects();
 
-    RenderMaterial createMaterial(const std::string &path, const physis_Material &mat);
+    RenderMaterial createMaterial(const std::string &path, const physis_Material &material);
     RenderMaterial createOrCacheMaterial(const std::string &path, const physis_Material &mat);
-    void destroyMaterial(RenderMaterial &material);
+    void destroyMaterial(RenderMaterial &material) const;
 
-    Texture createTexture(const std::string &path);
+    Texture createTexture(const std::string &path) const;
     Texture createOrCacheTexture(const std::string &path);
-    void destroyTexture(Texture &texture);
+    void destroyTexture(Texture &texture) const;
 
-    void calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone);
-    void calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone);
+    void calculateBoneInversePose(physis_Skeleton &skeleton, const physis_Bone &bone, const physis_Bone *parent_bone);
+    void calculateBone(physis_Skeleton &skeleton, const physis_Bone &bone, const physis_Bone *parent_bone);
 
     FileCache &m_cache;
 

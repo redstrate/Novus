@@ -18,6 +18,8 @@ public:
 
 public Q_SLOTS:
     void setQPixmap(const QPixmap &);
+
+protected:
     void resizeEvent(QResizeEvent *) override;
 
 private:

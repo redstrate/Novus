@@ -27,7 +27,7 @@ void OpenPathHandler::setEmitSignal(const bool emit)
 PathEdit::PathEdit(QWidget *parent)
     : EditWidget(parent)
 {
-    auto layout = new QHBoxLayout(this);
+    const auto layout = new QHBoxLayout(this);
     setMaximumHeight(35); // FIXME: don't hard-code
     layout->setContentsMargins(0, 0, 0, 0);
 
@@ -44,13 +44,13 @@ PathEdit::PathEdit(QWidget *parent)
     layout->addWidget(m_openButton);
 }
 
-void PathEdit::setPath(const QString &path)
+void PathEdit::setPath(const QString &path) const
 {
     m_lineEdit->setText(path);
     m_openButton->setEnabled(!path.isEmpty());
 }
 
-void PathEdit::setReadOnly(const bool readOnly)
+void PathEdit::setReadOnly(const bool readOnly) const
 {
     m_lineEdit->setReadOnly(readOnly);
 }

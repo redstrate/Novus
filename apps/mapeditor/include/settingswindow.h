@@ -12,7 +12,7 @@ public:
     explicit SettingsWindow(QWidget *parent = nullptr);
 
 private:
-    void applySettings();
+    void applySettings() const;
 
     QLineEdit *m_dropinsLineEdit = nullptr;
 };

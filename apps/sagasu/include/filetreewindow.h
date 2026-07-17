@@ -21,8 +21,8 @@ public:
 
     void refreshModel();
     void setShowUnknown(bool show);
-    bool selectPath(const QString &path);
-    void focusSearchField();
+    bool selectPath(const QString &path) const;
+    void focusSearchField() const;
 
 Q_SIGNALS:
     void extractFile(const QString &path, const QString &indexPath, Hash hash);

@@ -13,7 +13,7 @@
 TexPart::TexPart(QWidget *parent)
     : QWidget(parent)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     setLayout(layout);
 
     m_label = new ImageLabel();
@@ -29,20 +29,20 @@ TexPart::TexPart(QWidget *parent)
     });
 }
 
-bool TexPart::loadTex(Platform platform, physis_Buffer file)
+bool TexPart::loadTex(const Platform platform, const physis_Buffer file) const
 {
     if (file.size == 0) {
         return false;
     }
 
-    auto tex = physis_texture_parse(platform, file);
+    const auto tex = physis_texture_parse(platform, file);
     if (tex.width == 0 && tex.height == 0) {
         return false;
     }
 
-    auto rgba = physis_texture_to_rgba(tex);
+    const auto rgba = physis_texture_to_rgba(tex);
 
-    QImage image(rgba.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
+    const QImage image(rgba.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
     m_label->setQPixmap(QPixmap::fromImage(image));
 
     physis_tex_free(&tex);
@@ -50,21 +50,21 @@ bool TexPart::loadTex(Platform platform, physis_Buffer file)
     return true;
 }
 
-void TexPart::loadHwc(Platform platform, physis_Buffer file)
+void TexPart::loadHwc(const Platform platform, const physis_Buffer file) const
 {
-    auto tex = physis_hwc_parse(platform, file);
+    const auto tex = physis_hwc_parse(platform, file);
 
-    QImage image(tex.rgba, Hwc_WIDTH, Hwc_HEIGHT, QImage::Format_RGBA8888);
+    const QImage image(tex.rgba, Hwc_WIDTH, Hwc_HEIGHT, QImage::Format_RGBA8888);
     m_label->setQPixmap(QPixmap::fromImage(image));
 }
 
-void TexPart::loadPng(physis_Buffer file)
+void TexPart::loadPng(const physis_Buffer file) const
 {
-    QImage image = QImage::fromData(file.data, file.size, "PNG");
+    const QImage image = QImage::fromData(file.data, file.size, "PNG");
     m_label->setQPixmap(QPixmap::fromImage(image));
 }
 
-QAction *TexPart::saveImageAction()
+QAction *TexPart::saveImageAction() const
 {
     return m_saveImage;
 }

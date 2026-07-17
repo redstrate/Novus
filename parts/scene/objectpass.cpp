@@ -7,7 +7,6 @@
 #include "rendermanager.h"
 #include "scenepart.h"
 #include "simplerenderer.h"
-#include "swapchain.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -64,7 +63,7 @@ ObjectPass::~ObjectPass()
     vkDestroyPipeline(m_device.device, m_pipeline, nullptr);
 }
 
-void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera, const Scene &scene, const std::vector<DrawObjectInstance> &models)
+void ObjectPass::render(const VkCommandBuffer commandBuffer, Camera &camera, const Scene &scene, const std::vector<DrawObjectInstance> &models)
 {
     if (dynamic_cast<SimpleRenderer *>(m_renderer->renderer())) {
         VkDebugUtilsLabelEXT labelExt{};
@@ -103,7 +102,7 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera, const Sce
                                    sizeof(glm::mat4),
                                    &m);
 
-                const auto color = glm::vec4(0, 0, 1, 1);
+                constexpr auto color = glm::vec4(0, 0, 1, 1);
                 vkCmdPushConstants(commandBuffer,
                                    m_pipelineLayout,
                                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -111,7 +110,7 @@ void ObjectPass::render(VkCommandBuffer commandBuffer, Camera &camera, const Sce
                                    sizeof(glm::vec4),
                                    &color);
 
-                const auto discardCubeLines = glm::vec4(1);
+                constexpr auto discardCubeLines = glm::vec4(1);
                 vkCmdPushConstants(commandBuffer,
                                    m_pipelineLayout,
                                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -146,7 +145,7 @@ void ObjectPass::createPipeline()
     fragmentShaderStageInfo.module = debugFragmentShader;
     fragmentShaderStageInfo.pName = "main";
 
-    const std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
+    const std::array shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
     VkVertexInputBindingDescription vertexBindingDescription = {};
     vertexBindingDescription.stride = sizeof(glm::vec3);
@@ -189,7 +188,7 @@ void ObjectPass::createPipeline()
     colorBlending.attachmentCount = 1;
     colorBlending.pAttachments = &colorBlendAttachment;
 
-    const std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    constexpr std::array dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -267,7 +266,7 @@ void ObjectPass::createBillboardPipeline()
     fragmentShaderStageInfo.module = debugFragmentShader;
     fragmentShaderStageInfo.pName = "main";
 
-    const std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
+    const std::array shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -302,7 +301,7 @@ void ObjectPass::createBillboardPipeline()
     colorBlending.attachmentCount = 1;
     colorBlending.pAttachments = &colorBlendAttachment;
 
-    const std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    constexpr std::array dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -350,9 +349,9 @@ void ObjectPass::createBillboardPipeline()
     vkDestroyShaderModule(m_device.device, debugFragmentShader, nullptr);
 }
 
-void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const ObjectScene &scene)
+void ObjectPass::addScene(const VkCommandBuffer commandBuffer, Camera &camera, const ObjectScene &scene)
 {
-    for (const auto &[_, lgb] : scene.lgbFiles) {
+    for (const auto &lgb : scene.lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             const auto &chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
@@ -377,7 +376,7 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
         }
     }
 
-    for (const auto &[_, dropIn] : scene.dropIns) {
+    for (const auto &dropIn : scene.dropIns | std::views::values) {
         for (const auto &layer : dropIn.layers) {
             for (const auto &object : layer.objects) {
                 vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
@@ -396,7 +395,7 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
                                    sizeof(glm::mat4),
                                    &m);
 
-                glm::vec4 color = glm::vec4(0.5, 0.5, 0.5, 1);
+                auto color = glm::vec4(0.5, 0.5, 0.5, 1);
                 if (m_appState->selectedDropInObject && m_appState->selectedDropInObject.value() == &object) {
                     color = glm::vec4(1, 0, 0, 1);
                 }
@@ -408,7 +407,7 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
                                    sizeof(glm::vec4),
                                    &color);
 
-                const auto discardCubeLines = glm::vec4(1);
+                constexpr auto discardCubeLines = glm::vec4(1);
                 vkCmdPushConstants(commandBuffer,
                                    m_pipelineLayout,
                                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -421,7 +420,7 @@ void ObjectPass::addScene(VkCommandBuffer commandBuffer, Camera &camera, const O
         }
     }
 
-    for (const auto &[_, nestedScene] : scene.nestedScenes) {
+    for (const auto &nestedScene : scene.nestedScenes | std::views::values) {
         if (!scene.isSgb() && m_appState->visibleLayerIds.contains(nestedScene.originatingSgbLayerId)) {
             addScene(commandBuffer, camera, nestedScene);
         }
@@ -441,7 +440,7 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
 
         const auto combinedTransform = addTransformation(rootTransformation, object.transform);
 
-        const auto setModel = [this, &combinedTransform, &commandBuffer](const glm::vec3 relativePosition, glm::vec3 scaleMultiplier = glm::vec3(1)) {
+        const auto setModel = [this, &combinedTransform, &commandBuffer](const glm::vec3 relativePosition, const glm::vec3 scaleMultiplier = glm::vec3(1)) {
             auto m = glm::mat4(1.0f);
             m = glm::translate(m,
                                glm::vec3{combinedTransform.translation[0], combinedTransform.translation[1], combinedTransform.translation[2]}
@@ -459,13 +458,13 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
         setModel({});
 
         // Used for billboards
-        glm::vec4 billboardColor = glm::vec4(1, 1, 1, 0.5);
+        auto billboardColor = glm::vec4(1, 1, 1, 0.5);
         if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
             billboardColor = glm::vec4(1);
         }
 
         // Used for debug meshes
-        glm::vec4 debugColor = glm::vec4(0.5, 0.5, 0.5, 1.0);
+        auto debugColor = glm::vec4(0.5, 0.5, 0.5, 1.0);
         if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
             debugColor = glm::vec4(1, 0, 0, 1);
         }
@@ -539,7 +538,7 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
                 for (uint32_t i = 0; i < object.data.pop_range._0.position_count; i++) {
                     setModel({object.data.pop_range._0.positions[i][0], object.data.pop_range._0.positions[i][1], object.data.pop_range._0.positions[i][2]},
                              glm::vec3(0.1));
-                    const auto discardCubeLines = false;
+                    constexpr auto discardCubeLines = false;
                     vkCmdPushConstants(commandBuffer,
                                        m_pipelineLayout,
                                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -610,7 +609,7 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
             drawBillboard(commandBuffer, camera, m_targetMarkerTexture, billboardColor, pos);
             break;
         default: {
-            const auto discardCubeLines = glm::vec4(1);
+            constexpr auto discardCubeLines = glm::vec4(1);
             vkCmdPushConstants(commandBuffer,
                                m_pipelineLayout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -624,7 +623,11 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
     }
 }
 
-void ObjectPass::drawBillboard(VkCommandBuffer commandBuffer, const Camera &camera, const Texture &texture, glm::vec4 color, glm::vec3 position)
+void ObjectPass::drawBillboard(const VkCommandBuffer commandBuffer,
+                               const Camera &camera,
+                               const Texture &texture,
+                               const glm::vec4 color,
+                               const glm::vec3 position)
 {
     const auto distance = glm::distance(camera.position, position);
     if (distance > MAX_DEBUG_DRAW_DISTANCE) {
@@ -658,7 +661,7 @@ void ObjectPass::drawBillboard(VkCommandBuffer commandBuffer, const Camera &came
                        sizeof(glm::vec4),
                        &color);
 
-    const glm::vec4 scale = glm::vec4(1, 1, 1, 0);
+    constexpr auto scale = glm::vec4(1, 1, 1, 0);
     vkCmdPushConstants(commandBuffer,
                        m_billboardPipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -680,7 +683,7 @@ Texture ObjectPass::addTexture(const QString &path)
     texture.width = image.width();
     texture.height = image.height();
     texture.depth = 1;
-    texture.data = reinterpret_cast<uint8_t *>(image.bits());
+    texture.data = image.bits();
     texture.data_size = image.sizeInBytes();
     texture.mip_levels = 1;
 

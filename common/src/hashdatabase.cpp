@@ -6,7 +6,6 @@
 #include <QDir>
 #include <QFile>
 #include <QSqlDriver>
-#include <QSqlError>
 #include <QStandardPaths>
 #include <physis.hpp>
 
@@ -53,7 +52,7 @@ void HashDatabase::addFile(const QString &file)
 {
     QString filename = file;
     if (file.contains(QStringLiteral("/"))) {
-        int lastSlash = file.lastIndexOf(QStringLiteral("/"));
+        const int lastSlash = file.lastIndexOf(QStringLiteral("/"));
         filename = file.sliced(lastSlash + 1, file.length() - lastSlash - 1);
     }
 
@@ -108,7 +107,7 @@ QString HashDatabase::getPath(const uint32_t i) const
     return m_pathHashes.value(i);
 }
 
-QString HashDatabase::getFolder(uint32_t i) const
+QString HashDatabase::getFolder(const uint32_t i) const
 {
     return m_folderHashes.value(i);
 }
@@ -156,7 +155,7 @@ void HashDatabase::importFileList(const QByteArray &file)
         QString filename;
         QString foldername;
         if (path.contains(QStringLiteral("/"))) {
-            int lastSlash = path.lastIndexOf(QStringLiteral("/"));
+            const int lastSlash = path.lastIndexOf(QStringLiteral("/"));
             filename = path.sliced(lastSlash + 1, path.length() - lastSlash - 1);
             foldername = path.left(lastSlash);
         } else {

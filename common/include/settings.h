@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <QString>
-
 #include "novuscommon_export.h"
 
 #include <QUuid>
@@ -22,7 +20,7 @@ struct GameInstall {
 };
 
 NOVUSCOMMON_EXPORT QList<GameInstall> getGameInstalls();
-NOVUSCOMMON_EXPORT void saveGameInstalls(QList<GameInstall> installs);
+NOVUSCOMMON_EXPORT void saveGameInstalls(const QList<GameInstall> &installs);
 NOVUSCOMMON_EXPORT QString getGameDirectory();
 NOVUSCOMMON_EXPORT QString getGameUUID();
 NOVUSCOMMON_EXPORT bool addNewInstall();
@@ -34,12 +32,12 @@ struct GameMod {
 };
 
 NOVUSCOMMON_EXPORT QList<GameMod> getGameMods();
-NOVUSCOMMON_EXPORT void saveGameMods(QList<GameMod> mods);
+NOVUSCOMMON_EXPORT void saveGameMods(const QList<GameMod> &mods);
 NOVUSCOMMON_EXPORT bool addNewGameMod();
 NOVUSCOMMON_EXPORT bool gameModsEnabled();
 NOVUSCOMMON_EXPORT void setGameModsEnabled(bool enabled);
 
-NOVUSCOMMON_EXPORT QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bool prompt = true);
+NOVUSCOMMON_EXPORT QString processCommandLine(QCommandLineParser &parser, const QCoreApplication &app, bool prompt = true);
 
 /**
  * @brief Identical to QFileDialog::getSaveFileName but it saves its own settings automatically.

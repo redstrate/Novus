@@ -12,5 +12,5 @@ class NOVUSCOMMON_EXPORT OpenInWidget : public QMenuBar
     Q_OBJECT
 
 public:
-    OpenInWidget(QObject *target);
+    explicit OpenInWidget(QObject *target);
 };

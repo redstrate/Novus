@@ -12,10 +12,10 @@ class SheetListWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit SheetListWidget(physis_SqPackResource *data, QWidget *parent = nullptr);
+    explicit SheetListWidget(const physis_SqPackResource *data, QWidget *parent = nullptr);
 
-    void focusSearchField();
-    void goToSheet(const QString &name);
+    void focusSearchField() const;
+    void goToSheet(const QString &name) const;
 
 Q_SIGNALS:
     void sheetSelected(const QString &name);

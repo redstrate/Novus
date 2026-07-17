@@ -35,8 +35,8 @@ public:
     explicit PathEdit(QWidget *parent = nullptr);
     ~PathEdit() override = default;
 
-    void setPath(const QString &path);
-    void setReadOnly(bool readOnly);
+    void setPath(const QString &path) const;
+    void setReadOnly(bool readOnly) const;
 
     static OpenPathHandler *handler();
 

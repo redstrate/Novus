@@ -72,7 +72,7 @@ GameRenderer::GameRenderer(Device &device, FileCache &cache)
 
     const size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    m_device.copyToBuffer(m_planeVertexBuffer, (void *)planeVertices.data(), vertexSize);
+    m_device.copyToBuffer(m_planeVertexBuffer, planeVertices.data(), vertexSize);
 
     // TODO: they switched from 3D images from ARR to 2D arrays here, not yet supported
     m_tileNormal = m_device.addGameTexture(physis_texture_parse(m_cache.platform(), m_cache.read(QStringLiteral("chara/common/texture/tile_norm_array.tex"))));
@@ -310,7 +310,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
 
     m_device.copyToBuffer(g_CameraParameter, &cameraParameter, sizeof(CameraParameter));
 
-    WorldViewMatrix worldViewMatrix;
+    WorldViewMatrix worldViewMatrix{};
     worldViewMatrix.m_WorldViewMatrix = glm::mat4(1.0f);
     worldViewMatrix.m_EyePosition = glm::vec4(camera.position, 0.0f);
 
@@ -475,7 +475,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                 const auto [colorAttachmentFormats, depthAttachmentFormat] = beginPass(commandBuffer, "PASS_LIGHTING_OPAQUE_VIEWPOSITION");
 
                 std::vector<uint32_t> systemKeys = {};
-                std::vector<uint32_t> subviewKeys = {
+                std::vector subviewKeys = {
                     physis_shpk_crc("Default"),
                     physis_shpk_crc("SUB_VIEW_MAIN"),
                 };
@@ -649,7 +649,7 @@ void GameRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene &
                             materialKeys.push_back(renderMaterial.shaderPackage.material_keys[j].default_value);
                         }
                     }
-                    std::vector<uint32_t> subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
+                    std::vector subviewKeys = {physis_shpk_crc("Default"), physis_shpk_crc("SUB_VIEW_MAIN")};
 
                     const uint32_t selector = physis_shpk_build_selector_from_all_keys(systemKeys.data(),
                                                                                        systemKeys.size(),
@@ -719,7 +719,7 @@ void GameRenderer::resize()
     createImageResources();
 }
 
-std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_view passName)
+std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuffer commandBuffer, const std::string_view passName) const
 {
     VkDebugUtilsLabelEXT labelExt{};
     labelExt.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
@@ -957,7 +957,7 @@ std::pair<std::vector<VkFormat>, VkFormat> GameRenderer::beginPass(VkCommandBuff
     return {colorAttachmentFormats, depthAttachmentFormat};
 }
 
-void GameRenderer::endPass(const VkCommandBuffer commandBuffer)
+void GameRenderer::endPass(const VkCommandBuffer commandBuffer) const
 {
     vkCmdEndRendering(commandBuffer);
 
@@ -996,7 +996,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         fragmentShaderStageInfo.module = fragmentShaderModule; // m_renderer.loadShaderFromDisk(":/shaders/dummy.frag.spv");
         fragmentShaderStageInfo.pName = "main";
 
-        std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
+        std::array shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
 
         std::vector<VkVertexInputBindingDescription> bindings;
         if (passName == "PASS_LIGHTING_OPAQUE" || passName == "PASS_LIGHTING_OPAQUE_VIEWPOSITION") {
@@ -1024,8 +1024,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                                                         const spirv_cross::SmallVector<spirv_cross::Resource> &resources,
                                                         const VkShaderStageFlagBits stageFlagBit) {
             for (const auto &resource : resources) {
-                unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
-                unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
+                const unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+                const unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
 
                 if (requestedSets.size() <= set) {
                     requestedSets.resize(set + 1);
@@ -1102,7 +1102,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                 for (uintptr_t i = 0; i < mdl->lods[0].num_vertex_elements; i++) {
                     auto element = mdl->lods[0].vertex_elements[i];
 
-                    auto fromVertexType = [](VertexType type) -> VkFormat {
+                    auto fromVertexType = [](const VertexType type) -> VkFormat {
                         switch (type) {
                         case VertexType::Single1:
                             return VK_FORMAT_R32_SFLOAT;
@@ -1129,9 +1129,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                         case VertexType::Half4:
                             return VK_FORMAT_R16G16B16A16_SFLOAT;
                         case VertexType::UnkPS3:
-                            break;
                         case VertexType::UnsignedShort2:
-                            break;
                         case VertexType::UnsignedShort4:
                             break;
                         }
@@ -1280,7 +1278,7 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
         colorBlending.attachmentCount = colorBlendAttachments.size();
         colorBlending.pAttachments = colorBlendAttachments.data();
 
-        std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        std::vector dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
         VkPipelineDynamicStateCreateInfo dynamicState = {};
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -1371,7 +1369,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                                                   const CachedPipeline &cachedPipeline,
                                                   const size_t i,
                                                   const RenderMaterial *material,
-                                                  std::string_view pass)
+                                                  const std::string_view pass) const
 {
     VkDescriptorSet set;
 
@@ -1418,7 +1416,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
 
             switch (binding.type) {
             case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE: {
-                auto info = &imageInfo.emplace_back();
+                const auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
                 if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT) {
@@ -1517,7 +1515,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                 info->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             } break;
             case VK_DESCRIPTOR_TYPE_SAMPLER: {
-                auto info = &imageInfo.emplace_back();
+                const auto info = &imageInfo.emplace_back();
                 descriptorWrite.pImageInfo = info;
 
                 info->sampler = m_normalSampler;
@@ -1531,7 +1529,7 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                     info->range = buffer.size;
                 };
 
-                auto bindBuffer = [this, &useUniformBuffer, &info, j, &object, pass, material](const char *name) {
+                auto bindBuffer = [this, &useUniformBuffer, &info, j, &object, material](const char *name) {
                     qInfo() << "Requesting" << name << "at" << j;
 
                     if (strcmp(name, "g_CameraParameter") == 0) {
@@ -1577,12 +1575,12 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                 };
 
                 if (binding.stageFlags == VK_SHADER_STAGE_VERTEX_BIT) {
-                    auto name = cachedPipeline.vertexShader.scalar_parameters[z].name;
+                    const auto name = cachedPipeline.vertexShader.scalar_parameters[z].name;
 
                     bindBuffer(name);
                     z++;
                 } else if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT) {
-                    auto name = cachedPipeline.pixelShader.scalar_parameters[z].name;
+                    const auto name = cachedPipeline.pixelShader.scalar_parameters[z].name;
 
                     bindBuffer(name);
                     z++;
@@ -1688,11 +1686,11 @@ Texture &GameRenderer::getCompositeTexture()
     return m_compositeBuffer;
 }
 
-void GameRenderer::bindDescriptorSets(VkCommandBuffer commandBuffer,
+void GameRenderer::bindDescriptorSets(const VkCommandBuffer commandBuffer,
                                       CachedPipeline &pipeline,
                                       const DrawObject *object,
                                       const RenderMaterial *material,
-                                      const std::string_view pass)
+                                      const std::string_view pass) const
 {
     for (size_t i = 0; i < pipeline.setLayouts.size(); i++) {
         if (!pipeline.cachedDescriptors.contains(i)) {

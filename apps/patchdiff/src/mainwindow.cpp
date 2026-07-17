@@ -20,24 +20,24 @@
 
 #include <QHBoxLayout>
 
-MainWindow::MainWindow(physis_SqPackResource data)
+MainWindow::MainWindow(const physis_SqPackResource data)
     : m_data(data)
     , m_cache(data)
 {
     setMinimumSize(720, 720);
 
-    auto widget = new QWidget();
+    const auto widget = new QWidget();
     setCentralWidget(widget);
 
-    auto layout = new QHBoxLayout();
+    const auto layout = new QHBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     widget->setLayout(layout);
 
     m_diffTreeWidget = new DiffTreeWidget(m_database, &m_data, this);
-    connect(m_diffTreeWidget, &DiffTreeWidget::bufferSelected, this, [this](physis_Buffer buffer) {
+    connect(m_diffTreeWidget, &DiffTreeWidget::bufferSelected, this, [this](const physis_Buffer buffer) {
         if (buffer.size > 0) {
-            auto decompressedBlock = physis_sqpack_read_block(m_data.platform, buffer);
+            const auto decompressedBlock = physis_sqpack_read_block(m_data.platform, buffer);
             m_hexPart->loadFile(decompressedBlock);
         }
     });
@@ -54,7 +54,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
 
-    auto openInWidget = new OpenInWidget(this);
+    const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 }
 

@@ -8,7 +8,7 @@
 BoolEdit::BoolEdit(QWidget *parent)
     : EditWidget(parent)
 {
-    auto itemsLayout = new QHBoxLayout(this);
+    const auto itemsLayout = new QHBoxLayout(this);
     itemsLayout->setContentsMargins(0, 0, 0, 0);
 
     m_checkBox = new QCheckBox();

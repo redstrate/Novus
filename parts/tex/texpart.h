@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <QWidget>
 #include <physis.hpp>
 
 #include "imagelabel.h"
@@ -18,19 +17,19 @@ public:
     /**
      * @brief Loads a .tex file.
      */
-    bool loadTex(Platform platform, physis_Buffer file);
+    bool loadTex(Platform platform, physis_Buffer file) const;
 
     /**
      * @brief Loads a .hwc file.
      */
-    void loadHwc(Platform platform, physis_Buffer file);
+    void loadHwc(Platform platform, physis_Buffer file) const;
 
     /**
      * @brief Loads a .png file.
      */
-    void loadPng(physis_Buffer file);
+    void loadPng(physis_Buffer file) const;
 
-    QAction *saveImageAction();
+    QAction *saveImageAction() const;
 
 private:
     ImageLabel *m_label = nullptr;

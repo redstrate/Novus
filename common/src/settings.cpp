@@ -7,7 +7,6 @@
 
 #include <physis.hpp>
 
-#include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
 #include <KSharedConfig>
@@ -42,7 +41,7 @@ QList<GameInstall> getGameInstalls()
     return installs;
 }
 
-void saveGameInstalls(QList<GameInstall> installs)
+void saveGameInstalls(const QList<GameInstall> &installs)
 {
     KConfig config(QStringLiteral("novusrc"));
 
@@ -85,7 +84,7 @@ bool addNewInstall()
 
     const std::string dirStd = dir.toStdString();
 
-    auto resource = physis_sqpack_initialize(dirStd.c_str());
+    const auto resource = physis_sqpack_initialize(dirStd.c_str());
     if (!resource.p_ptr)
         return false;
 
@@ -147,7 +146,7 @@ QList<GameMod> getGameMods()
     return mods;
 }
 
-void saveGameMods(QList<GameMod> mods)
+void saveGameMods(const QList<GameMod> &mods)
 {
     KConfig config(QStringLiteral("novusrc"));
 
@@ -198,16 +197,16 @@ void setGameModsEnabled(const bool enabled)
     game.writeEntry(QStringLiteral("Enabled"), enabled);
 }
 
-QString processCommandLine(QCommandLineParser &parser, QCoreApplication &app, bool prompt)
+QString processCommandLine(QCommandLineParser &parser, const QCoreApplication &app, const bool prompt)
 {
-    QCommandLineOption gameInstallOption(QStringLiteral("game"), i18n("Which installation to use"), QStringLiteral("uuid"));
+    const QCommandLineOption gameInstallOption(QStringLiteral("game"), i18n("Which installation to use"), QStringLiteral("uuid"));
     parser.addOption(gameInstallOption);
 
     parser.process(app);
 
     if (parser.isSet(gameInstallOption)) {
         // Load override
-        QString uuid = parser.value(gameInstallOption);
+        const QString uuid = parser.value(gameInstallOption);
         *currentGameUuid = uuid;
     } else {
         // Load default

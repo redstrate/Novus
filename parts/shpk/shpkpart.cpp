@@ -15,7 +15,6 @@
 #include <spirv_glsl.hpp>
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/FoldingRegion>
 #include <KSyntaxHighlighting/SyntaxHighlighter>
 #include <KSyntaxHighlighting/Theme>
@@ -193,7 +192,7 @@ SHPKPart::SHPKPart(QWidget *parent)
     layout->addWidget(m_pageTabWidget);
 }
 
-void SHPKPart::load(Platform platform, physis_Buffer buffer)
+void SHPKPart::load(const Platform platform, const physis_Buffer buffer)
 {
     m_shpk = physis_shpk_parse(platform, buffer);
 
@@ -201,7 +200,7 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
     m_shadersListWidget->clear();
 
     for (uint32_t i = 0; i < m_shpk.num_vertex_shaders; i++) {
-        auto item = new QListWidgetItem();
+        const auto item = new QListWidgetItem();
         item->setText(i18nc("@title:tab", "Vertex Shader %1", i));
         item->setData(Qt::UserRole, 0); // vertex
         item->setData(Qt::UserRole + 1, i); // index
@@ -209,7 +208,7 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
     }
 
     for (uint32_t i = 0; i < m_shpk.num_pixel_shaders; i++) {
-        auto item = new QListWidgetItem();
+        const auto item = new QListWidgetItem();
         item->setText(i18nc("@title:tab", "Pixel Shader %1", i));
         item->setData(Qt::UserRole, 1); // vertex
         item->setData(Qt::UserRole + 1, i); // index
@@ -218,7 +217,7 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
 
     // keys
     const auto addKey = [](QLayout *layout, const Key &key) {
-        auto label = new QLabel();
+        const auto label = new QLabel();
         label->setText(QStringLiteral("<strong>%1</strong><br>Default Value: %2").arg(nameFromCrc(key.id)).arg(nameFromCrc(key.default_value)));
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
         layout->addWidget(label);
@@ -246,7 +245,7 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
 
     // first
     {
-        auto label = new QLabel();
+        const auto label = new QLabel();
         label->setText(QString::fromStdString(nameFromCrc(m_shpk.sub_view_key1_default)));
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
         m_subViewLayout->addWidget(label);
@@ -254,7 +253,7 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
 
     // second
     {
-        auto label = new QLabel();
+        const auto label = new QLabel();
         label->setText(QString::fromStdString(nameFromCrc(m_shpk.sub_view_key2_default)));
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
         m_subViewLayout->addWidget(label);
@@ -279,7 +278,7 @@ void SHPKPart::load(Platform platform, physis_Buffer buffer)
     }
 }
 
-void SHPKPart::loadShader(const QModelIndex &index)
+void SHPKPart::loadShader(const QModelIndex &index) const
 {
     const auto shaderType = index.data(Qt::UserRole).toInt();
     const auto shaderIndex = index.data(Qt::UserRole + 1).toInt();
@@ -298,9 +297,9 @@ void SHPKPart::loadShader(const QModelIndex &index)
     try {
         dxvk::DxbcReader reader(reinterpret_cast<const char *>(shader->bytecode), shader->len);
 
-        dxvk::DxbcModule module(reader);
+        const dxvk::DxbcModule module(reader);
 
-        dxvk::DxbcModuleInfo info;
+        const dxvk::DxbcModuleInfo info;
         auto result = module.compile(info, "test");
 
         spirv_cross::CompilerGLSL glsl(result.code.data(), result.code.dwords());
@@ -317,8 +316,8 @@ void SHPKPart::loadShader(const QModelIndex &index)
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting
-        auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_shadersTextEdit->document());
-        highlighter->setTheme((m_shadersTextEdit->palette().color(QPalette::Base).lightness() < 128)
+        const auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_shadersTextEdit->document());
+        highlighter->setTheme(m_shadersTextEdit->palette().color(QPalette::Base).lightness() < 128
                                   ? m_repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
                                   : m_repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
 
@@ -341,7 +340,7 @@ void SHPKPart::loadShader(const QModelIndex &index)
     }
 }
 
-void SHPKPart::loadNode(const QModelIndex &index)
+void SHPKPart::loadNode(const QModelIndex &index) const
 {
     const auto nodeIndex = index.row();
     const physis_SHPKNode *node = &m_shpk.nodes[nodeIndex];
@@ -352,15 +351,15 @@ void SHPKPart::loadNode(const QModelIndex &index)
     m_nodesPassesListWidget->clear();
     for (int i = 0; i < 16; i++) {
         if (node->pass_indices[i] != 255) {
-            auto realPass = node->pass_indices[i];
+            const auto realPass = node->pass_indices[i];
 
-            auto item = new QListWidgetItem();
+            const auto item = new QListWidgetItem();
             item->setText(i18nc("@title:tab", "%1: %2", i, QString::fromStdString(nameFromCrc(node->passes[realPass].id))));
             item->setData(Qt::UserRole, nodeIndex); // node index
             item->setData(Qt::UserRole + 1, realPass); // pass index
             m_nodesPassesListWidget->addItem(item);
         } else {
-            auto item = new QListWidgetItem();
+            const auto item = new QListWidgetItem();
             item->setText(i18nc("@title:tab", "%1: (No Pass)", i));
             m_nodesPassesListWidget->addItem(item);
         }
@@ -372,7 +371,7 @@ void SHPKPart::loadNode(const QModelIndex &index)
         if (upstreamKey.default_value == key) {
             isDefault = i18n(" (default)");
         }
-        auto label = new QLabel();
+        const auto label = new QLabel();
         label->setText(QStringLiteral("<strong>%1</strong><br>Value: %2%3").arg(nameFromCrc(upstreamKey.id)).arg(nameFromCrc(key)).arg(isDefault));
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
         layout->addWidget(label);
@@ -383,7 +382,7 @@ void SHPKPart::loadNode(const QModelIndex &index)
         if (upstreamKeyDefault == key) {
             isDefault = i18n(" (default)");
         }
-        auto label = new QLabel();
+        const auto label = new QLabel();
         label->setText(QStringLiteral("%1%2").arg(nameFromCrc(key)).arg(isDefault));
         label->setTextInteractionFlags(Qt::TextInteractionFlag::TextSelectableByMouse);
         layout->addWidget(label);
@@ -440,14 +439,14 @@ void SHPKPart::loadPass(const QModelIndex &index)
     });
 }
 
-void SHPKPart::goToVertexShader(const int index)
+void SHPKPart::goToVertexShader(const int index) const
 {
     m_pageTabWidget->setCurrentIndex(0); // shaders tab
     m_shadersListWidget->setCurrentRow(index);
     Q_EMIT m_shadersListWidget->activated(m_shadersListWidget->currentIndex()); // manually activate
 }
 
-void SHPKPart::goToPixelShader(const int index)
+void SHPKPart::goToPixelShader(const int index) const
 {
     m_pageTabWidget->setCurrentIndex(0); // shaders tab
 
@@ -461,7 +460,7 @@ void SHPKPart::goToPixelShader(const int index)
 
 void SHPKPart::clearLayout(QLayout *layout)
 {
-    QLayoutItem *child = nullptr;
+    const QLayoutItem *child = nullptr;
     while ((child = layout->takeAt(0)) != nullptr) {
         if (child->widget()) {
             child->widget()->setParent(nullptr);

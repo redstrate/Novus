@@ -10,7 +10,7 @@
 #include "buffer.h"
 
 struct VfxModel {
-    size_t numIndices;
+    size_t numIndices = 0;
 
     Buffer vertexBuffer;
     Buffer indexBuffer;

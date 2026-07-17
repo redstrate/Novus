@@ -11,19 +11,19 @@ class RenderManager;
 
 struct Sphere {
     Buffer vertexBuffer, indexBuffer;
-    uint32_t indexCount;
+    uint32_t indexCount = 0;
 };
 
 struct Cylinder {
     Buffer vertexBuffer;
-    uint32_t vertexCount;
+    uint32_t vertexCount = 0;
 };
 
 class Primitives
 {
 public:
-    static void Initialize(RenderManager *renderer);
-    static void Cleanup(RenderManager *renderer);
+    static void Initialize(const RenderManager *renderer);
+    static void Cleanup(const RenderManager *renderer);
 
     static void DrawSphere(VkCommandBuffer commandBuffer);
     static void DrawCube(VkCommandBuffer commandBuffer);

@@ -21,7 +21,6 @@ file (GENERATE
 add_custom_command(
         COMMAND ${CMAKE_COMMAND} "-E" "copy_if_different" "launcherconfig_$<CONFIG>.h.out" "launcherconfig.h"
         VERBATIM
-        PRE_BUILD
         DEPENDS  "launcherconfig_$<CONFIG>.h.out"
         OUTPUT   "launcherconfig.h"
         COMMENT  "creating config.out file ({event: PRE_BUILD}, {filename: config.out})"

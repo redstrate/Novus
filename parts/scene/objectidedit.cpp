@@ -10,7 +10,7 @@
 ObjectIdEdit::ObjectIdEdit(SceneState *state, QWidget *parent)
     : QWidget(parent)
 {
-    auto layout = new QHBoxLayout(this);
+    const auto layout = new QHBoxLayout(this);
     setMaximumHeight(35); // FIXME: don't hard-code
     layout->setContentsMargins(0, 0, 0, 0);
 

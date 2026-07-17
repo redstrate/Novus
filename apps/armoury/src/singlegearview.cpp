@@ -7,7 +7,6 @@
 #include <KConfigGroup>
 #include <KLocalizedString>
 #include <QFileDialog>
-#include <QLineEdit>
 #include <QMenu>
 #include <QProcess>
 #include <QPushButton>
@@ -30,7 +29,7 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
     m_gearView->setEar(-1);
     m_gearView->setFace(-1);
 
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     setLayout(layout);
 
     auto mdlPathEdit = new PathEdit();
@@ -42,8 +41,8 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
         Q_EMIT doneLoadingModel();
     });
 
-    auto topControlLayout = new QHBoxLayout();
-    auto controlLayout = new QHBoxLayout();
+    const auto topControlLayout = new QHBoxLayout();
+    const auto controlLayout = new QHBoxLayout();
 
     layout->addWidget(mdlPathEdit);
     layout->addLayout(controlLayout);
@@ -52,28 +51,28 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
 
     m_raceCombo = new QComboBox();
     m_raceCombo->setWhatsThis(i18n("The race used in the gear model preview. Note that this only shows races that have unique models for this gear."));
-    connect(m_raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+    connect(m_raceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](const int index) {
         setRace(static_cast<Race>(m_raceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(m_raceCombo);
 
     m_subraceCombo = new QComboBox();
     m_subraceCombo->setWhatsThis(i18n("The subrace used in the gear model preview. Note that this only shows subraces that have unique models for this gear."));
-    connect(m_subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+    connect(m_subraceCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](const int index) {
         setTribe(static_cast<Tribe>(m_subraceCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(m_subraceCombo);
 
     m_genderCombo = new QComboBox();
     m_genderCombo->setWhatsThis(i18n("The gender used in the gear model preview. Note that this only shows gender that have unique models for this gear."));
-    connect(m_genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+    connect(m_genderCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](const int index) {
         setGender(static_cast<Gender>(m_genderCombo->itemData(index).toInt()));
     });
     controlLayout->addWidget(m_genderCombo);
 
     m_lodCombo = new QComboBox();
     m_lodCombo->setWhatsThis(i18n("The level of detail to preview. The higher the number, the lower the detail."));
-    connect(m_lodCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+    connect(m_lodCombo, qOverload<int>(&QComboBox::currentIndexChanged), [this](const int index) {
         setLevelOfDetail(index);
     });
     controlLayout->addWidget(m_lodCombo);
@@ -98,8 +97,8 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
         };
 
         KConfig config(QStringLiteral("novusrc"));
-        KConfigGroup game = config.group(QStringLiteral("Armoury"));
-        QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));
+        const KConfigGroup game = config.group(QStringLiteral("Armoury"));
+        const QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));
         QString newFilename = QStringLiteral("%1.glb").arg(sanitizeMdlPath(m_gearView->getLoadedGearPath()));
 
         QString path = QStringLiteral("%1/%2/%3/%4")
@@ -115,9 +114,9 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
 
         m_gearView->exportModel(fileName);
 
-        QFileInfo info(fileName);
+        const QFileInfo info(fileName);
 
-        QProcess *blenderProcess = new QProcess(this);
+        const auto blenderProcess = new QProcess(this);
         blenderProcess->setProgram(game.readEntry(QStringLiteral("BlenderPath")));
         blenderProcess->setArguments(
             {QStringLiteral("--python-expr"),
@@ -137,15 +136,15 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
     connect(m_importButton, &QPushButton::clicked, this, [this](bool) {
         if (m_currentGear.has_value()) {
             KConfig config(QStringLiteral("novusrc"));
-            KConfigGroup game = config.group(QStringLiteral("Armoury"));
-            QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));
+            const KConfigGroup game = config.group(QStringLiteral("Armoury"));
+            const QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));
 
             // TODO: deduplicate
-            QString path = QStringLiteral("%1/%2/%3/%4")
-                               .arg(sourceDirectory)
-                               .arg(QString::fromStdString(magic_enum::enum_name(m_currentGear->slot).data()))
-                               .arg(m_currentGear->name)
-                               .arg(QStringLiteral("3D"));
+            const QString path = QStringLiteral("%1/%2/%3/%4")
+                                     .arg(sourceDirectory)
+                                     .arg(QString::fromStdString(magic_enum::enum_name(m_currentGear->slot).data()))
+                                     .arg(m_currentGear->name)
+                                     .arg(QStringLiteral("3D"));
 
             if (!QDir().exists(path))
                 QDir().mkpath(path);
@@ -158,8 +157,8 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
     });
     topControlLayout->addWidget(m_importButton);
 
-    auto testMenu = new QMenu();
-    auto gltfAction = testMenu->addAction(i18nc("@action:inmenu", "glTF"));
+    const auto testMenu = new QMenu();
+    const auto gltfAction = testMenu->addAction(i18nc("@action:inmenu", "glTF"));
     connect(gltfAction, &QAction::triggered, this, [this](bool) {
         if (m_currentGear.has_value()) {
             // TODO: deduplicate
@@ -168,8 +167,8 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
             };
 
             KConfig config(QStringLiteral("novusrc"));
-            KConfigGroup game = config.group(QStringLiteral("Armoury"));
-            QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));
+            const KConfigGroup game = config.group(QStringLiteral("Armoury"));
+            const QString sourceDirectory = game.readEntry(QStringLiteral("SourcesOutputDirectory"));
             QString newFilename = QStringLiteral("%1.glb").arg(sanitizeMdlPath(m_gearView->getLoadedGearPath()));
 
             QString path = QStringLiteral("%1/%2/%3/%4")
@@ -187,8 +186,8 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
             m_gearView->exportModel(fileName);
         }
     });
-    auto mdlAction = testMenu->addAction(i18nc("@action:inmenu", "MDL"));
-    connect(mdlAction, &QAction::triggered, this, [this, &cache](bool) {
+    const auto mdlAction = testMenu->addAction(i18nc("@action:inmenu", "MDL"));
+    connect(mdlAction, &QAction::triggered, this, [this](bool) {
         if (m_currentGear.has_value()) {
             // TODO: deduplicate
             const auto sanitizeMdlPath = [](const QString &mdlPath) -> QString {
@@ -200,7 +199,7 @@ SingleGearView::SingleGearView(FileCache &cache, QWidget *parent)
                                                                   sanitizeMdlPath(m_gearView->getLoadedGearPath()),
                                                                   i18n("MDL File (*.mdl)"));
 
-            auto buffer = m_cache.read(m_gearView->getLoadedGearPath());
+            const auto buffer = m_cache.read(m_gearView->getLoadedGearPath());
 
             QFile file(fileName);
             if (file.open(QIODevice::WriteOnly)) {
@@ -265,7 +264,7 @@ void SingleGearView::setGear(const GearInfo &info)
     }
 }
 
-void SingleGearView::setRace(Race race)
+void SingleGearView::setRace(const Race race)
 {
     if (m_currentRace == race) {
         return;
@@ -275,7 +274,7 @@ void SingleGearView::setRace(Race race)
     Q_EMIT raceChanged();
 }
 
-void SingleGearView::setTribe(Tribe subrace)
+void SingleGearView::setTribe(const Tribe subrace)
 {
     if (m_currentTribe == subrace) {
         return;
@@ -285,7 +284,7 @@ void SingleGearView::setTribe(Tribe subrace)
     Q_EMIT subraceChanged();
 }
 
-void SingleGearView::setGender(Gender gender)
+void SingleGearView::setGender(const Gender gender)
 {
     if (m_currentGender == gender) {
         return;
@@ -295,7 +294,7 @@ void SingleGearView::setGender(Gender gender)
     Q_EMIT genderChanged();
 }
 
-void SingleGearView::setLevelOfDetail(int lod)
+void SingleGearView::setLevelOfDetail(const int lod)
 {
     if (m_currentLod == lod) {
         return;
@@ -305,7 +304,7 @@ void SingleGearView::setLevelOfDetail(int lod)
     Q_EMIT levelOfDetailChanged();
 }
 
-void SingleGearView::reloadGear()
+void SingleGearView::reloadGear() const
 {
     m_gearView->setEnabled(m_currentGear.has_value());
     m_raceCombo->setEnabled(m_currentGear.has_value());
@@ -335,7 +334,7 @@ void SingleGearView::reloadGear()
 
         const auto supportedRaces = m_gearView->supportedRaces();
         QList<Race> addedRaces;
-        for (auto [race, subrace] : supportedRaces) {
+        for (auto race : supportedRaces | std::views::keys) {
             // TODO: supportedRaces should be designed better
             if (!addedRaces.contains(race)) {
                 m_raceCombo->addItem(QLatin1String(magic_enum::enum_name(race).data()), static_cast<int>(race));
@@ -343,27 +342,25 @@ void SingleGearView::reloadGear()
             }
         }
 
-        if (auto it = std::find_if(supportedRaces.begin(),
-                                   supportedRaces.end(),
-                                   [oldRace](auto p) {
-                                       return std::get<0>(p) == oldRace;
-                                   });
+        if (const auto it = std::ranges::find_if(supportedRaces,
+                                                 [oldRace](auto p) {
+                                                     return std::get<0>(p) == oldRace;
+                                                 });
             it != supportedRaces.end()) {
             m_raceCombo->setCurrentIndex(std::distance(supportedRaces.begin(), it));
         }
 
-        const Race selectedRace = static_cast<Race>(m_raceCombo->currentData().toInt());
+        const auto selectedRace = static_cast<Race>(m_raceCombo->currentData().toInt());
         for (auto [race, subrace] : supportedRaces) {
             if (race == selectedRace) {
                 m_subraceCombo->addItem(QLatin1String(magic_enum::enum_name(subrace).data()), static_cast<int>(subrace));
             }
         }
 
-        if (auto it = std::find_if(supportedRaces.begin(),
-                                   supportedRaces.end(),
-                                   [oldTribe](auto p) {
-                                       return std::get<1>(p) == oldTribe;
-                                   });
+        if (const auto it = std::ranges::find_if(supportedRaces,
+                                                 [oldTribe](auto p) {
+                                                     return std::get<1>(p) == oldTribe;
+                                                 });
             it != supportedRaces.end()) {
             m_subraceCombo->setCurrentIndex(std::distance(supportedRaces.begin(), it));
         }
@@ -376,11 +373,10 @@ void SingleGearView::reloadGear()
             m_genderCombo->addItem(QLatin1String(magic_enum::enum_name(gender).data()), static_cast<int>(gender));
         }
 
-        if (auto it = std::find_if(supportedGenders.begin(),
-                                   supportedGenders.end(),
-                                   [oldGender](auto p) {
-                                       return p == oldGender;
-                                   });
+        if (const auto it = std::ranges::find_if(supportedGenders,
+                                                 [oldGender](auto p) {
+                                                     return p == oldGender;
+                                                 });
             it != supportedGenders.end()) {
             m_genderCombo->setCurrentIndex(std::distance(supportedGenders.begin(), it));
         }
@@ -417,7 +413,7 @@ void SingleGearView::importModel(const QString &filename)
 
     const QFileInfo info(outputDirectory.absoluteFilePath(m_gearView->getLoadedGearPath()));
 
-    auto buffer = physis_mdl_write(m_cache.platform(), &mdl.model);
+    const auto buffer = physis_mdl_write(m_cache.platform(), &mdl.model);
     QFile file(info.absoluteFilePath());
 
     if (!QDir().exists(info.absolutePath()))

@@ -3,16 +3,16 @@
 
 #include "settingswindow.h"
 
+#include "enumedit.h"
 #include "settings.h"
-#include <physis.hpp>
 
-#include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
 #include <KPageView>
 #include <KPageWidgetModel>
 #include <QFileDialog>
 #include <QFormLayout>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -23,10 +23,10 @@ public:
     explicit GameInstallPage(QWidget *parent)
         : QWidget(parent)
     {
-        auto layout = new QVBoxLayout();
+        const auto layout = new QVBoxLayout();
         setLayout(layout);
 
-        auto sideLayout = new QHBoxLayout();
+        const auto sideLayout = new QHBoxLayout();
         layout->addLayout(sideLayout);
 
         m_installWidget = new QListWidget();
@@ -36,10 +36,10 @@ public:
         });
         sideLayout->addWidget(m_installWidget);
 
-        auto configureWidget = new QWidget();
+        const auto configureWidget = new QWidget();
         sideLayout->addWidget(configureWidget);
 
-        auto configureWidgetLayout = new QFormLayout();
+        const auto configureWidgetLayout = new QFormLayout();
         configureWidget->setLayout(configureWidgetLayout);
 
         m_labelEdit = new QLineEdit();
@@ -64,7 +64,7 @@ public:
         configureWidgetLayout->addRow(i18n("Language:"), m_languageEdit);
 
         // TODO: port to QDialogButtonBox
-        auto bottomButtonLayout = new QHBoxLayout();
+        const auto bottomButtonLayout = new QHBoxLayout();
         layout->addLayout(bottomButtonLayout);
 
         m_addButton = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")), i18n("Add"));
@@ -76,11 +76,11 @@ public:
         bottomButtonLayout->addWidget(m_removeButton);
         bottomButtonLayout->addStretch(1);
 
-        auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), i18n("Cancel"));
+        const auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), i18n("Cancel"));
         connect(cancelButton, &QPushButton::clicked, this, &QWidget::close);
         bottomButtonLayout->addWidget(cancelButton);
 
-        auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), i18n("Apply"));
+        const auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), i18n("Apply"));
         connect(saveButton, &QPushButton::clicked, this, [this] {
             applySettings();
             close();
@@ -91,7 +91,7 @@ public:
     }
 
 private:
-    void applySettings()
+    void applySettings() const
     {
         saveGameInstalls(m_installs);
     }
@@ -163,10 +163,10 @@ public:
     explicit ModPage(QWidget *parent)
         : QWidget(parent)
     {
-        auto layout = new QVBoxLayout();
+        const auto layout = new QVBoxLayout();
         setLayout(layout);
 
-        auto sideLayout = new QHBoxLayout();
+        const auto sideLayout = new QHBoxLayout();
         layout->addLayout(sideLayout);
 
         m_modsWidget = new QListWidget();
@@ -176,10 +176,10 @@ public:
         });
         sideLayout->addWidget(m_modsWidget);
 
-        auto configureWidget = new QWidget();
+        const auto configureWidget = new QWidget();
         sideLayout->addWidget(configureWidget);
 
-        auto configureWidgetLayout = new QFormLayout();
+        const auto configureWidgetLayout = new QFormLayout();
         configureWidget->setLayout(configureWidgetLayout);
 
         m_pathEdit = new QLineEdit();
@@ -190,7 +190,7 @@ public:
         configureWidgetLayout->addRow(i18n("Path:"), m_pathEdit);
 
         // TODO: port to QDialogButtonBox
-        auto bottomButtonLayout = new QHBoxLayout();
+        const auto bottomButtonLayout = new QHBoxLayout();
         layout->addLayout(bottomButtonLayout);
 
         m_addButton = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")), i18n("Add"));
@@ -202,11 +202,11 @@ public:
         bottomButtonLayout->addWidget(m_removeButton);
         bottomButtonLayout->addStretch(1);
 
-        auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), i18n("Cancel"));
+        const auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), i18n("Cancel"));
         connect(cancelButton, &QPushButton::clicked, this, &QWidget::close);
         bottomButtonLayout->addWidget(cancelButton);
 
-        auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), i18n("Apply"));
+        const auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), i18n("Apply"));
         connect(saveButton, &QPushButton::clicked, this, [this] {
             applySettings();
             close();
@@ -217,7 +217,7 @@ public:
     }
 
 private:
-    void applySettings()
+    void applySettings() const
     {
         saveGameMods(m_mods);
     }
@@ -282,19 +282,19 @@ SettingsWindow::SettingsWindow(QWidget *parent)
 {
     setWindowTitle(i18n("Settings"));
 
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    auto pageModel = new KPageWidgetModel();
+    const auto pageModel = new KPageWidgetModel();
 
-    auto pageView = new KPageView();
+    const auto pageView = new KPageView();
     pageView->setModel(pageModel);
     layout->addWidget(pageView);
 
-    auto gameInstallPageWidget = new GameInstallPage(this);
+    const auto gameInstallPageWidget = new GameInstallPage(this);
     pageModel->addPage(gameInstallPageWidget, i18n("Game"))->setIcon(QIcon::fromTheme(QStringLiteral("applications-games-symbolic")));
 
-    auto modPageWidget = new ModPage(this);
+    const auto modPageWidget = new ModPage(this);
     pageModel->addPage(modPageWidget, i18n("Mods"))->setIcon(QIcon::fromTheme(QStringLiteral("kt-plugins-symbolic")));
 }

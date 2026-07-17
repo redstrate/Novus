@@ -5,7 +5,6 @@
 #include "glm/gtx/transform.hpp"
 
 #include <KLocalizedString>
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QResizeEvent>
 #include <QVBoxLayout>
@@ -22,11 +21,11 @@ MDLPart::MDLPart(FileCache &cache, QWidget *parent)
     : QWidget(parent)
     , m_cache(cache)
 {
-    auto viewportLayout = new QVBoxLayout();
+    const auto viewportLayout = new QVBoxLayout();
     viewportLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(viewportLayout);
 
-    auto pbdFile = m_cache.read(QStringLiteral("chara/xls/bonedeformer/human.pbd"));
+    const auto pbdFile = m_cache.read(QStringLiteral("chara/xls/bonedeformer/human.pbd"));
     if (pbdFile.size == 0) {
         qWarning() << "Failed to read chara/xls/bonedeformer/human.pbd";
     } else {
@@ -48,7 +47,7 @@ MDLPart::MDLPart(FileCache &cache, QWidget *parent)
     m_vkWindow = new VulkanWindow(this, m_renderer.get(), m_instance.get());
     m_vkWindow->setVulkanInstance(m_instance.get());
 
-    auto widget = QWidget::createWindowContainer(m_vkWindow);
+    const auto widget = createWindowContainer(m_vkWindow);
     widget->installEventFilter(m_vkWindow);
 
     viewportLayout->addWidget(widget);
@@ -84,13 +83,13 @@ MDLPart::~MDLPart()
     destroyObjects();
 }
 
-void MDLPart::exportModel(const QString &fileName)
+void MDLPart::exportModel(const QString &fileName) const
 {
-    auto &model = m_vkWindow->models[0];
+    const auto &model = m_vkWindow->models[0];
     ::exportModel(model.name, model.sourceObject->model, skeleton.get(), boneData, fileName);
 }
 
-DrawObject &MDLPart::getModel(const int index)
+DrawObject &MDLPart::getModel(const int index) const
 {
     return *m_vkWindow->models[index].sourceObject;
 }
@@ -108,13 +107,13 @@ void MDLPart::clear()
     Q_EMIT modelChanged();
 }
 
-void MDLPart::addModel(physis_MDL mdl,
-                       bool skinned,
-                       Transformation transformation,
+void MDLPart::addModel(const physis_MDL &mdl,
+                       const bool skinned,
+                       const Transformation &transformation,
                        const QString &name,
                        std::vector<std::pair<std::string, physis_Material>> materials,
-                       uint16_t fromBodyId,
-                       uint16_t toBodyId)
+                       const uint16_t fromBodyId,
+                       const uint16_t toBodyId)
 {
     DrawObject *model = nullptr;
     if (m_vkWindow->sourceModels.contains(name)) {
@@ -192,20 +191,20 @@ void MDLPart::destroyObjects()
     m_renderer->scene.resetLights();
 
     m_vkWindow->models.clear();
-    for (const auto &[_, model] : m_vkWindow->sourceModels) {
+    for (const auto &model : m_vkWindow->sourceModels | std::views::values) {
         m_renderer->destroyDrawObject(*model);
         delete model;
     }
     m_vkWindow->sourceModels.clear();
-    for (auto &[_, material] : m_renderMaterialCache) {
+    for (auto &material : m_renderMaterialCache | std::views::values) {
         destroyMaterial(material);
     }
     m_renderMaterialCache.clear();
-    for (auto &[_, shpk] : m_shaderPackageCache) {
+    for (auto &shpk : m_shaderPackageCache | std::views::values) {
         physis_shpk_free(&shpk);
     }
     m_shaderPackageCache.clear();
-    for (auto &[_, texture] : m_textureCache) {
+    for (auto &texture : m_textureCache | std::views::values) {
         destroyTexture(texture);
     }
     m_textureCache.clear();
@@ -231,7 +230,7 @@ void MDLPart::reloadBoneData()
         calculateBone(*skeleton, *skeleton->root_bone, nullptr);
 
         // TODO: this applies to all instances
-        for (auto &[_, model] : m_vkWindow->sourceModels) {
+        for (const auto &model : m_vkWindow->sourceModels | std::views::values) {
             // we want to map the actual affected bones to bone ids
             std::map<int, int> boneMapping;
             for (uint32_t i = 0; i < model->model.num_affected_bones; i++) {
@@ -249,10 +248,10 @@ void MDLPart::reloadBoneData()
 
             // get deform matrices
             if (enableRacialDeform) {
-                auto deform = physis_pbd_get_deform_matrix(pbd, model->from_body_id, model->to_body_id);
+                const auto deform = physis_pbd_get_deform_matrix(pbd, model->from_body_id, model->to_body_id);
                 if (deform.num_bones != 0) {
                     for (int i = 0; i < deform.num_bones; i++) {
-                        auto deformBone = deform.bones[i];
+                        const auto deformBone = deform.bones[i];
 
                         for (uint32_t k = 0; k < model->model.num_affected_bones; k++) {
                             if (std::string_view{model->model.affected_bone_names[k]} == std::string_view{deformBone.name}) {
@@ -319,7 +318,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
 
                     if (constant.id == param.id) {
                         for (uint32_t z = 0; z < constant.num_values; z++) {
-                            buffer[(param.byte_offset / sizeof(float)) + z] = constant.values[z];
+                            buffer[param.byte_offset / sizeof(float) + z] = constant.values[z];
                         }
                     }
                 }
@@ -393,7 +392,7 @@ RenderMaterial MDLPart::createMaterial(const std::string &path, const physis_Mat
             }
         }
 
-        physis_Texture textureConfig;
+        physis_Texture textureConfig{};
         textureConfig.attribute = TextureAttribute_TEXTURE_TYPE2_D;
         textureConfig.format = TextureFormat::R32G32B32A32_FLOAT;
         textureConfig.width = width;
@@ -467,7 +466,7 @@ RenderMaterial MDLPart::createOrCacheMaterial(const std::string &path, const phy
     return m_renderMaterialCache[hash];
 }
 
-void MDLPart::destroyMaterial(RenderMaterial &material)
+void MDLPart::destroyMaterial(RenderMaterial &material) const
 {
     // NOTE: the other textures are cached so we don't want to destroy them here! (maybe in the future if we remove them from the cache...)
     if (auto &texture = material.tableTexture) {
@@ -477,9 +476,9 @@ void MDLPart::destroyMaterial(RenderMaterial &material)
     m_renderer->device().destroyBuffer(material.materialBuffer);
 }
 
-Texture MDLPart::createTexture(const std::string &path)
+Texture MDLPart::createTexture(const std::string &path) const
 {
-    auto texture = physis_texture_parse(m_cache.platform(), m_cache.read(QLatin1String(path)));
+    const auto texture = physis_texture_parse(m_cache.platform(), m_cache.read(QLatin1String(path)));
     if (texture.p_ptr != nullptr) {
         auto gameTexture = m_renderer->addGameTexture(texture);
         m_renderer->device().nameTexture(gameTexture, "Game Texture " + path);
@@ -503,16 +502,16 @@ Texture MDLPart::createOrCacheTexture(const std::string &path)
     return m_textureCache[hash];
 }
 
-void MDLPart::destroyTexture(Texture &texture)
+void MDLPart::destroyTexture(Texture &texture) const
 {
     m_renderer->device().destroyTexture(texture);
 }
 
-void MDLPart::calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &bone, physis_Bone *parent_bone)
+void MDLPart::calculateBoneInversePose(physis_Skeleton &skeleton, const physis_Bone &bone, const physis_Bone *parent_bone)
 {
     const glm::mat4 parentMatrix = parent_bone == nullptr ? glm::mat4(1.0f) : boneData[parent_bone->index].inversePose;
 
-    glm::mat4 local = glm::mat4(1.0f);
+    auto local = glm::mat4(1.0f);
     local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
     local *= glm::mat4_cast(glm::quat(bone.rotation[3], bone.rotation[0], bone.rotation[1], bone.rotation[2]));
     local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
@@ -526,11 +525,11 @@ void MDLPart::calculateBoneInversePose(physis_Skeleton &skeleton, physis_Bone &b
     }
 }
 
-void MDLPart::calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const physis_Bone *parent_bone)
+void MDLPart::calculateBone(physis_Skeleton &skeleton, const physis_Bone &bone, const physis_Bone *parent_bone)
 {
-    const glm::mat4 parent_matrix = parent_bone == nullptr ? glm::mat4(1.0f) : (boneData[parent_bone->index].localTransform);
+    const glm::mat4 parent_matrix = parent_bone == nullptr ? glm::mat4(1.0f) : boneData[parent_bone->index].localTransform;
 
-    glm::mat4 local = glm::mat4(1.0f);
+    auto local = glm::mat4(1.0f);
     local = glm::translate(local, glm::vec3(bone.position[0], bone.position[1], bone.position[2]));
     local *= glm::mat4_cast(glm::quat(bone.rotation[3], bone.rotation[0], bone.rotation[1], bone.rotation[2]));
     local = glm::scale(local, glm::vec3(bone.scale[0], bone.scale[1], bone.scale[2]));
@@ -547,21 +546,21 @@ void MDLPart::calculateBone(physis_Skeleton &skeleton, physis_Bone &bone, const 
 
 void MDLPart::removeModel(const physis_MDL &mdl)
 {
-    m_vkWindow->models.erase(std::remove_if(m_vkWindow->models.begin(),
-                                            m_vkWindow->models.end(),
-                                            [mdl](const DrawObjectInstance &other) {
-                                                return mdl.p_ptr == other.sourceObject->model.p_ptr;
-                                            }),
+    m_vkWindow->models.erase(std::ranges::remove_if(m_vkWindow->models,
+                                                    [mdl](const DrawObjectInstance &other) {
+                                                        return mdl.p_ptr == other.sourceObject->model.p_ptr;
+                                                    })
+                                 .begin(),
                              m_vkWindow->models.end());
     Q_EMIT modelChanged();
 }
 
-void MDLPart::addLight(const SceneLight &light)
+void MDLPart::addLight(const SceneLight &light) const
 {
     m_renderer->scene.lights.push_back(light);
 }
 
-void MDLPart::addVfx(physis_Avfx vfx, Transformation transformation, const QString &name)
+void MDLPart::addVfx(const physis_Avfx &vfx, const Transformation &transformation, const QString &name)
 {
     VfxObject *vfxObj = nullptr;
     if (m_vkWindow->sourceVfx.contains(name)) {
@@ -569,7 +568,7 @@ void MDLPart::addVfx(physis_Avfx vfx, Transformation transformation, const QStri
     } else {
         std::vector<physis_Texture> textures;
         for (uint32_t i = 0; i < vfx.texture_count; i++) {
-            auto buffer = m_cache.read(QString::fromStdString(vfx.textures[i]));
+            const auto buffer = m_cache.read(QString::fromStdString(vfx.textures[i]));
             if (buffer.size > 0) {
                 textures.push_back(physis_texture_parse(m_cache.platform(), buffer));
             }
@@ -584,9 +583,9 @@ void MDLPart::addVfx(physis_Avfx vfx, Transformation transformation, const QStri
     Q_EMIT modelChanged();
 }
 
-void MDLPart::addExistingVfx(const QString &name, Transformation transformation)
+void MDLPart::addExistingVfx(const QString &name, const Transformation &transformation) const
 {
-    auto vfx = m_vkWindow->sourceVfx[name];
+    const auto vfx = m_vkWindow->sourceVfx[name];
     m_vkWindow->vfx.push_back(VfxObjectInstance{name, vfx, transformation});
 }
 
@@ -600,39 +599,39 @@ RenderManager *MDLPart::manager() const
     return m_renderer.get();
 }
 
-QImage MDLPart::grab()
+QImage MDLPart::grab() const
 {
     return m_renderer->grab(m_vkWindow->models, m_vkWindow->vfx);
 }
 
-QAction *MDLPart::wireframeAction()
+QAction *MDLPart::wireframeAction() const
 {
     return m_wireframeAction;
 }
 
-QAction *MDLPart::frustumCullingAction()
+QAction *MDLPart::frustumCullingAction() const
 {
     return m_frustumCullingAction;
 }
 
-QAction *MDLPart::debugFrustumCullingAction()
+QAction *MDLPart::debugFrustumCullingAction() const
 {
     return m_debugFrustumCullingAction;
 }
 
-bool MDLPart::modelExists(const QString &name)
+bool MDLPart::modelExists(const QString &name) const
 {
     return m_vkWindow->sourceModels.contains(name);
 }
 
-bool MDLPart::vfxExists(const QString &name)
+bool MDLPart::vfxExists(const QString &name) const
 {
     return m_vkWindow->sourceVfx.contains(name);
 }
 
-void MDLPart::addExistingModel(const QString &name, Transformation transformation)
+void MDLPart::addExistingModel(const QString &name, const Transformation &transformation) const
 {
-    auto model = m_vkWindow->sourceModels[name];
+    const auto model = m_vkWindow->sourceModels[name];
     m_vkWindow->models.push_back(DrawObjectInstance{name, model, transformation});
 }
 

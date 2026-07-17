@@ -37,7 +37,7 @@ public:
         m_comboBox->setCurrentIndex(m_comboBox->findData(static_cast<int>(value)));
     }
 
-    void resetValue()
+    void resetValue() const
     {
         m_comboBox->setCurrentIndex(-1);
     }

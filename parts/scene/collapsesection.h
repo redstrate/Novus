@@ -10,7 +10,7 @@ class CollapseSection : public QWidget
     Q_OBJECT
 
 public:
-    explicit CollapseSection(QString label, bool closable = false);
+    explicit CollapseSection(const QString &label, bool closable = false);
 
 Q_SIGNALS:
     void closeRequested();

@@ -8,13 +8,11 @@
 #include <KLocalizedString>
 #include <QFormLayout>
 #include <QGroupBox>
-#include <QPushButton>
 #include <QSpinBox>
-#include <QTabBar>
 #include <QVBoxLayout>
 #include <physis.hpp>
 
-#include "../../common/include/knownvalues.h"
+#include "knownvalues.h"
 #include "pathedit.h"
 #include "texpart.h"
 
@@ -60,14 +58,14 @@ MtrlPart::~MtrlPart()
     physis_shpk_free(&m_shpk);
 }
 
-void MtrlPart::load(physis_Material file)
+void MtrlPart::load(const physis_Material &file)
 {
     m_material = file;
     if (m_material.shpk_name != nullptr) {
         const QString shpkPath = QStringLiteral("shader/sm5/shpk/%1").arg(QString::fromUtf8(m_material.shpk_name));
         m_shaderPackageName->setPath(shpkPath);
 
-        auto shpkData = m_cache.read(shpkPath);
+        const auto shpkData = m_cache.read(shpkPath);
         if (shpkData.data != nullptr) {
             physis_shpk_free(&m_shpk);
             m_shpk = physis_shpk_parse(m_cache.platform(), shpkData);
@@ -76,9 +74,9 @@ void MtrlPart::load(physis_Material file)
     rebuild();
 }
 
-void MtrlPart::rebuild()
+void MtrlPart::rebuild() const
 {
-    QLayoutItem *child = nullptr;
+    const QLayoutItem *child = nullptr;
     while ((child = m_propertiesLayout->takeAt(0)) != nullptr) {
         child->widget()->setParent(nullptr);
         child->widget()->deleteLater();
@@ -87,7 +85,7 @@ void MtrlPart::rebuild()
     for (uint32_t i = 0; i < m_shpk.num_material_keys; i++) {
         const auto materialKey = m_shpk.material_keys[i];
 
-        auto groupBox = new QGroupBox();
+        const auto groupBox = new QGroupBox();
         m_propertiesLayout->addWidget(groupBox);
 
         groupBox->setTitle(QString::fromLatin1(nameFromCrc(materialKey.id)));
@@ -96,7 +94,7 @@ void MtrlPart::rebuild()
 
         bool found = false;
         for (uint32_t j = 0; j < m_material.num_shader_keys; j++) {
-            auto shaderKey = m_material.shader_keys[j];
+            const auto shaderKey = m_material.shader_keys[j];
 
             if (shaderKey.category == materialKey.id) {
                 value = shaderKey.value;
@@ -109,16 +107,15 @@ void MtrlPart::rebuild()
             value = materialKey.default_value;
         }
 
-        auto layout = new QFormLayout();
+        const auto layout = new QFormLayout();
         groupBox->setLayout(layout);
 
-        auto label = new QLabel();
+        const auto label = new QLabel();
         label->setText(QString::fromLatin1(nameFromCrc(value)));
 
         layout->addRow(i18n("Value:"), label);
     }
 
-    child = nullptr;
     while ((child = m_texturesLayout->takeAt(0)) != nullptr) {
         child->widget()->setParent(nullptr);
         child->widget()->deleteLater();
@@ -129,25 +126,24 @@ void MtrlPart::rebuild()
 
         QString name = QString::fromLatin1(nameFromCrc(sampler.texture_usage));
 
-        auto groupBox = new QGroupBox(name);
+        const auto groupBox = new QGroupBox(name);
         m_texturesLayout->addWidget(groupBox);
 
-        auto layout = new QFormLayout();
+        const auto layout = new QFormLayout();
         groupBox->setLayout(layout);
 
-        auto file = m_cache.read(QString::fromUtf8(m_material.textures[sampler.texture_index]));
+        const auto file = m_cache.read(QString::fromUtf8(m_material.textures[sampler.texture_index]));
 
-        auto texWidget = new TexPart();
-        texWidget->loadTex(m_cache.platform(), file);
+        const auto texWidget = new TexPart();
+        Q_UNUSED(texWidget->loadTex(m_cache.platform(), file));
         layout->addWidget(texWidget);
 
-        auto texturePath = new PathEdit();
+        const auto texturePath = new PathEdit();
         texturePath->setPath(QString::fromLatin1(m_material.textures[sampler.texture_index]));
         texturePath->setReadOnly(true);
         layout->addRow(i18n("Path:"), texturePath);
     }
 
-    child = nullptr;
     while ((child = m_constantsLayout->takeAt(0)) != nullptr) {
         child->widget()->setParent(nullptr);
         child->widget()->deleteLater();
@@ -158,29 +154,29 @@ void MtrlPart::rebuild()
 
         QString name = QString::fromLatin1(nameFromCrc(constant.id));
 
-        auto valueLayout = new QHBoxLayout();
+        const auto valueLayout = new QHBoxLayout();
         m_constantsLayout->addLayout(valueLayout);
 
-        auto label = new QLabel();
+        const auto label = new QLabel();
         label->setText(name);
         valueLayout->addWidget(label);
 
-        auto firstElemSpinBox = new QDoubleSpinBox();
+        const auto firstElemSpinBox = new QDoubleSpinBox();
         firstElemSpinBox->setValue(constant.values[0]);
         firstElemSpinBox->setReadOnly(true);
         valueLayout->addWidget(firstElemSpinBox);
 
-        auto secondElemSpinBox = new QDoubleSpinBox();
+        const auto secondElemSpinBox = new QDoubleSpinBox();
         secondElemSpinBox->setValue(constant.values[1]);
         secondElemSpinBox->setReadOnly(true);
         valueLayout->addWidget(secondElemSpinBox);
 
-        auto thirdElemSpinBox = new QDoubleSpinBox();
+        const auto thirdElemSpinBox = new QDoubleSpinBox();
         thirdElemSpinBox->setValue(constant.values[2]);
         thirdElemSpinBox->setReadOnly(true);
         valueLayout->addWidget(thirdElemSpinBox);
 
-        auto fourthElemSpinBox = new QDoubleSpinBox();
+        const auto fourthElemSpinBox = new QDoubleSpinBox();
         fourthElemSpinBox->setValue(constant.values[3]);
         fourthElemSpinBox->setReadOnly(true);
         valueLayout->addWidget(fourthElemSpinBox);

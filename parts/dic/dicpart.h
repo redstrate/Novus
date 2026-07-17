@@ -14,7 +14,7 @@ class DicPart : public QWidget
 public:
     explicit DicPart(QWidget *parent = nullptr);
 
-    void load(Platform platform, physis_Buffer file);
+    void load(Platform platform, physis_Buffer file) const;
 
 private:
     QTableWidget *m_tableWidget = nullptr;

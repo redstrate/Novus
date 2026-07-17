@@ -22,17 +22,17 @@ public:
 
     MDLPart &part() const;
 
-    void centerOn(glm::vec3 position);
-    void clear();
+    void centerOn(glm::vec3 position) const;
+    void clear() const;
 
 public Q_SLOTS:
-    void addTerrain(ObjectScene &scene);
+    void addTerrain(ObjectScene &scene) const;
 
 private:
     void reloadMap();
     void processScene(ObjectScene &scene, const Transformation &rootTransformation);
-    void processLayer(ObjectScene &scene, const physis_Layer &layer, const Transformation &rootTransformation);
-    void updateLightCulling();
+    void processLayer(ObjectScene &scene, const physis_Layer &layer, const Transformation &rootTransformation) const;
+    void updateLightCulling() const;
 
     MDLPart *m_mdlPart = nullptr;
 

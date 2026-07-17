@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <QCheckBox>
 #include <QLineEdit>
 #include <QSortFilterProxyModel>
 #include <QTreeView>
@@ -19,7 +18,7 @@ public:
     explicit DiffTreeWidget(HashDatabase &database, physis_SqPackResource *data, QWidget *parent = nullptr);
 
     void refreshModel();
-    void openPatch(const QString &path);
+    void openPatch(const QString &path) const;
 
 Q_SIGNALS:
     void bufferSelected(physis_Buffer buffer);

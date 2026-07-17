@@ -34,7 +34,7 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
         updateLightCulling();
     });
     m_mdlPart->requestUpdate = [this] {
-        const auto drawNameplate = [this](uint32_t id, const glm::vec3 position, const QString &name) {
+        const auto drawNameplate = [this](const uint32_t id, const glm::vec3 position, const QString &name) {
             const auto distance = glm::distance(m_mdlPart->manager()->camera.position, position);
             if (distance > MAX_DEBUG_DRAW_DISTANCE) {
                 return;
@@ -53,8 +53,8 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
             pos.z /= pos.w;
 
             const glm::vec2 screenSpacePos = {
-                ((pos.x + 1.0f) * 0.5f) * m_mdlPart->manager()->device().swapChain->extent.width,
-                ((pos.y + 1.0f) * 0.5f) * m_mdlPart->manager()->device().swapChain->extent.height,
+                (pos.x + 1.0f) * 0.5f * m_mdlPart->manager()->device().swapChain->extent.width,
+                (pos.y + 1.0f) * 0.5f * m_mdlPart->manager()->device().swapChain->extent.height,
             };
 
             if (screenSpacePos.x <= 0 || screenSpacePos.x >= m_mdlPart->manager()->device().swapChain->extent.width || screenSpacePos.y <= 0
@@ -77,7 +77,7 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
         };
 
         const auto walkScene = [this, &drawNameplate](ObjectScene &scene) {
-            for (const auto &[_, lgb] : scene.lgbFiles) {
+            for (const auto &lgb : scene.lgbFiles | std::views::values) {
                 for (uint32_t i = 0; i < lgb.chunks->num_layers; i++) {
                     if (!scene.isSgb() && !m_appState->visibleLayerIds.contains(lgb.chunks->layers[i].id)) {
                         continue;
@@ -112,7 +112,7 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
         walkScene(m_appState->rootScene);
     };
 
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_mdlPart);
     setLayout(layout);
@@ -129,18 +129,18 @@ MDLPart &MapView::part() const
     return *m_mdlPart;
 }
 
-void MapView::centerOn(const glm::vec3 position)
+void MapView::centerOn(const glm::vec3 position) const
 {
     m_mdlPart->position = position;
     Q_EMIT m_mdlPart->cameraMoved();
 }
 
-void MapView::clear()
+void MapView::clear() const
 {
     m_mdlPart->clear();
 }
 
-void MapView::addTerrain(ObjectScene &scene)
+void MapView::addTerrain(ObjectScene &scene) const
 {
     for (int i = 0; i < scene.terrain.num_plates; i++) {
         if (!m_appState->visibleTerrainPlates.contains(i)) {
@@ -150,7 +150,7 @@ void MapView::addTerrain(ObjectScene &scene)
         QString base2Path = scene.basePath.left(scene.basePath.lastIndexOf(QStringLiteral("/level/")));
         QString mdlPath = QStringLiteral("%1/bgplate/%2").arg(base2Path, QString::fromStdString(scene.terrain.plates[i].filename));
 
-        auto plateMdlFile = m_cache.read(mdlPath);
+        const auto plateMdlFile = m_cache.read(mdlPath);
         auto plateMdl = physis_mdl_parse(m_cache.platform(), plateMdlFile);
         if (plateMdl.p_ptr != nullptr) {
             std::vector<std::pair<std::string, physis_Material>> materials;
@@ -160,14 +160,14 @@ void MapView::addTerrain(ObjectScene &scene)
                 if (!scene.cachedMaterials.contains(material_name)) {
                     const auto matFile = m_cache.read(QLatin1String(material_name));
                     if (matFile.size > 0) {
-                        auto mat = physis_material_parse(m_cache.platform(), matFile);
+                        const auto mat = physis_material_parse(m_cache.platform(), matFile);
                         scene.cachedMaterials[material_name] = mat;
                     } else {
                         qWarning() << "Failed to find terrain material" << material_name;
                     }
                 }
 
-                materials.push_back(std::make_pair(std::string{material_name}, scene.cachedMaterials[material_name]));
+                materials.emplace_back(std::make_pair(std::string{material_name}, scene.cachedMaterials[material_name]));
             }
 
             Transformation transformation{
@@ -214,7 +214,7 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
             processLayer(scene, layer, scene.combinedTransformation);
         }
     }
-    for (const auto &[name, lgb] : scene.lgbFiles) {
+    for (const auto &lgb : scene.lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
             const auto chunk = lgb.chunks[i];
             for (uint32_t j = 0; j < chunk.num_layers; j++) {
@@ -228,14 +228,14 @@ void MapView::processScene(ObjectScene &scene, const Transformation &rootTransfo
         }
     }
 
-    for (auto &[_, nestedScene] : scene.nestedScenes) {
+    for (auto &nestedScene : scene.nestedScenes | std::views::values) {
         if (!scene.isSgb() && m_appState->visibleLayerIds.contains(nestedScene.originatingSgbLayerId)) {
             processScene(nestedScene, scene.combinedTransformation);
         }
     }
 }
 
-void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const Transformation &rootTransformation)
+void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const Transformation &rootTransformation) const
 {
     for (uint32_t z = 0; z < layer.object_set_referenced_count; z++) {
         if (layer.object_set_referenced[z].asset_type == LayerEntryType::Light) {
@@ -294,7 +294,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                                 }
                             }
 
-                            materials.push_back(std::make_pair(material_name, scene.cachedMaterials[material_name]));
+                            materials.emplace_back(std::make_pair(material_name, scene.cachedMaterials[material_name]));
                         }
 
                         m_mdlPart->addModel(plateMdl, false, combinedTransform, QString::fromStdString(assetPath), materials);
@@ -349,7 +349,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
     }
 }
 
-void MapView::updateLightCulling()
+void MapView::updateLightCulling() const
 {
     m_mdlPart->manager()->scene.culledLights = 0;
 

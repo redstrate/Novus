@@ -15,9 +15,9 @@
 
 ExcelModel::ExcelModel(const physis_EXH &exh,
                        const physis_ExcelSheetPage &page,
-                       Schema schema,
+                       const Schema &schema,
                        AbstractExcelResolver *resolver,
-                       Language language,
+                       const Language language,
                        QObject *parent)
     : QAbstractTableModel(parent)
     , m_exh(exh)
@@ -70,7 +70,7 @@ int ExcelModel::columnCount(const QModelIndex &parent) const
     return static_cast<int>(m_page.column_count);
 }
 
-QVariant ExcelModel::data(const QModelIndex &index, int role) const
+QVariant ExcelModel::data(const QModelIndex &index, const int role) const
 {
     if (role == Qt::DisplayRole) {
         const auto column = m_sortedColumnIndices.indexOf(index.column());
@@ -93,7 +93,7 @@ QVariant ExcelModel::data(const QModelIndex &index, int role) const
         font.setBold(m_schema.isDisplayField(columnName));
 
         // Show an underline to make the resolved column more obvious.
-        const auto resolvedSheet = data(index, ExcelRoles::ResolvedSheetRole).toString();
+        const auto resolvedSheet = data(index, ResolvedSheetRole).toString();
         if (!resolvedSheet.isEmpty()) {
             font.setUnderline(true);
         }
@@ -105,12 +105,12 @@ QVariant ExcelModel::data(const QModelIndex &index, int role) const
         if (!m_schema.targetSheetsForColumn(mappedIndex).isEmpty()) {
             // Get the resolved sheet and its row id.
             // TODO: use multiData for this
-            const auto resolvedSheet = data(index, ExcelRoles::ResolvedSheetRole).toString();
+            const auto resolvedSheet = data(index, ResolvedSheetRole).toString();
             if (resolvedSheet.isEmpty()) {
                 return {};
             }
 
-            const auto resolvedRow = data(index, ExcelRoles::ResolvedRowRole).toInt();
+            const auto resolvedRow = data(index, ResolvedRowRole).toInt();
 
             return i18n("Links to %1#%2").arg(resolvedSheet).arg(resolvedRow);
         }
@@ -216,7 +216,7 @@ bool ExcelModel::setData(const QModelIndex &index, const QVariant &value, int ro
     return false;
 }
 
-QVariant ExcelModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant ExcelModel::headerData(const int section, const Qt::Orientation orientation, const int role) const
 {
     if (role == Qt::DisplayRole) {
         if (orientation == Qt::Vertical) {
@@ -398,7 +398,7 @@ QVariant ExcelModel::editForData(const physis_Field &data)
         result = QString::fromStdString(data.string._0);
         break;
     case physis_Field::Tag::Bool:
-        result = data.bool_._0 ? true : false;
+        result = data.bool_._0;
         break;
     case physis_Field::Tag::Int8:
         result = data.int8._0;

@@ -11,7 +11,6 @@
 #include <KLocalizedString>
 #include <QApplication>
 #include <QDesktopServices>
-#include <QMenuBar>
 #include <glm/gtc/type_ptr.hpp>
 #include <physis.hpp>
 
@@ -29,7 +28,7 @@
 #include <QLabel>
 #include <QStatusBar>
 
-MainWindow::MainWindow(physis_SqPackResource data)
+MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
 {
     setMinimumSize(1280, 720);
@@ -50,7 +49,7 @@ MainWindow::MainWindow(physis_SqPackResource data)
 
     updateActionState();
 
-    auto openInWidget = new OpenInWidget(this);
+    const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 }
 
@@ -58,7 +57,7 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::configure()
 {
-    auto settingsWindow = new SettingsWindow();
+    const auto settingsWindow = new SettingsWindow();
     settingsWindow->show();
 }
 
@@ -95,16 +94,16 @@ void MainWindow::setupActions()
     m_centerObjectAction->setIcon(QIcon::fromTheme(QStringLiteral("camera-video-symbolic")));
     KActionCollection::setDefaultShortcut(m_centerObjectAction, QKeySequence(Qt::Modifier::ALT | Qt::Key::Key_C));
     connect(m_centerObjectAction, &QAction::triggered, [this] {
-        if (auto selectedObject = m_part->sceneState()->selectedObject) {
+        if (const auto selectedObject = m_part->sceneState()->selectedObject) {
             m_part->mapView()->centerOn(glm::make_vec3(selectedObject.value()->transform.translation));
         }
-        if (auto selectedDropInObject = m_part->sceneState()->selectedDropInObject) {
+        if (const auto selectedDropInObject = m_part->sceneState()->selectedDropInObject) {
             m_part->mapView()->centerOn(glm::make_vec3(selectedDropInObject.value()->position));
         }
     });
     actionCollection()->addAction(QStringLiteral("center_object"), m_centerObjectAction);
 
-    auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"), this);
+    const auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"), this);
     focusSearch->setIcon(QIcon::fromTheme(QStringLiteral("search-symbolic")));
     KActionCollection::setDefaultShortcut(focusSearch, QKeySequence(Qt::CTRL | Qt::Key_F));
     connect(focusSearch, &QAction::triggered, m_part, &ScenePart::focusSearchField);
@@ -113,7 +112,7 @@ void MainWindow::setupActions()
     m_goToEntranceAction = new QAction(i18nc("@action:inmenu", "Go to Entrance"), this);
     m_goToEntranceAction->setEnabled(false);
     connect(m_goToEntranceAction, &QAction::triggered, this, [this] {
-        auto entranceTransform = m_part->sceneState()->rootScene.locateGameObject(m_lgbEventRange);
+        const auto entranceTransform = m_part->sceneState()->rootScene.locateGameObject(m_lgbEventRange);
         m_part->mapView()->centerOn(glm::make_vec3(entranceTransform.translation));
     });
     actionCollection()->addAction(QStringLiteral("duty_go_to_entrance"), m_goToEntranceAction);
@@ -123,7 +122,7 @@ void MainWindow::setupActions()
     connect(m_goToExitAction, &QAction::triggered, this, [this] {
         // TODO: what if there are multiple exits, is that a thing?
 
-        auto exitTransform = m_part->sceneState()->rootScene.locateGameObjectByBaseId(2000139); // TODO: extract into a constant
+        const auto exitTransform = m_part->sceneState()->rootScene.locateGameObjectByBaseId(2000139); // TODO: extract into a constant
         m_part->mapView()->centerOn(glm::make_vec3(exitTransform.translation));
     });
     actionCollection()->addAction(QStringLiteral("duty_go_to_exit"), m_goToExitAction);
@@ -132,7 +131,7 @@ void MainWindow::setupActions()
     m_gimmickListAction->setEnabled(false);
     connect(m_gimmickListAction, &QAction::triggered, this, [this] {
         // TODO: only pass m_part I guess
-        auto listWidget = new GimmickListWidget(m_part, m_part->sceneState(), this);
+        const auto listWidget = new GimmickListWidget(m_part, m_part->sceneState(), this);
         listWidget->show();
     });
     actionCollection()->addAction(QStringLiteral("duty_gimmicks"), m_gimmickListAction);
@@ -140,7 +139,7 @@ void MainWindow::setupActions()
     m_effectListAction = new QAction(i18nc("@action:inmenu", "Effects"), this);
     m_effectListAction->setEnabled(false);
     connect(m_effectListAction, &QAction::triggered, this, [this] {
-        auto listWidget = new EffectListWidget(m_part->sceneState(), m_mapEffects, this);
+        const auto listWidget = new EffectListWidget(m_part->sceneState(), m_mapEffects, this);
         listWidget->show();
     });
     actionCollection()->addAction(QStringLiteral("duty_effects"), m_effectListAction);
@@ -182,14 +181,14 @@ void MainWindow::openMap(const QString &basePath, const int territoryType, const
     m_lgbEventRange = 0;
 
     const QString lvbPath = QStringLiteral("bg/%1.lvb").arg(basePath);
-    auto lvbFile = m_cache.read(lvbPath);
+    const auto lvbFile = m_cache.read(lvbPath);
     if (lvbFile.size > 0) {
         if (!m_part->loadLvb(lvbFile, territoryType, contentFinderCondition)) {
             qWarning() << "Failed to parse LVB:" << lvbPath;
         }
 
         KConfig config(QStringLiteral("novusrc"));
-        KConfigGroup game = config.group(QStringLiteral("MapEditor"));
+        const KConfigGroup game = config.group(QStringLiteral("MapEditor"));
 
         const auto dropInsPath = game.readEntry("DropInsPath");
         if (!dropInsPath.isEmpty()) {
@@ -218,26 +217,26 @@ void MainWindow::openMap(const QString &basePath, const int territoryType, const
         if (buffer.size > 0) {
             const auto cfcExh = physis_exh_parse(m_cache.platform(), buffer);
             if (cfcExh.p_ptr) {
-                auto cfcSheet = m_cache.readExcelSheet(QStringLiteral("ContentFinderCondition"), &cfcExh, getLanguage());
+                const auto cfcSheet = m_cache.readExcelSheet(QStringLiteral("ContentFinderCondition"), &cfcExh, getLanguage());
 
-                auto cfcRow = physis_excel_get_row(&cfcSheet, contentFinderCondition);
-                auto instanceContentId = cfcRow.columns[3].u_int16._0;
+                const auto cfcRow = physis_excel_get_row(&cfcSheet, contentFinderCondition);
+                const auto instanceContentId = cfcRow.columns[3].u_int16._0;
 
-                auto instanceContentExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/InstanceContent.exh")));
-                auto instanceContentSheet = m_cache.readExcelSheet(QStringLiteral("InstanceContent"), &instanceContentExh, Language::None);
+                const auto instanceContentExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/InstanceContent.exh")));
+                const auto instanceContentSheet = m_cache.readExcelSheet(QStringLiteral("InstanceContent"), &instanceContentExh, Language::None);
 
-                auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
+                const auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
 
                 m_lgbEventRange = instanceContentRow.columns[7].u_int32._0;
 
-                auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
+                const auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
 
-                auto mapEffectExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/ContentDirectorManagedSG.exh")));
-                auto mapEffectSheet = m_cache.readExcelSheet(QStringLiteral("ContentDirectorManagedSG"), &mapEffectExh, Language::None);
+                const auto mapEffectExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/ContentDirectorManagedSG.exh")));
+                const auto mapEffectSheet = m_cache.readExcelSheet(QStringLiteral("ContentDirectorManagedSG"), &mapEffectExh, Language::None);
 
-                auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
+                const auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
                 for (size_t i = 0; i < effectCount; i++) {
-                    auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
+                    const auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
                     if (effectRow.columns) {
                         m_mapEffects.push_back(effectRow.columns[0].int32._0);
                     }
@@ -247,7 +246,7 @@ void MainWindow::openMap(const QString &basePath, const int territoryType, const
     }
 }
 
-void MainWindow::updateActionState()
+void MainWindow::updateActionState() const
 {
     m_centerObjectAction->setEnabled(m_part->sceneState()->selectedObject.has_value() || m_part->sceneState()->selectedDropInObject.has_value());
     m_saveAction->setEnabled(!m_part->sceneState()->rootScene.lgbFiles.empty());

@@ -3,6 +3,8 @@
 
 #include "vulkanwindow.h"
 
+#include "imgui.h"
+
 #include <QResizeEvent>
 #include <QScreen>
 #include <QVulkanInstance>
@@ -23,7 +25,7 @@ void VulkanWindow::exposeEvent(QExposeEvent *)
     if (isExposed() && !m_initialized) {
         m_initialized = true;
 
-        auto surface = m_instance->surfaceForWindow(this);
+        const auto surface = m_instance->surfaceForWindow(this);
         if (!m_renderer->initSwapchain(surface, width() * screen()->devicePixelRatio(), height() * screen()->devicePixelRatio())) {
             m_initialized = false;
         } else {
@@ -60,8 +62,8 @@ bool VulkanWindow::event(QEvent *e)
         render();
         break;
     case QEvent::Resize: {
-        auto resizeEvent = (QResizeEvent *)e;
-        auto surface = m_instance->surfaceForWindow(this);
+        const auto resizeEvent = static_cast<QResizeEvent *>(e);
+        const auto surface = m_instance->surfaceForWindow(this);
         if (surface != nullptr && m_initialized) {
             m_renderer->resize(surface,
                                resizeEvent->size().width() * screen()->devicePixelRatio(),
@@ -72,14 +74,14 @@ bool VulkanWindow::event(QEvent *e)
         m_renderer->destroySwapchain(false);
     } break;
     case QEvent::PlatformSurface: {
-        auto surfaceEvent = dynamic_cast<QPlatformSurfaceEvent *>(e);
-        auto surfaceEventType = surfaceEvent->surfaceEventType();
+        const auto surfaceEvent = dynamic_cast<QPlatformSurfaceEvent *>(e);
+        const auto surfaceEventType = surfaceEvent->surfaceEventType();
         if (surfaceEventType == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed && m_initialized) {
             m_renderer->destroySwapchain(false);
         }
     } break;
     case QEvent::MouseButtonPress: {
-        auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
+        const auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
 
         m_part->setFocus(Qt::FocusReason::MouseFocusReason);
 
@@ -101,7 +103,7 @@ bool VulkanWindow::event(QEvent *e)
         }
     } break;
     case QEvent::MouseMove: {
-        auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
+        const auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
         if (m_part->isEnabled() && m_part->cameraMode != MDLPart::CameraMode::None) {
             const int deltaX = mouseEvent->position().x() - m_part->lastX;
             const int deltaY = mouseEvent->position().y() - m_part->lastY;
@@ -110,13 +112,7 @@ bool VulkanWindow::event(QEvent *e)
                 m_part->yaw -= deltaX * 0.01f; // TODO: remove these magic numbers
                 m_part->pitch += deltaY * 0.01f;
             } else {
-                const glm::vec3 position(m_part->cameraDistance * std::sin(m_part->yaw),
-                                         m_part->cameraDistance * m_part->pitch,
-                                         m_part->cameraDistance * std::cos(m_part->yaw));
-
-                // const glm::quat rot = glm::quatLookAt((part->position + position) - part->position, {0, 1, 0});
-
-                m_part->position += glm::vec3{0, 1, 0} * (float)deltaY * 0.01f;
+                m_part->position += glm::vec3{0, 1, 0} * static_cast<float>(deltaY) * 0.01f;
                 m_part->position.y = std::clamp(m_part->position.y, 0.0f, 10.0f);
                 Q_EMIT m_part->cameraMoved();
             }
@@ -126,15 +122,15 @@ bool VulkanWindow::event(QEvent *e)
         }
     } break;
     case QEvent::Wheel: {
-        auto scrollEvent = dynamic_cast<QWheelEvent *>(e);
+        const auto scrollEvent = dynamic_cast<QWheelEvent *>(e);
 
         if (m_part->isEnabled()) {
-            m_part->cameraDistance -= (scrollEvent->angleDelta().y() / 120.0f) * 0.1f; // FIXME: why 120?
+            m_part->cameraDistance -= scrollEvent->angleDelta().y() / 120.0f * 0.1f; // FIXME: why 120?
             m_part->cameraDistance = std::clamp(m_part->cameraDistance, m_part->minimumCameraDistance, 4.0f);
         }
     } break;
     case QEvent::KeyPress: {
-        auto keyEvent = dynamic_cast<QKeyEvent *>(e);
+        const auto keyEvent = dynamic_cast<QKeyEvent *>(e);
 
         if (m_part->isEnabled()) {
             switch (keyEvent->key()) {
@@ -159,11 +155,13 @@ bool VulkanWindow::event(QEvent *e)
             case Qt::Key_E:
                 m_pressedKeys[6] = true;
                 break;
+            default:
+                break;
             }
         }
     } break;
     case QEvent::KeyRelease: {
-        auto keyEvent = dynamic_cast<QKeyEvent *>(e);
+        const auto keyEvent = dynamic_cast<QKeyEvent *>(e);
 
         if (m_part->isEnabled()) {
             switch (keyEvent->key()) {
@@ -187,6 +185,8 @@ bool VulkanWindow::event(QEvent *e)
                 break;
             case Qt::Key_E:
                 m_pressedKeys[6] = false;
+                break;
+            default:
                 break;
             }
         }
@@ -239,9 +239,9 @@ void VulkanWindow::render()
             movX = -0.05f;
         }
 
-        glm::vec3 forward, right;
-        forward = normalize(glm::angleAxis(m_part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(m_part->pitch, glm::vec3(1, 0, 0)) * glm::vec3(0, 0, 1));
-        right = normalize(glm::angleAxis(m_part->yaw, glm::vec3(0, 1, 0)) * glm::vec3(1, 0, 0));
+        const glm::vec3 forward =
+            normalize(glm::angleAxis(m_part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(m_part->pitch, glm::vec3(1, 0, 0)) * glm::vec3(0, 0, 1));
+        const glm::vec3 right = normalize(glm::angleAxis(m_part->yaw, glm::vec3(0, 1, 0)) * glm::vec3(1, 0, 0));
 
         float speed = 200.0f;
         if (m_pressedKeys[4]) {
@@ -268,7 +268,9 @@ void VulkanWindow::render()
         m_renderer->camera.view = glm::inverse(m_renderer->camera.view);
         m_renderer->camera.position = m_part->position;
     } else {
-        glm::vec3 position(m_part->cameraDistance * sin(m_part->yaw), m_part->cameraDistance * m_part->pitch, m_part->cameraDistance * cos(m_part->yaw));
+        const glm::vec3 position(m_part->cameraDistance * sinf(m_part->yaw),
+                                 m_part->cameraDistance * m_part->pitch,
+                                 m_part->cameraDistance * cosf(m_part->yaw));
 
         m_renderer->camera.view = glm::lookAt(m_part->position + position, m_part->position, glm::vec3(0, -1, 0));
         m_renderer->camera.position = m_part->position + position;

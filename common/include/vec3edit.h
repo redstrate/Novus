@@ -19,8 +19,8 @@ public:
     explicit Vector3Edit(glm::vec3 &vec, QWidget *parent = nullptr);
     ~Vector3Edit() override = default;
 
-    void setVector(glm::vec3 &vec);
-    void setReadOnly(bool readOnly);
+    void setVector(const glm::vec3 &vec) const;
+    void setReadOnly(bool readOnly) const;
 
 private:
     struct {

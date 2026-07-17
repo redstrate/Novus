@@ -86,7 +86,7 @@ void ImGuiPass::render(const uint32_t imageIndex, const VkCommandBuffer commandB
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
-    VkDeviceSize offset = 0;
+    constexpr VkDeviceSize offset = 0;
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer.buffer, &offset);
     vkCmdBindIndexBuffer(commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
@@ -199,7 +199,7 @@ void ImGuiPass::createPipeline()
     fragShaderStageInfo.module = fragShaderModule;
     fragShaderStageInfo.pName = "main";
 
-    const std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
+    const std::array shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
 
     VkVertexInputBindingDescription vertexBindingDescription = {};
     vertexBindingDescription.stride = sizeof(ImDrawVert);
@@ -219,7 +219,7 @@ void ImGuiPass::createPipeline()
     colorAttribute.format = VK_FORMAT_R8G8B8A8_UNORM;
     colorAttribute.offset = offsetof(ImDrawVert, col);
 
-    const std::array<VkVertexInputAttributeDescription, 3> attributes = {positionAttribute, uvAttribute, colorAttribute};
+    const std::array attributes = {positionAttribute, uvAttribute, colorAttribute};
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -263,7 +263,7 @@ void ImGuiPass::createPipeline()
     colorBlending.attachmentCount = 1;
     colorBlending.pAttachments = &colorBlendAttachment;
 
-    constexpr std::array<VkDynamicState, 2> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    constexpr std::array dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -309,7 +309,7 @@ void ImGuiPass::createPipeline()
 
 void ImGuiPass::createFontImage()
 {
-    ImGuiIO &io = ImGui::GetIO();
+    const ImGuiIO &io = ImGui::GetIO();
 
     unsigned char *pixels = nullptr;
     int width = 0, height = 0;
@@ -329,5 +329,5 @@ void ImGuiPass::createFontImage()
     m_fontAtlas = m_renderer.addGameTexture(texture);
     m_renderer.device().nameTexture(m_fontAtlas, "ImGui Font Atlas");
 
-    io.Fonts->SetTexID(static_cast<ImTextureID>(m_fontAtlas.imageView));
+    io.Fonts->SetTexID(m_fontAtlas.imageView);
 }

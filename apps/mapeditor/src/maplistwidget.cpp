@@ -98,7 +98,7 @@ MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
             }
             completePlaceName.resize(completePlaceName.size() - 2); // Remove last comma and space
 
-            QStandardItem *item = new QStandardItem();
+            auto item = new QStandardItem();
             item->setData(QString::fromStdString(bg));
             item->setData(contentFinderCondition, Qt::UserRole + 2);
             item->setData(i, Qt::UserRole + 3);

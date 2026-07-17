@@ -14,27 +14,26 @@ Sphere Primitives::cube;
 Cylinder Primitives::cylinder;
 Cylinder Primitives::plane;
 
-void Primitives::Initialize(RenderManager *renderer)
+void Primitives::Initialize(const RenderManager *renderer)
 {
     // sphere
     {
         std::vector<glm::vec3> vertices;
         std::vector<unsigned int> indices;
 
-        unsigned int xResolution = 8;
-        unsigned int yResolution = 8;
-        float PI = 3.14159265359f;
+        constexpr unsigned int xResolution = 8;
+        constexpr unsigned int yResolution = 8;
 
         for (unsigned int y = 0; y <= yResolution; ++y) {
             for (unsigned int x = 0; x <= xResolution; ++x) {
-                float xSegment = static_cast<float>(x) / static_cast<float>(xResolution);
-                float ySegment = static_cast<float>(y) / static_cast<float>(yResolution);
+                const float xSegment = static_cast<float>(x) / static_cast<float>(xResolution);
+                const float ySegment = static_cast<float>(y) / static_cast<float>(yResolution);
 
-                float xPos = glm::cos(xSegment * 2.0f * PI) * glm::sin(ySegment * PI);
-                float yPos = glm::cos(ySegment * PI);
-                float zPos = glm::sin(xSegment * 2.0f * PI) * glm::sin(ySegment * PI);
+                const float xPos = glm::cos(xSegment * 2.0f * std::numbers::pi) * glm::sin(ySegment * std::numbers::pi);
+                const float yPos = glm::cos(ySegment * std::numbers::pi);
+                const float zPos = glm::sin(xSegment * 2.0f * std::numbers::pi) * glm::sin(ySegment * std::numbers::pi);
 
-                vertices.push_back(glm::vec3(xPos, yPos, zPos));
+                vertices.emplace_back(glm::vec3(xPos, yPos, zPos));
             }
         }
 
@@ -56,13 +55,13 @@ void Primitives::Initialize(RenderManager *renderer)
         sphere.indexCount = static_cast<uint32_t>(indices.size());
 
         // VERTICES
-        VkDeviceSize vertexSize = sizeof(glm::vec3) * vertices.size();
+        const VkDeviceSize vertexSize = sizeof(glm::vec3) * vertices.size();
         sphere.vertexBuffer = renderer->device().createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         renderer->device().copyToBuffer(sphere.vertexBuffer, vertices.data(), vertexSize);
         renderer->device().nameBuffer(sphere.vertexBuffer, "Sphere Vertex Buffer");
 
         // INDICES
-        VkDeviceSize indexSize = sizeof(unsigned int) * indices.size();
+        const VkDeviceSize indexSize = sizeof(unsigned int) * indices.size();
         sphere.indexBuffer = renderer->device().createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
         renderer->device().copyToBuffer(sphere.indexBuffer, indices.data(), indexSize);
         renderer->device().nameBuffer(sphere.indexBuffer, "Sphere Index Buffer");
@@ -132,15 +131,15 @@ void Primitives::Initialize(RenderManager *renderer)
         cube.indexCount = static_cast<uint32_t>(cube_indices.size());
 
         // VERTICES
-        VkDeviceSize vertexSize = sizeof(glm::vec3) * 8;
+        constexpr VkDeviceSize vertexSize = sizeof(glm::vec3) * 8;
         cube.vertexBuffer = renderer->device().createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-        renderer->device().copyToBuffer(cube.vertexBuffer, (void *)cube_vertices.data(), vertexSize);
+        renderer->device().copyToBuffer(cube.vertexBuffer, cube_vertices.data(), vertexSize);
         renderer->device().nameBuffer(cube.vertexBuffer, "Cube Vertex Buffer");
 
         // INDICES
-        VkDeviceSize indexSize = sizeof(unsigned int) * cube_indices.size();
+        constexpr VkDeviceSize indexSize = sizeof(unsigned int) * cube_indices.size();
         cube.indexBuffer = renderer->device().createBuffer(indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-        renderer->device().copyToBuffer(cube.indexBuffer, (void *)cube_indices.data(), indexSize);
+        renderer->device().copyToBuffer(cube.indexBuffer, cube_indices.data(), indexSize);
         renderer->device().nameBuffer(cube.indexBuffer, "Cube Index Buffer");
     }
 
@@ -190,15 +189,15 @@ void Primitives::Initialize(RenderManager *renderer)
         cylinder.vertexCount = 189;
 
         // VERTICES
-        VkDeviceSize vertexSize = sizeof(glm::vec3) * 189;
+        constexpr VkDeviceSize vertexSize = sizeof(glm::vec3) * 189;
         cylinder.vertexBuffer = renderer->device().createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-        renderer->device().copyToBuffer(cylinder.vertexBuffer, (void *)vertices, vertexSize);
+        renderer->device().copyToBuffer(cylinder.vertexBuffer, vertices, vertexSize);
         renderer->device().nameBuffer(cylinder.vertexBuffer, "Cylinder Vertex Buffer");
     }
 
     // Plane
     {
-        const static float vertices[] = {
+        static constexpr float vertices[] = {
             -1,
             0,
             1,
@@ -221,14 +220,14 @@ void Primitives::Initialize(RenderManager *renderer)
         plane.vertexCount = 6;
 
         // VERTICES
-        VkDeviceSize vertexSize = sizeof(glm::vec3) * 6;
+        constexpr VkDeviceSize vertexSize = sizeof(glm::vec3) * 6;
         plane.vertexBuffer = renderer->device().createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-        renderer->device().copyToBuffer(plane.vertexBuffer, (void *)vertices, vertexSize);
+        renderer->device().copyToBuffer(plane.vertexBuffer, vertices, vertexSize);
         renderer->device().nameBuffer(plane.vertexBuffer, "Plane Vertex Buffer");
     }
 }
 
-void Primitives::Cleanup(RenderManager *renderer)
+void Primitives::Cleanup(const RenderManager *renderer)
 {
     renderer->device().destroyBuffer(sphere.vertexBuffer);
     renderer->device().destroyBuffer(sphere.indexBuffer);
@@ -241,9 +240,9 @@ void Primitives::Cleanup(RenderManager *renderer)
     renderer->device().destroyBuffer(plane.vertexBuffer);
 }
 
-void Primitives::DrawSphere(VkCommandBuffer commandBuffer)
+void Primitives::DrawSphere(const VkCommandBuffer commandBuffer)
 {
-    VkDeviceSize offsets[] = {0};
+    constexpr VkDeviceSize offsets[] = {0};
 
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &sphere.vertexBuffer.buffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, sphere.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -251,9 +250,9 @@ void Primitives::DrawSphere(VkCommandBuffer commandBuffer)
     vkCmdDrawIndexed(commandBuffer, sphere.indexCount, 1, 0, 0, 0);
 }
 
-void Primitives::DrawCube(VkCommandBuffer commandBuffer)
+void Primitives::DrawCube(const VkCommandBuffer commandBuffer)
 {
-    VkDeviceSize offsets[] = {0};
+    constexpr VkDeviceSize offsets[] = {0};
 
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &cube.vertexBuffer.buffer, offsets);
     vkCmdBindIndexBuffer(commandBuffer, cube.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -261,18 +260,18 @@ void Primitives::DrawCube(VkCommandBuffer commandBuffer)
     vkCmdDrawIndexed(commandBuffer, cube.indexCount, 1, 0, 0, 0);
 }
 
-void Primitives::DrawCylinder(VkCommandBuffer commandBuffer)
+void Primitives::DrawCylinder(const VkCommandBuffer commandBuffer)
 {
-    VkDeviceSize offsets[] = {0};
+    constexpr VkDeviceSize offsets[] = {0};
 
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &cylinder.vertexBuffer.buffer, offsets);
 
     vkCmdDraw(commandBuffer, cylinder.vertexCount, 1, 0, 0);
 }
 
-void Primitives::DrawPlane(VkCommandBuffer commandBuffer)
+void Primitives::DrawPlane(const VkCommandBuffer commandBuffer)
 {
-    VkDeviceSize offsets[] = {0};
+    constexpr VkDeviceSize offsets[] = {0};
 
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &plane.vertexBuffer.buffer, offsets);
 

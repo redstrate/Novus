@@ -9,17 +9,17 @@
 TmbPart::TmbPart(QWidget *parent)
     : QWidget(parent)
 {
-    auto layout = new QVBoxLayout();
+    const auto layout = new QVBoxLayout();
     setLayout(layout);
 }
 
-void TmbPart::load(Platform platform, physis_Buffer buffer)
+void TmbPart::load(const Platform platform, const physis_Buffer buffer)
 {
-    auto tmb = physis_tmb_parse(platform, buffer);
+    const auto tmb = physis_tmb_parse(platform, buffer);
     loadExisting(tmb);
 }
 
-void TmbPart::loadExisting(physis_Tmb tmb)
+void TmbPart::loadExisting(const physis_Tmb tmb)
 {
     m_tmb = tmb;
 }

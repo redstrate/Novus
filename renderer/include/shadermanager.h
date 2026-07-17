@@ -18,12 +18,12 @@ class ShaderManager
 public:
     explicit ShaderManager(Device &device);
 
-    spirv_cross::CompilerGLSL getShaderModuleTest(const physis_Shader &shader);
-    std::string getShaderModuleResources(const physis_Shader &shader, int i);
-    VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel);
+    static spirv_cross::CompilerGLSL getShaderModuleTest(const physis_Shader &shader);
+    static std::string getShaderModuleResources(const physis_Shader &shader, int i);
+    VkShaderModule convertShaderModule(const physis_Shader &shader, spv::ExecutionModel executionModel) const;
 
 private:
-    std::vector<uint32_t> compileGLSL(std::string_view sourceString, ShaderStage stage);
+    static std::vector<uint32_t> compileGLSL(std::string_view sourceString, ShaderStage stage);
 
     Device &m_device;
 };

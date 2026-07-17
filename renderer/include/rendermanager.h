@@ -35,22 +35,22 @@ public:
 
     void destroySwapchain(bool keepSwapchainObject);
 
-    DrawObject *addDrawObject(const physis_MDL &model, std::string name);
-    void reloadDrawObject(DrawObject &model);
-    void destroyDrawObject(DrawObject &model);
+    DrawObject *addDrawObject(const physis_MDL &model, const std::string &name) const;
+    void reloadDrawObject(DrawObject &DrawObject) const;
+    void destroyDrawObject(DrawObject &model) const;
 
-    VfxObject *addVFXObject(const physis_Avfx &vfx, std::vector<physis_Texture> textures, std::string name);
-    void reloadVFXObject(VfxObject &vfx);
-    void destroyVFXObject(VfxObject &vfx);
+    VfxObject *addVFXObject(const physis_Avfx &vfx, const std::vector<physis_Texture> &textures, const std::string &name) const;
+    void reloadVFXObject(VfxObject &vfx) const;
+    void destroyVFXObject(const VfxObject &vfx);
 
     /**
      * @brief Converts the @p gameTexture to the renderable kind.
      *
      * @note The physis_Texture is not used internally by RenderManager, can be freed as soon as the call returns.
      */
-    Texture addGameTexture(physis_Texture gameTexture);
+    Texture addGameTexture(const physis_Texture &gameTexture) const;
 
-    void render(std::vector<DrawObjectInstance> &models, std::vector<VfxObjectInstance> &vfx);
+    void render(std::vector<DrawObjectInstance> &models, const std::vector<VfxObjectInstance> &vfx);
 
     VkRenderPass presentationRenderPass() const;
 
@@ -59,24 +59,24 @@ public:
 
     ImGuiContext *ctx = nullptr;
 
-    Device &device();
+    Device &device() const;
 
-    VkSampler defaultSampler();
+    VkSampler defaultSampler() const;
 
     void addPass(RendererPass *pass);
 
-    BaseRenderer *renderer();
+    BaseRenderer *renderer() const;
 
-    void freeResources();
+    void freeResources() const;
 
     QImage grab(std::vector<DrawObjectInstance> &models, std::vector<VfxObjectInstance> &vfx);
 
 private:
-    void updateCamera(Camera &camera);
+    void updateCamera(Camera &camera) const;
     void initBlitPipeline();
-    void destroyBlitPipeline();
+    void destroyBlitPipeline() const;
 
-    std::array<VkCommandBuffer, 3> m_commandBuffers;
+    std::array<VkCommandBuffer, 3> m_commandBuffers{};
 
     VkRenderPass m_renderPass = VK_NULL_HANDLE;
     VkPipeline m_pipeline = VK_NULL_HANDLE;

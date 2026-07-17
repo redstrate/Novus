@@ -36,8 +36,8 @@ struct CameraFrustum {
 };
 
 CameraFrustum extract_frustum(glm::mat4 combined);
-CameraFrustum camera_extract_frustum(Camera &cam);
+CameraFrustum camera_extract_frustum(const Camera &cam);
 CameraFrustum normalize_frustum(const CameraFrustum &frustum);
 
 bool test_aabb_frustum(const CameraFrustum &frustum, const BoundingBox &aabb);
-bool contains(BoundingBox box, const glm::vec3 &point);
+bool contains(const BoundingBox &box, const glm::vec3 &point);

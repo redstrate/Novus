@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <QFile>
 
-Buffer Device::createBuffer(const size_t size, const VkBufferUsageFlags usageFlags)
+Buffer Device::createBuffer(const size_t size, const VkBufferUsageFlags usageFlags) const
 {
     vkDeviceWaitIdle(device);
 
@@ -37,7 +37,7 @@ Buffer Device::createBuffer(const size_t size, const VkBufferUsageFlags usageFla
     return {handle, memory, size};
 }
 
-void Device::copyToBuffer(Buffer &buffer, void *data, const size_t size)
+void Device::copyToBuffer(const Buffer &buffer, const void *data, const size_t size) const
 {
     void *mapped_data;
     vkMapMemory(device, buffer.memory, 0, size, 0, &mapped_data);
@@ -45,7 +45,7 @@ void Device::copyToBuffer(Buffer &buffer, void *data, const size_t size)
     vkUnmapMemory(device, buffer.memory);
 }
 
-void Device::destroyBuffer(Buffer &buffer)
+void Device::destroyBuffer(Buffer &buffer) const
 {
     if (buffer.buffer != VK_NULL_HANDLE) {
         vkDestroyBuffer(device, buffer.buffer, nullptr);
@@ -57,13 +57,13 @@ void Device::destroyBuffer(Buffer &buffer)
     }
 }
 
-uint32_t Device::findMemoryType(const uint32_t typeFilter, const VkMemoryPropertyFlags properties)
+uint32_t Device::findMemoryType(const uint32_t typeFilter, const VkMemoryPropertyFlags properties) const
 {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+        if (typeFilter & 1 << i && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
             return i;
         }
     }
@@ -71,7 +71,7 @@ uint32_t Device::findMemoryType(const uint32_t typeFilter, const VkMemoryPropert
     return -1;
 }
 
-VkShaderModule Device::createShaderModule(const uint32_t *code, const int length)
+VkShaderModule Device::createShaderModule(const uint32_t *code, const int length) const
 {
     VkShaderModuleCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -84,7 +84,7 @@ VkShaderModule Device::createShaderModule(const uint32_t *code, const int length
     return shaderModule;
 }
 
-VkShaderModule Device::loadShaderFromDisk(const std::string_view path)
+VkShaderModule Device::loadShaderFromDisk(const std::string_view path) const
 {
     QFile file((QLatin1String(path)));
     if (!file.open(QFile::ReadOnly)) {
@@ -95,7 +95,7 @@ VkShaderModule Device::loadShaderFromDisk(const std::string_view path)
     return createShaderModule(reinterpret_cast<const uint32_t *>(contents.data()), contents.size());
 }
 
-Texture Device::createTexture(const int width, const int height, const VkFormat format, const VkImageUsageFlags usage)
+Texture Device::createTexture(const int width, const int height, const VkFormat format, const VkImageUsageFlags usage) const
 {
     VkImage image;
     VkImageView imageView;
@@ -146,7 +146,7 @@ Texture Device::createTexture(const int width, const int height, const VkFormat 
     return {format, viewCreateInfo.subresourceRange, image, imageView, imageMemory};
 }
 
-void Device::destroyTexture(Texture &texture)
+void Device::destroyTexture(Texture &texture) const
 {
     if (texture.imageView != VK_NULL_HANDLE) {
         vkDestroyImageView(device, texture.imageView, nullptr);
@@ -162,9 +162,9 @@ void Device::destroyTexture(Texture &texture)
     }
 }
 
-Texture Device::createDummyTexture(std::array<uint8_t, 4> values)
+Texture Device::createDummyTexture(const std::array<uint8_t, 4> values) const
 {
-    auto texture = createTexture(1, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    const auto texture = createTexture(1, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
     // copy image data
     VkBuffer stagingBuffer;
@@ -198,7 +198,7 @@ Texture Device::createDummyTexture(std::array<uint8_t, 4> values)
     vkUnmapMemory(device, stagingBufferMemory);
 
     // copy staging buffer to image
-    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+    const VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkImageSubresourceRange range = {};
     range.baseMipLevel = 0;
@@ -219,7 +219,7 @@ Texture Device::createDummyTexture(std::array<uint8_t, 4> values)
     region.imageSubresource.mipLevel = 0;
     region.imageSubresource.baseArrayLayer = 0;
     region.imageSubresource.layerCount = 1;
-    region.imageExtent = {(uint32_t)1, (uint32_t)1, 1};
+    region.imageExtent = {static_cast<uint32_t>(1), static_cast<uint32_t>(1), 1};
 
     vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, texture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
@@ -240,7 +240,7 @@ Texture Device::createDummyTexture(std::array<uint8_t, 4> values)
     return texture;
 }
 
-Buffer Device::createDummyBuffer()
+Buffer Device::createDummyBuffer() const
 {
     auto buffer = createBuffer(655360, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     nameBuffer(buffer, "Dummy Buffer");
@@ -250,7 +250,7 @@ Buffer Device::createDummyBuffer()
     return buffer;
 }
 
-VkCommandBuffer Device::beginSingleTimeCommands()
+VkCommandBuffer Device::beginSingleTimeCommands() const
 {
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -270,7 +270,7 @@ VkCommandBuffer Device::beginSingleTimeCommands()
     return commandBuffer;
 }
 
-void Device::endSingleTimeCommands(VkCommandBuffer commandBuffer)
+void Device::endSingleTimeCommands(const VkCommandBuffer commandBuffer) const
 {
     vkEndCommandBuffer(commandBuffer);
 
@@ -285,15 +285,15 @@ void Device::endSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
-void Device::inlineTransitionImageLayout(VkCommandBuffer commandBuffer,
-                                         VkImage image,
-                                         VkFormat format,
-                                         VkImageAspectFlags aspect,
-                                         VkImageSubresourceRange range,
-                                         VkImageLayout oldLayout,
-                                         VkImageLayout newLayout,
-                                         VkPipelineStageFlags src_stage_mask,
-                                         VkPipelineStageFlags dst_stage_mask)
+void Device::inlineTransitionImageLayout(const VkCommandBuffer commandBuffer,
+                                         const VkImage image,
+                                         const VkFormat format,
+                                         const VkImageAspectFlags aspect,
+                                         const VkImageSubresourceRange &range,
+                                         const VkImageLayout oldLayout,
+                                         const VkImageLayout newLayout,
+                                         const VkPipelineStageFlags src_stage_mask,
+                                         const VkPipelineStageFlags dst_stage_mask)
 {
     Q_UNUSED(format)
 
@@ -329,8 +329,6 @@ void Device::inlineTransitionImageLayout(VkCommandBuffer commandBuffer,
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         break;
     case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        break;
     case VK_IMAGE_LAYOUT_GENERAL:
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         break;
@@ -341,12 +339,12 @@ void Device::inlineTransitionImageLayout(VkCommandBuffer commandBuffer,
     vkCmdPipelineBarrier(commandBuffer, src_stage_mask, dst_stage_mask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-void Device::transitionTexture(VkCommandBuffer commandBuffer, Texture &texture, VkImageLayout oldLayout, VkImageLayout newLayout)
+void Device::transitionTexture(const VkCommandBuffer commandBuffer, const Texture &texture, const VkImageLayout oldLayout, const VkImageLayout newLayout)
 {
     inlineTransitionImageLayout(commandBuffer, texture.image, texture.format, texture.range.aspectMask, texture.range, oldLayout, newLayout);
 }
 
-VkResult Device::nameObject(VkObjectType type, uint64_t object, std::string_view name)
+VkResult Device::nameObject(const VkObjectType type, const uint64_t object, const std::string_view name) const
 {
     if (object == 0x0) {
         return VK_ERROR_DEVICE_LOST;
@@ -358,27 +356,26 @@ VkResult Device::nameObject(VkObjectType type, uint64_t object, std::string_view
     info.pObjectName = name.data();
     info.objectHandle = object;
 
-    auto func = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT");
+    const auto func = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
     if (func != nullptr)
         return func(device, &info);
-    else
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-void Device::nameTexture(Texture &texture, std::string_view name)
+void Device::nameTexture(Texture &texture, const std::string_view name) const
 {
     nameObject(VK_OBJECT_TYPE_IMAGE, reinterpret_cast<uint64_t>(texture.image), name.data());
     nameObject(VK_OBJECT_TYPE_IMAGE_VIEW, reinterpret_cast<uint64_t>(texture.imageView), name.data());
     nameObject(VK_OBJECT_TYPE_DEVICE_MEMORY, reinterpret_cast<uint64_t>(texture.imageMemory), name.data());
 }
 
-void Device::nameBuffer(Buffer &buffer, std::string_view name)
+void Device::nameBuffer(Buffer &buffer, const std::string_view name) const
 {
     nameObject(VK_OBJECT_TYPE_BUFFER, reinterpret_cast<uint64_t>(buffer.buffer), name.data());
     nameObject(VK_OBJECT_TYPE_DEVICE_MEMORY, reinterpret_cast<uint64_t>(buffer.memory), name.data());
 }
 
-Texture Device::addGameTexture(physis_Texture gameTexture)
+Texture Device::addGameTexture(physis_Texture gameTexture) const
 {
     Texture newTexture = {};
 
@@ -611,28 +608,28 @@ Texture Device::addGameTexture(physis_Texture gameTexture)
     return newTexture;
 }
 
-void Device::beginDebugMarker(VkCommandBuffer command_buffer, VkDebugUtilsLabelEXT marker_info)
+void Device::beginDebugMarker(const VkCommandBuffer command_buffer, const VkDebugUtilsLabelEXT &marker_info) const
 {
-    auto func = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetDeviceProcAddr(device, "vkCmdBeginDebugUtilsLabelEXT");
+    const auto func = reinterpret_cast<PFN_vkCmdBeginDebugUtilsLabelEXT>(vkGetDeviceProcAddr(device, "vkCmdBeginDebugUtilsLabelEXT"));
     if (func != nullptr)
         func(command_buffer, &marker_info);
 }
 
-void Device::endDebugMarker(VkCommandBuffer command_buffer)
+void Device::endDebugMarker(const VkCommandBuffer command_buffer) const
 {
-    auto func = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetDeviceProcAddr(device, "vkCmdEndDebugUtilsLabelEXT");
+    const auto func = reinterpret_cast<PFN_vkCmdEndDebugUtilsLabelEXT>(vkGetDeviceProcAddr(device, "vkCmdEndDebugUtilsLabelEXT"));
     if (func != nullptr)
         func(command_buffer);
 }
 
-void Device::insertDebugLabel(VkCommandBuffer command_buffer, VkDebugUtilsLabelEXT label_info)
+void Device::insertDebugLabel(const VkCommandBuffer command_buffer, const VkDebugUtilsLabelEXT &label_info) const
 {
-    auto func = (PFN_vkCmdInsertDebugUtilsLabelEXT)vkGetDeviceProcAddr(device, "vkCmdInsertDebugUtilsLabelEXT");
+    const auto func = reinterpret_cast<PFN_vkCmdInsertDebugUtilsLabelEXT>(vkGetDeviceProcAddr(device, "vkCmdInsertDebugUtilsLabelEXT"));
     if (func != nullptr)
         func(command_buffer, &label_info);
 }
 
-void Device::waitForIdle()
+void Device::waitForIdle() const
 {
     // Wait until everything is done...
     vkDeviceWaitIdle(device);

@@ -22,10 +22,10 @@ public:
     explicit MtrlPart(FileCache &cache, QWidget *parent = nullptr);
     ~MtrlPart() override;
 
-    void load(physis_Material file);
+    void load(const physis_Material &file);
 
 private:
-    void rebuild();
+    void rebuild() const;
 
     QVBoxLayout *m_itemsLayout = nullptr;
     PathEdit *m_shaderPackageName = nullptr;

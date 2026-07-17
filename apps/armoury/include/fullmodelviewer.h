@@ -19,6 +19,7 @@ class FullModelViewer : public QMainWindow
 public:
     explicit FullModelViewer(FileCache &cache, QWidget *parent = nullptr);
 
+protected:
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
@@ -39,8 +40,8 @@ private:
     void updateHeightScaling(float scale);
     void updateBustScaling(float scale);
     void updateCharacterParameters();
-    void updateSupportedTribes();
-    void updateRaceData();
+    void updateSupportedTribes() const;
+    void updateRaceData() const;
 
     QGroupBox *addFaceGroup();
     QGroupBox *addHairGroup();

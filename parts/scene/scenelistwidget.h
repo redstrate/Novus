@@ -19,10 +19,10 @@ class SceneListWidget : public QWidget
 public:
     explicit SceneListWidget(SceneState *appState, QWidget *parent = nullptr);
 
-    void expandToDepth(int depth);
-    void focusSearchField();
-    void selectObject(uint32_t objectId);
-    QString lookupObjectName(uint32_t objectId);
+    void expandToDepth(int depth) const;
+    void focusSearchField() const;
+    void selectObject(uint32_t objectId) const;
+    QString lookupObjectName(uint32_t objectId) const;
 
 private:
     QTreeView *treeWidget = nullptr;

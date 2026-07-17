@@ -16,7 +16,7 @@ class LuabPart : public QWidget
 public:
     explicit LuabPart(QWidget *parent = nullptr);
 
-    void load(physis_Buffer file);
+    void load(physis_Buffer buffer) const;
 
 private:
     QTextEdit *m_codeEdit = nullptr;

@@ -9,12 +9,12 @@ PenumbraApi::PenumbraApi(QObject *parent)
 {
 }
 
-void PenumbraApi::redrawAll()
+void PenumbraApi::redrawAll() const
 {
     m_mgr->post(QNetworkRequest(QUrl(QStringLiteral("http://localhost:42069/api/redrawAll"))), QByteArray{});
 }
 
-void PenumbraApi::openWindow()
+void PenumbraApi::openWindow() const
 {
     m_mgr->post(QNetworkRequest(QUrl(QStringLiteral("http://localhost:42069/api/openwindow"))), QByteArray{});
 }

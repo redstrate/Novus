@@ -16,7 +16,7 @@ class TmbPart : public QWidget
 public:
     explicit TmbPart(QWidget *parent = nullptr);
 
-    void load(Platform platform, physis_Buffer file);
+    void load(Platform platform, physis_Buffer buffer);
     void loadExisting(physis_Tmb tmb);
 
 private:
