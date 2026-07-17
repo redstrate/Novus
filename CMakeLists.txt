@@ -4,9 +4,6 @@
 cmake_minimum_required(VERSION 3.25)
 project(Novus VERSION 0.1.1 LANGUAGES CXX)
 
-# build options used for distributors
-option(BUILD_FLATPAK "Build for Flatpak." OFF)
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

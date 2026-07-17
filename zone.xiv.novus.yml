@@ -96,7 +96,6 @@ modules:
     buildsystem: cmake-ninja
     config-opts:
       - -DRust_COMPILER=/usr/lib/sdk/rust-stable/bin/rustc
-      - -DBUILD_FLATPAK=ON
     build-options:
       build-args:
         - --share=network # needed for cargo unfortunately, flatpak has no native support (yet)
