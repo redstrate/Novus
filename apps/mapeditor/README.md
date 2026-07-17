@@ -1,9 +1,9 @@
 # Map Editor
 
-This tool can display maps from the game, albiet it's limited at the moment and navigation isn't the best.
+This tool can display zones from the game, and do very basic editing, 
 
 ![Screenshot](https://xiv.zone/map-editor-v2.png)
 
 ## Note
 
-Vulkan 1.3 or higher is currently required. This requirement is planned to be lifted in the future.
+Vulkan 1.3 or higher is required.

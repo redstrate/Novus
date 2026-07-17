@@ -6,4 +6,4 @@ This tool can display gear pieces from FFXIV, and includes a full model viewer a
 
 ## Note
 
-Vulkan 1.3 or higher is currently required. This requirement is planned to be lifted in the future.
+Vulkan 1.3 or higher is required.

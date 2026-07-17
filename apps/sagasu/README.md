@@ -1,9 +1,9 @@
 # Data Explorer
 
-Useful for exploring all known files in FFXIV data archives. It can view models and excel sheets within the program, without having to boot up Karuku or Armoury.
+Useful for exploring known (and unknown) files in FFXIV data archives. It leverages the existing useful data views from the entire Novus suite too! 
 
 ![Screenshot](https://xiv.zone/data-explorer-v2.png)
 
 ## Note
 
-Vulkan 1.3 or higher is currently required to view model files. This requirement is planned to be lifted in the future.
+Vulkan 1.3 or higher is required to view 3D files. 
