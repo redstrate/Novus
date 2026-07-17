@@ -2,7 +2,7 @@
 
 Useful for exploring known (and unknown) files in FFXIV data archives. It leverages the existing useful data views from the entire Novus suite too! 
 
-![Screenshot](https://xiv.zone/data-explorer-v2.png)
+![Screenshot](https://xiv.zone/data-explorer-v3.png)
 
 ## Note
 
