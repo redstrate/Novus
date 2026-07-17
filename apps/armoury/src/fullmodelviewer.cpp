@@ -124,6 +124,10 @@ FullModelViewer::FullModelViewer(FileCache &cache, QWidget *parent)
     controlLayout->addWidget(m_raceCombo);
 
     for (auto [race, race_name] : magic_enum::enum_entries<Race>()) {
+        if (race == Race::Unknown) {
+            continue;
+        }
+
         m_raceCombo->addItem(QLatin1String(race_name.data()), static_cast<int>(race));
     }
 

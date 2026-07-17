@@ -65,6 +65,10 @@ std::vector<std::pair<Race, Tribe>> GearView::supportedRaces() const
     std::vector<std::pair<Race, Tribe>> races;
     for (const auto &gear : m_loadedGears) {
         for (const auto &race : magic_enum::enum_entries<Race>() | std::views::keys) {
+            if (race == Race::Unknown) {
+                continue;
+            }
+
             for (const auto subrace : physis_get_supported_tribes(race).subraces) {
                 const auto equip_path = physis_build_equipment_path(gear.info.modelInfo.primaryID, race, subrace, currentGender, gear.info.slot);
 
