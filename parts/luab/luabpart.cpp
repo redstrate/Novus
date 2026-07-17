@@ -13,6 +13,7 @@
 #include <QVBoxLayout>
 #include <physis.hpp>
 
+#include "launcherconfig.h"
 #include "scriptprocessor.h"
 
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
@@ -49,7 +50,7 @@ void LuabPart::load(physis_Buffer buffer)
         file.close();
 
         QProcess luaDecProcess;
-        luaDecProcess.setProgram(QStringLiteral("./luadec"));
+        luaDecProcess.setProgram(LUADEC_EXECUTABLE);
         luaDecProcess.setArguments({temporaryFile.fileName()});
         luaDecProcess.start();
         luaDecProcess.waitForFinished();

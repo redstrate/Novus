@@ -9,7 +9,8 @@ target_link_libraries(luabpart
         KF6::I18n
         Physis::Physis
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        Novus::Common)
 if (TARGET KF6::SyntaxHighlighting)
     target_link_libraries(luabpart
             PUBLIC
