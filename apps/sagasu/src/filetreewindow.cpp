@@ -43,6 +43,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     layout->addWidget(m_searchEdit);
 
     m_treeWidget = new QTreeView();
+    m_treeWidget->setHeaderHidden(true);
     m_treeWidget->setModel(m_searchModel);
     layout->addWidget(m_treeWidget);
 
