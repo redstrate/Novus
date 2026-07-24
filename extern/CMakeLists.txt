@@ -32,6 +32,4 @@ add_subdirectory(tinygltf EXCLUDE_FROM_ALL)
 add_subdirectory(imgui EXCLUDE_FROM_ALL)
 add_subdirectory(dxbc EXCLUDE_FROM_ALL)
 add_subdirectory(rapidyaml EXCLUDE_FROM_ALL)
-
-# For some reason, FFXIV uses a *32-bit* Lua compiler. We have to build it as 32-bit or else loading the bytecode fails.
 add_subdirectory(luadec51 EXCLUDE_FROM_ALL)
