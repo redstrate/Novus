@@ -119,10 +119,13 @@ bool FileTreeWindow::selectPath(const QString &path) const
     const auto index = m_fileModel->search(path);
     if (index.isValid()) {
         const auto mappedIndex = m_searchModel->mapFromSource(index);
-        // TODO: dunno if there's a better way to programmatically do this
         m_treeWidget->selectionModel()->select(mappedIndex, QItemSelectionModel::ClearAndSelect);
-        m_treeWidget->scrollTo(mappedIndex);
         Q_EMIT m_treeWidget->activated(mappedIndex);
+
+        // NOTE: It isn't actually scrolled to properly unless I do it twice...
+        m_treeWidget->scrollTo(mappedIndex, QTreeView::PositionAtCenter);
+        m_treeWidget->scrollTo(mappedIndex, QTreeView::PositionAtCenter);
+
         return true;
     }
     return false;
