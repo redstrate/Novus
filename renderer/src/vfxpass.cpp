@@ -31,6 +31,11 @@ void VfxPass::render(const VkCommandBuffer commandBuffer, const Camera &camera, 
 
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 
+            // TODO: support untextured VFX objects
+            if (vfxInstance.sourceObject->gameTextures.empty()) {
+                continue;
+            }
+
             auto texture = vfxInstance.sourceObject->gameTextures[0];
             if (!m_cachedTextures.contains(texture.image)) {
                 addTexture(texture);
