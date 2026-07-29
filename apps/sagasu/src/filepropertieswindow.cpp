@@ -30,9 +30,9 @@ FilePropertiesWindow::FilePropertiesWindow(const QString &path, const physis_Buf
         layout->addRow(i18nc("@label", "Type:"), typeLabel);
     }
 
-    const auto sizeLabel = new QLabel(QString::number(buffer.size));
+    const auto sizeLabel = new QLabel(i18n("%1 bytes", QString::number(buffer.size)));
     sizeLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    layout->addRow(i18nc("@label", "Size (in bytes):"), sizeLabel);
+    layout->addRow(i18nc("@label", "Size:"), sizeLabel);
 }
 
 #include "moc_filepropertieswindow.cpp"
