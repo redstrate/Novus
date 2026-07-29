@@ -395,6 +395,18 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
         m_fileActionsMenu->addAction(texWidget->saveImageAction());
     } break;
+    case FileType::AnimatedVisualEffect: {
+        auto avfx = physis_avfx_parse(m_cache.platform(), file);
+
+        Transformation transformation{};
+        transformation.scale[0] = 1;
+        transformation.scale[1] = 1;
+        transformation.scale[2] = 1;
+
+        auto mdlWidget = new MDLPart(m_cache);
+        mdlWidget->addVfx(avfx, transformation, QStringLiteral("vfx"));
+        addTab(mdlWidget);
+    } break;
     default:
         break;
     }
