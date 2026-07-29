@@ -282,86 +282,25 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
             objectName = i18n("Unknown Object");
 
             switch (object.data.tag) {
-            case physis_LayerEntry::Tag::BgPart:
-                objectName = i18n("Bg Part");
-                break;
-            case physis_LayerEntry::Tag::Light:
-                objectName = i18n("Light");
-                break;
             case physis_LayerEntry::Tag::Vfx: {
                 QFileInfo info(QString::fromLatin1(object.data.vfx._0.asset_path));
                 objectName = info.fileName();
             } break;
             case physis_LayerEntry::Tag::EventObject:
-                // Give the EObj an actual name.
                 objectName = m_appState->lookupEObjName(object.data.event_object._0.parent_data.base_id);
                 break;
-            case physis_LayerEntry::Tag::PopRange:
-                objectName = i18n("Pop Range");
-                break;
             case physis_LayerEntry::Tag::EventNpc:
-                // Give the ENPC an actual name.
                 objectName = m_appState->lookupENpcName(object.data.event_npc._0.parent_data.parent_data.base_id);
-                break;
-            case physis_LayerEntry::Tag::MapRange:
-                objectName = i18n("Map Range");
                 break;
             case physis_LayerEntry::Tag::SharedGroup: {
                 QFileInfo info(QString::fromLatin1(object.data.shared_group._0.asset_path));
                 objectName = info.fileName();
             } break;
-            case physis_LayerEntry::Tag::Aetheryte:
-                objectName = i18n("Aetheryte");
-                break;
-            case physis_LayerEntry::Tag::ExitRange:
-                objectName = i18n("Exit Range");
-                break;
-            case physis_LayerEntry::Tag::EventRange:
-                objectName = i18n("Event Range");
-                break;
-            case physis_LayerEntry::Tag::ChairMarker:
-                objectName = i18n("Chair Marker");
-                break;
-            case physis_LayerEntry::Tag::PrefetchRange:
-                objectName = i18n("Prefetch Range");
-                break;
-            case physis_LayerEntry::Tag::EnvSet:
-                objectName = i18n("Env Set");
-                break;
-            case physis_LayerEntry::Tag::EnvLocation:
-                objectName = i18n("Env Location");
-                break;
-            case physis_LayerEntry::Tag::Sound:
-                objectName = i18n("Sound");
-                break;
-            case physis_LayerEntry::Tag::CollisionBox:
-                objectName = i18n("Collision Box");
-                break;
-            case physis_LayerEntry::Tag::DoorRange:
-                objectName = i18n("Door Range");
-                break;
-            case physis_LayerEntry::Tag::LineVFX:
-                objectName = i18n("Line VFX");
-                break;
             case physis_LayerEntry::Tag::Treasure:
                 objectName = i18n("Treasure (%1)").arg(object.data.treasure._0.parent_data.base_id);
                 break;
-            case physis_LayerEntry::Tag::TargetMarker:
-                objectName = i18n("Target Marker");
-                break;
-            case physis_LayerEntry::Tag::ClientPath:
-                objectName = i18n("Client Path");
-                break;
-            case physis_LayerEntry::Tag::CullingBox:
-                objectName = i18n("Culling Box");
-                break;
-            case physis_LayerEntry::Tag::ClickableRange:
-                objectName = i18n("Clickable Range");
-                break;
-            case physis_LayerEntry::Tag::BattleNpc:
-                objectName = i18n("Battle NPC");
-                break;
             default:
+                objectName = QString::fromStdString(magic_enum::enum_name(object.data.tag).data());
                 break;
             }
         }
