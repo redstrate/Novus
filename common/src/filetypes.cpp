@@ -138,7 +138,8 @@ const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>
                                                                                               {FileType::Fdt, physis_fdt_debug},
                                                                                               {FileType::PhysicsBinary, physis_phyb_debug},
                                                                                               {FileType::AttachOffset, physis_atch_debug},
-                                                                                              {FileType::BindPoint, physis_eid_debug}};
+                                                                                              {FileType::BindPoint, physis_eid_debug},
+                                                                                              {FileType::Texture, physis_tex_debug}};
 
 const static QMap<std::array<uint8_t, 4>, FileType> magicToType{
     {{0x70, 0x61, 0x70, 0x20}, FileType::Pap},
