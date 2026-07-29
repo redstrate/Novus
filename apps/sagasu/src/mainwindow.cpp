@@ -182,9 +182,6 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     if (file.size == 0) {
         file = m_cache.read(path);
     }
-    if (file.size == 0) {
-        return;
-    }
 
     QString source;
     FileType type = FileTypes::getFileType(info.completeSuffix());
@@ -431,9 +428,11 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     // Disable file actions if there are no actions to take
     m_fileActions->setEnabled(!m_fileActionsMenu->isEmpty());
 
-    auto hexWidget = new HexPart();
-    hexWidget->loadFile(file);
-    m_partHolder->addTab(hexWidget, i18nc("@title:tab", "Raw Data"));
+    if (file.size > 0) {
+        auto hexWidget = new HexPart();
+        hexWidget->loadFile(file);
+        m_partHolder->addTab(hexWidget, i18nc("@title:tab", "Raw Data"));
+    }
 
     auto propertiesWidget = new FilePropertiesWindow(path, file);
     m_partHolder->addTab(propertiesWidget, i18nc("@title:tab", "Properties"));
