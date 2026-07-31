@@ -14,6 +14,8 @@ TexPart::TexPart(QWidget *parent)
     : QWidget(parent)
 {
     const auto layout = new QVBoxLayout();
+    layout->setSpacing(0);
+    layout->setContentsMargins({0, 0, 0, 0});
     setLayout(layout);
 
     m_label = new ImageLabel();
