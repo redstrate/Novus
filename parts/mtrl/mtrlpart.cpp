@@ -8,6 +8,7 @@
 #include <KLocalizedString>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QScrollArea>
 #include <QSpinBox>
 #include <QVBoxLayout>
 #include <physis.hpp>
@@ -32,17 +33,35 @@ MtrlPart::MtrlPart(FileCache &cache, QWidget *parent)
     m_tabWidget = new QTabWidget();
     m_itemsLayout->addWidget(m_tabWidget);
 
-    auto propertiesTab = new QWidget();
+    auto propertiesTab = new QScrollArea();
+    propertiesTab->setWidgetResizable(true);
+
+    auto propertiesTabLayoutHolder = new QWidget();
+    propertiesTab->setWidget(propertiesTabLayoutHolder);
+
     m_propertiesLayout = new QVBoxLayout();
-    propertiesTab->setLayout(m_propertiesLayout);
+    m_propertiesLayout->setSizeConstraints(QLayout::SetMinAndMaxSize, QLayout::SetMinAndMaxSize);
+    propertiesTabLayoutHolder->setLayout(m_propertiesLayout);
 
-    auto texturesTab = new QWidget();
+    auto texturesTab = new QScrollArea();
+    texturesTab->setWidgetResizable(true);
+
+    auto texturesTabLayoutHolder = new QWidget();
+    texturesTab->setWidget(texturesTabLayoutHolder);
+
     m_texturesLayout = new QVBoxLayout();
-    texturesTab->setLayout(m_texturesLayout);
+    m_texturesLayout->setSizeConstraints(QLayout::SetMinAndMaxSize, QLayout::SetMinAndMaxSize);
+    texturesTabLayoutHolder->setLayout(m_texturesLayout);
 
-    auto constantsTab = new QWidget();
+    auto constantsTab = new QScrollArea();
+    constantsTab->setWidgetResizable(true);
+
+    auto constantsTabLayoutHolder = new QWidget();
+    constantsTab->setWidget(constantsTabLayoutHolder);
+
     m_constantsLayout = new QVBoxLayout();
-    constantsTab->setLayout(m_constantsLayout);
+    m_constantsLayout->setSizeConstraints(QLayout::SetMinAndMaxSize, QLayout::SetMinAndMaxSize);
+    constantsTabLayoutHolder->setLayout(m_constantsLayout);
 
     m_tabWidget->addTab(texturesTab, i18n("Textures"));
     m_tabWidget->addTab(propertiesTab, i18n("Parameters"));
@@ -112,6 +131,7 @@ void MtrlPart::rebuild() const
 
         const auto label = new QLabel();
         label->setText(QString::fromLatin1(nameFromCrc(value)));
+        label->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
         layout->addRow(i18n("Value:"), label);
     }
@@ -135,6 +155,7 @@ void MtrlPart::rebuild() const
         const auto file = m_cache.read(QString::fromUtf8(m_material.textures[sampler.texture_index]));
 
         const auto texWidget = new TexPart();
+        texWidget->setMaximumHeight(50); // We don't need to see the textures at their full-size here
         Q_UNUSED(texWidget->loadTex(m_cache.platform(), file));
         layout->addWidget(texWidget);
 
@@ -159,6 +180,7 @@ void MtrlPart::rebuild() const
 
         const auto label = new QLabel();
         label->setText(name);
+        label->setTextInteractionFlags(Qt::TextBrowserInteraction);
         valueLayout->addWidget(label);
 
         const auto firstElemSpinBox = new QDoubleSpinBox();
