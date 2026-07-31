@@ -8,6 +8,8 @@
 #include <KLocalizedString>
 #include <QCheckBox>
 #include <QDesktopServices>
+#include <QGraphicsDropShadowEffect>
+#include <QScrollBar>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <physis.hpp>
@@ -78,6 +80,84 @@ public:
     explicit ExcelTableView()
     {
         setMouseTracking(true);
+
+        horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(horizontalHeader(), &QHeaderView::customContextMenuRequested, this, [this](const QPoint pos) {
+            const auto menu = new QMenu(this);
+
+            const int logicalIndex = horizontalHeader()->logicalIndexAt(pos);
+            if (logicalIndex == m_pinnedColumn) {
+                const auto pinAction = menu->addAction(QIcon::fromTheme(QStringLiteral("window-unpin-symbolic")), i18n("Unpin"));
+                connect(pinAction, &QAction::triggered, this, [this] {
+                    initializeFrozenTableView(-1);
+                });
+            } else {
+                const auto pinAction = menu->addAction(QIcon::fromTheme(QStringLiteral("window-pin-symbolic")), i18n("Pin"));
+                connect(pinAction, &QAction::triggered, this, [this, logicalIndex] {
+                    initializeFrozenTableView(logicalIndex);
+                });
+            }
+
+            menu->exec(mapToGlobal(pos));
+        });
+    }
+
+    void initializeFrozenTableView(const int column)
+    {
+        if (frozenTableView) {
+            delete frozenTableView;
+            frozenTableView = nullptr;
+        }
+
+        m_pinnedColumn = column;
+
+        if (column == -1) {
+            return;
+        }
+
+        frozenTableView = new QTableView(this);
+        frozenTableView->setModel(model());
+        frozenTableView->setFocusPolicy(Qt::NoFocus);
+        frozenTableView->verticalHeader()->hide();
+        frozenTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        frozenTableView->horizontalHeader()->setSectionsClickable(false);
+        frozenTableView->horizontalHeader()->setSectionsMovable(false);
+
+        viewport()->stackUnder(frozenTableView);
+
+        frozenTableView->setSelectionModel(selectionModel());
+        for (int col = 0; col < model()->columnCount(); ++col) {
+            frozenTableView->setColumnHidden(col, col != column);
+        }
+
+        frozenTableView->setColumnWidth(m_pinnedColumn, columnWidth(m_pinnedColumn));
+        frozenTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        frozenTableView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        frozenTableView->setAlternatingRowColors(alternatingRowColors());
+
+        // make it read-only for now
+        frozenTableView->setEditTriggers({});
+        frozenTableView->setSelectionMode(NoSelection);
+
+        frozenTableView->show();
+
+        // Add a drop shadow to make it even more obvious
+        const auto effect = new QGraphicsDropShadowEffect();
+        effect->setBlurRadius(5);
+        effect->setXOffset(-5);
+        effect->setYOffset(0);
+        effect->setColor(palette().shadow().color());
+
+        frozenTableView->setGraphicsEffect(effect);
+
+        connect(horizontalHeader(), &QHeaderView::sectionResized, this, &ExcelTableView::updateSectionWidth);
+        connect(verticalHeader(), &QHeaderView::sectionResized, this, &ExcelTableView::updateSectionHeight);
+
+        connect(frozenTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, verticalScrollBar(), &QAbstractSlider::setValue);
+        connect(verticalScrollBar(), &QAbstractSlider::valueChanged, frozenTableView->verticalScrollBar(), &QAbstractSlider::setValue);
+
+        // update initial geometry
+        updateFrozenTableGeometry();
     }
 
 protected:
@@ -104,8 +184,56 @@ protected:
         QTableView::mousePressEvent(event);
     }
 
+    void resizeEvent(QResizeEvent *event) override
+    {
+        updateFrozenTableGeometry();
+        QTableView::resizeEvent(event);
+    }
+
 Q_SIGNALS:
     void requestJump(const QString &name, const QString &rowQuery);
+
+private:
+    void updateFrozenTableGeometry() const
+    {
+        if (!frozenTableView) {
+            return;
+        }
+
+        // NOTE: I have it currently stuck to the right side, because I couldn't figure out a good UX for anything else (yet)
+        frozenTableView->setGeometry(width() - columnWidth(m_pinnedColumn) - verticalScrollBar()->width(),
+                                     frameWidth(),
+                                     columnWidth(m_pinnedColumn),
+                                     viewport()->height() + horizontalHeader()->height());
+    }
+
+    void updateSectionWidth(const int logicalIndex, const int oldSize, const int newSize) const
+    {
+        Q_UNUSED(oldSize)
+
+        if (!frozenTableView) {
+            return;
+        }
+
+        if (logicalIndex == m_pinnedColumn) {
+            frozenTableView->setColumnWidth(m_pinnedColumn, newSize);
+            updateFrozenTableGeometry();
+        }
+    }
+
+    void updateSectionHeight(const int logicalIndex, const int oldSize, const int newSize) const
+    {
+        Q_UNUSED(oldSize)
+
+        if (!frozenTableView) {
+            return;
+        }
+
+        frozenTableView->setRowHeight(logicalIndex, newSize);
+    }
+
+    QTableView *frozenTableView = nullptr;
+    int m_pinnedColumn = -1;
 };
 
 EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *parent)
