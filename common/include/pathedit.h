@@ -44,5 +44,5 @@ public:
 
 private:
     QLineEdit *m_lineEdit = nullptr;
-    QPushButton *m_openButton = nullptr;
+    QAction *m_openAction = nullptr;
 };

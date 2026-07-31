@@ -5,6 +5,7 @@
 
 #include "launcherconfig.h"
 
+#include <KLocalizedString>
 #include <QHBoxLayout>
 #include <QProcess>
 
@@ -28,26 +29,24 @@ PathEdit::PathEdit(QWidget *parent)
     : EditWidget(parent)
 {
     const auto layout = new QHBoxLayout(this);
-    setMaximumHeight(35); // FIXME: don't hard-code
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    layout->setSizeConstraints(QLayout::SetMinAndMaxSize, QLayout::SetMinAndMaxSize);
 
     m_lineEdit = new QLineEdit();
     connect(m_lineEdit, &QLineEdit::editingFinished, this, &EditWidget::editingFinished);
-    layout->addWidget(m_lineEdit);
-
-    m_openButton = new QPushButton();
-    m_openButton->setEnabled(false);
-    m_openButton->setIcon(QIcon::fromTheme(QStringLiteral("document-open")));
-    connect(m_openButton, &QPushButton::clicked, this, [this] {
+    m_openAction = m_lineEdit->addAction(QIcon::fromTheme(QStringLiteral("document-open")), QLineEdit::TrailingPosition);
+    m_openAction->setEnabled(false);
+    connect(m_openAction, &QAction::triggered, this, [this] {
         openPathHandler->openPath(m_lineEdit->text());
     });
-    layout->addWidget(m_openButton);
+    layout->addWidget(m_lineEdit);
 }
 
 void PathEdit::setPath(const QString &path) const
 {
     m_lineEdit->setText(path);
-    m_openButton->setEnabled(!path.isEmpty());
+    m_openAction->setEnabled(!path.isEmpty());
 }
 
 void PathEdit::setReadOnly(const bool readOnly) const
