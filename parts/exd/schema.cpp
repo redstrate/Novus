@@ -1,13 +1,11 @@
 // SPDX-FileCopyrightText: 2025 Joshua Goins <josh@redstrate.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#define RYML_SINGLE_HDR_DEFINE_NOW
 #include "schema.h"
 
 #include <QDebug>
-
-#define RYML_SINGLE_HDR_DEFINE_NOW
 #include <QFile>
-#include <rapidyaml-0.10.0.hpp>
 
 Schema::Schema(const QString &path)
 {
@@ -25,47 +23,10 @@ Schema::Schema(const QString &path)
     if (tree.has_child(tree.root_id(), "fields")) {
         const ryml::ConstNodeRef fields = tree["fields"];
         for (const auto &node : fields) {
-            Field field;
-            field.name = QString::fromLatin1(node["name"].val());
-
-            if (node.has_child("type")) {
-                ryml::ConstNodeRef typeField = node["type"];
-                const QString typeName = QString::fromLatin1(typeField.val());
-
-                if (typeName == QStringLiteral("link")) {
-                    field.type = Field::Type::Link;
-
-                    if (node.has_child("targets")) {
-                        ryml::ConstNodeRef targetsField = node["targets"];
-                        for (auto target : targetsField) {
-                            field.targetSheets.push_back(QString::fromLatin1(target.val()));
-                        }
-                    }
-                    if (node.has_child("condition")) {
-                        ryml::ConstNodeRef conditionField = node["condition"];
-
-                        Condition condition;
-                        condition.switchColumn = QString::fromLatin1(conditionField["switch"].val());
-
-                        ryml::ConstNodeRef casesField = conditionField["cases"];
-                        for (const auto &switchCase : casesField) {
-                            const int caseValue = std::atoi(switchCase.key().data());
-                            for (const auto &targetSheet : casesField[switchCase.key()]) {
-                                condition.cases[caseValue].push_back(QString::fromLatin1(targetSheet.val()));
-                            }
-                        }
-
-                        field.condition = condition;
-                    }
-                }
+            const auto field = parseField(node);
+            if (field.type != Field::Type::Array) {
+                m_fields.push_back(field);
             }
-
-            if (node.has_child("comment")) {
-                ryml::ConstNodeRef commentField = node["comment"];
-                field.comment = QString::fromLatin1(commentField.val());
-            }
-
-            m_fields.push_back(field);
         }
 
         if (tree.has_child(tree.root_id(), "displayField")) {
@@ -146,4 +107,81 @@ QString Schema::comment(const uint32_t index) const
         return m_fields[index].comment;
     }
     return {};
+}
+
+Schema::Field Schema::parseField(ryml::ConstNodeRef node)
+{
+    Field field;
+    if (node.has_child("name")) {
+        field.name = QString::fromLatin1(node["name"].val());
+    }
+
+    if (node.has_child("type")) {
+        ryml::ConstNodeRef typeField = node["type"];
+        const QString typeName = QString::fromLatin1(typeField.val());
+
+        if (typeName == QStringLiteral("link")) {
+            field.type = Field::Type::Link;
+
+            if (node.has_child("targets")) {
+                ryml::ConstNodeRef targetsField = node["targets"];
+                for (auto target : targetsField) {
+                    field.targetSheets.push_back(QString::fromLatin1(target.val()));
+                }
+            }
+            if (node.has_child("condition")) {
+                ryml::ConstNodeRef conditionField = node["condition"];
+
+                Condition condition;
+                condition.switchColumn = QString::fromLatin1(conditionField["switch"].val());
+
+                ryml::ConstNodeRef casesField = conditionField["cases"];
+                for (const auto &switchCase : casesField) {
+                    const int caseValue = std::atoi(switchCase.key().data());
+                    for (const auto &targetSheet : casesField[switchCase.key()]) {
+                        condition.cases[caseValue].push_back(QString::fromLatin1(targetSheet.val()));
+                    }
+                }
+
+                field.condition = condition;
+            }
+        } else if (typeName == QStringLiteral("array")) {
+            field.type = Field::Type::Array;
+
+            const int count = std::atoi(node["count"].val().data());
+
+            if (node.has_child("fields")) {
+                ryml::ConstNodeRef fieldsNode = node["fields"];
+
+                for (int i = 0; i < count; i++) {
+                    for (const auto &childFieldNode : fieldsNode) {
+                        auto childField = parseField(childFieldNode);
+
+                        // There can be single-field arrays that have no name for their only field
+                        if (fieldsNode.num_children() == 1) {
+                            childField.name = QStringLiteral("%1[%2]").arg(field.name).arg(i);
+                        } else {
+                            childField.name = QStringLiteral("%1[%2].%3").arg(field.name).arg(i).arg(childField.name);
+                        }
+
+                        m_fields.push_back(childField);
+                    }
+                }
+            } else {
+                for (int i = 0; i < count; i++) {
+                    auto childField = field; // clone original field
+                    childField.name = QStringLiteral("%1[%2]").arg(field.name).arg(i);
+
+                    m_fields.push_back(childField);
+                }
+            }
+        }
+    }
+
+    if (node.has_child("comment")) {
+        ryml::ConstNodeRef commentField = node["comment"];
+        field.comment = QString::fromLatin1(commentField.val());
+    }
+
+    return field;
 }

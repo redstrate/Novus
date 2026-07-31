@@ -3,9 +3,11 @@
 
 #pragma once
 
-#include <QHash>
-#include <QStringList>
 #include <QVariant>
+
+#ifndef _RYML_SINGLE_HEADER_AMALGAMATED_HPP_
+#include <rapidyaml-0.10.0.hpp>
+#endif
 
 class Schema
 {
@@ -59,20 +61,23 @@ private:
         QHash<int, QList<QString>> cases; // TODO: is it only ints supported in cases? I think so...
     };
 
-    struct Field
-    {
-        QString name;
-
+    struct Field {
         enum class Type {
             Single,
             Link,
+            Array,
         };
-        Type type = Type::Single;
 
-        QStringList targetSheets;
+        QString name;
+        Type type = Type::Single;
         QString comment;
+
+        // link
+        QStringList targetSheets;
         std::optional<Condition> condition;
     };
+
+    Field parseField(ryml::ConstNodeRef node);
 
     std::vector<Field> m_fields;
     QString m_displayField;
