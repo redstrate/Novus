@@ -3,6 +3,7 @@
 
 #include "luabpart.h"
 
+#include <KLocalizedString>
 #include <QJsonObject>
 #include <QProcess>
 #include <QTemporaryFile>
@@ -66,6 +67,10 @@ void LuabPart::load(const physis_Buffer buffer) const
         const auto def = repository.definitionForName(QStringLiteral("Lua"));
         highlighter->setDefinition(def);
 #endif
+    }
+
+    if (m_codeEdit->toPlainText().isEmpty()) {
+        m_codeEdit->setText(i18n("Failed to decompile Lua bytecode, please report this as a bug!"));
     }
 }
 
