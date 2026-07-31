@@ -76,7 +76,7 @@ QVariant ExcelModel::data(const QModelIndex &index, const int role) const
         const auto column = m_sortedColumnIndices.indexOf(index.column());
         const auto &data = dataForIndex(index);
 
-        return displayForColumn(column, data);
+        return displayForColumn(m_schema, column, data);
     }
     if (role == Qt::EditRole) {
         const auto &data = dataForIndex(index);
@@ -311,10 +311,10 @@ int ExcelModel::displayFieldColumn() const
     return m_schema.displayFieldIndex().value_or(-1);
 }
 
-QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field &data) const
+QVariant ExcelModel::displayForColumn(const Schema &schema, const uint32_t column, const physis_Field &data) const
 {
     // Check to see if there's any targets
-    const auto targetSheets = m_schema.targetSheetsForColumn(column);
+    const auto targetSheets = schema.targetSheetsForColumn(column);
     if (!targetSheets.isEmpty()) {
         uint32_t targetRowId;
         switch (data.tag) {
@@ -358,7 +358,7 @@ QVariant ExcelModel::displayForColumn(const uint32_t column, const physis_Field 
 
             if (const auto displayFieldIndex = schema.displayFieldIndex()) {
                 if (const auto field = m_resolver->translateSchemaColumn(sheetName, &row.row(), *displayFieldIndex)) {
-                    return displayForData(*field);
+                    return displayForColumn(schema, *displayFieldIndex, *field);
                 }
                 qWarning() << "Could not fetch displayField! This is a bug in Novus.";
             }
