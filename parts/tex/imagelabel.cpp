@@ -7,7 +7,7 @@
 ImageLabel::ImageLabel(QWidget *parent)
     : QLabel(parent)
 {
-    this->setMinimumSize(1, 1);
+    this->setMinimumSize(50, 50); // TODO: seems like a hack?
     setScaledContents(false);
 }
 
