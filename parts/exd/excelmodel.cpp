@@ -76,7 +76,7 @@ QVariant ExcelModel::data(const QModelIndex &index, const int role) const
         const auto column = m_sortedColumnIndices.indexOf(index.column());
         const auto &data = dataForIndex(index);
 
-        return displayForColumn(m_schema, column, data);
+        return displayForColumn(m_schema, index.row(), column, data);
     }
     if (role == Qt::EditRole) {
         const auto &data = dataForIndex(index);
@@ -102,7 +102,8 @@ QVariant ExcelModel::data(const QModelIndex &index, const int role) const
     }
     if (role == Qt::ToolTipRole) {
         const auto mappedIndex = m_sortedColumnIndices.indexOf(index.column());
-        if (!m_schema.targetSheetsForColumn(mappedIndex).isEmpty()) {
+        const auto context = contextFor(index.row(), mappedIndex);
+        if (!m_schema.targetSheetsForColumn(mappedIndex, context).isEmpty()) {
             // Get the resolved sheet and its row id.
             // TODO: use multiData for this
             const auto resolvedSheet = data(index, ResolvedSheetRole).toString();
@@ -117,7 +118,8 @@ QVariant ExcelModel::data(const QModelIndex &index, const int role) const
     }
     if (role == ResolvedSheetRole) {
         const auto mappedIndex = m_sortedColumnIndices.indexOf(index.column());
-        const auto targetSheets = m_schema.targetSheetsForColumn(mappedIndex);
+        const auto context = contextFor(index.row(), mappedIndex);
+        const auto targetSheets = m_schema.targetSheetsForColumn(mappedIndex, context);
         if (targetSheets.isEmpty()) {
             return {};
         }
@@ -311,42 +313,43 @@ int ExcelModel::displayFieldColumn() const
     return m_schema.displayFieldIndex().value_or(-1);
 }
 
-QVariant ExcelModel::displayForColumn(const Schema &schema, const uint32_t column, const physis_Field &data) const
+QVariant ExcelModel::displayForColumn(const Schema &schema, const uint32_t row, const uint32_t column, const physis_Field &data) const
 {
-    // Check to see if there's any targets
-    const auto targetSheets = schema.targetSheetsForColumn(column);
-    if (!targetSheets.isEmpty()) {
-        uint32_t targetRowId;
-        switch (data.tag) {
-        case physis_Field::Tag::Int8:
-            targetRowId = data.int8._0;
-            break;
-        case physis_Field::Tag::UInt8:
-            targetRowId = data.u_int8._0;
-            break;
-        case physis_Field::Tag::Int16:
-            targetRowId = data.int16._0;
-            break;
-        case physis_Field::Tag::UInt16:
-            targetRowId = data.u_int16._0;
-            break;
-        case physis_Field::Tag::Int32:
-            targetRowId = data.int32._0;
-            break;
-        case physis_Field::Tag::UInt32:
-            targetRowId = data.u_int32._0;
-            break;
-        case physis_Field::Tag::Int64:
-            targetRowId = data.int64._0;
-            break;
-        case physis_Field::Tag::UInt64:
-            targetRowId = data.u_int64._0;
-            break;
-        default:
-            // There can't be columns that point to another Excel row with something like a string, so something went wrong somewhere
-            return displayForData(data);
-        }
+    uint32_t targetRowId;
+    switch (data.tag) {
+    case physis_Field::Tag::Int8:
+        targetRowId = data.int8._0;
+        break;
+    case physis_Field::Tag::UInt8:
+        targetRowId = data.u_int8._0;
+        break;
+    case physis_Field::Tag::Int16:
+        targetRowId = data.int16._0;
+        break;
+    case physis_Field::Tag::UInt16:
+        targetRowId = data.u_int16._0;
+        break;
+    case physis_Field::Tag::Int32:
+        targetRowId = data.int32._0;
+        break;
+    case physis_Field::Tag::UInt32:
+        targetRowId = data.u_int32._0;
+        break;
+    case physis_Field::Tag::Int64:
+        targetRowId = data.int64._0;
+        break;
+    case physis_Field::Tag::UInt64:
+        targetRowId = data.u_int64._0;
+        break;
+    default:
+        // There can't be columns that point to another Excel row with something like a string, so something went wrong somewhere
+        return displayForData(data);
+    }
 
+    // Check to see if there's any targets
+    const auto context = contextFor(row, column);
+    const auto targetSheets = schema.targetSheetsForColumn(column, context);
+    if (!targetSheets.isEmpty()) {
         if (const auto value = m_resolver->resolveRow(targetSheets, targetRowId, m_language)) {
             const auto &[sheetName, row] = *value;
 
@@ -358,11 +361,18 @@ QVariant ExcelModel::displayForColumn(const Schema &schema, const uint32_t colum
 
             if (const auto displayFieldIndex = schema.displayFieldIndex()) {
                 if (const auto field = m_resolver->translateSchemaColumn(sheetName, &row.row(), *displayFieldIndex)) {
-                    return displayForColumn(schema, *displayFieldIndex, *field);
+                    return displayForColumn(schema, 0, *displayFieldIndex, *field); // TODO: row being 0 is wrong here OFC
                 }
                 qWarning() << "Could not fetch displayField! This is a bug in Novus.";
+            } else {
+                return QStringLiteral("%1#%2").arg(sheetName).arg(targetRowId);
             }
         }
+    }
+
+    // If we failed to resolve a sheet above - but context is needed - that means the condition failed.
+    if (!schema.neededContextForColumn(column).isEmpty()) {
+        return QStringLiteral("???#%1").arg(targetRowId);
     }
 
     // Normal data
@@ -463,6 +473,19 @@ physis_Field *ExcelModel::dataForRowId(const uint32_t rowId, const uint32_t colu
     }
 
     return nullptr;
+}
+
+std::optional<QVariant> ExcelModel::contextFor(const uint32_t row, const uint32_t column) const
+{
+    // NOTE: This assumes the condition switch exists as a top-level field i guess
+
+    const auto contextName = m_schema.neededContextForColumn(column);
+    if (!contextName.isEmpty()) {
+        const uint32_t column = m_schema.indexForName(contextName).value();
+        const uint32_t unsortedColumn = m_sortedColumnIndices[column];
+        return data(index(row, unsortedColumn), Qt::DisplayRole);
+    }
+    return {};
 }
 
 #include "moc_excelmodel.cpp"

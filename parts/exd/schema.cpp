@@ -41,8 +41,22 @@ Schema::Schema(const QString &path)
                             field.targetSheets.push_back(QString::fromLatin1(target.val()));
                         }
                     }
+                    if (node.has_child("condition")) {
+                        ryml::ConstNodeRef conditionField = node["condition"];
 
-                    // TOOD: support switch statements
+                        Condition condition;
+                        condition.switchColumn = QString::fromLatin1(conditionField["switch"].val());
+
+                        ryml::ConstNodeRef casesField = conditionField["cases"];
+                        for (const auto &switchCase : casesField) {
+                            const int caseValue = std::atoi(switchCase.key().data());
+                            for (const auto &targetSheet : casesField[switchCase.key()]) {
+                                condition.cases[caseValue].push_back(QString::fromLatin1(targetSheet.val()));
+                            }
+                        }
+
+                        field.condition = condition;
+                    }
                 }
             }
 
@@ -71,10 +85,41 @@ QString Schema::nameForColumn(const uint32_t index) const
     return QStringLiteral("Unknown %1").arg(index);
 }
 
-QStringList Schema::targetSheetsForColumn(const uint32_t index) const
+std::optional<uint32_t> Schema::indexForName(const QString &name) const
+{
+    for (size_t i = 0; i < m_fields.size(); i++) {
+        if (m_fields[i].name == name) {
+            return i;
+        }
+    }
+
+    return std::nullopt;
+}
+
+QStringList Schema::targetSheetsForColumn(const uint32_t index, const std::optional<QVariant> &context) const
 {
     if (index < m_fields.size()) {
-        return m_fields[index].targetSheets;
+        const auto &field = m_fields[index];
+        if (const auto condition = field.condition) {
+            Q_ASSERT(context.has_value()); // We need context here to resolve sheets!
+
+            const int contextValue = context.value().toInt();
+            if (condition->cases.contains(contextValue)) {
+                return condition->cases[contextValue];
+            }
+        }
+        return field.targetSheets;
+    }
+    return {};
+}
+
+QString Schema::neededContextForColumn(const uint32_t index) const
+{
+    if (index < m_fields.size()) {
+        const auto &field = m_fields[index];
+        if (const auto condition = field.condition) {
+            return condition->switchColumn;
+        }
     }
     return {};
 }

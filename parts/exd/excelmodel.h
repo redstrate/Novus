@@ -60,7 +60,7 @@ private:
     /**
      * @brief Returns a nice display for a given column data, including resolving other sheets.
      */
-    QVariant displayForColumn(const Schema &schema, uint32_t column, const physis_Field &data) const;
+    QVariant displayForColumn(const Schema &schema, uint32_t row, uint32_t column, const physis_Field &data) const;
 
     /**
      * @brief Returns a nice display for a given column data.
@@ -81,6 +81,8 @@ private:
      * @brief Returns the column data for a given row id.
      */
     physis_Field *dataForRowId(uint32_t rowId, uint32_t columnIndex) const;
+
+    std::optional<QVariant> contextFor(const uint32_t row, uint32_t column) const;
 
     physis_EXH m_exh;
     physis_ExcelSheetPage m_page;

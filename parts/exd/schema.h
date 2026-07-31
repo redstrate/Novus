@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include <QHash>
 #include <QStringList>
+#include <QVariant>
 
 class Schema
 {
@@ -18,11 +20,21 @@ public:
     QString nameForColumn(uint32_t index) const;
 
     /**
+     * @brief Reverse of nameForColumn.
+     */
+    std::optional<uint32_t> indexForName(const QString &name) const;
+
+    /**
      * @brief Returns a list of target sheets for this column.
      *
      * @note Only makes sense and returns non-empty for Links.
      */
-    QStringList targetSheetsForColumn(uint32_t index) const;
+    QStringList targetSheetsForColumn(uint32_t index, const std::optional<QVariant> &context) const;
+
+    /**
+     * @brief Returns the name of the column needed to resolve the sheet for targetSheetsForColumn.
+     */
+    QString neededContextForColumn(uint32_t index) const;
 
     /**
      * @brief Returns true if this column name is supposed to be the main display field.
@@ -42,6 +54,11 @@ public:
     QString comment(uint32_t index) const;
 
 private:
+    struct Condition {
+        QString switchColumn;
+        QHash<int, QList<QString>> cases; // TODO: is it only ints supported in cases? I think so...
+    };
+
     struct Field
     {
         QString name;
@@ -54,7 +71,9 @@ private:
 
         QStringList targetSheets;
         QString comment;
+        std::optional<Condition> condition;
     };
+
     std::vector<Field> m_fields;
     QString m_displayField;
 };
