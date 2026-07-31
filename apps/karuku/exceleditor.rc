@@ -31,4 +31,8 @@
       <Action name="goto_row" />
     </Menu>
   </MenuBar>
+  <ToolBar name="mainToolBar" >
+    <text>Main Toolbar</text>
+    <Action name="edit_schema" />
+  </ToolBar>
 </gui>

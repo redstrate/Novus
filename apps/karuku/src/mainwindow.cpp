@@ -251,6 +251,11 @@ void MainWindow::setupActions()
             jumpToSheet({});
         },
         actionCollection());
+
+    const auto editSchemaAction = new QAction(i18nc("@action:inmenu", "Edit Schema"), this);
+    editSchemaAction->setIcon(QIcon::fromTheme(QStringLiteral("document-edit-symbolic")));
+    connect(editSchemaAction, &QAction::triggered, m_exdPart, &EXDPart::editSchema);
+    actionCollection()->addAction(QStringLiteral("edit_schema"), editSchemaAction);
 }
 
 void MainWindow::updateDocumentActions() const

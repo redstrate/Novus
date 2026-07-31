@@ -7,6 +7,7 @@
 
 #include <KLocalizedString>
 #include <QCheckBox>
+#include <QDesktopServices>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <physis.hpp>
@@ -309,6 +310,15 @@ void EXDPart::save() const
             file.write(reinterpret_cast<const char *>(buffer.data), buffer.size);
         }
     }
+}
+
+void EXDPart::editSchema()
+{
+    // TODO: de-duplicate with the code below.
+    const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
+
+    QDesktopServices::openUrl(QUrl(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(m_name))));
 }
 
 void EXDPart::setPreferredLanguage(const Language language)

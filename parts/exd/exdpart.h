@@ -30,6 +30,7 @@ public:
     void focusFilterField() const;
     void setReadOnly(bool readOnly);
     void save() const;
+    void editSchema();
 
     void setPreferredLanguage(Language language);
     Language preferredLanguage() const;
