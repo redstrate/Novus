@@ -212,3 +212,16 @@ FileType FileTypes::guessFileType(const physis_Buffer buffer)
     }
     return FileType::Unknown;
 }
+
+bool FileTypes::isDebugInformationApplicable(const FileType fileType)
+{
+    if (fileType == FileType::LuaBytecode) {
+        // Lua bytecode is literally just that: bytecode. We won't have a way to show that unless I write a nice parser.
+        return false;
+    }
+    if (fileType == FileType::Unknown) {
+        // Unknown files have no useful debug representation, of course.
+        return false;
+    }
+    return true;
+}

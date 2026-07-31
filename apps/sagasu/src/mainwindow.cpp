@@ -13,7 +13,6 @@
 #include <QMessageBox>
 #include <QNetworkReply>
 #include <QSplitter>
-#include <QStatusBar>
 #include <QTemporaryDir>
 #include <magic_enum.hpp>
 
@@ -22,7 +21,6 @@
 #include "excelresolver.h"
 #include "exdpart.h"
 #include "exlpart.h"
-#include "filepropertieswindow.h"
 #include "filetypes.h"
 #include "hexpart.h"
 #include "luabpart.h"
@@ -61,19 +59,6 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
 
     m_excelResolver = new AbstractExcelResolver();
 
-    m_offsetLabel = new QLabel(i18n("Offset: Unknown"));
-    statusBar()->addWidget(m_offsetLabel);
-    const auto separatorLine = new QFrame();
-    separatorLine->setFrameShape(QFrame::VLine);
-    statusBar()->addWidget(separatorLine);
-    m_hashLabel = new QLabel(i18n("Hash: Unknown"));
-    statusBar()->addWidget(m_hashLabel);
-    const auto separatorLine2 = new QFrame();
-    separatorLine2->setFrameShape(QFrame::VLine);
-    statusBar()->addWidget(separatorLine2);
-    m_fileTypeLabel = new QLabel(i18n("File Type: Unknown"));
-    statusBar()->addWidget(m_fileTypeLabel);
-
     const auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
@@ -88,10 +73,6 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
                                                  info.fileName(),
                                                  QStringLiteral("*.%1").arg(info.completeSuffix()));
         if (!savePath.isEmpty()) {
-            qInfo() << "Saving to" << savePath;
-
-            std::string savePathStd = path.toStdString();
-
             auto fileData = physis_sqpack_read_from_hash(&m_cache.resource(), indexPath.toStdString().c_str(), hash);
             // HACK: Read from path as a fallback, which somehow makes more PS3 files load. I don't know why.
             if (fileData.size == 0) {
@@ -116,15 +97,26 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
     m_tree->setMaximumWidth(300);
     dummyWidget->addWidget(m_tree);
 
+    const auto partLayout = new QVBoxLayout();
+    partLayout->setContentsMargins(0, 0, 0, 0);
+    partLayout->setSpacing(0);
+
+    const auto partLayoutHolder = new QWidget();
+    partLayoutHolder->setLayout(partLayout);
+
+    m_urlEdit = new QLineEdit();
+    m_urlEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
+    m_urlEdit->setReadOnly(true); // TODO: make this editable in the future
+    partLayout->addWidget(m_urlEdit);
+
     m_partHolder = new QTabWidget();
     m_partHolder->setDocumentMode(true); // hide borders
-    m_partHolder->setMinimumHeight(720);
-    dummyWidget->addWidget(m_partHolder);
+    partLayout->addWidget(m_partHolder);
 
-    refreshParts({}, {}, {});
+    dummyWidget->addWidget(partLayoutHolder);
 
     setupActions();
-    setupGUI(Default, QStringLiteral("dataexplorer.rc"));
+    setupGUI(ToolBar | Keys | Save | Create, QStringLiteral("dataexplorer.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -151,31 +143,52 @@ QString MainWindow::getArguments() const
     return m_currentPath;
 }
 
+void MainWindow::back()
+{
+    if (m_navigationPointer <= 0) {
+        return;
+    }
+
+    m_navigatingStack = true;
+    m_navigationPointer--;
+    Q_UNUSED(selectPath(m_navigationStack[m_navigationPointer]));
+    m_navigatingStack = false;
+}
+
+void MainWindow::forward()
+{
+    if (m_navigationPointer + 1 >= m_navigationStack.size()) {
+        return;
+    }
+
+    m_navigatingStack = true;
+    m_navigationPointer++;
+    Q_UNUSED(selectPath(m_navigationStack[m_navigationPointer]));
+    m_navigatingStack = false;
+}
+
 void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString &path)
 {
-    m_partHolder->clear();
-    setPlainCaption(path);
-
-    std::string pathStd = path.toStdString();
+    const std::string pathStd = path.toStdString();
     if (indexPath.isEmpty()) {
         return;
     }
 
-    QFileInfo info(path);
-    std::string filenameStd = info.fileName().toStdString();
+    // TODO: should this also apply to loose files?
+    if (!m_navigatingStack) {
+        // Erase what's ahead on the stack if we went back some.
+        if (m_navigationPointer + 1 != m_navigationStack.size()) {
+            m_navigationStack.resize(m_navigationPointer + 1);
+        }
 
-    // FIXME: add back once hashes are figured out
-    // auto crcHash = physis_calculate_hash(filenameStd.c_str());
-    // m_hashLabel->setText(i18n("Hash: 0x%1", QString::number(crcHash, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
-
-    // FIXME: this is terrible, we should not be recalculating this. it isn't a huge deal with the file + index caching, but still
-    // TODO: support for unknown files
-    if (!path.isEmpty()) {
-        auto datOffset = physis_sqpack_find_offset(&m_cache.resource(), pathStd.c_str());
-        m_offsetLabel->setText(i18n("Offset: 0x%1", QString::number(datOffset, 16).toUpper().rightJustified(8, QLatin1Char('0'))));
-    } else {
-        m_offsetLabel->setText(i18n("Offset: Unknown"));
+        // Add a new entry to the stack (if applicable)
+        if (m_navigationStack.constLast() != path) {
+            m_navigationStack.push_back(path);
+            m_navigationPointer = m_navigationStack.size() - 1;
+        }
     }
+
+    const QFileInfo info(path);
 
     auto file = physis_sqpack_read_from_hash(&m_cache.resource(), indexPath.toStdString().c_str(), hash);
     // HACK: Read from path as a fallback, which somehow makes more PS3 files load. I don't know why.
@@ -183,11 +196,19 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         file = m_cache.read(path);
     }
 
-    QString source;
+    loadPart(file, info);
+}
+
+void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
+{
+    m_partHolder->clear();
+
+    m_urlEdit->setText(info.filePath());
+    setPlainCaption(info.fileName());
+
     FileType type = FileTypes::getFileType(info.completeSuffix());
     // Try to guess from magic as a fallback
     if (type == FileType::Unknown) {
-        source = i18n(" (Guessed)");
         type = FileTypes::guessFileType(file);
     }
 
@@ -196,8 +217,9 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
     const auto addTab = [this, type](QWidget *widget) {
         const QString typeName = FileTypes::getFiletypeName(type);
+        const QString iconName = FileTypes::getFiletypeIcon(type);
 
-        m_partHolder->addTab(widget, typeName);
+        m_partHolder->addTab(widget, QIcon::fromTheme(iconName), typeName);
         m_fileActions->setText(typeName);
         m_fileActions->setVisible(true);
     };
@@ -208,7 +230,6 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         if (texWidget->loadTex(m_cache.platform(), file)) {
             if (type == FileType::Unknown) {
                 type = FileType::Texture;
-                source = i18n(" (Guessed)");
             }
 
             addTab(texWidget);
@@ -225,7 +246,6 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
             mtrlWidget->load(mtrl);
             if (type == FileType::Unknown) {
                 type = FileType::Material;
-                source = i18n(" (Guessed)");
             }
 
             addTab(mtrlWidget);
@@ -238,7 +258,6 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         if (mdl.p_ptr) {
             if (type == FileType::Unknown) {
                 type = FileType::Model;
-                source = i18n(" (Guessed)");
             }
 
             Transformation transformation{};
@@ -294,8 +313,6 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         }
     }
 
-    m_fileTypeLabel->setText(i18n("File Type: %1%2", FileTypes::getFiletypeName(type), source));
-
     switch (type) {
     case FileType::ExcelList: {
         auto exlWidget = new EXLPart();
@@ -321,9 +338,9 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
         auto goToButton = new QPushButton(i18n("Go to EXH"));
         goToButton->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
-        connect(goToButton, &QPushButton::clicked, this, [this, originalPath = path] {
+        connect(goToButton, &QPushButton::clicked, this, [this, info] {
             // TOOD: this doesn't work for some names!
-            const auto baseName = originalPath.split(QStringLiteral("_")).constFirst();
+            const auto baseName = info.filePath().split(QStringLiteral("_")).constFirst();
             const auto newName = QStringLiteral("%1.exh").arg(baseName);
             Q_UNUSED(m_tree->selectPath(newName));
         });
@@ -411,7 +428,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         break;
     }
 
-    if (type != FileType::Unknown) {
+    if (FileTypes::isDebugInformationApplicable(type)) {
         // TODO: this is sort of inefficient as it re-parses the whole file again...
         auto debugInformation = FileTypes::printDebugInformation(type, m_cache.platform(), file);
         constexpr int maxDebugInformationLength = 1000000;
@@ -419,9 +436,12 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
             debugInformation.resize(maxDebugInformationLength);
             debugInformation.append(i18n("<truncated>"));
         }
+
         const auto debugInformationText = new QTextEdit();
         debugInformationText->setReadOnly(true);
+        debugInformationText->setFontFamily(QStringLiteral("monospace"));
         debugInformationText->setText(debugInformation);
+
 #ifdef HAVE_SYNTAX_HIGHLIGHTING
         // Setup highlighting
         KSyntaxHighlighting::Repository repository;
@@ -434,7 +454,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
         const auto def = repository.definitionForName(QStringLiteral("Rust"));
         highlighter->setDefinition(def);
 #endif
-        m_partHolder->addTab(debugInformationText, i18nc("@title:tab", "Debug"));
+        m_partHolder->addTab(debugInformationText, QIcon::fromTheme(QStringLiteral("format-text-code-symbolic")), i18nc("@title:tab", "Parsed"));
     }
 
     // Disable file actions if there are no actions to take
@@ -443,11 +463,8 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     if (file.size > 0) {
         auto hexWidget = new HexPart();
         hexWidget->loadFile(file);
-        m_partHolder->addTab(hexWidget, i18nc("@title:tab", "Raw Data"));
+        m_partHolder->addTab(hexWidget, QIcon::fromTheme(QStringLiteral("text-x-hex")), i18nc("@title:tab", "Bytes"));
     }
-
-    auto propertiesWidget = new FilePropertiesWindow(path, file);
-    m_partHolder->addTab(propertiesWidget, i18nc("@title:tab", "Properties"));
 
     m_partHolder->tabBar()->setExpanding(true);
 }
@@ -459,15 +476,15 @@ void MainWindow::setupActions()
     connect(openList, &QAction::triggered, [this] {
         const auto fileName = getOpenFileName(this, QStringLiteral("DataExplorerPathListFile"), i18nc("@title:window", "Open Path List"));
 
-        QMessageBox::warning(this,
-                             i18nc("@title:window", "Import Warning"),
-                             i18n("Depending on the size of the import, this process usually takes a few minutes. The program may freeze. Please "
-                                  "keep it open until the operation is finished."),
-                             QMessageBox::Ok,
-                             QMessageBox::Ok);
-
         QFile file(fileName);
         if (file.open(QIODevice::ReadOnly)) {
+            QMessageBox::warning(this,
+                                 i18nc("@title:window", "Import Warning"),
+                                 i18n("Depending on the size of the import, this process usually takes a few minutes. The program may freeze. Please "
+                                      "keep it open until the operation is finished."),
+                                 QMessageBox::Ok,
+                                 QMessageBox::Ok);
+
             m_database.importFileList(file.readAll());
             m_tree->refreshModel();
 
@@ -477,7 +494,7 @@ void MainWindow::setupActions()
                                      QMessageBox::Ok,
                                      QMessageBox::Ok);
         } else {
-            qFatal() << "Failed to write to" << fileName;
+            qWarning() << "Failed to import list from" << fileName;
         }
     });
     actionCollection()->addAction(QStringLiteral("import_list"), openList);
@@ -566,7 +583,7 @@ void MainWindow::setupActions()
     });
     actionCollection()->addAction(QStringLiteral("manual_add"), manualAdd);
 
-    const auto showUnknown = new QAction(i18nc("@action:inmenu", "Show Unknown Files/Folders"));
+    const auto showUnknown = new QAction(i18nc("@action:inmenu", "Show Unknown Files"));
     KActionCollection::setDefaultShortcut(showUnknown, QKeySequence(Qt::Modifier::CTRL | Qt::Key::Key_U));
     showUnknown->setCheckable(true);
     showUnknown->setIcon(QIcon::fromTheme(QStringLiteral("view-hidden-symbolic")));
@@ -600,6 +617,17 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("file_actions"), m_fileActions);
 
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
+    m_backAction = KStandardAction::back(this, &MainWindow::back, actionCollection());
+    m_forwardAction = KStandardAction::forward(this, &MainWindow::forward, actionCollection());
+
+    const auto openLooseAction = new QAction(QIcon::fromTheme(QStringLiteral("document-open-symbolic")), i18nc("@action:inmenu", "Open Loose File…"));
+    connect(openLooseAction, &QAction::triggered, this, [this] {
+        const auto fileName = getOpenFileName(this, QStringLiteral("DataExplorerLooseFile"), i18n("Open Loose File"), {}, i18n("All Files (*)"));
+        if (!fileName.isEmpty()) {
+            loadPart(physis_read_file(fileName.toStdString().c_str()), QFileInfo(fileName));
+        }
+    });
+    actionCollection()->addAction(QStringLiteral("open_loose"), openLooseAction);
 }
 
 #include "moc_mainwindow.cpp"

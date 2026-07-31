@@ -13,6 +13,7 @@
 
 #include <QLabel>
 
+class QFileInfo;
 class AbstractExcelResolver;
 
 class MainWindow : public KXmlGuiWindow
@@ -25,6 +26,8 @@ public:
 
 public Q_SLOTS:
     QString getArguments() const;
+    void back();
+    void forward();
 
 private:
     void setupActions();
@@ -34,13 +37,18 @@ private:
     HashDatabase m_database;
     QNetworkAccessManager *m_mgr = nullptr;
     FileTreeWindow *m_tree = nullptr;
-    QLabel *m_offsetLabel = nullptr;
-    QLabel *m_hashLabel = nullptr;
-    QLabel *m_fileTypeLabel = nullptr;
     AbstractExcelResolver *m_excelResolver = nullptr;
     QAction *m_fileActions = nullptr;
     QMenu *m_fileActionsMenu = nullptr;
     QString m_currentPath;
 
     void refreshParts(const QString &indexPath, Hash hash, const QString &path);
+    void loadPart(physis_Buffer file, const QFileInfo &info);
+
+    QList<QString> m_navigationStack;
+    qsizetype m_navigationPointer = 0;
+    QAction *m_backAction = nullptr;
+    QAction *m_forwardAction = nullptr;
+    bool m_navigatingStack = false;
+    QLineEdit *m_urlEdit = nullptr;
 };
