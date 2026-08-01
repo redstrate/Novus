@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: CC0-1.0
 # SPDX-FileCopyrightText: 2023 Joshua Goins <josh@redstrate.com>
 [Desktop Entry]
-Name=Novus SDK
-Comment=Enemy Editor
+Name=Enemy Editor
+Comment=View enemy models from FFXIV
 Exec=novus-enemyeditor %u
 Terminal=false
 Icon=zone.xiv.novus.enemyeditor
 Type=Application
-NoDisplay=true
+Categories=Game;
+X-KDE-FormFactor=desktop;tablet;
+Keywords=ffxiv;novus;
