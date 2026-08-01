@@ -339,6 +339,6 @@ jobs:
           zip -r ../ novus-windows-x86_64 *
           popd
           
-          rsync --recursive "novus-windows-x86_64" deploy@ryne.moe:/srv/http/astra-distrib/novus/
-          rsync --recursive "novus-x86_64.flatpak" deploy@ryne.moe:/srv/http/astra-distrib/novus/
-          rsync --recursive "novus-aarch64.flatpak" deploy@ryne.moe:/srv/http/astra-distrib/novus/
+          rsync --recursive "novus-windows-x86_64.zip" deploy@ryne.moe:/srv/http/astra-distrib/novus/
+          rsync --recursive "novus-x86_64.flatpak/novus.flatpak" deploy@ryne.moe:/srv/http/astra-distrib/novus/novus-x86_64.flatpak
+          rsync --recursive "novus-aarch64.flatpak/novus.flatpak" deploy@ryne.moe:/srv/http/astra-distrib/novus/novus-aarch64.flatpak
