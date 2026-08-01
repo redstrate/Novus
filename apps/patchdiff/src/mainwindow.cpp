@@ -7,6 +7,9 @@
 #include "hashdatabase.h"
 
 #include <KActionCollection>
+#include <KActionMenu>
+#include <KColorSchemeManager>
+#include <KColorSchemeMenu>
 #include <KLocalizedString>
 #include <KRecentFilesMenu>
 #include <QApplication>
@@ -47,7 +50,7 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     layout->addWidget(m_hexPart);
 
     setupActions();
-    setupGUI(ToolBar | Keys | StatusBar | Save | Create, QStringLiteral("patchdiff.rc"));
+    setupGUI(ToolBar | Keys | Save | Create, QStringLiteral("patchdiff.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -80,6 +83,15 @@ void MainWindow::setupActions()
     m_recentFilesMenu = new KRecentFilesMenu(this);
     actionCollection()->addAction(QStringLiteral("open_recent"), m_recentFilesMenu->menuAction());
     connect(m_recentFilesMenu, &KRecentFilesMenu::urlTriggered, this, &MainWindow::openPatch);
+
+    // Window color scheme menu
+    const auto manager = KColorSchemeManager::instance();
+    const auto selectionMenu = KColorSchemeMenu::createMenu(manager, this);
+    const auto windowColorSchemeMenu = new QAction(this);
+    windowColorSchemeMenu->setMenu(selectionMenu->menu());
+    windowColorSchemeMenu->menu()->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-color")));
+    windowColorSchemeMenu->menu()->setTitle(i18n("&Window Color Scheme"));
+    actionCollection()->addAction(QStringLiteral("window_color_scheme"), windowColorSchemeMenu);
 }
 
 void MainWindow::openPatch(const QUrl &url)

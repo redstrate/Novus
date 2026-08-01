@@ -44,7 +44,8 @@ target_link_libraries(novus-armoury
         Qt6::Core
         Qt6::Widgets
         Qt6::Concurrent
-        Qt6::Network)
+        Qt6::Network
+        KF6::ColorScheme)
 
 install(TARGETS novus-armoury ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES geareditor.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)

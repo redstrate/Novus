@@ -8,6 +8,9 @@
 #include "settingswindow.h"
 
 #include <KActionCollection>
+#include <KActionMenu>
+#include <KColorSchemeManager>
+#include <KColorSchemeMenu>
 #include <KLocalizedString>
 #include <QApplication>
 #include <QDesktopServices>
@@ -172,6 +175,15 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("wireframe"), m_part->mapView()->part().wireframeAction());
     actionCollection()->addAction(QStringLiteral("frustum_culling"), m_part->mapView()->part().frustumCullingAction());
     actionCollection()->addAction(QStringLiteral("debug_frustum_culling"), m_part->mapView()->part().debugFrustumCullingAction());
+
+    // Window color scheme menu
+    const auto manager = KColorSchemeManager::instance();
+    const auto selectionMenu = KColorSchemeMenu::createMenu(manager, this);
+    const auto windowColorSchemeMenu = new QAction(this);
+    windowColorSchemeMenu->setMenu(selectionMenu->menu());
+    windowColorSchemeMenu->menu()->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-color")));
+    windowColorSchemeMenu->menu()->setTitle(i18n("&Window Color Scheme"));
+    actionCollection()->addAction(QStringLiteral("window_color_scheme"), windowColorSchemeMenu);
 }
 
 void MainWindow::openMap(const QString &basePath, const int territoryType, const int contentFinderCondition)

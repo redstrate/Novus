@@ -8,6 +8,9 @@
 #include <QTimer>
 
 #include <KActionCollection>
+#include <KActionMenu>
+#include <KColorSchemeManager>
+#include <KColorSchemeMenu>
 #include <KLocalizedString>
 #include <QAction>
 #include <QApplication>
@@ -125,6 +128,15 @@ void MainWindow::setupActions()
     const auto openWindowAction = new QAction(i18nc("@action:inmenu", "Open Window"));
     connect(openWindowAction, &QAction::triggered, m_api, &PenumbraApi::openWindow);
     actionCollection()->addAction(QStringLiteral("open_window"), openWindowAction);
+
+    // Window color scheme menu
+    const auto manager = KColorSchemeManager::instance();
+    const auto selectionMenu = KColorSchemeMenu::createMenu(manager, this);
+    const auto windowColorSchemeMenu = new QAction(this);
+    windowColorSchemeMenu->setMenu(selectionMenu->menu());
+    windowColorSchemeMenu->menu()->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-color")));
+    windowColorSchemeMenu->menu()->setTitle(i18n("&Window Color Scheme"));
+    actionCollection()->addAction(QStringLiteral("window_color_scheme"), windowColorSchemeMenu);
 }
 
 #include "moc_mainwindow.cpp"

@@ -24,7 +24,8 @@ target_link_libraries(novus-patchdiff
         KF6::I18n
         Qt6::Core
         Qt6::Widgets
-        KF6::WidgetsAddons)
+        KF6::WidgetsAddons
+        KF6::ColorScheme)
 
 install(TARGETS novus-patchdiff ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES patchdiff.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)

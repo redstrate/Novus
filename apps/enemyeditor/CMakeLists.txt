@@ -23,7 +23,8 @@ target_link_libraries(novus-enemyeditor
         Physis::Physis
         KF6::XmlGui
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        KF6::ColorScheme)
 
 install(TARGETS novus-enemyeditor ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES enemyeditor.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)

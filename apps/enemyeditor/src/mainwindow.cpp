@@ -7,6 +7,10 @@
 #include "enemymodel.h"
 
 #include <KActionCollection>
+#include <KActionMenu>
+#include <KColorSchemeManager>
+#include <KColorSchemeMenu>
+#include <KLocalizedString>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -70,9 +74,18 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     menuBar()->setCornerWidget(openInWidget);
 }
 
-void MainWindow::setupActions() const
+void MainWindow::setupActions()
 {
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
+
+    // Window color scheme menu
+    const auto manager = KColorSchemeManager::instance();
+    const auto selectionMenu = KColorSchemeMenu::createMenu(manager, this);
+    const auto windowColorSchemeMenu = new QAction(this);
+    windowColorSchemeMenu->setMenu(selectionMenu->menu());
+    windowColorSchemeMenu->menu()->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-color")));
+    windowColorSchemeMenu->menu()->setTitle(i18n("&Window Color Scheme"));
+    actionCollection()->addAction(QStringLiteral("window_color_scheme"), windowColorSchemeMenu);
 }
 
 #include "moc_mainwindow.cpp"

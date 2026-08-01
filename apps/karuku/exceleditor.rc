@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="exceleditor"
-     version="3"
+     version="4"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
@@ -29,6 +29,9 @@
     <Menu name="navigate" >
       <text>Navigate</text>
       <Action name="goto_row" />
+    </Menu>
+    <Menu name="settings">
+      <Action name="window_color_scheme"/>
     </Menu>
   </MenuBar>
   <ToolBar name="mainToolBar" >

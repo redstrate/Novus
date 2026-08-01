@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="mapeditor"
-     version="3"
+     version="4"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
@@ -37,6 +37,9 @@
       <Action name="duty_go_to_exit"/>
       <Action name="duty_gimmicks"/>
       <Action name="duty_effects"/>
+    </Menu>
+    <Menu name="settings">
+      <Action name="window_color_scheme"/>
     </Menu>
   </MenuBar>
 </gui>

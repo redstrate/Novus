@@ -27,7 +27,8 @@ target_link_libraries(novus-mapeditor
         Novus::ScenePart
         Physis::Physis
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        KF6::ColorScheme)
 
 install(TARGETS novus-mapeditor ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES mapeditor.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)

@@ -19,7 +19,7 @@ public:
     explicit MainWindow(physis_SqPackResource data);
 
 private:
-    void setupActions() const;
+    void setupActions();
 
     MDLPart *m_part = nullptr;
     FileCache m_cache;
