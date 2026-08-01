@@ -27,7 +27,7 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
 
     m_searchEdit = new QLineEdit();
 
-    auto searchTimer = new QTimer();
+    auto searchTimer = new QTimer(this);
     searchTimer->setSingleShot(true);
     searchTimer->setInterval(1500);
     connect(searchTimer, &QTimer::timeout, m_searchModel, [this] {

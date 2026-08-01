@@ -18,7 +18,6 @@ class MainWindow : public KXmlGuiWindow
 
 public:
     explicit MainWindow(physis_SqPackResource data);
-    ~MainWindow() override;
 
 private:
     void setupActions();

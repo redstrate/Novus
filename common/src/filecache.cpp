@@ -56,6 +56,7 @@ FileCache::~FileCache()
     }
 
     physis_custom_free(&m_customResource);
+    physis_sqpack_free(&m_data);
 }
 
 physis_Buffer &FileCache::read(const QString &path)

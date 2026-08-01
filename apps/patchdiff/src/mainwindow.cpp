@@ -63,11 +63,6 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     menuBar()->setCornerWidget(openInWidget);
 }
 
-MainWindow::~MainWindow()
-{
-    physis_sqpack_free(&m_data);
-}
-
 void MainWindow::setupActions()
 {
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
