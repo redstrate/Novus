@@ -104,9 +104,9 @@ public:
 
     void initializeFrozenTableView(const int column)
     {
-        if (frozenTableView) {
-            delete frozenTableView;
-            frozenTableView = nullptr;
+        if (m_frozenTableView) {
+            delete m_frozenTableView;
+            m_frozenTableView = nullptr;
         }
 
         m_pinnedColumn = column;
@@ -115,46 +115,68 @@ public:
             return;
         }
 
-        frozenTableView = new QTableView(this);
-        frozenTableView->setModel(model());
-        frozenTableView->setFocusPolicy(Qt::NoFocus);
-        frozenTableView->verticalHeader()->hide();
-        frozenTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-        frozenTableView->horizontalHeader()->setSectionsClickable(false);
-        frozenTableView->horizontalHeader()->setSectionsMovable(false);
+        m_frozenTableView = new QTableView(this);
+        m_frozenTableView->setModel(model());
+        m_frozenTableView->setFocusPolicy(Qt::NoFocus);
+        m_frozenTableView->verticalHeader()->hide();
+        m_frozenTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+        m_frozenTableView->horizontalHeader()->setSectionsClickable(false);
+        m_frozenTableView->horizontalHeader()->setSectionsMovable(false);
 
-        viewport()->stackUnder(frozenTableView);
+        m_frozenTableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(m_frozenTableView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, [this](const QPoint pos) {
+            const auto menu = new QMenu(this);
 
-        frozenTableView->setSelectionModel(selectionModel());
+            const auto pinAction = menu->addAction(QIcon::fromTheme(QStringLiteral("window-unpin-symbolic")), i18n("Unpin"));
+            connect(pinAction, &QAction::triggered, this, [this] {
+                initializeFrozenTableView(-1);
+            });
+
+            if (m_pinnedOnRight) {
+                const auto moveAction = menu->addAction(QIcon::fromTheme(QStringLiteral("arrow-left-symbolic")), i18n("Move Left"));
+                connect(moveAction, &QAction::triggered, this, [this] {
+                    m_pinnedOnRight = false;
+                    updateFrozenTableGeometry();
+                    updateFrozenTableShadow();
+                });
+            } else {
+                const auto moveAction = menu->addAction(QIcon::fromTheme(QStringLiteral("arrow-right-symbolic")), i18n("Move Right"));
+                connect(moveAction, &QAction::triggered, this, [this] {
+                    m_pinnedOnRight = true;
+                    updateFrozenTableGeometry();
+                    updateFrozenTableShadow();
+                });
+            }
+
+            menu->exec(m_frozenTableView->mapToGlobal(pos));
+        });
+
+        viewport()->stackUnder(m_frozenTableView);
+
+        m_frozenTableView->setSelectionModel(selectionModel());
         for (int col = 0; col < model()->columnCount(); ++col) {
-            frozenTableView->setColumnHidden(col, col != column);
+            m_frozenTableView->setColumnHidden(col, col != column);
         }
 
-        frozenTableView->setColumnWidth(m_pinnedColumn, columnWidth(m_pinnedColumn));
-        frozenTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        frozenTableView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        frozenTableView->setAlternatingRowColors(alternatingRowColors());
+        m_frozenTableView->setColumnWidth(m_pinnedColumn, columnWidth(m_pinnedColumn));
+        m_frozenTableView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        m_frozenTableView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        m_frozenTableView->setAlternatingRowColors(alternatingRowColors());
 
         // make it read-only for now
-        frozenTableView->setEditTriggers({});
-        frozenTableView->setSelectionMode(NoSelection);
+        m_frozenTableView->setEditTriggers({});
+        m_frozenTableView->setSelectionMode(NoSelection);
 
-        frozenTableView->show();
+        m_frozenTableView->show();
 
         // Add a drop shadow to make it even more obvious
-        const auto effect = new QGraphicsDropShadowEffect();
-        effect->setBlurRadius(5);
-        effect->setXOffset(-5);
-        effect->setYOffset(0);
-        effect->setColor(palette().shadow().color());
-
-        frozenTableView->setGraphicsEffect(effect);
+        updateFrozenTableShadow();
 
         connect(horizontalHeader(), &QHeaderView::sectionResized, this, &ExcelTableView::updateSectionWidth);
         connect(verticalHeader(), &QHeaderView::sectionResized, this, &ExcelTableView::updateSectionHeight);
 
-        connect(frozenTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, verticalScrollBar(), &QAbstractSlider::setValue);
-        connect(verticalScrollBar(), &QAbstractSlider::valueChanged, frozenTableView->verticalScrollBar(), &QAbstractSlider::setValue);
+        connect(m_frozenTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, verticalScrollBar(), &QAbstractSlider::setValue);
+        connect(verticalScrollBar(), &QAbstractSlider::valueChanged, m_frozenTableView->verticalScrollBar(), &QAbstractSlider::setValue);
 
         // update initial geometry
         updateFrozenTableGeometry();
@@ -196,27 +218,44 @@ Q_SIGNALS:
 private:
     void updateFrozenTableGeometry() const
     {
-        if (!frozenTableView) {
+        if (!m_frozenTableView) {
             return;
         }
 
-        // NOTE: I have it currently stuck to the right side, because I couldn't figure out a good UX for anything else (yet)
-        frozenTableView->setGeometry(width() - columnWidth(m_pinnedColumn) - verticalScrollBar()->width(),
-                                     frameWidth(),
-                                     columnWidth(m_pinnedColumn),
-                                     viewport()->height() + horizontalHeader()->height());
+        int x = 0;
+        if (m_pinnedOnRight) {
+            x = width() - columnWidth(m_pinnedColumn) - verticalScrollBar()->width();
+        } else {
+            x = verticalHeader()->width() + frameWidth();
+        }
+        m_frozenTableView->setGeometry(x, frameWidth(), columnWidth(m_pinnedColumn), viewport()->height() + horizontalHeader()->height());
+    }
+
+    void updateFrozenTableShadow() const
+    {
+        const auto effect = new QGraphicsDropShadowEffect();
+        effect->setBlurRadius(5);
+        if (m_pinnedOnRight) {
+            effect->setXOffset(-5);
+        } else {
+            effect->setXOffset(5);
+        }
+        effect->setYOffset(0);
+        effect->setColor(palette().shadow().color());
+
+        m_frozenTableView->setGraphicsEffect(effect);
     }
 
     void updateSectionWidth(const int logicalIndex, const int oldSize, const int newSize) const
     {
         Q_UNUSED(oldSize)
 
-        if (!frozenTableView) {
+        if (!m_frozenTableView) {
             return;
         }
 
         if (logicalIndex == m_pinnedColumn) {
-            frozenTableView->setColumnWidth(m_pinnedColumn, newSize);
+            m_frozenTableView->setColumnWidth(m_pinnedColumn, newSize);
             updateFrozenTableGeometry();
         }
     }
@@ -225,15 +264,16 @@ private:
     {
         Q_UNUSED(oldSize)
 
-        if (!frozenTableView) {
+        if (!m_frozenTableView) {
             return;
         }
 
-        frozenTableView->setRowHeight(logicalIndex, newSize);
+        m_frozenTableView->setRowHeight(logicalIndex, newSize);
     }
 
-    QTableView *frozenTableView = nullptr;
+    QTableView *m_frozenTableView = nullptr;
     int m_pinnedColumn = -1;
+    bool m_pinnedOnRight = true;
 };
 
 EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *parent)
