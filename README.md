@@ -17,11 +17,9 @@ Here is an exhaustive list of tooling available here:
 
 ## Usage
 
-There are no releases at the moment, but we have Windows binaries and Flatpaks built for each commit via [GitHub Actions](https://github.com/redstrate/Novus/actions).
+Visit [our page on xiv.zone](https://xiv.zone/software/novus/install/) for links to the Windows and Linux binaries.
 
-## Building
-
-Please refer to the [building document](BUILDING.md) for instructions on how to build Novus.
+Or refer to the [building document](BUILDING.md) for instructions on how to build Novus.
 
 ## Contributing & Support
 
