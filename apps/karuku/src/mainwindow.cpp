@@ -52,7 +52,9 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     connect(m_exdPart, &EXDPart::modified, this, &MainWindow::updateDocumentActions);
     dummyWidget->addWidget(m_exdPart);
 
-    connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, &MainWindow::jumpToSheet);
+    connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, [this](const QString &name) {
+        jumpToSheet(name, true);
+    });
 
     setupActions();
     setupGUI(ToolBar | Keys | Save | Create, QStringLiteral("exceleditor.rc"));
@@ -83,7 +85,7 @@ QString MainWindow::getArguments() const
     return {};
 }
 
-void MainWindow::jumpToSheet(const QString &name)
+void MainWindow::jumpToSheet(const QString &name, const bool userAction)
 {
     if (name.isEmpty()) {
         m_exdPart->clear();
@@ -95,14 +97,18 @@ void MainWindow::jumpToSheet(const QString &name)
 
     const auto file = m_cache.read(path);
     m_exdPart->loadSheet(name, file);
-    m_sheetListWidget->goToSheet(name);
+
+    // Don't re-center the sheet list widget if the user selected it!
+    if (!userAction) {
+        m_sheetListWidget->goToSheet(name);
+    }
 
     setPlainCaption(name);
 }
 
 void MainWindow::jumpToSheetAndRow(const QString &name, const QString &rowQuery)
 {
-    jumpToSheet(name);
+    jumpToSheet(name, false);
     m_exdPart->goToRow(rowQuery);
 }
 
@@ -252,7 +258,7 @@ void MainWindow::setupActions()
     KStandardAction::close(
         qApp,
         [this] {
-            jumpToSheet({});
+            jumpToSheet({}, false);
         },
         actionCollection());
 

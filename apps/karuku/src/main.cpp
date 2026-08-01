@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
             window->jumpToSheetAndRow(query.constFirst(), query.constLast());
         } else {
             // Only sheet
-            window->jumpToSheet(args.value(0));
+            window->jumpToSheet(args.value(0), false);
         }
     }
 
