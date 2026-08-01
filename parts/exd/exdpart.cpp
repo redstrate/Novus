@@ -583,7 +583,7 @@ void EXDPart::loadTables()
         if (m_readOnly) {
             tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
         } else {
-            tableWidget->setEditTriggers(QAbstractItemView::AllEditTriggers);
+            tableWidget->setEditTriggers(QAbstractItemView::DoubleClicked);
         }
         tableWidget->resizeColumnsToContents();
         tableWidget->setAlternatingRowColors(true);
