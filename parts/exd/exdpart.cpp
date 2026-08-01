@@ -288,7 +288,6 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
     setLayout(layout);
 
     m_filterEdit = new QLineEdit();
-    m_filterEdit->setPlaceholderText(i18nc("@info:placeholder", "Filter data…"));
     m_filterEdit->setClearButtonEnabled(true);
     m_filterEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
     connect(m_filterEdit, &QLineEdit::textEdited, this, &EXDPart::filterData);
@@ -382,6 +381,10 @@ EXDPart::~EXDPart()
 
 void EXDPart::loadSheet(const QString &name, const physis_Buffer buffer)
 {
+    if (buffer.size == 0) {
+        return;
+    }
+
     m_name = name;
 
     physis_exh_free(&m_exh); // Free existing
@@ -593,6 +596,20 @@ void EXDPart::loadTables()
         m_pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1", i));
     }
 
+    // Reset search column to the display field, if applicable.
+    // We do this as searching *all* columns is very slow, and that's a bad default experience.
+    if (schema.displayFieldIndex().has_value()) {
+        const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(0));
+        if (!tableWidget) {
+            return;
+        }
+
+        const auto model = static_cast<QSortFilterProxyModel *>(tableWidget->model());
+        const auto sourceModel = static_cast<ExcelModel *>(model->sourceModel());
+        m_searchSettings.column = sourceModel->displayFieldColumn();
+    } else {
+        m_searchSettings.column = -1;
+    }
     setSearchSettings(m_searchSettings); // Apply to new models
 
     // Expand the tabs and hide the tab bar if there's only one page
@@ -623,6 +640,9 @@ void EXDPart::setSearchSettings(const SearchSettings newSettings)
 {
     m_searchSettings = newSettings;
 
+    // Start with generic text
+    m_filterEdit->setPlaceholderText(i18nc("@info:placeholder", "Filter all data…"));
+
     for (uint32_t i = 0; i < m_exh.page_count; i++) {
         const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(i));
         if (!tableWidget) {
@@ -632,6 +652,11 @@ void EXDPart::setSearchSettings(const SearchSettings newSettings)
         const auto model = qobject_cast<QSortFilterProxyModel *>(tableWidget->model());
         model->setFilterKeyColumn(m_searchSettings.column);
         model->setFilterCaseSensitivity(m_searchSettings.caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+
+        if (newSettings.column != -1) {
+            m_filterEdit->setPlaceholderText(
+                i18nc("@info:placeholder", "Filter %1…").arg(model->headerData(newSettings.column, Qt::Horizontal, Qt::DisplayRole).toString()));
+        }
     }
 }
 

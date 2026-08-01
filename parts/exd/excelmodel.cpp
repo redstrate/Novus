@@ -310,7 +310,7 @@ bool ExcelModel::existsOnSheet(const uint32_t rowId) const
 
 int ExcelModel::displayFieldColumn() const
 {
-    return m_schema.displayFieldIndex().value_or(-1);
+    return m_sortedColumnIndices[m_schema.displayFieldIndex().value_or(-1)];
 }
 
 QVariant ExcelModel::displayForColumn(const Schema &schema, const uint32_t row, const uint32_t column, const physis_Field &data) const
