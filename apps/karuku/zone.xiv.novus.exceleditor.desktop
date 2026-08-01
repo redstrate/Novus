@@ -8,3 +8,4 @@ Terminal=false
 Icon=zone.xiv.novus.exceleditor
 Type=Application
 NoDisplay=true
+MimeType=x-scheme-handler/novus-excel;
