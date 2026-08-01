@@ -5,7 +5,9 @@
 #include "schema.h"
 
 #include <QDebug>
+#include <QDir>
 #include <QFile>
+#include <QStandardPaths>
 
 Schema::Schema(const QString &path)
 {
@@ -36,6 +38,14 @@ Schema::Schema(const QString &path)
     } else {
         qWarning() << "Failed to load schema from" << path;
     }
+}
+
+QString Schema::getPath(const QString &name)
+{
+    const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
+
+    return schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(name));
 }
 
 QString Schema::nameForColumn(const uint32_t index) const

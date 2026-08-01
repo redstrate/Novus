@@ -480,13 +480,9 @@ void EXDPart::save() const
     }
 }
 
-void EXDPart::editSchema()
+void EXDPart::editSchema() const
 {
-    // TODO: de-duplicate with the code below.
-    const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
-
-    QDesktopServices::openUrl(QUrl(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(m_name))));
+    QDesktopServices::openUrl(QUrl(Schema::getPath(m_name)));
 }
 
 void EXDPart::setPreferredLanguage(const Language language)
@@ -559,10 +555,7 @@ bool EXDPart::isModified() const
 
 void EXDPart::loadTables()
 {
-    const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
-
-    const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(m_name)));
+    const Schema schema(Schema::getPath(m_name));
 
     clear();
 

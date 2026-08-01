@@ -15,6 +15,11 @@ public:
     explicit Schema(const QString &path);
 
     /**
+     * @return The path to the schema for a given sheet name.
+     */
+    static QString getPath(const QString &name);
+
+    /**
      * @brief Returns a human-readable name for the given column.
      *
      * @note This is the index into the *schema* and is sorted by column offset.

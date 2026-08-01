@@ -354,10 +354,7 @@ QVariant ExcelModel::displayForColumn(const Schema &schema, const uint32_t row, 
             const auto &[sheetName, row] = *value;
 
             // Load schema for this sheet
-            const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-            const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
-
-            const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
+            const Schema schema(Schema::getPath(sheetName));
 
             if (const auto displayFieldIndex = schema.displayFieldIndex()) {
                 if (const auto field = m_resolver->translateSchemaColumn(sheetName, &row.row(), *displayFieldIndex)) {

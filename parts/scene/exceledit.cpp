@@ -55,10 +55,7 @@ ExcelEdit::ExcelEdit(const SceneState *state, const QStringList &excelSheets, ui
                 auto sheet = state->cache().readExcelSheet(sheetName, &exh, language);
                 m_sheets.push_back(sheet);
 
-                const QDir dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-                const QDir schemaDir = dataDir.absoluteFilePath(QStringLiteral("schema"));
-
-                const Schema schema(schemaDir.absoluteFilePath(QStringLiteral("%1.yml").arg(sheetName)));
+                const Schema schema(Schema::getPath(sheetName));
 
                 for (uint32_t i = 0; i < sheet.page_count; i++) {
                     m_models.push_back({sheetName, new ExcelModel(exh, sheet.pages[i], schema, resolver, language)});
