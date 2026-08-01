@@ -22,7 +22,6 @@ SheetListWidget::SheetListWidget(const physis_SqPackResource *data, QWidget *par
     searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     m_searchEdit = new QLineEdit();
-    m_searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for Excel sheet names."));
     m_searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     m_searchEdit->setClearButtonEnabled(true);
     m_searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
@@ -45,7 +44,6 @@ SheetListWidget::SheetListWidget(const physis_SqPackResource *data, QWidget *par
     originalModel->setStringList(list);
 
     m_listWidget = new QListView();
-    m_listWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of Excel sheet names. Select one to view it's contents."));
     m_listWidget->setModel(searchModel);
     m_listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
 

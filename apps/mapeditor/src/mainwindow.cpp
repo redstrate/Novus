@@ -46,6 +46,8 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+    // We don't use this well enough
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::WhatsThis)));
 
     connect(m_part->sceneState(), &SceneState::selectionChanged, this, &MainWindow::updateActionState);
     connect(m_part->sceneState(), &SceneState::mapLoaded, this, &MainWindow::updateActionState);

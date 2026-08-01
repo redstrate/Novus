@@ -27,7 +27,6 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     m_searchEdit = new QLineEdit();
-    m_searchEdit->setWhatsThis(i18nc("@info:whatsthis", "Search box for objects."));
     m_searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     m_searchEdit->setClearButtonEnabled(true);
     m_searchEdit->setProperty("_breeze_borders_sides", QVariant::fromValue(QFlags{Qt::BottomEdge}));
@@ -37,7 +36,6 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     layout->addWidget(m_searchEdit);
 
     treeWidget = new QTreeView();
-    treeWidget->setWhatsThis(i18nc("@info:whatsthis", "A list of objects on this map."));
     treeWidget->setModel(m_searchModel);
     treeWidget->header()->setStretchLastSection(false);
     treeWidget->header()->setSectionsMovable(false);

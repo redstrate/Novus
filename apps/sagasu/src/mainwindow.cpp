@@ -124,6 +124,8 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+    // We don't use this well enough
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::WhatsThis)));
 
     // Open paths in our own instance (see PathEdit)
     PathEdit::handler()->setEmitSignal(true);

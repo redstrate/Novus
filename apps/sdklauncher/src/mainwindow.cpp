@@ -119,6 +119,8 @@ MainWindow::MainWindow()
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
     // This isn't KDE software
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::AboutKDE)));
+    // We don't use this well enough
+    actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::WhatsThis)));
 
     refreshGameInstalls();
 }
