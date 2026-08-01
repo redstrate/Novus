@@ -76,10 +76,6 @@ public:
         bottomButtonLayout->addWidget(m_removeButton);
         bottomButtonLayout->addStretch(1);
 
-        const auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), i18n("Cancel"));
-        connect(cancelButton, &QPushButton::clicked, this, &QWidget::close);
-        bottomButtonLayout->addWidget(cancelButton);
-
         const auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), i18n("Apply"));
         connect(saveButton, &QPushButton::clicked, this, [this] {
             applySettings();
@@ -201,10 +197,6 @@ public:
         connect(m_removeButton, &QPushButton::clicked, this, &ModPage::removeMod);
         bottomButtonLayout->addWidget(m_removeButton);
         bottomButtonLayout->addStretch(1);
-
-        const auto cancelButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-close")), i18n("Cancel"));
-        connect(cancelButton, &QPushButton::clicked, this, &QWidget::close);
-        bottomButtonLayout->addWidget(cancelButton);
 
         const auto saveButton = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok")), i18n("Apply"));
         connect(saveButton, &QPushButton::clicked, this, [this] {
