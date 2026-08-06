@@ -50,6 +50,9 @@ enum class FileType {
     PhysicsBinary,
     AttachOffset,
     BindPoint,
+    GrassZoneData,
+    GrassGridData,
+    ShaderParameterMap,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes

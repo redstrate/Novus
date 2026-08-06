@@ -399,7 +399,8 @@ std::optional<BoundingBox> SceneState::checkLightBoundingBox(const uint32_t id, 
             const auto &entry = loadedLcb.lccs[i].entries[j];
 
             // SGB light case
-            if (entry.instance_id == sgbId && entry.sub_id == id) {
+            // FIXME: might not be correct after porting??
+            if (entry.instance_id == sgbId && entry.members[0] == id) {
                 return BoundingBox{
                     .min = {entry.min[0], entry.min[1], entry.min[2], 1.0f},
                     .max = {entry.max[0], entry.max[1], entry.max[2], 1.0f},

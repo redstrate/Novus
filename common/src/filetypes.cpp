@@ -46,7 +46,10 @@ const static QMap<QString, FileType> extensionToType{{QStringLiteral("exl"), Fil
                                                      {QStringLiteral("fdt"), FileType::Fdt},
                                                      {QStringLiteral("phyb"), FileType::PhysicsBinary},
                                                      {QStringLiteral("atch"), FileType::AttachOffset},
-                                                     {QStringLiteral("eid"), FileType::BindPoint}};
+                                                     {QStringLiteral("eid"), FileType::BindPoint},
+                                                     {QStringLiteral("gzd"), FileType::GrassZoneData},
+                                                     {QStringLiteral("ggd"), FileType::GrassGridData},
+                                                     {QStringLiteral("spm"), FileType::ShaderParameterMap}};
 
 const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknown")},
                                                 {FileType::ExcelList, i18n("Excel List")},
@@ -73,7 +76,7 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::SoundCompressedData, i18n("Sound Compressed Data")},
                                                 {FileType::UIGeneratedData, i18n("UI Generated Data")},
                                                 {FileType::LevelCollisionBinary, i18n("Level Collision Binary")},
-                                                {FileType::UWB, i18n("UWB")},
+                                                {FileType::UWB, i18n("Underwater Binary")},
                                                 {FileType::SkyVisibilityBinary, i18n("Sky Visibility Binary")},
                                                 {FileType::Terrain, i18n("Terrain")},
                                                 {FileType::StainingTemplate, i18n("Staining Template")},
@@ -87,7 +90,10 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::Fdt, i18n("FDT")},
                                                 {FileType::PhysicsBinary, i18n("Physics Binary")},
                                                 {FileType::AttachOffset, i18n("Attach Offset")},
-                                                {FileType::BindPoint, i18n("Bind Point")}};
+                                                {FileType::BindPoint, i18n("Bind Point")},
+                                                {FileType::GrassZoneData, i18n("Grass Zone Data")},
+                                                {FileType::GrassGridData, i18n("Grass Grid Data")},
+                                                {FileType::ShaderParameterMap, i18n("Shader Parameter Map")}};
 
 const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiteral("unknown")},
                                                 {FileType::ExcelList, QStringLiteral("x-office-spreadsheet")},
@@ -139,7 +145,10 @@ const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>
                                                                                               {FileType::PhysicsBinary, physis_phyb_debug},
                                                                                               {FileType::AttachOffset, physis_atch_debug},
                                                                                               {FileType::BindPoint, physis_eid_debug},
-                                                                                              {FileType::Texture, physis_tex_debug}};
+                                                                                              {FileType::Texture, physis_tex_debug},
+                                                                                              {FileType::GrassGridData, physis_ggd_debug},
+                                                                                              {FileType::GrassZoneData, physis_gzd_debug},
+                                                                                              {FileType::ShaderParameterMap, physis_spm_debug}};
 
 const static QMap<std::array<uint8_t, 4>, FileType> magicToType{
     {{0x70, 0x61, 0x70, 0x20}, FileType::Pap},
