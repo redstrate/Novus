@@ -219,7 +219,7 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
     m_fileActionsMenu->clear();
     m_fileActions->setVisible(false);
 
-    const auto addTab = [this, type](QWidget *widget) {
+    const auto addTab = [this, &type](QWidget *widget) {
         const QString typeName = FileTypes::getFiletypeName(type);
         const QString iconName = FileTypes::getFiletypeIcon(type);
 
@@ -232,10 +232,7 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
     if (type == FileType::Unknown || type == FileType::Texture) {
         auto texWidget = new TexPart();
         if (texWidget->loadTex(m_cache.platform(), file)) {
-            if (type == FileType::Unknown) {
-                type = FileType::Texture;
-            }
-
+            type = FileType::Texture;
             addTab(texWidget);
 
             m_fileActionsMenu->addAction(texWidget->saveImageAction());
@@ -248,10 +245,8 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
         if (mtrl.shpk_name) {
             auto mtrlWidget = new MtrlPart(m_cache);
             mtrlWidget->load(mtrl);
-            if (type == FileType::Unknown) {
-                type = FileType::Material;
-            }
 
+            type = FileType::Material;
             addTab(mtrlWidget);
         }
     }
@@ -260,10 +255,6 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
     if (type == FileType::Unknown || type == FileType::Model) {
         auto mdl = physis_mdl_parse(m_cache.platform(), file);
         if (mdl.p_ptr) {
-            if (type == FileType::Unknown) {
-                type = FileType::Model;
-            }
-
             Transformation transformation{};
             transformation.scale[0] = 1;
             transformation.scale[1] = 1;
@@ -275,6 +266,8 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
                 materials[i] = {mdl.material_names[i], physis_material_parse(m_cache.platform(), m_cache.read(QString::fromUtf8(mdl.material_names[i])))};
             }
             mdlWidget->addModel(mdl, false, transformation, QStringLiteral("mdl"), materials);
+
+            type = FileType::Model;
             addTab(mdlWidget);
 
             auto importAction = m_fileActionsMenu->addAction(QStringLiteral("Import glTF"));
