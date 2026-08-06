@@ -34,8 +34,8 @@ enum class FileType {
     PlayerCollisionBinary,
     SoundCompressedData,
     UIGeneratedData,
-    LevelCollisionBinary,
-    UWB, // TODO: what would this be called?
+    LightClippingBinary,
+    UnderwaterBinary, // TODO: what would this be called?
     SkyVisibilityBinary,
     Terrain,
     StainingTemplate,
