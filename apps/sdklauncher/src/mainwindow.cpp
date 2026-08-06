@@ -30,18 +30,9 @@ static QMap<QString, QPair<QString, QString>> applications = {
     {QStringLiteral("Enemy Editor"), {QStringLiteral("zone.xiv.novus.enemyeditor"), ENEMYEDITOR_EXECUTABLE}},
     {QStringLiteral("Patch Diff"), {QStringLiteral("zone.xiv.novus.patchdiff"), PATCHDIFF_EXECUTABLE}}};
 
-static QMap<QString, QString> links = {{QStringLiteral("XIV Dev Wiki"), QStringLiteral("https://xiv.dev")},
-                                       {QStringLiteral("XIV Docs"), QStringLiteral("https://docs.xiv.zone")}};
-
 MainWindow::MainWindow()
 {
     const auto appList = new QListWidget();
-
-    const auto applicationHeader = new QListWidgetItem();
-    applicationHeader->setText(i18nc("@title:group", "Applications"));
-    applicationHeader->setFlags(Qt::NoItemFlags);
-
-    appList->addItem(applicationHeader);
 
     for (const auto &key : applications.keys()) {
         const auto application = new QListWidgetItem();
@@ -51,26 +42,10 @@ MainWindow::MainWindow()
         appList->addItem(application);
     }
 
-    const auto linksHeader = new QListWidgetItem();
-    linksHeader->setText(i18nc("@title:group", "Links"));
-    linksHeader->setFlags(Qt::NoItemFlags);
-
-    appList->addItem(linksHeader);
-
-    for (const auto &key : links.keys()) {
-        const auto application = new QListWidgetItem();
-        application->setText(key);
-        application->setIcon(QIcon::fromTheme(QStringLiteral("internet-web-browser")));
-
-        appList->addItem(application);
-    }
-
     connect(appList, &QListWidget::itemClicked, [](const QListWidgetItem *item) {
         if (applications.contains(item->text())) {
             const QString exec = applications[item->text()].second;
             QProcess::startDetached(exec, QStringList());
-        } else if (links.contains(item->text())) {
-            QDesktopServices::openUrl(QUrl::fromUserInput(links[item->text()]));
         }
     });
 
