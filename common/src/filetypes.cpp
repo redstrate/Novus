@@ -72,7 +72,7 @@ const static QMap<FileType, QString> typeToName{{FileType::Unknown, i18n("Unknow
                                                 {FileType::UILayoutDefinition, i18n("UI Layout Definition")},
                                                 {FileType::CutsceneBinary, i18n("Cutscene Binary")},
                                                 {FileType::AnimatedVisualEffect, i18n("Animated Visual Effect")},
-                                                {FileType::PlayerCollisionBinary, i18n("Player Collision Binary")}, // TODO: list.pcb needs special handling
+                                                {FileType::PlayerCollisionBinary, i18n("Player Collision Binary")},
                                                 {FileType::SoundCompressedData, i18n("Sound Compressed Data")},
                                                 {FileType::UIGeneratedData, i18n("UI Generated Data")},
                                                 {FileType::LightClippingBinary, i18n("Light Clipping Binary")},
