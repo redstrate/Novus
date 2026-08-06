@@ -63,7 +63,7 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     });
 
     setupActions();
-    setupGUI(ToolBar | Keys | StatusBar | Save | Create, QStringLiteral("enemyeditor.rc"));
+    setupGUI(Keys | Save | Create, QStringLiteral("enemyeditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

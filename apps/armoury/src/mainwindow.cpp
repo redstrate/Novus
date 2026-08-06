@@ -74,7 +74,7 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     });
 
     setupActions();
-    setupGUI(ToolBar | Keys | StatusBar | Save | Create, QStringLiteral("geareditor.rc"));
+    setupGUI(Keys | Save | Create, QStringLiteral("geareditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

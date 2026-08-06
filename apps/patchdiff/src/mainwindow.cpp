@@ -50,7 +50,7 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     layout->addWidget(m_hexPart);
 
     setupActions();
-    setupGUI(ToolBar | Keys | Save | Create, QStringLiteral("patchdiff.rc"));
+    setupGUI(Keys | Save | Create, QStringLiteral("patchdiff.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

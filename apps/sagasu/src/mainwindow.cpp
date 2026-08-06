@@ -118,7 +118,7 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
     dummyWidget->addWidget(partLayoutHolder);
 
     setupActions();
-    setupGUI(ToolBar | Keys | Save | Create, QStringLiteral("dataexplorer.rc"));
+    setupGUI(Keys | Save | Create, QStringLiteral("dataexplorer.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
