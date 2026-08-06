@@ -4,23 +4,24 @@
 #include "mainwindow.h"
 
 #include <KActionCollection>
+#include <KActionMenu>
+#include <KColorSchemeManager>
+#include <KColorSchemeMenu>
 #include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
+#include <QComboBox>
 #include <QCoreApplication>
 #include <QDebug>
-#include <QDesktopServices>
 #include <QFormLayout>
 #include <QListWidget>
+#include <QMenu>
 #include <QProcess>
-#include <QUrl>
 #include <QVBoxLayout>
 
 #include "launcherconfig.h"
 #include "settings.h"
 #include "settingswindow.h"
-
-#include <QComboBox>
 
 static QMap<QString, QPair<QString, QString>> applications = {
     {QStringLiteral("Gear Editor"), {QStringLiteral("zone.xiv.novus.geareditor"), GEAREDITOR_EXECUTABLE}},
@@ -88,7 +89,7 @@ MainWindow::MainWindow()
     setCentralWidget(centralWidget);
 
     setupActions();
-    setupGUI(Create);
+    setupGUI(Create, QStringLiteral("sdklauncher.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -105,13 +106,22 @@ void MainWindow::configure()
     const auto settingsWindow = new SettingsWindow();
     settingsWindow->show();
 
-    // TODO: refresh game instals
+    // TODO: refresh game installs
 }
 
 void MainWindow::setupActions()
 {
     KStandardAction::preferences(this, &MainWindow::configure, actionCollection());
     KStandardAction::quit(qApp, &QCoreApplication::quit, actionCollection());
+
+    // Window color scheme menu
+    const auto manager = KColorSchemeManager::instance();
+    const auto selectionMenu = KColorSchemeMenu::createMenu(manager, this);
+    const auto windowColorSchemeMenu = new QAction(this);
+    windowColorSchemeMenu->setMenu(selectionMenu->menu());
+    windowColorSchemeMenu->menu()->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-color")));
+    windowColorSchemeMenu->menu()->setTitle(i18n("&Window Color Scheme"));
+    actionCollection()->addAction(QStringLiteral("window_color_scheme"), windowColorSchemeMenu);
 }
 
 void MainWindow::refreshGameInstalls() const

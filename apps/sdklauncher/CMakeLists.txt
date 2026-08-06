@@ -17,10 +17,12 @@ target_link_libraries(novus-launcher
         Physis::Physis
         KF6::ConfigCore
         KF6::WidgetsAddons
-        Qt6::Widgets)
+        Qt6::Widgets
+        KF6::ColorScheme)
 target_include_directories(novus-launcher PUBLIC include PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 install(TARGETS novus-launcher ${KF${QT_MAJOR_VERSION}_INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES sdklauncher.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/novus)
 
 if (WIN32)
     set_target_properties(novus-launcher PROPERTIES
