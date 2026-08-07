@@ -29,6 +29,7 @@ public:
     bool wireframe = false;
     bool frustumCulling = true;
     bool debugFrustumCulling = false;
+    bool vfx = true;
 
     size_t culledObjects = 0;
     size_t culledLights = 0;

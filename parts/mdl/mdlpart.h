@@ -56,6 +56,7 @@ public:
     QAction *wireframeAction() const;
     QAction *frustumCullingAction() const;
     QAction *debugFrustumCullingAction() const;
+    QAction *vfxAction() const;
 
 Q_SIGNALS:
     void modelChanged();
@@ -137,4 +138,5 @@ private:
     QAction *m_wireframeAction = nullptr;
     QAction *m_frustumCullingAction = nullptr;
     QAction *m_debugFrustumCullingAction = nullptr;
+    QAction *m_vfxAction = nullptr;
 };

@@ -522,7 +522,9 @@ void RenderManager::render(std::vector<DrawObjectInstance> &models, const std::v
 
     m_renderer->render(commandBuffer, camera, scene, models);
 
-    m_vfxPass->render(commandBuffer, camera, vfx);
+    if (scene.vfx) {
+        m_vfxPass->render(commandBuffer, camera, vfx);
+    }
 
     // render extra passes
     // TODO: support the new renderer

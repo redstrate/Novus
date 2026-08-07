@@ -75,6 +75,13 @@ MDLPart::MDLPart(FileCache &cache, QWidget *parent)
     connect(m_debugFrustumCullingAction, &QAction::toggled, this, [this](const bool toggled) {
         m_renderer->scene.debugFrustumCulling = toggled;
     });
+
+    m_vfxAction = new QAction(i18n("Draw VFX"));
+    m_vfxAction->setCheckable(true);
+    m_vfxAction->setChecked(m_renderer->scene.vfx);
+    connect(m_vfxAction, &QAction::toggled, this, [this](const bool toggled) {
+        m_renderer->scene.vfx = toggled;
+    });
 }
 
 MDLPart::~MDLPart()
@@ -617,6 +624,11 @@ QAction *MDLPart::frustumCullingAction() const
 QAction *MDLPart::debugFrustumCullingAction() const
 {
     return m_debugFrustumCullingAction;
+}
+
+QAction *MDLPart::vfxAction() const
+{
+    return m_vfxAction;
 }
 
 bool MDLPart::modelExists(const QString &name) const
