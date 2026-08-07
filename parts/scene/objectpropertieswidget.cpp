@@ -735,6 +735,11 @@ void ObjectPropertiesWidget::addExitRangeSection(const physis_ExitRangeInstanceO
     territoryTypeEdit->setReadOnly(true);
     layout->addRow(i18n("Territory Type"), territoryTypeEdit);
 
+    const auto indexEdit = new QLineEdit();
+    indexEdit->setText(QString::number(exitRange.index));
+    indexEdit->setReadOnly(true);
+    layout->addRow(i18n("Index"), indexEdit);
+
     const auto destinationInstanceIdEdit = new ObjectIdEdit(m_appState);
     destinationInstanceIdEdit->setObjectId(exitRange.destination_instance_id);
     layout->addRow(i18n("Destination Instance ID"), destinationInstanceIdEdit);
@@ -742,6 +747,20 @@ void ObjectPropertiesWidget::addExitRangeSection(const physis_ExitRangeInstanceO
     const auto returnInstanceIdEdit = new ObjectIdEdit(m_appState);
     returnInstanceIdEdit->setObjectId(exitRange.return_instance_id);
     layout->addRow(i18n("Return Instance ID"), returnInstanceIdEdit);
+
+    const auto playerRunningDirectionEdit = new QLineEdit();
+    playerRunningDirectionEdit->setText(QString::number(exitRange.player_running_direction));
+    playerRunningDirectionEdit->setReadOnly(true);
+    layout->addRow(i18n("Player Running Direction"), playerRunningDirectionEdit);
+
+    const auto unk9CEdit = new QLineEdit();
+    unk9CEdit->setText(QString::number(exitRange.unk9c));
+    unk9CEdit->setReadOnly(true);
+    layout->addRow(i18n("Unk9C"), unk9CEdit);
+
+    const auto unkInstanceIdEdit = new ObjectIdEdit(m_appState);
+    unkInstanceIdEdit->setObjectId(exitRange.unk_instance_id);
+    layout->addRow(i18n("Unk Instance ID"), unkInstanceIdEdit);
 }
 
 void ObjectPropertiesWidget::addEventRangeSection(const physis_EventRangeInstanceObject &eventRange)
