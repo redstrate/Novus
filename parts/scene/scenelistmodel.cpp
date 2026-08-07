@@ -266,7 +266,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
     auto layerItem = new SceneTreeInformation();
     layerItem->type = TreeType::Layer;
     layerItem->parent = fileItem;
-    layerItem->name = QString::fromLatin1(layer.name);
+    layerItem->name = QString::fromStdString(layer.name);
     layerItem->row = index;
     layerItem->id = layer.id;
     layerItem->data = QVariant::fromValue(&layer);
@@ -277,13 +277,13 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
 
         QString objectName;
         if (strlen(object.name) > 0) {
-            objectName = QString::fromLatin1(object.name);
+            objectName = QString::fromStdString(object.name);
         } else {
             objectName = i18n("Unknown Object");
 
             switch (object.data.tag) {
             case physis_LayerEntry::Tag::Vfx: {
-                QFileInfo info(QString::fromLatin1(object.data.vfx._0.asset_path));
+                QFileInfo info(QString::fromStdString(object.data.vfx._0.asset_path));
                 objectName = info.fileName();
             } break;
             case physis_LayerEntry::Tag::EventObject:
@@ -293,7 +293,7 @@ void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, ph
                 objectName = m_appState->lookupENpcName(object.data.event_npc._0.parent_data.parent_data.base_id);
                 break;
             case physis_LayerEntry::Tag::SharedGroup: {
-                QFileInfo info(QString::fromLatin1(object.data.shared_group._0.asset_path));
+                QFileInfo info(QString::fromStdString(object.data.shared_group._0.asset_path));
                 objectName = info.fileName();
             } break;
             case physis_LayerEntry::Tag::Treasure:
@@ -414,7 +414,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         auto fileItem = new SceneTreeInformation();
         fileItem->type = TreeType::EmbeddedLgbFile;
         fileItem->parent = parentNode;
-        fileItem->name = QString::fromLatin1(lgb.name);
+        fileItem->name = QString::fromStdString(lgb.name);
         fileItem->row = parentNode->children.size();
         parentNode->children.push_back(fileItem);
 

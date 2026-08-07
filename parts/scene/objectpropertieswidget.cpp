@@ -169,7 +169,7 @@ void ObjectPropertiesWidget::refreshLayerData(const physis_Layer &layer)
     layout->addRow(i18n("ID"), idEdit);
 
     const auto nameEdit = new QLineEdit();
-    nameEdit->setText(QString::fromLatin1(layer.name));
+    nameEdit->setText(QString::fromStdString(layer.name));
     nameEdit->setReadOnly(true);
     layout->addRow(i18n("Name"), nameEdit);
 
@@ -413,12 +413,12 @@ void ObjectPropertiesWidget::addBgPartSection(const physis_BgPartInstanceObject 
     section->setLayout(layout);
 
     const auto bgEdit = new PathEdit();
-    bgEdit->setPath(QString::fromLatin1(bg.asset_path));
+    bgEdit->setPath(QString::fromStdString(bg.asset_path));
     bgEdit->setReadOnly(true);
     layout->addRow(i18n("Asset Path"), bgEdit);
 
     const auto collisionEdit = new PathEdit();
-    collisionEdit->setPath(QString::fromLatin1(bg.collision_asset_path));
+    collisionEdit->setPath(QString::fromStdString(bg.collision_asset_path));
     collisionEdit->setReadOnly(true);
     layout->addRow(i18n("Collision Asset Path"), collisionEdit);
 
@@ -686,7 +686,7 @@ void ObjectPropertiesWidget::addSharedGroupSection(physis_SharedGroupInstanceObj
     section->setLayout(layout);
 
     const auto assetPathEdit = new PathEdit();
-    assetPathEdit->setPath(QString::fromLatin1(sharedGroup.asset_path));
+    assetPathEdit->setPath(QString::fromStdString(sharedGroup.asset_path));
     connect(assetPathEdit, &PathEdit::editingFinished, this, [assetPathEdit, &sharedGroup] {
         sharedGroup.asset_path = toCString(assetPathEdit->path());
     });
@@ -894,7 +894,7 @@ void ObjectPropertiesWidget::addVfxSection(const physis_VfxInstanceObject &vfx)
     section->setLayout(layout);
 
     const auto assetPathEdit = new PathEdit();
-    assetPathEdit->setPath(QString::fromLatin1(vfx.asset_path));
+    assetPathEdit->setPath(QString::fromStdString(vfx.asset_path));
     assetPathEdit->setReadOnly(true);
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 }
@@ -909,7 +909,7 @@ void ObjectPropertiesWidget::addEnvSetSection(const physis_EnvSetInstanceObject 
     section->setLayout(layout);
 
     const auto assetPathEdit = new PathEdit();
-    assetPathEdit->setPath(QString::fromLatin1(envSet.asset_path));
+    assetPathEdit->setPath(QString::fromStdString(envSet.asset_path));
     assetPathEdit->setReadOnly(true);
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 
@@ -953,7 +953,7 @@ void ObjectPropertiesWidget::addEnvSetSection(const physis_EnvSetInstanceObject 
     layout->addRow(i18n("Filter"), filterEdit);
 
     const auto soundAssetPath = new PathEdit();
-    soundAssetPath->setPath(QString::fromLatin1(envSet.sound_asset_path));
+    soundAssetPath->setPath(QString::fromStdString(envSet.sound_asset_path));
     soundAssetPath->setReadOnly(true);
     layout->addRow(i18n("Sound Asset Path"), soundAssetPath);
 }
@@ -968,12 +968,12 @@ void ObjectPropertiesWidget::addEnvLocationSection(const physis_EnvLocationObjec
     section->setLayout(layout);
 
     const auto ambientLightAssetPath = new PathEdit();
-    ambientLightAssetPath->setPath(QString::fromLatin1(envLocation.ambient_light_asset_path));
+    ambientLightAssetPath->setPath(QString::fromStdString(envLocation.ambient_light_asset_path));
     ambientLightAssetPath->setReadOnly(true);
     layout->addRow(i18n("Ambient Light Asset Path"), ambientLightAssetPath);
 
     const auto envMapAssetPath = new PathEdit();
-    envMapAssetPath->setPath(QString::fromLatin1(envLocation.env_map_asset_path));
+    envMapAssetPath->setPath(QString::fromStdString(envLocation.env_map_asset_path));
     envMapAssetPath->setReadOnly(true);
     layout->addRow(i18n("Env Map Asset Path"), envMapAssetPath);
 }
@@ -988,7 +988,7 @@ void ObjectPropertiesWidget::addSoundSection(const physis_SoundInstanceObject &s
     section->setLayout(layout);
 
     const auto soundAssetPathEdit = new PathEdit();
-    soundAssetPathEdit->setPath(QString::fromLatin1(sound.asset_path));
+    soundAssetPathEdit->setPath(QString::fromStdString(sound.asset_path));
     soundAssetPathEdit->setReadOnly(true);
     layout->addRow(i18n("Asset Path"), soundAssetPathEdit);
 }

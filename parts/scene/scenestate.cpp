@@ -88,7 +88,7 @@ ObjectScene::~ObjectScene()
 
 void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
 {
-    basePath = QString::fromLatin1(section.general.bg_path);
+    basePath = QString::fromStdString(section.general.bg_path);
 
     QString bgPath = QStringLiteral("%1/bgplate/").arg(section.general.bg_path);
 
@@ -103,7 +103,7 @@ void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
         if (bg_buffer.size > 0) {
             const auto lgb = physis_lgb_parse(cache.platform(), bg_buffer);
             if (lgb.num_chunks > 0) {
-                lgbFiles.emplace_back(QString::fromLatin1(path), lgb);
+                lgbFiles.emplace_back(QString::fromStdString(path), lgb);
             }
         }
     };
@@ -425,7 +425,7 @@ QString SceneState::lookupENpcName(const uint32_t id) const
     if (m_enpcResidentSheet.p_ptr) {
         const auto row = physis_excel_get_row(&m_enpcResidentSheet, id);
         if (row.columns && strlen(row.columns[0].string._0) > 0) {
-            QString name = QString::fromLatin1(row.columns[0].string._0);
+            QString name = QString::fromStdString(row.columns[0].string._0);
             physis_free_row(&row, m_enpcResidentSheet.pages[0].column_count);
             return name;
         }
@@ -439,7 +439,7 @@ QString SceneState::lookupEObjName(const uint32_t id) const
     if (m_eobjNameSheet.p_ptr) {
         const auto row = physis_excel_get_row(&m_eobjNameSheet, id);
         if (row.columns && strlen(row.columns[0].string._0) > 0) {
-            QString name = QString::fromLatin1(row.columns[0].string._0);
+            QString name = QString::fromStdString(row.columns[0].string._0);
             physis_free_row(&row, m_eobjNameSheet.pages[0].column_count);
             return name;
         }
@@ -453,7 +453,7 @@ QString SceneState::lookupBNpcName(const uint32_t id) const
     if (m_bnpcNameSheet.p_ptr) {
         const auto row = physis_excel_get_row(&m_bnpcNameSheet, id);
         if (row.columns && strlen(row.columns[0].string._0) > 0) {
-            QString name = QString::fromLatin1(row.columns[0].string._0);
+            QString name = QString::fromStdString(row.columns[0].string._0);
             physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
             return name;
         }

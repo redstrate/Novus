@@ -107,7 +107,7 @@ void MtrlPart::rebuild() const
         const auto groupBox = new QGroupBox();
         m_propertiesLayout->addWidget(groupBox);
 
-        groupBox->setTitle(QString::fromLatin1(nameFromCrc(materialKey.id)));
+        groupBox->setTitle(QString::fromStdString(nameFromCrc(materialKey.id)));
 
         uint32_t value = 0;
 
@@ -130,7 +130,7 @@ void MtrlPart::rebuild() const
         groupBox->setLayout(layout);
 
         const auto label = new QLabel();
-        label->setText(QString::fromLatin1(nameFromCrc(value)));
+        label->setText(QString::fromStdString(nameFromCrc(value)));
         label->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
         layout->addRow(i18n("Value:"), label);
@@ -144,7 +144,7 @@ void MtrlPart::rebuild() const
     for (uint32_t i = 0; i < m_material.num_samplers; i++) {
         const auto sampler = m_material.samplers[i];
 
-        QString name = QString::fromLatin1(nameFromCrc(sampler.texture_usage));
+        QString name = QString::fromStdString(nameFromCrc(sampler.texture_usage));
 
         const auto groupBox = new QGroupBox(name);
         m_texturesLayout->addWidget(groupBox);
@@ -160,7 +160,7 @@ void MtrlPart::rebuild() const
         layout->addWidget(texWidget);
 
         const auto texturePath = new PathEdit();
-        texturePath->setPath(QString::fromLatin1(m_material.textures[sampler.texture_index]));
+        texturePath->setPath(QString::fromStdString(m_material.textures[sampler.texture_index]));
         texturePath->setReadOnly(true);
         layout->addRow(i18n("Path:"), texturePath);
     }
@@ -173,7 +173,7 @@ void MtrlPart::rebuild() const
     for (uint32_t i = 0; i < m_material.num_constants; i++) {
         const auto constant = m_material.constants[i];
 
-        QString name = QString::fromLatin1(nameFromCrc(constant.id));
+        QString name = QString::fromStdString(nameFromCrc(constant.id));
 
         const auto valueLayout = new QHBoxLayout();
         m_constantsLayout->addLayout(valueLayout);
