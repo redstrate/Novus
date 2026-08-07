@@ -837,8 +837,12 @@ void ObjectPropertiesWidget::addLightSection(const physis_LightInstanceObject &l
     layout->addRow(i18n("Texture Path"), texturePathEdit);
 
     const auto colorLabel = new QLabel();
-    colorLabel->setText(QStringLiteral("%1 %2 %3 %4").arg(light.color.red).arg(light.color.green).arg(light.color.blue).arg(light.color.intensity));
+    colorLabel->setText(QStringLiteral("%1 %2 %3").arg(light.color.red).arg(light.color.green).arg(light.color.blue));
     layout->addRow(i18n("Color"), colorLabel);
+
+    const auto intensityLabel = new QLabel();
+    intensityLabel->setText(QString::number(light.intensity));
+    layout->addRow(i18n("Intensity"), intensityLabel);
 
     const auto specularHighlightsCheck = new QCheckBox();
     specularHighlightsCheck->setChecked(light.enable_specular_highlights);

@@ -318,7 +318,7 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
             sceneLight.color = glm::vec3(static_cast<float>(object.data.light._0.color.red) / 255.0f,
                                          static_cast<float>(object.data.light._0.color.green) / 255.0f,
                                          static_cast<float>(object.data.light._0.color.blue) / 255.0f);
-            sceneLight.intensity = object.data.light._0.color.intensity;
+            sceneLight.intensity = object.data.light._0.intensity;
 
             m_mdlPart->addLight(sceneLight);
         } break;
