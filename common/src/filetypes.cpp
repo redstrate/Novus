@@ -203,7 +203,7 @@ QString FileTypes::printDebugInformation(const FileType fileType, const Platform
     if (typeToDebug.contains(fileType)) {
         const auto stringPtr = typeToDebug[fileType](platform, buffer);
         if (stringPtr != nullptr) {
-            return QString::fromLatin1(stringPtr);
+            return QString::fromStdString(stringPtr);
         }
     }
     return i18n("No debug information available. If this is unexpected, please report this a bug (and include the file path!)");
