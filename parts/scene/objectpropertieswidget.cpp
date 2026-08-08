@@ -430,10 +430,13 @@ void ObjectPropertiesWidget::addCommonSection(physis_InstanceObject &object)
     const auto scaleEdit = new Vector3Edit(reinterpret_cast<glm::vec3 &>(object.transform.scale));
     layout->addRow(i18n("Scale"), scaleEdit);
 
-    const auto idEdit = new QLineEdit();
-    idEdit->setText(QString::number(object.instance_id));
-    idEdit->setReadOnly(true);
+    const auto idEdit = new UIntEdit(object.instance_id, this);
     layout->addRow(i18n("Instance ID"), idEdit);
+
+    const auto nameEdit = new QLineEdit();
+    nameEdit->setText(QString::fromStdString(object.name));
+    nameEdit->setReadOnly(true);
+    layout->addRow(i18n("Name"), nameEdit);
 }
 
 void ObjectPropertiesWidget::addBgPartSection(physis_BgPartInstanceObject &bg)
