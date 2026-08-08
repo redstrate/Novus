@@ -134,7 +134,7 @@ public:
     ObjectScene rootScene;
     QList<uint32_t> visibleLayerIds;
     std::optional<physis_InstanceObject *> selectedObject;
-    std::optional<physis_Layer const *> selectedLayer;
+    std::optional<physis_Layer *> selectedLayer;
     std::optional<physis_ScnTimeline const *> selectedTimeline;
     std::optional<ScnSGActionControllerDescriptor const *> selectedAction;
     std::optional<QString> selectedLgb;

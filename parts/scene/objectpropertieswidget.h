@@ -60,7 +60,7 @@ public:
 private:
     void resetSections();
     void refreshObjectData(physis_InstanceObject &object);
-    void refreshLayerData(const physis_Layer &layer);
+    void refreshLayerData(physis_Layer &layer);
     void refreshTimelineData(const physis_ScnTimeline &timeline);
     void refreshActionData(const ScnSGActionControllerDescriptor &action);
     void refreshLgbData(const QString &path);

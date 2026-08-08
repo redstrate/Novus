@@ -82,7 +82,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     static std::optional<physis_InstanceObject *> objectAt(const QModelIndex &index);
-    static std::optional<physis_Layer const *> layerAt(const QModelIndex &index);
+    static std::optional<physis_Layer *> layerAt(const QModelIndex &index);
     static std::optional<physis_ScnTimeline const *> timelineAt(const QModelIndex &index);
     static std::optional<ScnSGActionControllerDescriptor const *> actionAt(const QModelIndex &index);
     static std::optional<QString> lgbAt(const QModelIndex &index);

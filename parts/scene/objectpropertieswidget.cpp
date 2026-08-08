@@ -185,7 +185,7 @@ void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
     }
 }
 
-void ObjectPropertiesWidget::refreshLayerData(const physis_Layer &layer)
+void ObjectPropertiesWidget::refreshLayerData(physis_Layer &layer)
 {
     const auto section = new CollapseSection(i18n("Layer"));
     m_layout->addWidget(section);
@@ -195,15 +195,19 @@ void ObjectPropertiesWidget::refreshLayerData(const physis_Layer &layer)
     layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
-    const auto idEdit = new QLineEdit();
-    idEdit->setText(QString::number(layer.id));
-    idEdit->setReadOnly(true);
-    layout->addRow(i18n("ID"), idEdit);
-
     const auto nameEdit = new QLineEdit();
     nameEdit->setText(QString::fromStdString(layer.name));
     nameEdit->setReadOnly(true);
     layout->addRow(i18n("Name"), nameEdit);
+
+    const auto visibleEdit = new BoolEdit();
+    visibleEdit->setValue(layer.visible);
+    layout->addRow(i18n("Visible"), visibleEdit);
+
+    const auto idEdit = new QLineEdit();
+    idEdit->setText(QString::number(layer.id));
+    idEdit->setReadOnly(true);
+    layout->addRow(i18n("ID"), idEdit);
 
     const auto festivalIdEdit = new QLineEdit();
     festivalIdEdit->setText(QString::number(layer.festival_id));

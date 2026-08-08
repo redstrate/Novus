@@ -194,11 +194,11 @@ std::optional<physis_InstanceObject *> SceneListModel::objectAt(const QModelInde
     return std::nullopt;
 }
 
-std::optional<physis_Layer const *> SceneListModel::layerAt(const QModelIndex &index)
+std::optional<physis_Layer *> SceneListModel::layerAt(const QModelIndex &index)
 {
     const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
     if (item && item->type == TreeType::Layer) {
-        return item->data.value<physis_Layer const *>();
+        return item->data.value<physis_Layer *>();
     }
     return std::nullopt;
 }
