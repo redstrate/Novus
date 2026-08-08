@@ -39,6 +39,7 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
     treeWidget->setModel(m_searchModel);
     treeWidget->header()->setStretchLastSection(false);
     treeWidget->header()->setSectionsMovable(false);
+    treeWidget->header()->setVisible(false);
     connect(treeWidget, &QTreeView::activated, this, [this](const QModelIndex &index) {
         const auto originalIndex = m_searchModel->mapToSource(index);
         m_appState->selectedObject = m_objectListModel->objectAt(originalIndex);
