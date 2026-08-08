@@ -11,6 +11,7 @@ Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
     , m_vec(vec)
 {
     const auto itemsLayout = new QHBoxLayout(this);
+    itemsLayout->setContentsMargins({0, 0, 0, 0});
 
     m_spinBoxes.x = new QDoubleSpinBox();
     m_spinBoxes.y = new QDoubleSpinBox();
