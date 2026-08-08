@@ -504,12 +504,12 @@ void ObjectPropertiesWidget::addBgPartSection(physis_BgPartInstanceObject &bg)
     layout->addRow(i18n("Collision Type"), collisionTypeEdit);
 
     const auto collisionMaterialIdLabel = new QLineEdit();
-    collisionMaterialIdLabel->setText(QString::number(bg.collision_material_id));
+    collisionMaterialIdLabel->setText(QString::number(bg.collision_attributes.material_id));
     collisionMaterialIdLabel->setReadOnly(true);
     layout->addRow(i18n("Collision material id"), collisionMaterialIdLabel);
 
     const auto collisionMaterialMaskLabel = new QLineEdit();
-    collisionMaterialMaskLabel->setText(QString::number(bg.collision_material_mask));
+    collisionMaterialMaskLabel->setText(QString::number(bg.collision_attributes.material_mask));
     collisionMaterialMaskLabel->setReadOnly(true);
     layout->addRow(i18n("Collision material mask"), collisionMaterialMaskLabel);
 
@@ -1083,12 +1083,12 @@ void ObjectPropertiesWidget::addCollisionBoxSection(physis_CollisionBoxInstanceO
     section->setLayout(layout);
 
     const auto collisionMaterialIdLabel = new QLineEdit();
-    collisionMaterialIdLabel->setText(QString::number(collisionBox.collision_material_id));
+    collisionMaterialIdLabel->setText(QString::number(collisionBox.collision_attributes.material_id));
     collisionMaterialIdLabel->setReadOnly(true);
     layout->addRow(i18n("Collision material id"), collisionMaterialIdLabel);
 
     const auto collisionMaterialMaskLabel = new QLineEdit();
-    collisionMaterialMaskLabel->setText(QString::number(collisionBox.collision_material_mask));
+    collisionMaterialMaskLabel->setText(QString::number(collisionBox.collision_attributes.material_mask));
     collisionMaterialMaskLabel->setReadOnly(true);
     layout->addRow(i18n("Collision material mask"), collisionMaterialMaskLabel);
 
