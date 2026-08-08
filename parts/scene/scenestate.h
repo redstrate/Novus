@@ -140,6 +140,7 @@ public:
     std::optional<QString> selectedLgb;
     std::optional<QString> selectedTera;
     std::optional<DropInObject *> selectedDropInObject;
+    std::optional<int> selectedPlate;
     QList<uint32_t> visibleTerrainPlates;
     physis_Lcb loadedLcb{};
 

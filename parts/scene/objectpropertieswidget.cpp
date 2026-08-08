@@ -67,6 +67,9 @@ ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *pa
         if (m_appState->selectedDropInObject) {
             refreshDropInData(m_appState->selectedDropInObject.value());
         }
+        if (m_appState->selectedPlate) {
+            refreshPlateData(m_appState->selectedPlate.value());
+        }
     });
 }
 
@@ -411,6 +414,23 @@ void ObjectPropertiesWidget::refreshDropInData(DropInObject *object)
         const auto linkRangeEdit = new UIntEdit(data->linkRange);
         layout->addRow(i18n("Link Range"), linkRangeEdit);
     }
+}
+
+void ObjectPropertiesWidget::refreshPlateData(const int index)
+{
+    const auto section = new CollapseSection(i18n("Terrain Plate"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
+    section->setLayout(layout);
+
+    auto &plate = m_appState->rootScene.terrain.plates[index];
+
+    const auto positionEdit = new Vector2Edit(reinterpret_cast<glm::vec2 &>(plate.position));
+    positionEdit->setReadOnly(true);
+    layout->addRow(i18n("Position"), positionEdit);
 }
 
 void ObjectPropertiesWidget::addCommonSection(physis_InstanceObject &object)

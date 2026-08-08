@@ -66,6 +66,7 @@ private:
     void refreshLgbData(const QString &path);
     void refreshTeraData(const QString &path);
     void refreshDropInData(DropInObject *object);
+    void refreshPlateData(int index);
 
     void addCommonSection(physis_InstanceObject &object);
     void addBgPartSection(physis_BgPartInstanceObject &bg);

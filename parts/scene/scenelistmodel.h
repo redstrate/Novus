@@ -88,6 +88,7 @@ public:
     static std::optional<QString> lgbAt(const QModelIndex &index);
     static std::optional<QString> teraAt(const QModelIndex &index);
     static std::optional<DropInObject *> dropInObjectAt(const QModelIndex &index);
+    static std::optional<int> terrainPlateAt(const QModelIndex &index);
 
 private:
     void refresh();

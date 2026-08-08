@@ -248,6 +248,15 @@ std::optional<DropInObject *> SceneListModel::dropInObjectAt(const QModelIndex &
     return std::nullopt;
 }
 
+std::optional<int> SceneListModel::terrainPlateAt(const QModelIndex &index)
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::Plate) {
+        return item->id;
+    }
+    return std::nullopt;
+}
+
 void SceneListModel::refresh()
 {
     beginResetModel();
