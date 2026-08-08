@@ -17,6 +17,11 @@ CollapseSection::CollapseSection(const QString &label)
 
 void CollapseSection::paintEvent(QPaintEvent *event)
 {
+    // Hack to prevent visual glitches on partial paints
+    if (event->rect() != rect()) {
+        return;
+    }
+
     QPainter painter(this);
     painter.setPen(palette().dark().color());
     painter.setBrush(palette().alternateBase().color());
