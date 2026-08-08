@@ -27,8 +27,6 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     : m_data(data)
     , m_cache(data)
 {
-    setMinimumSize(720, 720);
-
     const auto widget = new QWidget();
     setCentralWidget(widget);
 
@@ -50,7 +48,7 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     layout->addWidget(m_hexPart);
 
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("patchdiff.rc"));
+    setupGUI(QSize(720, 720), Keys | Save | Create, QStringLiteral("patchdiff.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

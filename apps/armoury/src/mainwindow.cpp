@@ -30,8 +30,6 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
     , m_api(new PenumbraApi(this))
 {
-    setMinimumSize(QSize(800, 600));
-
     const auto dummyWidget = new QSplitter();
     dummyWidget->setChildrenCollapsible(false);
     setCentralWidget(dummyWidget);
@@ -52,6 +50,9 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     tabWidget->setDocumentMode(true); // Don't draw the borders
     tabWidget->tabBar()->setExpanding(true);
     dummyWidget->addWidget(tabWidget);
+
+    dummyWidget->setStretchFactor(0, 0);
+    dummyWidget->setStretchFactor(1, 1);
 
     m_fullModelViewer = new FullModelViewer(m_cache);
     connect(m_fullModelViewer, &FullModelViewer::loadingChanged, this, [this](const bool loading) {
@@ -74,7 +75,7 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     });
 
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("geareditor.rc"));
+    setupGUI(QSize(800, 600), Keys | Save | Create, QStringLiteral("geareditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

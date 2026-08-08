@@ -55,8 +55,6 @@
 MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data)
     : m_cache(data)
 {
-    setMinimumSize(1280, 720);
-
     m_mgr = new QNetworkAccessManager(this);
 
     m_excelResolver = new AbstractExcelResolver();
@@ -96,7 +94,6 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
         m_currentPath = path;
         refreshParts(indexPath, hash, path);
     });
-    m_tree->setMaximumWidth(300);
     dummyWidget->addWidget(m_tree);
 
     const auto partLayout = new QVBoxLayout();
@@ -117,8 +114,12 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
 
     dummyWidget->addWidget(partLayoutHolder);
 
+    // Part holder should stretch, not the list widget
+    dummyWidget->setStretchFactor(0, 0);
+    dummyWidget->setStretchFactor(1, 1);
+
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("dataexplorer.rc"));
+    setupGUI(QSize(1280, 720), Keys | Save | Create, QStringLiteral("dataexplorer.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

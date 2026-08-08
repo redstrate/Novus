@@ -34,13 +34,11 @@
 MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
 {
-    setMinimumSize(1280, 720);
-
     m_part = new ScenePart(m_cache, true);
     setCentralWidget(m_part);
 
     setupActions();
-    setupGUI(Default, QStringLiteral("mapeditor.rc"));
+    setupGUI(QSize(1280, 720), Default, QStringLiteral("mapeditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

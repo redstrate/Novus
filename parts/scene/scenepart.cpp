@@ -32,6 +32,7 @@ ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
 
     const auto sidebarWidget = new QWidget();
     splitter->addWidget(sidebarWidget);
+    splitter->setStretchFactor(0, 0);
 
     const auto sidebarLayout = new QVBoxLayout();
     sidebarLayout->setContentsMargins(0, 0, 0, 0);
@@ -39,13 +40,9 @@ ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
     sidebarWidget->setLayout(sidebarLayout);
 
     m_sceneListWidget = new SceneListWidget(m_appState);
-    m_sceneListWidget->setMaximumWidth(400);
-    if (fixedSize)
-        m_sceneListWidget->setMinimumWidth(400);
     sidebarLayout->addWidget(m_sceneListWidget);
 
     m_animationTimeSlider = new QSlider(Qt::Orientation::Horizontal);
-    m_animationTimeSlider->setMaximumWidth(400);
     m_animationTimeSlider->setEnabled(false);
     connect(m_animationTimeSlider, &QSlider::valueChanged, this, [this](const int value) {
         m_appState->updateAllAnimations(value);
@@ -54,7 +51,6 @@ ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
     sidebarLayout->addWidget(m_animationTimeSlider);
 
     m_timeSlider = new QSlider(Qt::Orientation::Horizontal);
-    m_timeSlider->setMaximumWidth(400);
     m_timeSlider->setMinimum(0);
     m_timeSlider->setMaximum(86400);
     connect(m_timeSlider, &QSlider::valueChanged, this, [this](const int value) {
@@ -68,10 +64,10 @@ ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
     splitter->setStretchFactor(1, 1);
 
     m_objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
-    m_objectPropertiesWidget->setMaximumWidth(400);
     if (fixedSize)
         m_objectPropertiesWidget->setMinimumWidth(400);
     splitter->addWidget(m_objectPropertiesWidget);
+    splitter->setStretchFactor(2, 0);
 
     connect(
         m_appState,

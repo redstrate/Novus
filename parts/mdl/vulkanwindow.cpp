@@ -51,7 +51,6 @@ bool VulkanWindow::eventFilter(QObject *watched, QEvent *event)
     default:
         break;
     }
-    // dispatchEvent(event, watched);
     return QWindow::eventFilter(watched, event);
 }
 

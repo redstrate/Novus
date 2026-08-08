@@ -33,8 +33,6 @@
 MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
 {
-    setMinimumSize(1280, 720);
-
     m_mgr = new QNetworkAccessManager(this);
 
     const auto dummyWidget = new QSplitter();
@@ -42,7 +40,6 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     setCentralWidget(dummyWidget);
 
     m_sheetListWidget = new SheetListWidget(&data);
-    m_sheetListWidget->setMaximumWidth(200);
     dummyWidget->addWidget(m_sheetListWidget);
 
     m_excelResolver = std::make_unique<CachingExcelResolver>(m_cache);
@@ -52,12 +49,15 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     connect(m_exdPart, &EXDPart::modified, this, &MainWindow::updateDocumentActions);
     dummyWidget->addWidget(m_exdPart);
 
+    dummyWidget->setStretchFactor(0, 0);
+    dummyWidget->setStretchFactor(1, 1);
+
     connect(m_sheetListWidget, &SheetListWidget::sheetSelected, this, [this](const QString &name) {
         jumpToSheet(name, true);
     });
 
     setupActions();
-    setupGUI(ToolBar | Keys | Save | Create, QStringLiteral("exceleditor.rc"));
+    setupGUI(QSize(1280, 720), ToolBar | Keys | Save | Create, QStringLiteral("exceleditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));

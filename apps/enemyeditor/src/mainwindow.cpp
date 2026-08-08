@@ -27,8 +27,6 @@
 MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
 {
-    setMinimumSize(640, 480);
-
     const auto dummyWidget = new QWidget();
     setCentralWidget(dummyWidget);
 
@@ -63,7 +61,7 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     });
 
     setupActions();
-    setupGUI(Keys | Save | Create, QStringLiteral("enemyeditor.rc"));
+    setupGUI(QSize(640, 480), Keys | Save | Create, QStringLiteral("enemyeditor.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
