@@ -10,21 +10,18 @@ class CollapseSection : public QWidget
     Q_OBJECT
 
 public:
-    explicit CollapseSection(const QString &label, bool closable = false);
+    explicit CollapseSection(const QString &label);
 
 Q_SIGNALS:
     void closeRequested();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
     QString m_label;
 
-    bool m_closable;
-    bool m_closeButtonHovered = false;
     bool m_collapsed = false;
 
     QWidget *m_wrapper = nullptr;

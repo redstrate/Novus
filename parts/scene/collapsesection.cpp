@@ -9,64 +9,42 @@
 #include <QPainter>
 #include <QStyleOption>
 
-CollapseSection::CollapseSection(const QString &label, const bool closable)
+CollapseSection::CollapseSection(const QString &label)
     : m_label(label)
-    , m_closable(closable)
 {
     setContentsMargins(0, 25, 0, 0);
-    setMouseTracking(true);
 }
 
 void CollapseSection::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    painter.setPen(QColor(75, 75, 80));
-    painter.setBrush(QColor(50, 50, 55));
+    painter.setPen(palette().dark().color());
+    painter.setBrush(palette().alternateBase().color());
+    painter.setRenderHint(QPainter::Antialiasing);
 
     QRect r = event->rect().adjusted(1, 2, -1, 0);
     r.setY(2);
     r.setHeight(25);
 
-    painter.drawRect(r);
+    painter.drawRoundedRect(r, 5, 5);
 
-    painter.setPen(Qt::white);
+    painter.setPen(palette().text().color());
     painter.drawText(event->rect().adjusted(6, 5, 0, 0), m_label);
 
-    if (m_closable) {
-        QStyleOption option;
-        option.rect.adjust(event->rect().width() - 20, 7, 0, 0);
-        option.rect.setHeight(16);
-        option.rect.setWidth(16);
-        option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_AutoRaise;
+    QStyleOption option;
+    option.rect.adjust(event->rect().width() - 20, 7, 0, 0);
+    option.rect.setHeight(16);
+    option.rect.setWidth(16);
+    option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_AutoRaise;
 
-        if (m_closeButtonHovered)
-            option.state |= QStyle::State_Raised | QStyle::State_MouseOver;
-
-        QApplication::style()->drawPrimitive(QStyle::PE_IndicatorTabClose, &option, &painter, this);
-    }
-}
-
-void CollapseSection::mouseMoveEvent(QMouseEvent *event)
-{
-    Q_UNUSED(event)
-
-    if (m_closable) {
-        const QRect r(width() - 20, 0, width(), 25); // close button
-
-        if (r.contains(mapFromGlobal(QCursor::pos())))
-            m_closeButtonHovered = true;
-        else
-            m_closeButtonHovered = false;
-
-        repaint();
-    }
+    QApplication::style()->drawPrimitive(m_collapsed ? QStyle::PE_IndicatorArrowUp : QStyle::PE_IndicatorArrowDown, &option, &painter, this);
 }
 
 void CollapseSection::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event)
 
-    const QRect r(0, 0, width() - 20, 30); // header
+    const QRect r(0, 0, width(), 30); // header
 
     if (r.contains(mapFromGlobal(QCursor::pos()))) {
         if (!m_collapsed) {
@@ -76,13 +54,6 @@ void CollapseSection::mousePressEvent(QMouseEvent *event)
             setFixedHeight(QWIDGETSIZE_MAX);
             m_collapsed = false;
         }
-    }
-
-    if (m_closable) {
-        const QRect r(width() - 20, 0, width(), 25); // close button
-
-        if (r.contains(mapFromGlobal(QCursor::pos())))
-            Q_EMIT closeRequested();
     }
 }
 
