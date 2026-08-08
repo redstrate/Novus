@@ -435,6 +435,15 @@ void ObjectPropertiesWidget::refreshPlateData(const int index)
     const auto positionEdit = new Vector2Edit(reinterpret_cast<glm::vec2 &>(plate.position));
     positionEdit->setReadOnly(true);
     layout->addRow(i18n("Position"), positionEdit);
+
+    // TODO: de-duplicate this code
+    QString base2Path = m_appState->rootScene.basePath.left(m_appState->rootScene.basePath.lastIndexOf(QStringLiteral("/level/")));
+    const QString mdlPath = QStringLiteral("%1/bgplate/%2").arg(base2Path, QString::fromStdString(plate.filename));
+
+    const auto pathEdit = new PathEdit();
+    pathEdit->setPath(mdlPath);
+    pathEdit->setReadOnly(true);
+    layout->addRow(i18n("Asset Path"), pathEdit);
 }
 
 void ObjectPropertiesWidget::addCommonSection(physis_InstanceObject &object)
