@@ -21,6 +21,7 @@
 
 #include "enumedit.h"
 #include "exceledit.h"
+#include "floatedit.h"
 #include "objectidedit.h"
 #include "uintedit.h"
 #include "utility.h"
@@ -424,7 +425,7 @@ void ObjectPropertiesWidget::addCommonSection(physis_InstanceObject &object)
     layout->addRow(i18n("Instance ID"), idEdit);
 }
 
-void ObjectPropertiesWidget::addBgPartSection(const physis_BgPartInstanceObject &bg)
+void ObjectPropertiesWidget::addBgPartSection(physis_BgPartInstanceObject &bg)
 {
     const auto section = new CollapseSection(i18n("BG"));
     m_layout->addWidget(section);
@@ -435,12 +436,16 @@ void ObjectPropertiesWidget::addBgPartSection(const physis_BgPartInstanceObject 
 
     const auto bgEdit = new PathEdit();
     bgEdit->setPath(QString::fromStdString(bg.asset_path));
-    bgEdit->setReadOnly(true);
+    connect(bgEdit, &PathEdit::editingFinished, this, [bgEdit, &bg] {
+        bg.asset_path = toCString(bgEdit->path());
+    });
     layout->addRow(i18n("Asset Path"), bgEdit);
 
     const auto collisionEdit = new PathEdit();
     collisionEdit->setPath(QString::fromStdString(bg.collision_asset_path));
-    collisionEdit->setReadOnly(true);
+    connect(collisionEdit, &PathEdit::editingFinished, this, [collisionEdit, &bg] {
+        bg.collision_asset_path = toCString(collisionEdit->path());
+    });
     layout->addRow(i18n("Collision Asset Path"), collisionEdit);
 
     const auto collisionTypeEdit = new EnumEdit<ModelCollisionType>();
@@ -458,28 +463,24 @@ void ObjectPropertiesWidget::addBgPartSection(const physis_BgPartInstanceObject 
     collisionMaterialMaskLabel->setReadOnly(true);
     layout->addRow(i18n("Collision material mask"), collisionMaterialMaskLabel);
 
-    const auto visibleCheck = new QCheckBox();
-    visibleCheck->setChecked(bg.visible);
+    const auto visibleCheck = new BoolEdit();
+    visibleCheck->setValue(bg.visible);
     layout->addRow(i18n("Visible"), visibleCheck);
 
     const auto worldShadowModeEdit = new EnumEdit<ShadowMode>();
     worldShadowModeEdit->setValue(bg.world_light_shadow_mode);
-    worldShadowModeEdit->setEnabled(false);
     layout->addRow(i18n("World Light Shadows"), worldShadowModeEdit);
 
     const auto objectShadowModeEdit = new EnumEdit<ShadowMode>();
     objectShadowModeEdit->setValue(bg.object_light_shadow_mode);
-    objectShadowModeEdit->setEnabled(false);
     layout->addRow(i18n("Object Light Shadows"), objectShadowModeEdit);
 
-    const auto fadeOutDistanceLabel = new QLineEdit();
-    fadeOutDistanceLabel->setText(QString::number(bg.fade_out_distance));
-    fadeOutDistanceLabel->setReadOnly(true);
+    const auto fadeOutDistanceLabel = new FloatEdit();
+    fadeOutDistanceLabel->setValue(bg.fade_out_distance);
     layout->addRow(i18n("Fade out distance"), fadeOutDistanceLabel);
 
-    const auto boundingSphereSizeLabel = new QLineEdit();
-    boundingSphereSizeLabel->setText(QString::number(bg.fade_out_distance));
-    boundingSphereSizeLabel->setReadOnly(true);
+    const auto boundingSphereSizeLabel = new FloatEdit();
+    boundingSphereSizeLabel->setValue(bg.fade_out_distance);
     layout->addRow(i18n("Bounding sphere size"), boundingSphereSizeLabel);
 }
 
@@ -499,7 +500,7 @@ void ObjectPropertiesWidget::addEventObjectSection(physis_EventObjectInstanceObj
     layout->addRow(i18n("Bound ID"), boundIdEdit);
 }
 
-void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObject &pop)
+void ObjectPropertiesWidget::addPopRangeSection(physis_PopRangeInstanceObject &pop)
 {
     const auto section = new CollapseSection(i18n("Pop Range"));
     m_layout->addWidget(section);
@@ -510,12 +511,10 @@ void ObjectPropertiesWidget::addPopRangeSection(const physis_PopRangeInstanceObj
 
     const auto typeEdit = new EnumEdit<PopType>();
     typeEdit->setValue(pop.pop_type);
-    typeEdit->setEnabled(false);
     layout->addRow(i18n("Type"), typeEdit);
 
-    const auto innerRadiusRatioEdit = new QLineEdit();
-    innerRadiusRatioEdit->setText(QString::number(pop.inner_radius_ratio));
-    innerRadiusRatioEdit->setReadOnly(true);
+    const auto innerRadiusRatioEdit = new FloatEdit();
+    innerRadiusRatioEdit->setValue(pop.inner_radius_ratio);
     layout->addRow(i18n("Inner Radius Ratio"), innerRadiusRatioEdit);
 }
 
@@ -543,25 +542,18 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     section->setLayout(layout);
 
     const auto mapEdit = new ExcelEdit(m_appState, {QStringLiteral("Map")}, mapRange.map);
-    mapEdit->setReadOnly(true);
     layout->addRow(i18n("Map"), mapEdit);
 
     const auto placeNameBlock = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")}, mapRange.place_name_block);
-    placeNameBlock->setReadOnly(true);
     layout->addRow(i18n("PlaceName Block"), placeNameBlock);
 
     const auto placeNameSpot = new ExcelEdit(m_appState, {QStringLiteral("PlaceName")}, mapRange.place_name_spot);
-    placeNameSpot->setReadOnly(true);
     layout->addRow(i18n("PlaceName Spot"), placeNameSpot);
 
-    const auto weatherEdit = new QLineEdit();
-    weatherEdit->setReadOnly(true);
-    weatherEdit->setText(QString::number(mapRange.weather));
+    const auto weatherEdit = new ExcelEdit(m_appState, {QStringLiteral("Weather")}, mapRange.weather);
     layout->addRow(i18n("Weather"), weatherEdit);
 
-    const auto bgmEdit = new QLineEdit();
-    bgmEdit->setReadOnly(true);
-    bgmEdit->setText(QString::number(mapRange.bgm));
+    const auto bgmEdit = new ExcelEdit(m_appState, {QStringLiteral("BGM")}, mapRange.bgm);
     layout->addRow(i18n("BGM"), bgmEdit);
 
     const auto unk1Edit = new QLineEdit();
@@ -579,9 +571,8 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     housingBlockIdEdit->setText(QString::number(mapRange.housing_block_id));
     layout->addRow(i18n("Housing block ID"), housingBlockIdEdit);
 
-    const auto restBonusEffectiveCheckbox = new QCheckBox();
-    restBonusEffectiveCheckbox->setChecked(mapRange.rest_bonus_effective);
-    restBonusEffectiveCheckbox->setEnabled(false);
+    const auto restBonusEffectiveCheckbox = new BoolEdit();
+    restBonusEffectiveCheckbox->setValue(mapRange.rest_bonus_effective);
     layout->addRow(i18n("Rest Bonus Effective"), restBonusEffectiveCheckbox);
 
     const auto discoveryIdEdit = new QLineEdit();
@@ -589,73 +580,60 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     discoveryIdEdit->setText(QString::number(mapRange.discovery_id));
     layout->addRow(i18n("Discovery ID"), discoveryIdEdit);
 
-    const auto mapEnabledCheckbox = new QCheckBox();
-    mapEnabledCheckbox->setChecked(mapRange.map_enabled);
-    mapEnabledCheckbox->setEnabled(false);
+    const auto mapEnabledCheckbox = new BoolEdit();
+    mapEnabledCheckbox->setValue(mapRange.map_enabled);
     layout->addRow(i18n("Map Enabled"), mapEnabledCheckbox);
 
-    const auto placeNameEnabledCheckbox = new QCheckBox();
-    placeNameEnabledCheckbox->setChecked(mapRange.place_name_enabled);
-    placeNameEnabledCheckbox->setEnabled(false);
+    const auto placeNameEnabledCheckbox = new BoolEdit();
+    placeNameEnabledCheckbox->setValue(mapRange.place_name_enabled);
     layout->addRow(i18n("Place Name Enabled"), placeNameEnabledCheckbox);
 
-    const auto discoveryEnabledCheckbox = new QCheckBox();
-    discoveryEnabledCheckbox->setChecked(mapRange.discovery_enabled);
-    discoveryEnabledCheckbox->setEnabled(false);
+    const auto discoveryEnabledCheckbox = new BoolEdit();
+    discoveryEnabledCheckbox->setValue(mapRange.discovery_enabled);
     layout->addRow(i18n("Discovery Enabled"), discoveryEnabledCheckbox);
 
-    const auto bgmEnabledCheckbox = new QCheckBox();
-    bgmEnabledCheckbox->setChecked(mapRange.bgm_enabled);
-    bgmEnabledCheckbox->setEnabled(false);
+    const auto bgmEnabledCheckbox = new BoolEdit();
+    bgmEnabledCheckbox->setValue(mapRange.bgm_enabled);
     layout->addRow(i18n("BGM Enabled"), bgmEnabledCheckbox);
 
-    const auto weatherEnabled = new QCheckBox();
-    weatherEnabled->setChecked(mapRange.weather_enabled);
-    weatherEnabled->setEnabled(false);
+    const auto weatherEnabled = new BoolEdit();
+    weatherEnabled->setValue(mapRange.weather_enabled);
     layout->addRow(i18n("Weather Enabled"), weatherEnabled);
 
-    const auto restBonusEnabledCheckbox = new QCheckBox();
-    restBonusEnabledCheckbox->setChecked(mapRange.rest_bonus_enabled);
-    restBonusEnabledCheckbox->setEnabled(false);
+    const auto restBonusEnabledCheckbox = new BoolEdit();
+    restBonusEnabledCheckbox->setValue(mapRange.rest_bonus_enabled);
     layout->addRow(i18n("Rest Bonus Enabled"), restBonusEnabledCheckbox);
 
-    const auto bgmPlayZoneInEnabled = new QCheckBox();
-    bgmPlayZoneInEnabled->setChecked(mapRange.bgm_play_zone_in_only);
-    bgmPlayZoneInEnabled->setEnabled(false);
+    const auto bgmPlayZoneInEnabled = new BoolEdit();
+    bgmPlayZoneInEnabled->setValue(mapRange.bgm_play_zone_in_only);
     layout->addRow(i18n("BGM Play Zone In Enabled"), bgmPlayZoneInEnabled);
 
-    const auto liftEnabledCheckbox = new QCheckBox();
-    liftEnabledCheckbox->setChecked(mapRange.lift_enabled);
-    liftEnabledCheckbox->setEnabled(false);
+    const auto liftEnabledCheckbox = new BoolEdit();
+    liftEnabledCheckbox->setValue(mapRange.lift_enabled);
     layout->addRow(i18n("Lift Enabled"), liftEnabledCheckbox);
 
-    const auto housingEnabledCheckbox = new QCheckBox();
-    housingEnabledCheckbox->setChecked(mapRange.housing_enabled);
-    housingEnabledCheckbox->setEnabled(false);
+    const auto housingEnabledCheckbox = new BoolEdit();
+    housingEnabledCheckbox->setValue(mapRange.housing_enabled);
     layout->addRow(i18n("Housing Enabled"), housingEnabledCheckbox);
 
-    const auto unk3Checkbox = new QCheckBox();
-    unk3Checkbox->setChecked(mapRange.log_flying_height_max_err);
-    unk3Checkbox->setEnabled(false);
+    const auto unk3Checkbox = new BoolEdit();
+    unk3Checkbox->setValue(mapRange.log_flying_height_max_err);
     layout->addRow(i18n("Log Flying Height Max Err"), unk3Checkbox);
 
-    const auto unk4Checkbox = new QCheckBox();
-    unk4Checkbox->setChecked(mapRange.unk4);
-    unk4Checkbox->setEnabled(false);
+    const auto unk4Checkbox = new BoolEdit();
+    unk4Checkbox->setValue(mapRange.unk4);
     layout->addRow(i18n("UNK4"), unk4Checkbox);
 
-    const auto mountsAndOrnamentsDisabledCheckbox = new QCheckBox();
-    mountsAndOrnamentsDisabledCheckbox->setChecked(mapRange.mounts_and_ornaments_disabled);
-    mountsAndOrnamentsDisabledCheckbox->setEnabled(false);
+    const auto mountsAndOrnamentsDisabledCheckbox = new BoolEdit();
+    mountsAndOrnamentsDisabledCheckbox->setValue(mapRange.mounts_and_ornaments_disabled);
     layout->addRow(i18n("Mounts and Ornaments Disabled"), mountsAndOrnamentsDisabledCheckbox);
 
-    const auto lalafellsOnlyCheckbox = new QCheckBox();
-    lalafellsOnlyCheckbox->setChecked(mapRange.lalafells_only);
-    lalafellsOnlyCheckbox->setEnabled(false);
+    const auto lalafellsOnlyCheckbox = new BoolEdit();
+    lalafellsOnlyCheckbox->setValue(mapRange.lalafells_only);
     layout->addRow(i18n("Lalafells Only"), lalafellsOnlyCheckbox);
 }
 
-void ObjectPropertiesWidget::addTriggerBoxSection(const physis_TriggerBoxInstanceObject &triggerBox)
+void ObjectPropertiesWidget::addTriggerBoxSection(physis_TriggerBoxInstanceObject &triggerBox)
 {
     const auto section = new CollapseSection(i18n("Trigger Box"));
     m_layout->addWidget(section);
@@ -666,17 +644,15 @@ void ObjectPropertiesWidget::addTriggerBoxSection(const physis_TriggerBoxInstanc
 
     const auto shapeEdit = new EnumEdit<TriggerBoxShape>();
     shapeEdit->setValue(triggerBox.trigger_box_shape);
-    shapeEdit->setEnabled(false);
     layout->addRow(i18n("Shape"), shapeEdit);
 
     const auto priorityEdit = new QLineEdit();
     priorityEdit->setText(QString::number(triggerBox.priority));
-    priorityEdit->setReadOnly(true);
+    priorityEdit->setEnabled(false);
     layout->addRow(i18n("Priority"), priorityEdit);
 
-    const auto enabledCheckBox = new QCheckBox();
-    enabledCheckBox->setChecked(triggerBox.enabled);
-    enabledCheckBox->setEnabled(false);
+    const auto enabledCheckBox = new BoolEdit();
+    enabledCheckBox->setValue(triggerBox.enabled);
     layout->addRow(i18n("Enabled"), enabledCheckBox);
 }
 
@@ -740,7 +716,7 @@ void ObjectPropertiesWidget::addAetheryteSection(physis_AetheryteInstanceObject 
     layout->addRow(i18n("Bound Instance ID"), boundInstanceIdEdit);
 }
 
-void ObjectPropertiesWidget::addExitRangeSection(const physis_ExitRangeInstanceObject &exitRange)
+void ObjectPropertiesWidget::addExitRangeSection(physis_ExitRangeInstanceObject &exitRange)
 {
     addTriggerBoxSection(exitRange.parent_data);
 
@@ -753,7 +729,6 @@ void ObjectPropertiesWidget::addExitRangeSection(const physis_ExitRangeInstanceO
 
     const auto exitTypeEdit = new EnumEdit<ExitType>();
     exitTypeEdit->setValue(exitRange.exit_type);
-    exitTypeEdit->setEnabled(false);
     layout->addRow(i18n("Exit Type"), exitTypeEdit);
 
     const auto zoneIdEdit = new QLineEdit();
@@ -779,9 +754,8 @@ void ObjectPropertiesWidget::addExitRangeSection(const physis_ExitRangeInstanceO
     returnInstanceIdEdit->setObjectId(exitRange.return_instance_id);
     layout->addRow(i18n("Return Instance ID"), returnInstanceIdEdit);
 
-    const auto playerRunningDirectionEdit = new QLineEdit();
-    playerRunningDirectionEdit->setText(QString::number(exitRange.player_running_direction));
-    playerRunningDirectionEdit->setReadOnly(true);
+    const auto playerRunningDirectionEdit = new FloatEdit();
+    playerRunningDirectionEdit->setValue(exitRange.player_running_direction);
     layout->addRow(i18n("Player Running Direction"), playerRunningDirectionEdit);
 
     const auto unk9CEdit = new QLineEdit();
@@ -794,7 +768,7 @@ void ObjectPropertiesWidget::addExitRangeSection(const physis_ExitRangeInstanceO
     layout->addRow(i18n("Unk Instance ID"), unkInstanceIdEdit);
 }
 
-void ObjectPropertiesWidget::addEventRangeSection(const physis_EventRangeInstanceObject &eventRange)
+void ObjectPropertiesWidget::addEventRangeSection(physis_EventRangeInstanceObject &eventRange)
 {
     addTriggerBoxSection(eventRange.parent_data);
 
@@ -806,7 +780,7 @@ void ObjectPropertiesWidget::addEventRangeSection(const physis_EventRangeInstanc
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addChairMarkerSection(const physis_ChairMarkerInstanceObject &chairMarker)
+void ObjectPropertiesWidget::addChairMarkerSection(physis_ChairMarkerInstanceObject &chairMarker)
 {
     const auto section = new CollapseSection(i18n("Chair Marker"));
     m_layout->addWidget(section);
@@ -815,28 +789,24 @@ void ObjectPropertiesWidget::addChairMarkerSection(const physis_ChairMarkerInsta
     const auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    const auto leftEnableCheckBox = new QCheckBox();
-    leftEnableCheckBox->setChecked(chairMarker.left_enable);
-    leftEnableCheckBox->setEnabled(false);
+    const auto leftEnableCheckBox = new BoolEdit();
+    leftEnableCheckBox->setValue(chairMarker.left_enable);
     layout->addRow(i18n("Left Enable"), leftEnableCheckBox);
 
-    const auto rightEnableCheckBox = new QCheckBox();
-    rightEnableCheckBox->setChecked(chairMarker.right_enable);
-    rightEnableCheckBox->setEnabled(false);
+    const auto rightEnableCheckBox = new BoolEdit();
+    rightEnableCheckBox->setValue(chairMarker.right_enable);
     layout->addRow(i18n("Right Enable"), rightEnableCheckBox);
 
-    const auto backEnableCheckBox = new QCheckBox();
-    backEnableCheckBox->setChecked(chairMarker.back_enable);
-    backEnableCheckBox->setEnabled(false);
+    const auto backEnableCheckBox = new BoolEdit();
+    backEnableCheckBox->setValue(chairMarker.back_enable);
     layout->addRow(i18n("Back Enable"), backEnableCheckBox);
 
     const auto chairTypeEdit = new EnumEdit<ChairType>();
     chairTypeEdit->setValue(chairMarker.chair_type);
-    chairTypeEdit->setEnabled(false);
     layout->addRow(i18n("Chair Type"), chairTypeEdit);
 }
 
-void ObjectPropertiesWidget::addPrefetchRangeSection(const physis_PrefetchRangeInstanceObject &prefetchRange)
+void ObjectPropertiesWidget::addPrefetchRangeSection(physis_PrefetchRangeInstanceObject &prefetchRange)
 {
     addTriggerBoxSection(prefetchRange.parent_data);
 
@@ -852,7 +822,7 @@ void ObjectPropertiesWidget::addPrefetchRangeSection(const physis_PrefetchRangeI
     layout->addRow(i18n("Bound Instance ID"), boundInstanceIdEdit);
 }
 
-void ObjectPropertiesWidget::addLightSection(const physis_LightInstanceObject &light)
+void ObjectPropertiesWidget::addLightSection(physis_LightInstanceObject &light)
 {
     const auto section = new CollapseSection(i18n("Light"));
     m_layout->addWidget(section);
@@ -863,51 +833,53 @@ void ObjectPropertiesWidget::addLightSection(const physis_LightInstanceObject &l
 
     const auto shapeEdit = new EnumEdit<LightShape>();
     shapeEdit->setValue(light.shape);
-    shapeEdit->setEnabled(false);
     layout->addRow(i18n("Shape"), shapeEdit);
 
-    const auto attenuationLabel = new QLabel();
-    attenuationLabel->setText(QString::number(light.range));
+    const auto attenuationLabel = new FloatEdit();
+    attenuationLabel->setValue(light.range);
     layout->addRow(i18n("Attenuation"), attenuationLabel);
 
-    const auto rangeLabel = new QLabel();
-    rangeLabel->setText(QString::number(light.range));
+    const auto rangeLabel = new FloatEdit();
+    rangeLabel->setValue(light.range);
     layout->addRow(i18n("Range"), rangeLabel);
 
-    const auto coefficientLabel = new QLabel();
-    coefficientLabel->setText(QString::number(light.attenuation_cone_coefficient));
+    const auto coefficientLabel = new FloatEdit();
+    coefficientLabel->setValue(light.attenuation_cone_coefficient);
     layout->addRow(i18n("Cone Coefficient"), coefficientLabel);
 
-    const auto spotAngleLabel = new QLabel();
-    spotAngleLabel->setText(QString::number(light.spot_angle));
+    const auto spotAngleLabel = new FloatEdit();
+    spotAngleLabel->setValue(light.spot_angle);
     layout->addRow(i18n("Spot Angle"), spotAngleLabel);
 
     const auto texturePathEdit = new PathEdit();
     texturePathEdit->setPath(QString::fromStdString(light.texture_path));
+    connect(texturePathEdit, &PathEdit::editingFinished, this, [texturePathEdit, &light] {
+        light.texture_path = toCString(texturePathEdit->path());
+    });
     layout->addRow(i18n("Texture Path"), texturePathEdit);
 
     const auto colorLabel = new QLabel();
     colorLabel->setText(QStringLiteral("%1 %2 %3").arg(light.color.red).arg(light.color.green).arg(light.color.blue));
     layout->addRow(i18n("Color"), colorLabel);
 
-    const auto intensityLabel = new QLabel();
-    intensityLabel->setText(QString::number(light.intensity));
+    const auto intensityLabel = new FloatEdit();
+    intensityLabel->setValue(light.intensity);
     layout->addRow(i18n("Intensity"), intensityLabel);
 
-    const auto specularHighlightsCheck = new QCheckBox();
-    specularHighlightsCheck->setChecked(light.enable_specular_highlights);
+    const auto specularHighlightsCheck = new BoolEdit();
+    specularHighlightsCheck->setValue(light.enable_specular_highlights);
     layout->addRow(i18n("Specular Highlights"), specularHighlightsCheck);
 
-    const auto bgPartsShadowsCheck = new QCheckBox();
-    bgPartsShadowsCheck->setChecked(light.enable_bg_parts_shadows);
+    const auto bgPartsShadowsCheck = new BoolEdit();
+    bgPartsShadowsCheck->setValue(light.enable_bg_parts_shadows);
     layout->addRow(i18n("BgPart Shadows"), bgPartsShadowsCheck);
 
-    const auto characterShadowsCheck = new QCheckBox();
-    characterShadowsCheck->setChecked(light.enable_character_shadows);
+    const auto characterShadowsCheck = new BoolEdit();
+    characterShadowsCheck->setValue(light.enable_character_shadows);
     layout->addRow(i18n("Character Shadows"), characterShadowsCheck);
 
-    const auto shadowPlaneNearLabel = new QLabel();
-    shadowPlaneNearLabel->setText(QString::number(light.shadow_plane_near));
+    const auto shadowPlaneNearLabel = new FloatEdit();
+    shadowPlaneNearLabel->setValue(light.shadow_plane_near);
     layout->addRow(i18n("Shadow Plane Near"), shadowPlaneNearLabel);
 
     const auto flatSkewAngleLabel = new QLabel();
@@ -915,7 +887,7 @@ void ObjectPropertiesWidget::addLightSection(const physis_LightInstanceObject &l
     layout->addRow(i18n("Flat Skew Angle"), flatSkewAngleLabel);
 }
 
-void ObjectPropertiesWidget::addVfxSection(const physis_VfxInstanceObject &vfx)
+void ObjectPropertiesWidget::addVfxSection(physis_VfxInstanceObject &vfx)
 {
     const auto section = new CollapseSection(i18n("VFX"));
     m_layout->addWidget(section);
@@ -926,11 +898,13 @@ void ObjectPropertiesWidget::addVfxSection(const physis_VfxInstanceObject &vfx)
 
     const auto assetPathEdit = new PathEdit();
     assetPathEdit->setPath(QString::fromStdString(vfx.asset_path));
-    assetPathEdit->setReadOnly(true);
+    connect(assetPathEdit, &PathEdit::editingFinished, this, [assetPathEdit, &vfx] {
+        vfx.asset_path = toCString(assetPathEdit->path());
+    });
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 }
 
-void ObjectPropertiesWidget::addEnvSetSection(const physis_EnvSetInstanceObject &envSet)
+void ObjectPropertiesWidget::addEnvSetSection(physis_EnvSetInstanceObject &envSet)
 {
     const auto section = new CollapseSection(i18n("Env Set"));
     m_layout->addWidget(section);
@@ -941,7 +915,9 @@ void ObjectPropertiesWidget::addEnvSetSection(const physis_EnvSetInstanceObject 
 
     const auto assetPathEdit = new PathEdit();
     assetPathEdit->setPath(QString::fromStdString(envSet.asset_path));
-    assetPathEdit->setReadOnly(true);
+    connect(assetPathEdit, &PathEdit::editingFinished, this, [assetPathEdit, &envSet] {
+        envSet.asset_path = toCString(assetPathEdit->path());
+    });
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 
     const auto boundInstanceIdEdit = new ObjectIdEdit(m_appState);
@@ -950,12 +926,10 @@ void ObjectPropertiesWidget::addEnvSetSection(const physis_EnvSetInstanceObject 
 
     const auto shapeEdit = new EnumEdit<EnvSetShape>();
     shapeEdit->setValue(envSet.shape);
-    shapeEdit->setEnabled(false);
     layout->addRow(i18n("Shape"), shapeEdit);
 
     const auto isEnvMapShootingPoint = new QCheckBox();
     isEnvMapShootingPoint->setChecked(envSet.is_env_map_shooting_point);
-    isEnvMapShootingPoint->setEnabled(false);
     layout->addRow(i18n("Is Shooting Point"), isEnvMapShootingPoint);
 
     const auto priorityEdit = new QLineEdit();
@@ -963,9 +937,8 @@ void ObjectPropertiesWidget::addEnvSetSection(const physis_EnvSetInstanceObject 
     priorityEdit->setReadOnly(true);
     layout->addRow(i18n("Priority"), priorityEdit);
 
-    const auto effectiveRangeEdit = new QLineEdit();
-    effectiveRangeEdit->setText(QString::number(envSet.effective_range));
-    effectiveRangeEdit->setReadOnly(true);
+    const auto effectiveRangeEdit = new FloatEdit();
+    effectiveRangeEdit->setValue(envSet.effective_range);
     layout->addRow(i18n("Effective Range"), effectiveRangeEdit);
 
     const auto interpolationTime = new QLineEdit();
@@ -973,23 +946,23 @@ void ObjectPropertiesWidget::addEnvSetSection(const physis_EnvSetInstanceObject 
     interpolationTime->setReadOnly(true);
     layout->addRow(i18n("Interpolation Time"), interpolationTime);
 
-    const auto reverbEdit = new QLineEdit();
-    reverbEdit->setText(QString::number(envSet.reverb));
-    reverbEdit->setReadOnly(true);
+    const auto reverbEdit = new FloatEdit();
+    reverbEdit->setValue(envSet.reverb);
     layout->addRow(i18n("Reverb"), reverbEdit);
 
-    const auto filterEdit = new QLineEdit();
-    filterEdit->setText(QString::number(envSet.filter));
-    filterEdit->setReadOnly(true);
+    const auto filterEdit = new FloatEdit();
+    filterEdit->setValue(envSet.filter);
     layout->addRow(i18n("Filter"), filterEdit);
 
     const auto soundAssetPath = new PathEdit();
     soundAssetPath->setPath(QString::fromStdString(envSet.sound_asset_path));
-    soundAssetPath->setReadOnly(true);
+    connect(soundAssetPath, &PathEdit::editingFinished, this, [soundAssetPath, &envSet] {
+        envSet.sound_asset_path = toCString(soundAssetPath->path());
+    });
     layout->addRow(i18n("Sound Asset Path"), soundAssetPath);
 }
 
-void ObjectPropertiesWidget::addEnvLocationSection(const physis_EnvLocationObject &envLocation)
+void ObjectPropertiesWidget::addEnvLocationSection(physis_EnvLocationObject &envLocation)
 {
     const auto section = new CollapseSection(i18n("Env Location"));
     m_layout->addWidget(section);
@@ -1000,16 +973,20 @@ void ObjectPropertiesWidget::addEnvLocationSection(const physis_EnvLocationObjec
 
     const auto ambientLightAssetPath = new PathEdit();
     ambientLightAssetPath->setPath(QString::fromStdString(envLocation.ambient_light_asset_path));
-    ambientLightAssetPath->setReadOnly(true);
+    connect(ambientLightAssetPath, &PathEdit::editingFinished, this, [ambientLightAssetPath, &envLocation] {
+        envLocation.ambient_light_asset_path = toCString(ambientLightAssetPath->path());
+    });
     layout->addRow(i18n("Ambient Light Asset Path"), ambientLightAssetPath);
 
     const auto envMapAssetPath = new PathEdit();
     envMapAssetPath->setPath(QString::fromStdString(envLocation.env_map_asset_path));
-    envMapAssetPath->setReadOnly(true);
+    connect(envMapAssetPath, &PathEdit::editingFinished, this, [envMapAssetPath, &envLocation] {
+        envLocation.env_map_asset_path = toCString(envMapAssetPath->path());
+    });
     layout->addRow(i18n("Env Map Asset Path"), envMapAssetPath);
 }
 
-void ObjectPropertiesWidget::addSoundSection(const physis_SoundInstanceObject &sound)
+void ObjectPropertiesWidget::addSoundSection(physis_SoundInstanceObject &sound)
 {
     const auto section = new CollapseSection(i18n("Sound"));
     m_layout->addWidget(section);
@@ -1020,11 +997,13 @@ void ObjectPropertiesWidget::addSoundSection(const physis_SoundInstanceObject &s
 
     const auto soundAssetPathEdit = new PathEdit();
     soundAssetPathEdit->setPath(QString::fromStdString(sound.asset_path));
-    soundAssetPathEdit->setReadOnly(true);
+    connect(soundAssetPathEdit, &PathEdit::editingFinished, this, [soundAssetPathEdit, &sound] {
+        sound.asset_path = toCString(soundAssetPathEdit->path());
+    });
     layout->addRow(i18n("Asset Path"), soundAssetPathEdit);
 }
 
-void ObjectPropertiesWidget::addCollisionBoxSection(const physis_CollisionBoxInstanceObject &collisionBox)
+void ObjectPropertiesWidget::addCollisionBoxSection(physis_CollisionBoxInstanceObject &collisionBox)
 {
     addTriggerBoxSection(collisionBox.parent_data);
 
@@ -1045,17 +1024,19 @@ void ObjectPropertiesWidget::addCollisionBoxSection(const physis_CollisionBoxIns
     collisionMaterialMaskLabel->setReadOnly(true);
     layout->addRow(i18n("Collision material mask"), collisionMaterialMaskLabel);
 
-    const auto layerMaskIs43hLabel = new QLineEdit();
-    layerMaskIs43hLabel->setText(QString::number(collisionBox.layer_mask_is_43h));
-    layerMaskIs43hLabel->setReadOnly(true);
+    const auto layerMaskIs43hLabel = new BoolEdit();
+    layerMaskIs43hLabel->setValue(collisionBox.layer_mask_is_43h);
     layout->addRow(i18n("Layer mask is 0x43h"), layerMaskIs43hLabel);
 
     const auto assetPathEdit = new PathEdit();
     assetPathEdit->setPath(QString::fromStdString(collisionBox.collision_asset_path));
+    connect(assetPathEdit, &PathEdit::editingFinished, this, [assetPathEdit, &collisionBox] {
+        collisionBox.collision_asset_path = toCString(assetPathEdit->path());
+    });
     layout->addRow(i18n("Collision Asset Path"), assetPathEdit);
 }
 
-void ObjectPropertiesWidget::addDoorRangeSection(const physis_DoorRangeInstanceObject &doorRange)
+void ObjectPropertiesWidget::addDoorRangeSection(physis_DoorRangeInstanceObject &doorRange)
 {
     addRangeSection(doorRange.parent_data);
 
@@ -1067,7 +1048,7 @@ void ObjectPropertiesWidget::addDoorRangeSection(const physis_DoorRangeInstanceO
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addLineVFXSection(const physis_LineVFXInstanceObject &lineVfx)
+void ObjectPropertiesWidget::addLineVFXSection(physis_LineVFXInstanceObject &lineVfx)
 {
     const auto section = new CollapseSection(i18n("Line VFX"));
     m_layout->addWidget(section);
@@ -1078,7 +1059,6 @@ void ObjectPropertiesWidget::addLineVFXSection(const physis_LineVFXInstanceObjec
 
     const auto lineStyleEdit = new EnumEdit<LineStyle>();
     lineStyleEdit->setValue(lineVfx.line_style);
-    lineStyleEdit->setEnabled(false);
     layout->addRow(i18n("Line Style"), lineStyleEdit);
 }
 
@@ -1094,7 +1074,7 @@ void ObjectPropertiesWidget::addTreasureSection(physis_TreasureInstanceObject &t
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addTargetMarkerSection(const physis_TargetMarkerInstanceObject &targetMarker)
+void ObjectPropertiesWidget::addTargetMarkerSection(physis_TargetMarkerInstanceObject &targetMarker)
 {
     const auto section = new CollapseSection(i18n("Target Marker"));
     m_layout->addWidget(section);
@@ -1103,18 +1083,16 @@ void ObjectPropertiesWidget::addTargetMarkerSection(const physis_TargetMarkerIns
     const auto layout = new QFormLayout();
     section->setLayout(layout);
 
-    const auto nameplateOffsetYEdit = new QLineEdit();
-    nameplateOffsetYEdit->setText(QString::number(targetMarker.nameplate_offset_y));
-    nameplateOffsetYEdit->setReadOnly(true);
+    const auto nameplateOffsetYEdit = new FloatEdit();
+    nameplateOffsetYEdit->setValue(targetMarker.nameplate_offset_y);
     layout->addRow(i18n("Nameplate Offset Y(?)"), nameplateOffsetYEdit);
 
     const auto targetMarkerTypeEdit = new EnumEdit<TargetMarkerType>();
     targetMarkerTypeEdit->setValue(targetMarker.target_market_type);
-    targetMarkerTypeEdit->setEnabled(false);
     layout->addRow(i18n("Type"), targetMarkerTypeEdit);
 }
 
-void ObjectPropertiesWidget::addClientPathSection(const physis_ClientPathInstanceObject &clientPath)
+void ObjectPropertiesWidget::addClientPathSection(physis_ClientPathInstanceObject &clientPath)
 {
     addPathSection(clientPath.parent_data);
 
@@ -1126,7 +1104,7 @@ void ObjectPropertiesWidget::addClientPathSection(const physis_ClientPathInstanc
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addPathSection(const physis_PathInstanceObject &)
+void ObjectPropertiesWidget::addPathSection(physis_PathInstanceObject &)
 {
     const auto section = new CollapseSection(i18n("Path"));
     m_layout->addWidget(section);
@@ -1136,7 +1114,7 @@ void ObjectPropertiesWidget::addPathSection(const physis_PathInstanceObject &)
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addRangeSection(const physis_RangeInstanceObject &range)
+void ObjectPropertiesWidget::addRangeSection(physis_RangeInstanceObject &range)
 {
     Q_UNUSED(range)
 
@@ -1148,7 +1126,7 @@ void ObjectPropertiesWidget::addRangeSection(const physis_RangeInstanceObject &r
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addCullingBoxSection(const physis_CullingBoxInstanceObject &cullingBox)
+void ObjectPropertiesWidget::addCullingBoxSection(physis_CullingBoxInstanceObject &cullingBox)
 {
     Q_UNUSED(cullingBox)
 
@@ -1160,7 +1138,7 @@ void ObjectPropertiesWidget::addCullingBoxSection(const physis_CullingBoxInstanc
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addClickableRangeSection(const physis_ClickableRangeInstanceObject &clickableRange)
+void ObjectPropertiesWidget::addClickableRangeSection(physis_ClickableRangeInstanceObject &clickableRange)
 {
     addRangeSection(clickableRange.parent_data);
 
@@ -1198,6 +1176,9 @@ void ObjectPropertiesWidget::addDecalSection(physis_DecalInstanceObject &decal)
 
     const auto assetPathEdit = new PathEdit();
     assetPathEdit->setPath(QString::fromStdString(decal.asset_path));
+    connect(assetPathEdit, &PathEdit::editingFinished, this, [assetPathEdit, &decal] {
+        decal.asset_path = toCString(assetPathEdit->path());
+    });
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 }
 
@@ -1212,6 +1193,9 @@ void ObjectPropertiesWidget::addVolumetricCloudSection(physis_VolumetricCloudIns
 
     const auto assetPathEdit = new PathEdit();
     assetPathEdit->setPath(QString::fromStdString(cloud.asset_path));
+    connect(assetPathEdit, &PathEdit::editingFinished, this, [assetPathEdit, &cloud] {
+        cloud.asset_path = toCString(assetPathEdit->path());
+    });
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 
     const auto colorLabel = new QLabel();
@@ -1222,8 +1206,8 @@ void ObjectPropertiesWidget::addVolumetricCloudSection(physis_VolumetricCloudIns
     intensityLabel->setText(QString::number(cloud.intensity));
     layout->addRow(i18n("Intensity"), intensityLabel);
 
-    const auto activeCheck = new QCheckBox();
-    activeCheck->setChecked(cloud.active);
+    const auto activeCheck = new BoolEdit();
+    activeCheck->setValue(cloud.active);
     layout->addRow(i18n("Active"), activeCheck);
 }
 
