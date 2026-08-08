@@ -29,14 +29,18 @@
 #include <QLabel>
 
 ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *parent)
-    : QWidget(parent)
+    : QScrollArea(parent)
     , m_appState(appState)
 {
+    setWidgetResizable(true);
+
+    const auto layoutHolder = new QWidget();
+    setWidget(layoutHolder);
+
     m_layout = new QVBoxLayout();
     m_layout->setAlignment(Qt::AlignTop);
-    m_layout->setContentsMargins(5, 5, 5, 5);
-    m_layout->setSpacing(0);
-    setLayout(m_layout);
+    m_layout->setSizeConstraints(QLayout::SetMinAndMaxSize, QLayout::SetMinAndMaxSize);
+    layoutHolder->setLayout(m_layout);
 
     connect(appState, &SceneState::selectionChanged, this, [this] {
         resetSections();
@@ -183,6 +187,7 @@ void ObjectPropertiesWidget::refreshLayerData(const physis_Layer &layer)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto idEdit = new QLineEdit();
@@ -213,6 +218,7 @@ void ObjectPropertiesWidget::refreshTimelineData(const physis_ScnTimeline &timel
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto instanceWidget = new QTableWidget();
@@ -236,6 +242,7 @@ void ObjectPropertiesWidget::refreshActionData(const ScnSGActionControllerDescri
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto typeEdit = new EnumEdit<ScnSGActionControllerDescriptor::Tag>();
@@ -328,6 +335,7 @@ void ObjectPropertiesWidget::refreshLgbData(const QString &path)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto pathWidget = new PathEdit();
@@ -342,6 +350,7 @@ void ObjectPropertiesWidget::refreshTeraData(const QString &path)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto pathWidget = new PathEdit();
@@ -356,6 +365,7 @@ void ObjectPropertiesWidget::refreshDropInData(DropInObject *object)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto positionEdit = new Vector3Edit(object->position);
@@ -408,6 +418,7 @@ void ObjectPropertiesWidget::addCommonSection(physis_InstanceObject &object)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto positionEdit = new Vector3Edit(reinterpret_cast<glm::vec3 &>(object.transform.translation));
@@ -432,6 +443,7 @@ void ObjectPropertiesWidget::addBgPartSection(physis_BgPartInstanceObject &bg)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto bgEdit = new PathEdit();
@@ -493,6 +505,7 @@ void ObjectPropertiesWidget::addEventObjectSection(physis_EventObjectInstanceObj
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto boundIdEdit = new ObjectIdEdit(m_appState);
@@ -507,6 +520,7 @@ void ObjectPropertiesWidget::addPopRangeSection(physis_PopRangeInstanceObject &p
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto typeEdit = new EnumEdit<PopType>();
@@ -527,6 +541,7 @@ void ObjectPropertiesWidget::addEventNpcSection(physis_EventNpcInstanceObject &e
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -539,6 +554,7 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto mapEdit = new ExcelEdit(m_appState, {QStringLiteral("Map")}, mapRange.map);
@@ -640,6 +656,7 @@ void ObjectPropertiesWidget::addTriggerBoxSection(physis_TriggerBoxInstanceObjec
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto shapeEdit = new EnumEdit<TriggerBoxShape>();
@@ -665,6 +682,7 @@ void ObjectPropertiesWidget::addCharacterSection(physis_CharacterInstanceObject 
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -675,6 +693,7 @@ void ObjectPropertiesWidget::addGameObjectSection(physis_GameObjectInstanceObjec
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto baseIdEdit = new ExcelEdit(m_appState,
@@ -690,6 +709,7 @@ void ObjectPropertiesWidget::addSharedGroupSection(physis_SharedGroupInstanceObj
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto assetPathEdit = new PathEdit();
@@ -709,6 +729,7 @@ void ObjectPropertiesWidget::addAetheryteSection(physis_AetheryteInstanceObject 
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto boundInstanceIdEdit = new ObjectIdEdit(m_appState);
@@ -725,6 +746,7 @@ void ObjectPropertiesWidget::addExitRangeSection(physis_ExitRangeInstanceObject 
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto exitTypeEdit = new EnumEdit<ExitType>();
@@ -777,6 +799,7 @@ void ObjectPropertiesWidget::addEventRangeSection(physis_EventRangeInstanceObjec
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -787,6 +810,7 @@ void ObjectPropertiesWidget::addChairMarkerSection(physis_ChairMarkerInstanceObj
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto leftEnableCheckBox = new BoolEdit();
@@ -815,6 +839,7 @@ void ObjectPropertiesWidget::addPrefetchRangeSection(physis_PrefetchRangeInstanc
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto boundInstanceIdEdit = new ObjectIdEdit(m_appState);
@@ -829,6 +854,7 @@ void ObjectPropertiesWidget::addLightSection(physis_LightInstanceObject &light)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto shapeEdit = new EnumEdit<LightShape>();
@@ -894,6 +920,7 @@ void ObjectPropertiesWidget::addVfxSection(physis_VfxInstanceObject &vfx)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto assetPathEdit = new PathEdit();
@@ -911,6 +938,7 @@ void ObjectPropertiesWidget::addEnvSetSection(physis_EnvSetInstanceObject &envSe
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto assetPathEdit = new PathEdit();
@@ -969,6 +997,7 @@ void ObjectPropertiesWidget::addEnvLocationSection(physis_EnvLocationObject &env
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto ambientLightAssetPath = new PathEdit();
@@ -993,6 +1022,7 @@ void ObjectPropertiesWidget::addSoundSection(physis_SoundInstanceObject &sound)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto soundAssetPathEdit = new PathEdit();
@@ -1012,6 +1042,7 @@ void ObjectPropertiesWidget::addCollisionBoxSection(physis_CollisionBoxInstanceO
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto collisionMaterialIdLabel = new QLineEdit();
@@ -1045,6 +1076,7 @@ void ObjectPropertiesWidget::addDoorRangeSection(physis_DoorRangeInstanceObject 
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1055,6 +1087,7 @@ void ObjectPropertiesWidget::addLineVFXSection(physis_LineVFXInstanceObject &lin
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto lineStyleEdit = new EnumEdit<LineStyle>();
@@ -1071,6 +1104,7 @@ void ObjectPropertiesWidget::addTreasureSection(physis_TreasureInstanceObject &t
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1081,6 +1115,7 @@ void ObjectPropertiesWidget::addTargetMarkerSection(physis_TargetMarkerInstanceO
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto nameplateOffsetYEdit = new FloatEdit();
@@ -1101,6 +1136,7 @@ void ObjectPropertiesWidget::addClientPathSection(physis_ClientPathInstanceObjec
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1111,6 +1147,7 @@ void ObjectPropertiesWidget::addPathSection(physis_PathInstanceObject &)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1123,6 +1160,7 @@ void ObjectPropertiesWidget::addRangeSection(physis_RangeInstanceObject &range)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1135,6 +1173,7 @@ void ObjectPropertiesWidget::addCullingBoxSection(physis_CullingBoxInstanceObjec
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1147,6 +1186,7 @@ void ObjectPropertiesWidget::addClickableRangeSection(physis_ClickableRangeInsta
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1159,6 +1199,7 @@ void ObjectPropertiesWidget::addBattleNpcSection(physis_BattleNpcInstanceObject 
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto nameIdEdit = new ExcelEdit(m_appState, {QStringLiteral("BNpcName")}, battleNpc.name_id);
@@ -1172,6 +1213,7 @@ void ObjectPropertiesWidget::addDecalSection(physis_DecalInstanceObject &decal)
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto assetPathEdit = new PathEdit();
@@ -1189,6 +1231,7 @@ void ObjectPropertiesWidget::addVolumetricCloudSection(physis_VolumetricCloudIns
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
     const auto assetPathEdit = new PathEdit();
@@ -1220,6 +1263,7 @@ void ObjectPropertiesWidget::addColliderLayer8Section(physis_ColliderLayer8Insta
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1232,6 +1276,7 @@ void ObjectPropertiesWidget::addColliderLayer10Section(physis_ColliderLayer10Ins
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1244,6 +1289,7 @@ void ObjectPropertiesWidget::addColliderLayer7Section(physis_ColliderLayer7Insta
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1256,6 +1302,7 @@ void ObjectPropertiesWidget::addColliderLayer9Section(physis_ColliderLayer9Insta
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 
@@ -1266,6 +1313,7 @@ void ObjectPropertiesWidget::addFateRangeSection()
     m_sections.push_back(section);
 
     const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 }
 

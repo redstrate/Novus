@@ -12,7 +12,7 @@
 CollapseSection::CollapseSection(const QString &label)
     : m_label(label)
 {
-    setContentsMargins(0, 25, 0, 0);
+    setContentsMargins(0, 30, 0, 0);
 }
 
 void CollapseSection::paintEvent(QPaintEvent *event)
@@ -22,17 +22,16 @@ void CollapseSection::paintEvent(QPaintEvent *event)
     painter.setBrush(palette().alternateBase().color());
     painter.setRenderHint(QPainter::Antialiasing);
 
-    QRect r = event->rect().adjusted(1, 2, -1, 0);
-    r.setY(2);
+    QRect r = event->rect();
     r.setHeight(25);
 
     painter.drawRoundedRect(r, 5, 5);
 
     painter.setPen(palette().text().color());
-    painter.drawText(event->rect().adjusted(6, 5, 0, 0), m_label);
+    painter.drawText(event->rect().adjusted(6, 4, 0, 0), m_label);
 
     QStyleOption option;
-    option.rect.adjust(event->rect().width() - 20, 7, 0, 0);
+    option.rect.adjust(event->rect().width() - 20, 5, 0, 0);
     option.rect.setHeight(16);
     option.rect.setWidth(16);
     option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_AutoRaise;

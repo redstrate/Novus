@@ -10,8 +10,11 @@ Vector3Edit::Vector3Edit(glm::vec3 &vec, QWidget *parent)
     : EditWidget(parent)
     , m_vec(vec)
 {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
     const auto itemsLayout = new QHBoxLayout(this);
     itemsLayout->setContentsMargins({0, 0, 0, 0});
+    itemsLayout->setSizeConstraints(QLayout::SetMinAndMaxSize, QLayout::SetMinAndMaxSize);
 
     m_spinBoxes.x = new QDoubleSpinBox();
     m_spinBoxes.y = new QDoubleSpinBox();

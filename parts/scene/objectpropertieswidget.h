@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <QWidget>
+#include <QScrollArea>
 
 struct physis_ColliderLayer9InstanceObject;
 struct physis_ColliderLayer7InstanceObject;
@@ -50,7 +50,7 @@ class SceneState;
 class QLineEdit;
 struct physis_EventNpcInstanceObject;
 
-class ObjectPropertiesWidget : public QWidget
+class ObjectPropertiesWidget : public QScrollArea
 {
     Q_OBJECT
 
