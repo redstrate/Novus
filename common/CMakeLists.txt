@@ -50,6 +50,8 @@ target_sources(novus-common
         include/utility.h
         include/vec3edit.h
         include/floatedit.h
+        include/vec2edit.h
+        include/coloredit.h
 
         src/aboutdata.cpp
         src/booledit.cpp
@@ -66,6 +68,8 @@ target_sources(novus-common
         src/utility.cpp
         src/vec3edit.cpp
         src/floatedit.cpp
+        src/vec2edit.cpp
+        src/coloredit.cpp
 
         launcherconfig.h)
 target_include_directories(novus-common

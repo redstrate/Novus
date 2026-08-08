@@ -5,6 +5,7 @@
 
 #include "booledit.h"
 #include "collapsesection.h"
+#include "coloredit.h"
 #include "pathedit.h"
 #include "scenestate.h"
 #include "vec3edit.h"
@@ -25,6 +26,7 @@
 #include "objectidedit.h"
 #include "uintedit.h"
 #include "utility.h"
+#include "vec2edit.h"
 
 #include <QLabel>
 
@@ -887,8 +889,8 @@ void ObjectPropertiesWidget::addLightSection(physis_LightInstanceObject &light)
     });
     layout->addRow(i18n("Texture Path"), texturePathEdit);
 
-    const auto colorLabel = new QLabel();
-    colorLabel->setText(QStringLiteral("%1 %2 %3").arg(light.color.red).arg(light.color.green).arg(light.color.blue));
+    const auto colorLabel = new ColorEdit();
+    colorLabel->setColor(light.color);
     layout->addRow(i18n("Color"), colorLabel);
 
     const auto intensityLabel = new FloatEdit();
@@ -911,9 +913,8 @@ void ObjectPropertiesWidget::addLightSection(physis_LightInstanceObject &light)
     shadowPlaneNearLabel->setValue(light.shadow_plane_near);
     layout->addRow(i18n("Shadow Plane Near"), shadowPlaneNearLabel);
 
-    const auto flatSkewAngleLabel = new QLabel();
-    flatSkewAngleLabel->setText(QStringLiteral("%1 %2").arg(light.flat_light_skew_angle[0]).arg(light.flat_light_skew_angle[1]));
-    layout->addRow(i18n("Flat Skew Angle"), flatSkewAngleLabel);
+    const auto flatSkewAngleEdit = new Vector2Edit(reinterpret_cast<glm::vec2 &>(light.flat_light_skew_angle));
+    layout->addRow(i18n("Flat Skew Angle"), flatSkewAngleEdit);
 }
 
 void ObjectPropertiesWidget::addVfxSection(physis_VfxInstanceObject &vfx)
@@ -1244,12 +1245,12 @@ void ObjectPropertiesWidget::addVolumetricCloudSection(physis_VolumetricCloudIns
     });
     layout->addRow(i18n("Asset Path"), assetPathEdit);
 
-    const auto colorLabel = new QLabel();
-    colorLabel->setText(QStringLiteral("%1 %2 %3").arg(cloud.color.red).arg(cloud.color.green).arg(cloud.color.blue));
+    const auto colorLabel = new ColorEdit();
+    colorLabel->setColor(cloud.color);
     layout->addRow(i18n("Color"), colorLabel);
 
-    const auto intensityLabel = new QLabel();
-    intensityLabel->setText(QString::number(cloud.intensity));
+    const auto intensityLabel = new FloatEdit();
+    intensityLabel->setValue(cloud.intensity);
     layout->addRow(i18n("Intensity"), intensityLabel);
 
     const auto activeCheck = new BoolEdit();
