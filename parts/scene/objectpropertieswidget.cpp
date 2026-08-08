@@ -149,6 +149,27 @@ void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
     case physis_LayerEntry::Tag::BattleNpc:
         addBattleNpcSection(object.data.battle_npc._0);
         break;
+    case physis_LayerEntry::Tag::Decal:
+        addDecalSection(object.data.decal._0);
+        break;
+    case physis_LayerEntry::Tag::VolumetricCloud:
+        addVolumetricCloudSection(object.data.volumetric_cloud._0);
+        break;
+    case physis_LayerEntry::Tag::ColliderLayer8:
+        addColliderLayer8Section(object.data.collider_layer8._0);
+        break;
+    case physis_LayerEntry::Tag::ColliderLayer10:
+        addColliderLayer10Section(object.data.collider_layer10._0);
+        break;
+    case physis_LayerEntry::Tag::ColliderLayer7:
+        addColliderLayer7Section(object.data.collider_layer7._0);
+        break;
+    case physis_LayerEntry::Tag::ColliderLayer9:
+        addColliderLayer9Section(object.data.collider_layer9._0);
+        break;
+    case physis_LayerEntry::Tag::FateRange:
+        addFateRangeSection();
+        break;
     default:
         break;
     }
@@ -426,6 +447,16 @@ void ObjectPropertiesWidget::addBgPartSection(const physis_BgPartInstanceObject 
     collisionTypeEdit->setValue(bg.collision_type);
     collisionTypeEdit->setEnabled(false);
     layout->addRow(i18n("Collision Type"), collisionTypeEdit);
+
+    const auto collisionMaterialIdLabel = new QLineEdit();
+    collisionMaterialIdLabel->setText(QString::number(bg.collision_material_id));
+    collisionMaterialIdLabel->setReadOnly(true);
+    layout->addRow(i18n("Collision material id"), collisionMaterialIdLabel);
+
+    const auto collisionMaterialMaskLabel = new QLineEdit();
+    collisionMaterialMaskLabel->setText(QString::number(bg.collision_material_mask));
+    collisionMaterialMaskLabel->setReadOnly(true);
+    layout->addRow(i18n("Collision material mask"), collisionMaterialMaskLabel);
 
     const auto visibleCheck = new QCheckBox();
     visibleCheck->setChecked(bg.visible);
@@ -1004,6 +1035,21 @@ void ObjectPropertiesWidget::addCollisionBoxSection(const physis_CollisionBoxIns
     const auto layout = new QFormLayout();
     section->setLayout(layout);
 
+    const auto collisionMaterialIdLabel = new QLineEdit();
+    collisionMaterialIdLabel->setText(QString::number(collisionBox.collision_material_id));
+    collisionMaterialIdLabel->setReadOnly(true);
+    layout->addRow(i18n("Collision material id"), collisionMaterialIdLabel);
+
+    const auto collisionMaterialMaskLabel = new QLineEdit();
+    collisionMaterialMaskLabel->setText(QString::number(collisionBox.collision_material_mask));
+    collisionMaterialMaskLabel->setReadOnly(true);
+    layout->addRow(i18n("Collision material mask"), collisionMaterialMaskLabel);
+
+    const auto layerMaskIs43hLabel = new QLineEdit();
+    layerMaskIs43hLabel->setText(QString::number(collisionBox.layer_mask_is_43h));
+    layerMaskIs43hLabel->setReadOnly(true);
+    layout->addRow(i18n("Layer mask is 0x43h"), layerMaskIs43hLabel);
+
     const auto assetPathEdit = new PathEdit();
     assetPathEdit->setPath(QString::fromStdString(collisionBox.collision_asset_path));
     layout->addRow(i18n("Collision Asset Path"), assetPathEdit);
@@ -1139,6 +1185,104 @@ void ObjectPropertiesWidget::addBattleNpcSection(physis_BattleNpcInstanceObject 
 
     const auto nameIdEdit = new ExcelEdit(m_appState, {QStringLiteral("BNpcName")}, battleNpc.name_id);
     layout->addRow(i18n("Name ID"), nameIdEdit);
+}
+
+void ObjectPropertiesWidget::addDecalSection(physis_DecalInstanceObject &decal)
+{
+    const auto section = new CollapseSection(i18n("Decal"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    const auto assetPathEdit = new PathEdit();
+    assetPathEdit->setPath(QString::fromStdString(decal.asset_path));
+    layout->addRow(i18n("Asset Path"), assetPathEdit);
+}
+
+void ObjectPropertiesWidget::addVolumetricCloudSection(physis_VolumetricCloudInstanceObject &cloud)
+{
+    const auto section = new CollapseSection(i18n("Volumetric Cloud"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+
+    const auto assetPathEdit = new PathEdit();
+    assetPathEdit->setPath(QString::fromStdString(cloud.asset_path));
+    layout->addRow(i18n("Asset Path"), assetPathEdit);
+
+    const auto colorLabel = new QLabel();
+    colorLabel->setText(QStringLiteral("%1 %2 %3").arg(cloud.color.red).arg(cloud.color.green).arg(cloud.color.blue));
+    layout->addRow(i18n("Color"), colorLabel);
+
+    const auto intensityLabel = new QLabel();
+    intensityLabel->setText(QString::number(cloud.intensity));
+    layout->addRow(i18n("Intensity"), intensityLabel);
+
+    const auto activeCheck = new QCheckBox();
+    activeCheck->setChecked(cloud.active);
+    layout->addRow(i18n("Active"), activeCheck);
+}
+
+void ObjectPropertiesWidget::addColliderLayer8Section(physis_ColliderLayer8InstanceObject &collider)
+{
+    addTriggerBoxSection(collider.parent_data);
+
+    const auto section = new CollapseSection(i18n("Collider Layer 8"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addColliderLayer10Section(physis_ColliderLayer10InstanceObject &collider)
+{
+    addTriggerBoxSection(collider.parent_data);
+
+    const auto section = new CollapseSection(i18n("Collider Layer 10"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addColliderLayer7Section(physis_ColliderLayer7InstanceObject &collider)
+{
+    addTriggerBoxSection(collider.parent_data);
+
+    const auto section = new CollapseSection(i18n("Collider Layer 8"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addColliderLayer9Section(physis_ColliderLayer9InstanceObject &collider)
+{
+    addTriggerBoxSection(collider.parent_data);
+
+    const auto section = new CollapseSection(i18n("Collider Layer 10"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addFateRangeSection()
+{
+    const auto section = new CollapseSection(i18n("Fate Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    section->setLayout(layout);
 }
 
 #include "moc_objectpropertieswidget.cpp"

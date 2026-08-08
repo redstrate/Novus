@@ -53,6 +53,7 @@ enum class FileType {
     GrassZoneData,
     GrassGridData,
     ShaderParameterMap,
+    CloudDataBinary,
 };
 
 class NOVUSCOMMON_EXPORT FileTypes
