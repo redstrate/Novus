@@ -171,7 +171,7 @@ QVariant FileTreeModel::data(const QModelIndex &index, const int role) const
     if (role == IndexPathRole) {
         return item->indexPath;
     }
-    if (role == Qt::DisplayRole) {
+    if (role == Qt::DisplayRole || role == Qt::ToolTipRole) {
         if (item->type == TreeType::Folder) {
             if (item->name.isEmpty()) {
                 return i18n("Unknown Folder (%1)").arg(item->hash);
