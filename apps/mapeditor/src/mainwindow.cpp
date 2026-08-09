@@ -176,6 +176,7 @@ void MainWindow::setupActions()
     actionCollection()->addAction(QStringLiteral("frustum_culling"), m_part->mapView()->part().frustumCullingAction());
     actionCollection()->addAction(QStringLiteral("debug_frustum_culling"), m_part->mapView()->part().debugFrustumCullingAction());
     actionCollection()->addAction(QStringLiteral("vfx"), m_part->mapView()->part().vfxAction());
+    actionCollection()->addAction(QStringLiteral("collision"), m_part->mapView()->part().collisionAction());
 
     // Window color scheme menu
     const auto manager = KColorSchemeManager::instance();

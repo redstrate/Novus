@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="mapeditor"
-     version="5"
+     version="6"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
@@ -23,6 +23,7 @@
       <Action name="frustum_culling" />
       <Action name="debug_frustum_culling" />
       <Action name="vfx" />
+      <Action name="collision" />
     </Menu>
     <Menu name="navigate" >
       <text>Navigate</text>

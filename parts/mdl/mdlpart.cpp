@@ -82,6 +82,13 @@ MDLPart::MDLPart(FileCache &cache, QWidget *parent)
     connect(m_vfxAction, &QAction::toggled, this, [this](const bool toggled) {
         m_renderer->scene.vfx = toggled;
     });
+
+    m_collisionAction = new QAction(i18n("Draw Collision"));
+    m_collisionAction->setCheckable(true);
+    m_collisionAction->setChecked(m_renderer->scene.collision);
+    connect(m_collisionAction, &QAction::toggled, this, [this](const bool toggled) {
+        m_renderer->scene.collision = toggled;
+    });
 }
 
 MDLPart::~MDLPart()
@@ -629,6 +636,11 @@ QAction *MDLPart::debugFrustumCullingAction() const
 QAction *MDLPart::vfxAction() const
 {
     return m_vfxAction;
+}
+
+QAction *MDLPart::collisionAction() const
+{
+    return m_collisionAction;
 }
 
 bool MDLPart::modelExists(const QString &name) const

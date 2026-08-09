@@ -71,7 +71,7 @@ void ObjectPass::render(const VkCommandBuffer commandBuffer, Camera &camera, con
         labelExt.pLabelName = "Object Pass";
         m_renderer->device().beginDebugMarker(commandBuffer, labelExt);
 
-        addScene(commandBuffer, camera, m_appState->rootScene);
+        addScene(commandBuffer, camera, m_appState->rootScene, scene);
 
         // Draw AABB boundaries
         if (scene.debugFrustumCulling) {
@@ -349,7 +349,7 @@ void ObjectPass::createBillboardPipeline()
     vkDestroyShaderModule(m_device.device, debugFragmentShader, nullptr);
 }
 
-void ObjectPass::addScene(const VkCommandBuffer commandBuffer, Camera &camera, const ObjectScene &scene)
+void ObjectPass::addScene(const VkCommandBuffer commandBuffer, Camera &camera, const ObjectScene &scene, const Scene &renderScene)
 {
     for (const auto &lgb : scene.lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {
@@ -360,7 +360,7 @@ void ObjectPass::addScene(const VkCommandBuffer commandBuffer, Camera &camera, c
                     continue;
                 }
 
-                addLayer(commandBuffer, camera, layer, scene.combinedTransformation);
+                addLayer(commandBuffer, camera, layer, scene.combinedTransformation, renderScene);
             }
         }
     }
@@ -372,7 +372,7 @@ void ObjectPass::addScene(const VkCommandBuffer commandBuffer, Camera &camera, c
                 continue;
             }
 
-            addLayer(commandBuffer, camera, layer, scene.combinedTransformation);
+            addLayer(commandBuffer, camera, layer, scene.combinedTransformation, renderScene);
         }
     }
 
@@ -422,12 +422,16 @@ void ObjectPass::addScene(const VkCommandBuffer commandBuffer, Camera &camera, c
 
     for (const auto &nestedScene : scene.nestedScenes | std::views::values) {
         if (!scene.isSgb() && m_appState->visibleLayerIds.contains(nestedScene.originatingSgbLayerId)) {
-            addScene(commandBuffer, camera, nestedScene);
+            addScene(commandBuffer, camera, nestedScene, renderScene);
         }
     }
 }
 
-void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, const physis_Layer &layer, const Transformation &rootTransformation)
+void ObjectPass::addLayer(VkCommandBuffer commandBuffer,
+                          const Camera &camera,
+                          const physis_Layer &layer,
+                          const Transformation &rootTransformation,
+                          const Scene &renderScene)
 {
     for (uint32_t z = 0; z < layer.num_objects; z++) {
         const auto &object = layer.objects[z];
@@ -529,9 +533,11 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer, const Camera &camera, c
         case physis_LayerEntry::Tag::PrefetchRange:
             decideBasedOnTrigger(object.data.prefetch_range._0.parent_data);
             break;
-        case physis_LayerEntry::Tag::CollisionBox:
-            decideBasedOnTrigger(object.data.collision_box._0.parent_data);
-            break;
+        case physis_LayerEntry::Tag::CollisionBox: {
+            if (renderScene.collision) {
+                decideBasedOnTrigger(object.data.collision_box._0.parent_data);
+            }
+        } break;
         case physis_LayerEntry::Tag::PopRange: {
             // Only show positions when the PopRange is selected to reduce the noise...
             if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {

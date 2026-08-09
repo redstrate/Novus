@@ -57,6 +57,7 @@ public:
     QAction *frustumCullingAction() const;
     QAction *debugFrustumCullingAction() const;
     QAction *vfxAction() const;
+    QAction *collisionAction() const;
 
 Q_SIGNALS:
     void modelChanged();
@@ -139,4 +140,5 @@ private:
     QAction *m_frustumCullingAction = nullptr;
     QAction *m_debugFrustumCullingAction = nullptr;
     QAction *m_vfxAction = nullptr;
+    QAction *m_collisionAction = nullptr;
 };

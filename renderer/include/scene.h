@@ -30,6 +30,7 @@ public:
     bool frustumCulling = true;
     bool debugFrustumCulling = false;
     bool vfx = true;
+    bool collision = false;
 
     size_t culledObjects = 0;
     size_t culledLights = 0;
