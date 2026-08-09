@@ -70,6 +70,9 @@ ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *pa
         if (m_appState->selectedPlate) {
             refreshPlateData(m_appState->selectedPlate.value());
         }
+        if (m_appState->selectedLayerSet) {
+            refreshLayerSetData(*m_appState->selectedLayerSet.value());
+        }
     });
 }
 
@@ -444,6 +447,32 @@ void ObjectPropertiesWidget::refreshPlateData(const int index)
     pathEdit->setPath(mdlPath);
     pathEdit->setReadOnly(true);
     layout->addRow(i18n("Asset Path"), pathEdit);
+}
+
+void ObjectPropertiesWidget::refreshLayerSetData(physis_ScnLayerSet &layerSet)
+{
+    const auto section = new CollapseSection(i18n("Layer Set"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
+    section->setLayout(layout);
+
+    const auto idEdit = new QLineEdit();
+    idEdit->setText(QString::number(layerSet.id));
+    idEdit->setReadOnly(true);
+    layout->addRow(i18n("ID"), idEdit);
+
+    const auto territoryTypeIdEdit = new QLineEdit();
+    territoryTypeIdEdit->setText(QString::number(layerSet.territory_type_id));
+    territoryTypeIdEdit->setReadOnly(true);
+    layout->addRow(i18n("TerritoryType"), territoryTypeIdEdit);
+
+    const auto contentFinderConditionEdit = new QLineEdit();
+    contentFinderConditionEdit->setText(QString::number(layerSet.content_finder_condition_id));
+    contentFinderConditionEdit->setReadOnly(true);
+    layout->addRow(i18n("ContentFinderCondition"), contentFinderConditionEdit);
 }
 
 void ObjectPropertiesWidget::addCommonSection(physis_InstanceObject &object)

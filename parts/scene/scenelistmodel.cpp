@@ -104,6 +104,8 @@ QVariant SceneListModel::data(const QModelIndex &index, const int role) const
             case TreeType::LgbFile:
             case TreeType::Timelines:
             case TreeType::DropIns:
+            case TreeType::LayerSet:
+            case TreeType::LayerSets:
                 return QIcon::fromTheme(QStringLiteral("emblem-documents-symbolic"));
             case TreeType::Layer:
             case TreeType::DropInLayer:
@@ -257,6 +259,15 @@ std::optional<int> SceneListModel::terrainPlateAt(const QModelIndex &index)
     return std::nullopt;
 }
 
+std::optional<physis_ScnLayerSet *> SceneListModel::layerSetAt(const QModelIndex &index)
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::LayerSet) {
+        return item->data.value<physis_ScnLayerSet *>();
+    }
+    return std::nullopt;
+}
+
 void SceneListModel::refresh()
 {
     beginResetModel();
@@ -270,9 +281,9 @@ void SceneListModel::refresh()
     endResetModel();
 }
 
-void SceneListModel::addLayer(uint32_t index, SceneTreeInformation *fileItem, physis_Layer &layer, ObjectScene &scene)
+void SceneListModel::addLayer(const uint32_t index, SceneTreeInformation *fileItem, physis_Layer &layer, ObjectScene &scene)
 {
-    auto layerItem = new SceneTreeInformation();
+    const auto layerItem = new SceneTreeInformation();
     layerItem->type = TreeType::Layer;
     layerItem->parent = fileItem;
     layerItem->name = QString::fromStdString(layer.name);
@@ -389,6 +400,25 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
             actionItem->row = i;
             actionItem->data = QVariant::fromValue(&scene.actionDescriptors[i]);
             actionsItem->children.push_back(actionItem);
+        }
+    }
+
+    if (!scene.layerSets.empty()) {
+        const auto layerSetsItem = new SceneTreeInformation();
+        layerSetsItem->type = TreeType::LayerSets;
+        layerSetsItem->parent = parentNode;
+        layerSetsItem->name = i18n("Layer Sets");
+        layerSetsItem->row = parentNode->children.size();
+        parentNode->children.push_back(layerSetsItem);
+
+        for (uint32_t i = 0; i < scene.layerSets.size(); i++) {
+            auto layerSetItem = new SceneTreeInformation();
+            layerSetItem->type = TreeType::LayerSet;
+            layerSetItem->parent = layerSetsItem;
+            layerSetItem->name = QString::number(scene.layerSets[i].id);
+            layerSetItem->row = i;
+            layerSetItem->data = QVariant::fromValue(&scene.layerSets[i]);
+            layerSetsItem->children.push_back(layerSetItem);
         }
     }
 

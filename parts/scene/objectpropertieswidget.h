@@ -5,6 +5,7 @@
 
 #include <QScrollArea>
 
+struct physis_ScnLayerSet;
 struct physis_ColliderLayer9InstanceObject;
 struct physis_ColliderLayer7InstanceObject;
 struct physis_ColliderLayer10InstanceObject;
@@ -67,6 +68,7 @@ private:
     void refreshTeraData(const QString &path);
     void refreshDropInData(DropInObject *object);
     void refreshPlateData(int index);
+    void refreshLayerSetData(physis_ScnLayerSet &layerSet);
 
     void addCommonSection(physis_InstanceObject &object);
     void addBgPartSection(physis_BgPartInstanceObject &bg);

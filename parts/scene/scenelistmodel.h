@@ -5,6 +5,7 @@
 
 #include <QAbstractItemModel>
 
+struct physis_ScnLayerSet;
 struct DropInObject;
 struct ScnSGActionControllerDescriptor;
 struct physis_ScnTimeline;
@@ -43,6 +44,10 @@ enum class TreeType {
     DropInLayer,
     /// A drop-in object.
     DropInObject,
+    /// Representative of all layer sets in this scene.
+    LayerSets,
+    /// A layer set.
+    LayerSet,
 };
 
 struct SceneTreeInformation {
@@ -89,6 +94,7 @@ public:
     static std::optional<QString> teraAt(const QModelIndex &index);
     static std::optional<DropInObject *> dropInObjectAt(const QModelIndex &index);
     static std::optional<int> terrainPlateAt(const QModelIndex &index);
+    static std::optional<physis_ScnLayerSet *> layerSetAt(const QModelIndex &index);
 
 private:
     void refresh();

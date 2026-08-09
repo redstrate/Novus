@@ -124,6 +124,10 @@ void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
         actionDescriptors.push_back(section.action_descriptors.descriptors[i]);
     }
 
+    for (uint32_t i = 0; i < section.layer_sets.layer_set_count; i++) {
+        layerSets.push_back(section.layer_sets.layer_sets[i]);
+    }
+
     // Process nested shared groups
     for (const auto &lgb : lgbFiles | std::views::values) {
         for (uint32_t i = 0; i < lgb.num_chunks; i++) {

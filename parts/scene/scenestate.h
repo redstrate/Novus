@@ -102,6 +102,7 @@ public:
     uint32_t originatingSgbId = 0;
     std::unordered_map<std::string, physis_Material> cachedMaterials;
     std::unordered_map<uint32_t, OBSBTimeline> obsbTimelines;
+    std::vector<physis_ScnLayerSet> layerSets;
 
     /// Key is the ID of the SGB instance.
     std::unordered_map<uint32_t, ObjectScene> nestedScenes;
@@ -141,6 +142,7 @@ public:
     std::optional<QString> selectedTera;
     std::optional<DropInObject *> selectedDropInObject;
     std::optional<int> selectedPlate;
+    std::optional<physis_ScnLayerSet *> selectedLayerSet;
     QList<uint32_t> visibleTerrainPlates;
     physis_Lcb loadedLcb{};
 
