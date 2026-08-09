@@ -43,6 +43,7 @@ private:
     void initPipeline();
     void initDescriptors();
     void initTextures(int width, int height);
+    void initSkyPipeline();
 
     void destroyTextures();
     void destroyPipelines() const;
@@ -59,6 +60,8 @@ private:
     VkPipeline m_pipelineWireframe = VK_NULL_HANDLE;
     VkPipeline m_skinnedPipelineWireframe = VK_NULL_HANDLE;
     VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
+    VkPipeline m_skyPipeline = VK_NULL_HANDLE;
+    VkPipelineLayout m_skyPipelineLayout = VK_NULL_HANDLE;
 
     VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
 

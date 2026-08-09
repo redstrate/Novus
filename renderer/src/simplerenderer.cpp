@@ -71,6 +71,7 @@ void SimpleRenderer::resize()
     initDescriptors();
     initPipeline();
     initTextures(m_device.swapChain->extent.width, m_device.swapChain->extent.height);
+    initSkyPipeline();
 
     const std::array attachments = {m_compositeTexture.imageView, m_depthTexture.imageView};
 
@@ -261,6 +262,29 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             vkCmdDrawIndexed(commandBuffer, part.numIndices, 1, 0, 0, 0);
         }
     }
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPipeline);
+
+    const glm::mat4 invProj = glm::inverse(camera.perspective);
+    vkCmdPushConstants(commandBuffer, m_skyPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &invProj);
+
+    const glm::mat4 invView = glm::inverse(camera.view);
+    vkCmdPushConstants(commandBuffer,
+                       m_skyPipelineLayout,
+                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                       sizeof(glm::mat4),
+                       sizeof(glm::mat4),
+                       &invView);
+
+    const auto sunPositionFov = glm::vec4(glm::vec3(500), glm::radians(camera.fieldOfView));
+    vkCmdPushConstants(commandBuffer,
+                       m_skyPipelineLayout,
+                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                       sizeof(glm::mat4) * 2,
+                       sizeof(glm::vec4),
+                       &sunPositionFov);
+
+    vkCmdDraw(commandBuffer, 4, 1, 0, 0);
 }
 
 void SimpleRenderer::initRenderPass()
@@ -565,6 +589,107 @@ void SimpleRenderer::initTextures(const int width, const int height)
     m_device.nameTexture(m_depthTexture, "Depth Texture");
 }
 
+void SimpleRenderer::initSkyPipeline()
+{
+    auto vertexModule = m_device.loadShaderFromDisk(":/shaders/sky.vert.spv");
+    auto fragmentModule = m_device.loadShaderFromDisk(":/shaders/sky.frag.spv");
+
+    VkPipelineShaderStageCreateInfo vertexShaderStageInfo = {};
+    vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertexShaderStageInfo.module = vertexModule;
+    vertexShaderStageInfo.pName = "main";
+
+    VkPipelineShaderStageCreateInfo fragmentShaderStageInfo = {};
+    fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragmentShaderStageInfo.module = fragmentModule;
+    fragmentShaderStageInfo.pName = "main";
+
+    std::array shaderStages = {vertexShaderStageInfo, fragmentShaderStageInfo};
+
+    VkPipelineVertexInputStateCreateInfo vertexInputState = {};
+    vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+    VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
+    inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+    VkViewport viewport = {};
+    viewport.width = m_device.swapChain->extent.width;
+    viewport.height = m_device.swapChain->extent.height;
+    viewport.maxDepth = 1.0f;
+
+    VkRect2D scissor = {};
+    scissor.extent = m_device.swapChain->extent;
+
+    VkPipelineViewportStateCreateInfo viewportState = {};
+    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportState.viewportCount = 1;
+    viewportState.pViewports = &viewport;
+    viewportState.scissorCount = 1;
+    viewportState.pScissors = &scissor;
+
+    VkPipelineRasterizationStateCreateInfo rasterizer = {};
+    rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterizer.lineWidth = 1.0f;
+    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+
+    VkPipelineMultisampleStateCreateInfo multisampling = {};
+    multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+    VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
+    VkPipelineColorBlendStateCreateInfo colorBlending = {};
+    colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorBlending.attachmentCount = 1;
+    colorBlending.pAttachments = &colorBlendAttachment;
+
+    VkPipelineDynamicStateCreateInfo dynamicState = {};
+    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+
+    VkPushConstantRange pushConstantRange = {};
+    pushConstantRange.size = sizeof(glm::mat4) * 2 + sizeof(glm::vec4);
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+
+    vkCreatePipelineLayout(m_device.device, &pipelineLayoutInfo, nullptr, &m_skyPipelineLayout);
+
+    VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = VK_TRUE;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+    depthStencil.maxDepthBounds = 1.0f;
+
+    VkGraphicsPipelineCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    createInfo.stageCount = shaderStages.size();
+    createInfo.pStages = shaderStages.data();
+    createInfo.pVertexInputState = &vertexInputState;
+    createInfo.pInputAssemblyState = &inputAssembly;
+    createInfo.pViewportState = &viewportState;
+    createInfo.pRasterizationState = &rasterizer;
+    createInfo.pMultisampleState = &multisampling;
+    createInfo.pColorBlendState = &colorBlending;
+    createInfo.pDynamicState = &dynamicState;
+    createInfo.pDepthStencilState = &depthStencil;
+    createInfo.layout = m_skyPipelineLayout;
+    createInfo.renderPass = m_renderPass;
+
+    vkCreateGraphicsPipelines(m_device.device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &m_skyPipeline);
+
+    vkDestroyShaderModule(m_device.device, fragmentModule, nullptr);
+    vkDestroyShaderModule(m_device.device, vertexModule, nullptr);
+}
+
 void SimpleRenderer::destroyTextures()
 {
     m_device.destroyTexture(m_depthTexture);
@@ -580,8 +705,10 @@ void SimpleRenderer::destroyPipelines() const
     vkDestroyPipeline(m_device.device, m_skinnedPipelineWireframe, nullptr);
     vkDestroyPipeline(m_device.device, m_skinnedPipeline, nullptr);
     vkDestroyPipeline(m_device.device, m_pipeline, nullptr);
+    vkDestroyPipeline(m_device.device, m_skyPipeline, nullptr);
 
     vkDestroyPipelineLayout(m_device.device, m_pipelineLayout, nullptr);
+    vkDestroyPipelineLayout(m_device.device, m_skyPipelineLayout, nullptr);
 }
 
 void SimpleRenderer::destroyDescriptors() const

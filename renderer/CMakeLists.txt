@@ -59,7 +59,9 @@ qt_add_resources(renderer
         shaders/billboard.vert.spv
         shaders/billboard.frag.spv
         shaders/vfx.vert.spv
-        shaders/vfx.frag.spv)
+        shaders/vfx.frag.spv
+        shaders/sky.vert.spv
+        shaders/sky.frag.spv)
 target_include_directories(renderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(renderer
         PUBLIC

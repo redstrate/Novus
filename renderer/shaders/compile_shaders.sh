@@ -15,4 +15,6 @@ glslc debug.frag -o debug.frag.spv &&
 glslc billboard.vert -o billboard.vert.spv &&
 glslc billboard.frag -o billboard.frag.spv &&
 glslc vfx.vert -o vfx.vert.spv &&
-glslc vfx.frag -o vfx.frag.spv
+glslc vfx.frag -o vfx.frag.spv &&
+glslc sky.vert -o sky.vert.spv &&
+glslc sky.frag -o sky.frag.spv
