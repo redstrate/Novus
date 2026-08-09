@@ -30,10 +30,10 @@ ColorEdit::ColorEdit(QWidget *parent)
     : EditWidget(parent)
 {
     const auto itemsLayout = new QHBoxLayout(this);
+    itemsLayout->setContentsMargins(0, 0, 0, 0);
 
     colorButton = new QPushButton();
     colorButton->setFlat(true);
-
     colorButton->setAutoFillBackground(true);
 
     connect(colorButton, &QPushButton::clicked, [this](bool) {
