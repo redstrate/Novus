@@ -8,13 +8,16 @@
 #include "scenelistwidget.h"
 #include "scenestate.h"
 
+#include <KSeparator>
 #include <QHBoxLayout>
 #include <QSplitter>
 
 #include "mapview.h"
 #include "settings.h"
 
+#include <KLocalizedString>
 #include <QDir>
+#include <QLabel>
 
 ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
     : QWidget(parent)
@@ -42,6 +45,10 @@ ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
     m_sceneListWidget = new SceneListWidget(m_appState);
     sidebarLayout->addWidget(m_sceneListWidget);
 
+    sidebarLayout->addWidget(new KSeparator());
+
+    sidebarLayout->addWidget(new QLabel(i18n("Animation Time")));
+
     m_animationTimeSlider = new QSlider(Qt::Orientation::Horizontal);
     m_animationTimeSlider->setEnabled(false);
     connect(m_animationTimeSlider, &QSlider::valueChanged, this, [this](const int value) {
@@ -49,6 +56,8 @@ ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
         Q_EMIT m_appState->mapLoaded(); // FIXME: extreme solution to lack of a proper updatable scene graph
     });
     sidebarLayout->addWidget(m_animationTimeSlider);
+
+    sidebarLayout->addWidget(new QLabel(i18n("Time of Day")));
 
     m_timeSlider = new QSlider(Qt::Orientation::Horizontal);
     m_timeSlider->setMinimum(0);

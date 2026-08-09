@@ -16,7 +16,7 @@ class NOVUSCOMMON_EXPORT ColorEdit : public EditWidget
 public:
     explicit ColorEdit(QWidget *parent = nullptr);
 
-    void setColor(Color &color)
+    void setColor(ColorIntensity &color)
     {
         reference = &color;
         rebuild();
@@ -25,6 +25,6 @@ public:
 private:
     void rebuild() const;
 
-    Color *reference = nullptr;
+    ColorIntensity *reference = nullptr;
     QPushButton *colorButton = nullptr;
 };

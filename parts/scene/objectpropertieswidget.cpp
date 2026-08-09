@@ -956,7 +956,7 @@ void ObjectPropertiesWidget::addLightSection(physis_LightInstanceObject &light)
     layout->addRow(i18n("Color"), colorLabel);
 
     const auto intensityLabel = new FloatEdit();
-    intensityLabel->setValue(light.intensity);
+    intensityLabel->setValue(light.color.intensity);
     layout->addRow(i18n("Intensity"), intensityLabel);
 
     const auto specularHighlightsCheck = new BoolEdit();
@@ -1312,7 +1312,7 @@ void ObjectPropertiesWidget::addVolumetricCloudSection(physis_VolumetricCloudIns
     layout->addRow(i18n("Color"), colorLabel);
 
     const auto intensityLabel = new FloatEdit();
-    intensityLabel->setValue(cloud.intensity);
+    intensityLabel->setValue(cloud.color.intensity);
     layout->addRow(i18n("Intensity"), intensityLabel);
 
     const auto activeCheck = new BoolEdit();

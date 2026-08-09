@@ -6,14 +6,14 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 
-static QColor fromVec3(const Color vec)
+static QColor fromVec3(const ColorIntensity vec)
 {
     return QColor::fromRgb(vec.red, vec.green, vec.blue, vec.alpha);
 }
 
-static Color fromQColor(const QColor color)
+static ColorIntensity fromQColor(const QColor color)
 {
-    Color vec{};
+    ColorIntensity vec{};
 
     int r, g, b, a;
     color.getRgb(&r, &g, &b, &a);
