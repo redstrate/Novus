@@ -22,6 +22,7 @@
 
 #include "enumedit.h"
 #include "exceledit.h"
+#include "filetypes.h"
 #include "floatedit.h"
 #include "objectidedit.h"
 #include "uintedit.h"
@@ -353,7 +354,7 @@ void ObjectPropertiesWidget::refreshActionData(const ScnSGActionControllerDescri
 
 void ObjectPropertiesWidget::refreshLgbData(const QString &path)
 {
-    const auto section = new CollapseSection(i18n("LGB"));
+    const auto section = new CollapseSection(FileTypes::getFiletypeName(FileType::LayerGroupBinary));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
@@ -368,7 +369,7 @@ void ObjectPropertiesWidget::refreshLgbData(const QString &path)
 
 void ObjectPropertiesWidget::refreshTeraData(const QString &path)
 {
-    const auto section = new CollapseSection(i18n("Terrain"));
+    const auto section = new CollapseSection(FileTypes::getFiletypeName(FileType::Terrain));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
@@ -522,7 +523,7 @@ void ObjectPropertiesWidget::refreshEnvSpaceData(physis_ScnEnvSpace &envSpace)
 
 void ObjectPropertiesWidget::refreshLcbData(const QString &lcb)
 {
-    const auto section = new CollapseSection(i18n("Light Culling Binary"));
+    const auto section = new CollapseSection(FileTypes::getFiletypeName(FileType::LightClippingBinary));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
@@ -538,7 +539,7 @@ void ObjectPropertiesWidget::refreshLcbData(const QString &lcb)
 
 void ObjectPropertiesWidget::refreshSvbData(const QString &svb)
 {
-    const auto section = new CollapseSection(i18n("Sky Visibility Binary"));
+    const auto section = new CollapseSection(FileTypes::getFiletypeName(FileType::SkyVisibilityBinary));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 

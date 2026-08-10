@@ -3,6 +3,7 @@
 
 #include "scenelistmodel.h"
 
+#include "filetypes.h"
 #include "magic_enum.hpp"
 #include "scenestate.h"
 
@@ -379,7 +380,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         const auto terrainItem = new SceneTreeInformation();
         terrainItem->type = TreeType::TeraFile;
         terrainItem->parent = parentNode;
-        terrainItem->name = i18n("Terrain");
+        terrainItem->name = FileTypes::getFiletypeName(FileType::Terrain);
         terrainItem->row = parentNode->children.size();
         terrainItem->data = scene.terrainPath;
         parentNode->children.push_back(terrainItem);
@@ -576,5 +577,3 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         }
     }
 }
-
-// "moc_scenelistmodel.cpp"
