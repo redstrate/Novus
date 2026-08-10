@@ -13,7 +13,7 @@ FloatEdit::FloatEdit(QWidget *parent)
     itemsLayout->setContentsMargins(0, 0, 0, 0);
 
     spinBox = new QDoubleSpinBox();
-    connect(spinBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double d) {
+    connect(spinBox, &QDoubleSpinBox::valueChanged, [this](double d) {
         if (this->value) {
             *this->value = d;
             Q_EMIT onValueChanged();
