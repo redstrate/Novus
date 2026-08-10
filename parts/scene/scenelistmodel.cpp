@@ -91,7 +91,7 @@ QVariant SceneListModel::data(const QModelIndex &index, const int role) const
         return item->id;
     }
     if (index.column() == 0) {
-        if (role == Qt::DisplayRole) {
+        if (role == Qt::DisplayRole || role == Qt::ToolTipRole) {
             return item->name;
         }
         if (role == Qt::DecorationRole) {
