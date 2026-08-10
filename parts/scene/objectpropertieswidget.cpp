@@ -231,12 +231,14 @@ void ObjectPropertiesWidget::refreshTimelineData(const physis_ScnTimeline &timel
 
     const auto layout = new QFormLayout();
     layout->setContentsMargins({0, 0, 0, 0});
+    layout->setSpacing(0);
     section->setLayout(layout);
 
     const auto instanceWidget = new QTableWidget();
     instanceWidget->setColumnCount(2);
     instanceWidget->setRowCount(timeline.instance_count);
     instanceWidget->setHorizontalHeaderLabels({i18n("Instance ID"), i18n("TMAC Time")});
+    instanceWidget->setEditTriggers(QTableWidget::NoEditTriggers);
     layout->addWidget(instanceWidget);
 
     for (uint32_t i = 0; i < timeline.instance_count; i++) {
