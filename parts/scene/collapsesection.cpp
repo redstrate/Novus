@@ -17,26 +17,23 @@ CollapseSection::CollapseSection(const QString &label)
 
 void CollapseSection::paintEvent(QPaintEvent *event)
 {
-    // Hack to prevent visual glitches on partial paints
-    if (event->rect() != rect()) {
-        return;
-    }
+    Q_UNUSED(event)
 
     QPainter painter(this);
     painter.setPen(palette().dark().color());
     painter.setBrush(palette().alternateBase().color());
     painter.setRenderHint(QPainter::Antialiasing);
 
-    QRect r = event->rect();
+    QRect r = rect();
     r.setHeight(25);
 
     painter.drawRoundedRect(r, 5, 5);
 
     painter.setPen(palette().text().color());
-    painter.drawText(event->rect().adjusted(6, 4, 0, 0), m_label);
+    painter.drawText(rect().adjusted(6, 4, 0, 0), m_label);
 
     QStyleOption option;
-    option.rect.adjust(event->rect().width() - 20, 5, 0, 0);
+    option.rect.adjust(rect().width() - 20, 5, 0, 0);
     option.rect.setHeight(16);
     option.rect.setWidth(16);
     option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_AutoRaise;
@@ -52,7 +49,7 @@ void CollapseSection::mousePressEvent(QMouseEvent *event)
 
     if (r.contains(mapFromGlobal(QCursor::pos()))) {
         if (!m_collapsed) {
-            setFixedHeight(30);
+            setFixedHeight(25);
             m_collapsed = true;
         } else {
             setFixedHeight(QWIDGETSIZE_MAX);
