@@ -168,17 +168,17 @@ void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
     case physis_LayerEntry::Tag::VolumetricCloud:
         addVolumetricCloudSection(object.data.volumetric_cloud._0);
         break;
-    case physis_LayerEntry::Tag::ColliderLayer8:
-        addColliderLayer8Section(object.data.collider_layer8._0);
+    case physis_LayerEntry::Tag::ShowHideRange:
+        addShowHideRangeSection(object.data.show_hide_range._0);
         break;
-    case physis_LayerEntry::Tag::ColliderLayer10:
-        addColliderLayer10Section(object.data.collider_layer10._0);
+    case physis_LayerEntry::Tag::EventEffectRange:
+        addEventEffectRangeSection(object.data.event_effect_range._0);
         break;
-    case physis_LayerEntry::Tag::ColliderLayer7:
-        addColliderLayer7Section(object.data.collider_layer7._0);
+    case physis_LayerEntry::Tag::WaterRange:
+        addWaterRangeSection(object.data.water_range._0);
         break;
-    case physis_LayerEntry::Tag::ColliderLayer9:
-        addColliderLayer9Section(object.data.collider_layer9._0);
+    case physis_LayerEntry::Tag::GameContentsRange:
+        addGameContentsRangeSection(object.data.game_contents_range._0);
         break;
     case physis_LayerEntry::Tag::FateRange:
         addFateRangeSection();
@@ -1320,7 +1320,7 @@ void ObjectPropertiesWidget::addVolumetricCloudSection(physis_VolumetricCloudIns
     layout->addRow(i18n("Active"), activeCheck);
 }
 
-void ObjectPropertiesWidget::addColliderLayer8Section(physis_ColliderLayer8InstanceObject &collider)
+void ObjectPropertiesWidget::addShowHideRangeSection(physis_ShowHideRangeInstanceObject &collider)
 {
     addTriggerBoxSection(collider.parent_data);
 
@@ -1333,7 +1333,7 @@ void ObjectPropertiesWidget::addColliderLayer8Section(physis_ColliderLayer8Insta
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addColliderLayer10Section(physis_ColliderLayer10InstanceObject &collider)
+void ObjectPropertiesWidget::addEventEffectRangeSection(physis_EventEffectRangeInstanceObject &collider)
 {
     addTriggerBoxSection(collider.parent_data);
 
@@ -1346,7 +1346,7 @@ void ObjectPropertiesWidget::addColliderLayer10Section(physis_ColliderLayer10Ins
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addColliderLayer7Section(physis_ColliderLayer7InstanceObject &collider)
+void ObjectPropertiesWidget::addWaterRangeSection(physis_WaterRangeInstanceObject &collider)
 {
     addTriggerBoxSection(collider.parent_data);
 
@@ -1359,7 +1359,7 @@ void ObjectPropertiesWidget::addColliderLayer7Section(physis_ColliderLayer7Insta
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addColliderLayer9Section(physis_ColliderLayer9InstanceObject &collider)
+void ObjectPropertiesWidget::addGameContentsRangeSection(physis_GameContentsRangeInstanceObject &collider)
 {
     addTriggerBoxSection(collider.parent_data);
 

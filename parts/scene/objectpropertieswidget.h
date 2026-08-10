@@ -6,10 +6,10 @@
 #include <QScrollArea>
 
 struct physis_ScnLayerSet;
-struct physis_ColliderLayer9InstanceObject;
-struct physis_ColliderLayer7InstanceObject;
-struct physis_ColliderLayer10InstanceObject;
-struct physis_ColliderLayer8InstanceObject;
+struct physis_GameContentsRangeInstanceObject;
+struct physis_WaterRangeInstanceObject;
+struct physis_EventEffectRangeInstanceObject;
+struct physis_ShowHideRangeInstanceObject;
 struct physis_VolumetricCloudInstanceObject;
 struct physis_DecalInstanceObject;
 struct physis_BattleNpcInstanceObject;
@@ -103,10 +103,10 @@ private:
     void addBattleNpcSection(physis_BattleNpcInstanceObject &battleNpc);
     void addDecalSection(physis_DecalInstanceObject &decal);
     void addVolumetricCloudSection(physis_VolumetricCloudInstanceObject &cloud);
-    void addColliderLayer8Section(physis_ColliderLayer8InstanceObject &collider);
-    void addColliderLayer10Section(physis_ColliderLayer10InstanceObject &collider);
-    void addColliderLayer7Section(physis_ColliderLayer7InstanceObject &collider);
-    void addColliderLayer9Section(physis_ColliderLayer9InstanceObject &collider);
+    void addShowHideRangeSection(physis_ShowHideRangeInstanceObject &collider);
+    void addEventEffectRangeSection(physis_EventEffectRangeInstanceObject &collider);
+    void addWaterRangeSection(physis_WaterRangeInstanceObject &collider);
+    void addGameContentsRangeSection(physis_GameContentsRangeInstanceObject &collider);
     void addFateRangeSection();
 
     SceneState *m_appState = nullptr;
