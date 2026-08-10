@@ -34,7 +34,7 @@
 MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
 {
-    m_part = new ScenePart(m_cache, true);
+    m_part = new ScenePart(m_cache);
     setCentralWidget(m_part);
 
     setupActions();

@@ -19,7 +19,7 @@
 #include <QDir>
 #include <QLabel>
 
-ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
+ScenePart::ScenePart(FileCache &cache, QWidget *parent)
     : QWidget(parent)
     , m_cache(cache)
     , m_appState(new SceneState(m_cache, this))
@@ -73,8 +73,7 @@ ScenePart::ScenePart(FileCache &cache, const bool fixedSize, QWidget *parent)
     splitter->setStretchFactor(1, 1);
 
     m_objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
-    if (fixedSize)
-        m_objectPropertiesWidget->setMinimumWidth(400);
+    m_objectPropertiesWidget->setMinimumWidth(400); // HACK: workaround for bad default splitter sizes
     splitter->addWidget(m_objectPropertiesWidget);
     splitter->setStretchFactor(2, 0);
 
