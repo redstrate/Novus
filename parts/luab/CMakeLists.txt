@@ -11,12 +11,6 @@ target_link_libraries(luabpart
         Qt6::Core
         Qt6::Widgets
         Novus::Common)
-if (TARGET KF6::SyntaxHighlighting)
-    target_link_libraries(luabpart
-            PUBLIC
-            KF6::SyntaxHighlighting)
-    target_compile_definitions(luabpart PUBLIC HAVE_SYNTAX_HIGHLIGHTING)
-endif()
 target_include_directories(luabpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(luabpart PRIVATE TRANSLATION_DOMAIN="novus")
 add_dependencies(luabpart luadec)

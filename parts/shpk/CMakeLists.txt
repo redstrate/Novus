@@ -17,12 +17,6 @@ target_link_libraries(shpkpart
         spirv-cross-glsl
         Qt6::Core
         Qt6::Widgets)
-if (TARGET KF6::SyntaxHighlighting)
-    target_link_libraries(shpkpart
-            PUBLIC
-            KF6::SyntaxHighlighting)
-    target_compile_definitions(shpkpart PUBLIC HAVE_SYNTAX_HIGHLIGHTING)
-endif()
 target_include_directories(shpkpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(shpkpart PRIVATE -fexceptions) # Needed for SPIRV-Cross
 target_compile_definitions(shpkpart PRIVATE TRANSLATION_DOMAIN="novus")

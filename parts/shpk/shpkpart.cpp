@@ -5,6 +5,7 @@
 #include "../../common/include/knownvalues.h"
 #include "dxbc_module.h"
 #include "dxbc_reader.h"
+#include "texteditor.h"
 
 #include <KLocalizedString>
 #include <QLabel>
@@ -13,12 +14,6 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <spirv_glsl.hpp>
-
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/FoldingRegion>
-#include <KSyntaxHighlighting/SyntaxHighlighter>
-#include <KSyntaxHighlighting/Theme>
-#endif
 
 SHPKPart::SHPKPart(QWidget *parent)
     : QWidget(parent)
@@ -35,9 +30,8 @@ SHPKPart::SHPKPart(QWidget *parent)
     connect(m_shadersListWidget, &QListWidget::activated, this, &SHPKPart::loadShader);
     shadersLayout->addWidget(m_shadersListWidget);
 
-    m_shadersTextEdit = new QTextEdit();
-    m_shadersTextEdit->setReadOnly(true);
-    m_shadersTextEdit->setFontFamily(QStringLiteral("monospace"));
+    m_shadersTextEdit = new TextEditor();
+    m_shadersTextEdit->setHighlightingMode(QStringLiteral("glsl"));
 
     m_shadersScalarListWidget = new QListWidget();
     m_shadersTextureListWidget = new QListWidget();
@@ -313,17 +307,6 @@ void SHPKPart::loadShader(const QModelIndex &index) const
         glsl.set_common_options(options);
 
         m_shadersTextEdit->setText(QLatin1String(glsl.compile().c_str()));
-
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-        // Setup highlighting
-        const auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_shadersTextEdit->document());
-        highlighter->setTheme(m_shadersTextEdit->palette().color(QPalette::Base).lightness() < 128
-                                  ? m_repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
-                                  : m_repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
-
-        const auto def = m_repository.definitionForName(QStringLiteral("GLSL"));
-        highlighter->setDefinition(def);
-#endif
     } catch (const dxvk::DxvkError &exception) {
         qWarning() << "Failed to load shader:" << exception.message();
     }

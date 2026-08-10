@@ -3,10 +3,14 @@
 
 #pragma once
 
-#include "physis.hpp"
-#include "qhexview.h"
+#include <QWidget>
 
-class HexPart : public QHexView
+#include "physis.hpp"
+
+class TextEditor;
+class QHexView;
+
+class HexPart : public QWidget
 {
     Q_OBJECT
 
@@ -14,4 +18,8 @@ public:
     explicit HexPart(QWidget *parent = nullptr);
 
     void loadFile(physis_Buffer buffer);
+
+private:
+    QHexView *m_hexView = nullptr;
+    TextEditor *m_textEdit = nullptr;
 };

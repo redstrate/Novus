@@ -4,18 +4,13 @@
 #include "shcdpart.h"
 #include "dxbc_module.h"
 #include "dxbc_reader.h"
+#include "texteditor.h"
 
 #include <QLabel>
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <spirv_glsl.hpp>
-
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/FoldingRegion>
-#include <KSyntaxHighlighting/SyntaxHighlighter>
-#include <KSyntaxHighlighting/Theme>
-#endif
 
 SHCDPart::SHCDPart(QWidget *parent)
     : QWidget(parent)
@@ -25,8 +20,8 @@ SHCDPart::SHCDPart(QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    m_shaderTextEdit = new QTextEdit();
-    m_shaderTextEdit->setFontFamily(QStringLiteral("monospace"));
+    m_shaderTextEdit = new TextEditor();
+    m_shaderTextEdit->setHighlightingMode(QStringLiteral("glsl"));
     layout->addWidget(m_shaderTextEdit);
 }
 
@@ -57,17 +52,6 @@ void SHCDPart::load(const Platform platform, const physis_Buffer buffer)
         glsl.set_common_options(options);
 
         m_shaderTextEdit->setText(QLatin1String(glsl.compile().c_str()));
-
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-        // Setup highlighting
-        const auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_shaderTextEdit->document());
-        highlighter->setTheme(m_shaderTextEdit->palette().color(QPalette::Base).lightness() < 128
-                                  ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
-                                  : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
-
-        const auto def = repository.definitionForName(QStringLiteral("GLSL"));
-        highlighter->setDefinition(def);
-#endif
     } catch (const dxvk::DxvkError &exception) {
         qWarning() << "Failed to load shader:" << exception.message();
     }

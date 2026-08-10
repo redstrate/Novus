@@ -38,7 +38,7 @@ ecm_setup_version(${PROJECT_VERSION}
 
 find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Concurrent Sql Network CONFIG REQUIRED)
 find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons Config XmlGui Archive I18n BreezeIcons)
-find_package(KF6SyntaxHighlighting ${KF_MIN_VERSION})
+find_package(KF6TextEditor ${KF_MIN_VERSION})
 find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 if (NOT TARGET glm::glm)

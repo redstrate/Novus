@@ -26,7 +26,10 @@ target_link_libraries(hexpart
         PUBLIC
         Physis::Physis
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        KF6::I18n
+        KF6::WidgetsAddons
+        Novus::Common)
 target_include_directories(hexpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(hexpart PRIVATE TRANSLATION_DOMAIN="novus")
 

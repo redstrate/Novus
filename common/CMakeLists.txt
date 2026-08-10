@@ -52,6 +52,7 @@ target_sources(novus-common
         include/floatedit.h
         include/vec2edit.h
         include/coloredit.h
+        include/texteditor.h
 
         src/aboutdata.cpp
         src/booledit.cpp
@@ -70,6 +71,7 @@ target_sources(novus-common
         src/floatedit.cpp
         src/vec2edit.cpp
         src/coloredit.cpp
+        src/texteditor.cpp
 
         launcherconfig.h)
 target_include_directories(novus-common
@@ -98,6 +100,12 @@ ecm_generate_export_header(novus-common
         BASE_NAME NovusCommon
         VERSION 1.0.0
 )
+if (TARGET KF6::TextEditor)
+    target_link_libraries(novus-common
+            PUBLIC
+            KF6::TextEditor)
+    target_compile_definitions(novus-common PUBLIC HAVE_TEXT_EDITOR)
+endif()
 
 if (WIN32)
     target_link_libraries(novus-common PRIVATE

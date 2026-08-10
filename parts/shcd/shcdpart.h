@@ -3,13 +3,11 @@
 
 #pragma once
 
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/Repository>
-#endif
 #include <QListWidget>
-#include <QTextEdit>
 #include <QWidget>
 #include <physis.hpp>
+
+class TextEditor;
 
 class SHCDPart : public QWidget
 {
@@ -22,9 +20,5 @@ public:
 
 private:
     physis_SHCD m_shcd{};
-    QTextEdit *m_shaderTextEdit = nullptr;
-
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-    KSyntaxHighlighting::Repository repository;
-#endif
+    TextEditor *m_shaderTextEdit = nullptr;
 };

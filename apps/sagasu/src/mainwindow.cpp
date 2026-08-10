@@ -28,29 +28,20 @@
 #include "filetypes.h"
 #include "hexpart.h"
 #include "luabpart.h"
+#include "mdlimport.h"
 #include "mdlpart.h"
 #include "mtrlpart.h"
+#include "openinwidget.h"
 #include "pathedit.h"
+#include "scenepart.h"
+#include "scenestate.h"
+#include "settings.h"
 #include "shcdpart.h"
 #include "shpkpart.h"
 #include "sklbpart.h"
 #include "texpart.h"
-
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/FoldingRegion>
-#include <KSyntaxHighlighting/Repository>
-#include <KSyntaxHighlighting/SyntaxHighlighter>
-#include <KSyntaxHighlighting/Theme>
-#endif
-
-#include "mdlimport.h"
-#include "openinwidget.h"
-#include "scenepart.h"
-#include "scenestate.h"
-#include "settings.h"
+#include "texteditor.h"
 #include "tmbpart.h"
-
-#include <KConfigGroup>
 
 MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data)
     : m_cache(data)
@@ -119,7 +110,7 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
     dummyWidget->setStretchFactor(1, 1);
 
     setupActions();
-    setupGUI(QSize(1280, 720), Keys | Save | Create, QStringLiteral("dataexplorer.rc"));
+    setupGUI(QSize(1280, 720), Keys | Save | Create | ToolBar, QStringLiteral("dataexplorer.rc"));
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -204,7 +195,7 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
     loadPart(file, info);
 }
 
-void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
+void MainWindow::loadPart(const physis_Buffer file, const QFileInfo &info)
 {
     m_partHolder->clear();
 
@@ -231,7 +222,7 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
 
     // Texture files are weird as they don't have an explicit magic, so we basically resort to brute-forcing them for now.
     if (type == FileType::Unknown || type == FileType::Texture) {
-        auto texWidget = new TexPart();
+        const auto texWidget = new TexPart();
         if (texWidget->loadTex(m_cache.platform(), file)) {
             type = FileType::Texture;
             addTab(texWidget);
@@ -244,7 +235,7 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
     if (type == FileType::Unknown || type == FileType::Material) {
         auto mtrl = physis_material_parse(m_cache.platform(), file);
         if (mtrl.shpk_name) {
-            auto mtrlWidget = new MtrlPart(m_cache);
+            const auto mtrlWidget = new MtrlPart(m_cache);
             mtrlWidget->load(mtrl);
 
             type = FileType::Material;
@@ -266,12 +257,13 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
             for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                 materials[i] = {mdl.material_names[i], physis_material_parse(m_cache.platform(), m_cache.read(QString::fromUtf8(mdl.material_names[i])))};
             }
+            mdlWidget->addThreePointLighting();
             mdlWidget->addModel(mdl, false, transformation, QStringLiteral("mdl"), materials);
 
             type = FileType::Model;
             addTab(mdlWidget);
 
-            auto importAction = m_fileActionsMenu->addAction(QStringLiteral("Import glTF"));
+            const auto importAction = m_fileActionsMenu->addAction(QStringLiteral("Import glTF"));
             connect(importAction, &QAction::triggered, this, [this, mdlWidget](bool) {
                 const QString importFileName = getOpenFileName(this,
                                                                QStringLiteral("MDLImportGLBFile"),
@@ -297,7 +289,7 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
                 }
             });
 
-            auto exportAction = m_fileActionsMenu->addAction(QStringLiteral("Export glTF"));
+            const auto exportAction = m_fileActionsMenu->addAction(QStringLiteral("Export glTF"));
             connect(exportAction, &QAction::triggered, this, [this, mdlWidget](bool) {
                 const QString fileName = getSaveFileName(this,
                                                          QStringLiteral("MDLSaveAsGLBFile"),
@@ -313,13 +305,13 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
 
     switch (type) {
     case FileType::ExcelList: {
-        auto exlWidget = new EXLPart();
+        const auto exlWidget = new EXLPart();
         exlWidget->load(m_cache.platform(), file);
 
         addTab(exlWidget);
     } break;
     case FileType::ExcelHeader: {
-        auto exdWidget = new EXDPart(m_cache, m_excelResolver);
+        const auto exdWidget = new EXDPart(m_cache, m_excelResolver);
         exdWidget->setReadOnly(true); // Editing here isn't supported yet
         exdWidget->loadSheet(info.filePath().remove(QStringLiteral(".exh")).remove(QStringLiteral("exd/")), file);
         addTab(exdWidget);
@@ -328,97 +320,98 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
         m_fileActionsMenu->addAction(exdWidget->saveCsvAction());
     } break;
     case FileType::ExcelData: {
-        auto exdLayout = new QVBoxLayout();
+        const auto exdLayout = new QVBoxLayout();
 
-        auto helpLabel = new QLabel(i18n("Excel data files cannot be viewed standalone, select the EXH file instead."));
+        const auto helpLabel = new QLabel(i18n("Excel data files cannot be viewed standalone, select the EXH file instead."));
         helpLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         exdLayout->addWidget(helpLabel, 0, Qt::AlignHCenter | Qt::AlignBottom);
 
-        auto goToButton = new QPushButton(i18n("Go to EXH"));
+        const auto goToButton = new QPushButton(i18n("Go to EXH"));
         goToButton->setIcon(QIcon::fromTheme(QStringLiteral("go-jump-symbolic")));
         connect(goToButton, &QPushButton::clicked, this, [this, info] {
-            // TOOD: this doesn't work for some names!
+            // TODO: this doesn't work for some names!
             const auto baseName = info.filePath().split(QStringLiteral("_")).constFirst();
             const auto newName = QStringLiteral("%1.exh").arg(baseName);
             Q_UNUSED(m_tree->selectPath(newName));
         });
         exdLayout->addWidget(goToButton, 0, Qt::AlignHCenter | Qt::AlignTop);
 
-        auto exdWidget = new QWidget();
+        const auto exdWidget = new QWidget();
         exdWidget->setLayout(exdLayout);
 
         addTab(exdWidget);
     } break;
     case FileType::ShaderPackage: {
-        auto shpkWidget = new SHPKPart();
+        const auto shpkWidget = new SHPKPart();
         shpkWidget->load(m_cache.platform(), file);
         addTab(shpkWidget);
     } break;
     case FileType::CharaMakeParams: {
-        auto cmpWidget = new CmpPart();
+        const auto cmpWidget = new CmpPart();
         cmpWidget->load(m_cache.platform(), file);
         addTab(cmpWidget);
     } break;
     case FileType::Skeleton: {
-        auto sklbWidget = new SklbPart();
+        const auto sklbWidget = new SklbPart();
         sklbWidget->load(physis_skeleton_parse(m_cache.platform(), file));
         addTab(sklbWidget);
     } break;
     case FileType::Dictionary: {
-        auto dicWidget = new DicPart();
+        const auto dicWidget = new DicPart();
         dicWidget->load(m_cache.platform(), file);
         addTab(dicWidget);
     } break;
     case FileType::LuaBytecode: {
-        auto luabWidget = new LuabPart();
+        const auto luabWidget = new LuabPart();
         luabWidget->load(file);
         addTab(luabWidget);
     } break;
     case FileType::HardwareCursor: {
-        auto texWidget = new TexPart();
+        const auto texWidget = new TexPart();
         texWidget->loadHwc(m_cache.platform(), file);
         addTab(texWidget);
 
         m_fileActionsMenu->addAction(texWidget->saveImageAction());
     } break;
     case FileType::SharedGroup: {
-        auto scenePart = new ScenePart(m_cache);
+        const auto scenePart = new ScenePart(m_cache);
         scenePart->loadSgb(file);
         Q_EMIT scenePart->sceneState()->mapLoaded();
         addTab(scenePart);
     } break;
     case FileType::TimelineMotion: {
-        auto tmbPart = new TmbPart();
+        const auto tmbPart = new TmbPart();
         tmbPart->load(m_cache.platform(), file);
         addTab(tmbPart);
     } break;
     case FileType::Shader: {
-        auto shcdPart = new SHCDPart();
+        const auto shcdPart = new SHCDPart();
         shcdPart->load(m_cache.platform(), file);
         addTab(shcdPart);
     } break;
     case FileType::LayerVariableBinary: {
-        auto scenePart = new ScenePart(m_cache);
+        const auto scenePart = new ScenePart(m_cache);
         scenePart->loadLvb(file);
         Q_EMIT scenePart->sceneState()->mapLoaded();
         addTab(scenePart);
     } break;
     case FileType::Png: {
-        auto texWidget = new TexPart();
+        const auto texWidget = new TexPart();
         texWidget->loadPng(file);
         addTab(texWidget);
 
         m_fileActionsMenu->addAction(texWidget->saveImageAction());
     } break;
     case FileType::AnimatedVisualEffect: {
-        auto avfx = physis_avfx_parse(m_cache.platform(), file);
+        const auto avfx = physis_avfx_parse(m_cache.platform(), file);
 
         Transformation transformation{};
         transformation.scale[0] = 1;
         transformation.scale[1] = 1;
         transformation.scale[2] = 1;
 
-        auto mdlWidget = new MDLPart(m_cache);
+        const auto mdlWidget = new MDLPart(m_cache);
+        mdlWidget->addThreePointLighting();
         mdlWidget->addVfx(avfx, transformation, QStringLiteral("vfx"));
         addTab(mdlWidget);
     } break;
@@ -427,31 +420,17 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
     }
 
     if (FileTypes::isDebugInformationApplicable(type)) {
-        // TODO: this is sort of inefficient as it re-parses the whole file again...
         auto debugInformation = FileTypes::printDebugInformation(type, m_cache.platform(), file);
-        constexpr int maxDebugInformationLength = 1000000;
+        constexpr int maxDebugInformationLength = 1000000; // NOTE: This is in place so files like bg.shpk (which contains HLSL bytecode) doesn't OOM
         if (debugInformation.length() > maxDebugInformationLength) {
             debugInformation.resize(maxDebugInformationLength);
             debugInformation.append(i18n("<truncated>"));
         }
 
-        const auto debugInformationText = new QTextEdit();
-        debugInformationText->setReadOnly(true);
-        debugInformationText->setFontFamily(QStringLiteral("monospace"));
+        const auto debugInformationText = new TextEditor();
+        debugInformationText->setHighlightingMode(QStringLiteral("rust"));
         debugInformationText->setText(debugInformation);
 
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-        // Setup highlighting
-        KSyntaxHighlighting::Repository repository;
-
-        auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(debugInformationText->document());
-        highlighter->setTheme(debugInformationText->palette().color(QPalette::Base).lightness() < 128
-                                  ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
-                                  : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
-
-        const auto def = repository.definitionForName(QStringLiteral("Rust"));
-        highlighter->setDefinition(def);
-#endif
         m_partHolder->addTab(debugInformationText, QIcon::fromTheme(QStringLiteral("format-text-code-symbolic")), i18nc("@title:tab", "Parsed"));
     }
 
@@ -459,7 +438,7 @@ void MainWindow::loadPart(physis_Buffer file, const QFileInfo &info)
     m_fileActions->setEnabled(!m_fileActionsMenu->isEmpty());
 
     if (file.size > 0) {
-        auto hexWidget = new HexPart();
+        const auto hexWidget = new HexPart();
         hexWidget->loadFile(file);
         m_partHolder->addTab(hexWidget, QIcon::fromTheme(QStringLiteral("text-x-hex")), i18nc("@title:tab", "Bytes"));
     }
@@ -592,7 +571,8 @@ void MainWindow::setupActions()
 
     const auto focusSearch = new QAction(i18nc("@action:inmenu", "Search"));
     focusSearch->setIcon(QIcon::fromTheme(QStringLiteral("search-symbolic")));
-    KActionCollection::setDefaultShortcut(focusSearch, QKeySequence(Qt::CTRL | Qt::Key_F));
+    KActionCollection::setDefaultShortcut(focusSearch,
+                                          QKeySequence(Qt::ALT | Qt::Key_Q)); // NOTE: This isn't CTRL+F because that conflicts with KTextEditor right now
     connect(focusSearch, &QAction::triggered, m_tree, &FileTreeWindow::focusSearchField);
     actionCollection()->addAction(QStringLiteral("search"), focusSearch);
 

@@ -13,13 +13,7 @@
 
 #include "launcherconfig.h"
 #include "scriptprocessor.h"
-
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/FoldingRegion>
-#include <KSyntaxHighlighting/Repository>
-#include <KSyntaxHighlighting/SyntaxHighlighter>
-#include <KSyntaxHighlighting/Theme>
-#endif
+#include "texteditor.h"
 
 LuabPart::LuabPart(QWidget *parent)
     : QWidget(parent)
@@ -27,9 +21,8 @@ LuabPart::LuabPart(QWidget *parent)
     const auto layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
 
-    m_codeEdit = new QTextEdit();
-    m_codeEdit->setReadOnly(true);
-    m_codeEdit->setFontFamily(QStringLiteral("monospace"));
+    m_codeEdit = new TextEditor();
+    m_codeEdit->setHighlightingMode(QStringLiteral("glsl"));
     layout->addWidget(m_codeEdit);
 
     setLayout(layout);
@@ -54,22 +47,9 @@ void LuabPart::load(const physis_Buffer buffer) const
 
         ScriptProcessor processor;
         m_codeEdit->setText(processor.process(QString::fromUtf8(luaDecProcess.readAllStandardOutput())));
-
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-        // Setup highlighting
-        const KSyntaxHighlighting::Repository repository;
-
-        const auto highlighter = new KSyntaxHighlighting::SyntaxHighlighter(m_codeEdit->document());
-        highlighter->setTheme(m_codeEdit->palette().color(QPalette::Base).lightness() < 128
-                                  ? repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme)
-                                  : repository.defaultTheme(KSyntaxHighlighting::Repository::LightTheme));
-
-        const auto def = repository.definitionForName(QStringLiteral("Lua"));
-        highlighter->setDefinition(def);
-#endif
     }
 
-    if (m_codeEdit->toPlainText().isEmpty()) {
+    if (m_codeEdit->text().isEmpty()) {
         m_codeEdit->setText(i18n("Failed to decompile Lua bytecode, please report this as a bug!"));
     }
 }

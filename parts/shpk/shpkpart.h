@@ -3,9 +3,6 @@
 
 #pragma once
 
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-#include <KSyntaxHighlighting/Repository>
-#endif
 #include <QFormLayout>
 #include <QListWidget>
 #include <QPushButton>
@@ -16,6 +13,7 @@
 #include <physis.hpp>
 
 class QScrollArea;
+class TextEditor;
 
 class SHPKPart : public QWidget
 {
@@ -38,7 +36,7 @@ private:
 
     QWidget *m_shadersTab = nullptr;
     QListWidget *m_shadersListWidget = nullptr;
-    QTextEdit *m_shadersTextEdit = nullptr;
+    TextEditor *m_shadersTextEdit = nullptr;
     QListWidget *m_shadersScalarListWidget = nullptr;
     QListWidget *m_shadersTextureListWidget = nullptr;
 
@@ -79,8 +77,4 @@ private:
     QListWidget *m_texturesListWidget;
 
     physis_SHPK m_shpk{};
-
-#ifdef HAVE_SYNTAX_HIGHLIGHTING
-    KSyntaxHighlighting::Repository m_repository;
-#endif
 };

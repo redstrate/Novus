@@ -7,7 +7,7 @@
 #include <QWidget>
 #include <physis.hpp>
 
-class QTextEdit;
+class TextEditor;
 
 class LuabPart : public QWidget
 {
@@ -19,5 +19,5 @@ public:
     void load(physis_Buffer buffer) const;
 
 private:
-    QTextEdit *m_codeEdit = nullptr;
+    TextEditor *m_codeEdit = nullptr;
 };
