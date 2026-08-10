@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="dataexplorer"
-     version="10"
+     version="11"
      xmlns="https://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://www.kde.org/standards/kxmlgui/1.0
@@ -32,4 +32,9 @@
       <Action name="window_color_scheme"/>
     </Menu>
   </MenuBar>
+  <ToolBar name="mainToolBar" >
+    <text>Main Toolbar</text>
+    <Action name="go_back" />
+    <Action name="go_forward" />
+  </ToolBar>
 </gui>
