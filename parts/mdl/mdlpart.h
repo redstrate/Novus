@@ -59,6 +59,8 @@ public:
     QAction *vfxAction() const;
     QAction *collisionAction() const;
 
+    void addThreePointLighting() const;
+
 Q_SIGNALS:
     void modelChanged();
     void skeletonChanged();

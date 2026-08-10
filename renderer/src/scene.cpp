@@ -15,10 +15,4 @@ Scene::Scene()
 void Scene::resetLights()
 {
     lights.clear();
-
-    // Add default directional light
-    SceneLight sceneLight;
-    sceneLight.type = LightShape::World;
-    sceneLight.position = glm::vec3(-0.2f, -1.0f, -0.3f);
-    lights.push_back(sceneLight);
 }

@@ -73,7 +73,7 @@ void main() {
     for (int i = 0; i < MAX_LIGHTS; i++) {
         int lightType = int(lights[i].directionOrPos.w);
         if (lightType == LIGHT_TYPE_DIRECTIONAL) {
-            vec3 lightDir = -lights[i].directionOrPos.xyz;
+            vec3 lightDir = lights[i].directionOrPos.xyz;
 
             float diff = max(dot(norm, lightDir), 0.0);
             lightFactor += lights[i].colorIntensity.rgb * diff * lights[i].colorIntensity.a * INTENSITY_FACTOR;
@@ -110,5 +110,7 @@ void main() {
          }
     }
 
-    outColor = vec4((lightFactor + specular) * diffuse, 1.0);
+    vec3 ambient = vec3(0.05); // TODO: hardcoded
+
+    outColor = vec4((lightFactor + specular) * diffuse + ambient, 1.0);
 }

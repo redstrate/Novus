@@ -276,15 +276,25 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
                        sizeof(glm::mat4),
                        &invView);
 
-    const auto sunPositionFov = glm::vec4(glm::vec3(500), glm::radians(camera.fieldOfView));
-    vkCmdPushConstants(commandBuffer,
-                       m_skyPipelineLayout,
-                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                       sizeof(glm::mat4) * 2,
-                       sizeof(glm::vec4),
-                       &sunPositionFov);
+    std::optional<glm::vec3> sunPosition;
+    for (const auto &light : scene.lights) {
+        if (light.active && light.type == LightShape::World) {
+            sunPosition = light.position;
+            break;
+        }
+    }
 
-    vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+    if (sunPosition.has_value()) {
+        const auto sunPositionFov = glm::vec4(sunPosition.value(), glm::radians(camera.fieldOfView));
+        vkCmdPushConstants(commandBuffer,
+                           m_skyPipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           sizeof(glm::mat4) * 2,
+                           sizeof(glm::vec4),
+                           &sunPositionFov);
+
+        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+    }
 }
 
 void SimpleRenderer::initRenderPass()

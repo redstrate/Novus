@@ -472,29 +472,7 @@ void GearView::changeEvent(QEvent *event)
 void GearView::resetMdlPart() const
 {
     m_mdlPart->clear();
-
-    // Setup some basic three-point lighting
-    m_mdlPart->manager()->scene.lights.clear();
-
-    SceneLight keyLight;
-    keyLight.type = LightShape::Point;
-    keyLight.position = glm::vec3(-5, 5, 5);
-    keyLight.intensity = 5.0f;
-    m_mdlPart->manager()->scene.lights.push_back(keyLight);
-
-    SceneLight backLight;
-    backLight.type = LightShape::Point;
-    backLight.position = glm::vec3(-5, 5, -5);
-    backLight.color = glm::vec3(1, 0, 0);
-    backLight.intensity = 2.0f;
-    m_mdlPart->manager()->scene.lights.push_back(backLight);
-
-    SceneLight fillLight;
-    fillLight.type = LightShape::Point;
-    fillLight.position = glm::vec3(5, 5, 5);
-    fillLight.color = glm::vec3(0, 0, 1);
-    fillLight.intensity = 3.0f;
-    m_mdlPart->manager()->scene.lights.push_back(fillLight);
+    m_mdlPart->addThreePointLighting();
 }
 
 #include "moc_gearview.cpp"

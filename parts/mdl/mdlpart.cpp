@@ -643,6 +643,38 @@ QAction *MDLPart::collisionAction() const
     return m_collisionAction;
 }
 
+void MDLPart::addThreePointLighting() const
+{
+    // Setup some basic three-point lighting
+    manager()->scene.lights.clear();
+
+    SceneLight sunLight{};
+    sunLight.type = LightShape::World;
+    sunLight.intensity = 0.01f;
+    sunLight.position = glm::vec3(0, 500.0f, 0);
+    manager()->scene.lights.push_back(sunLight);
+
+    SceneLight keyLight;
+    keyLight.type = LightShape::Point;
+    keyLight.position = glm::vec3(-5, 5, 5);
+    keyLight.intensity = 5.0f;
+    manager()->scene.lights.push_back(keyLight);
+
+    SceneLight backLight;
+    backLight.type = LightShape::Point;
+    backLight.position = glm::vec3(-5, 5, -5);
+    backLight.color = glm::vec3(1, 0, 0);
+    backLight.intensity = 2.0f;
+    manager()->scene.lights.push_back(backLight);
+
+    SceneLight fillLight;
+    fillLight.type = LightShape::Point;
+    fillLight.position = glm::vec3(5, 5, 5);
+    fillLight.color = glm::vec3(0, 0, 1);
+    fillLight.intensity = 3.0f;
+    manager()->scene.lights.push_back(fillLight);
+}
+
 bool MDLPart::modelExists(const QString &name) const
 {
     return m_vkWindow->sourceModels.contains(name);

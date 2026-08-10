@@ -196,6 +196,14 @@ void MapView::reloadMap()
     transformation.scale[2] = 1;
 
     processScene(m_appState->rootScene, transformation);
+
+    // Add sun light
+    SceneLight sunLight{};
+    sunLight.type = LightShape::World;
+    sunLight.intensity = 0.005f;
+    sunLight.position = glm::vec3(0, 500.0f, 0); // TODO: hardcoded
+
+    m_mdlPart->addLight(sunLight);
 }
 
 void MapView::processScene(ObjectScene &scene, const Transformation &rootTransformation)
