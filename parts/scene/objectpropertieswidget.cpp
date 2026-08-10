@@ -73,6 +73,15 @@ ObjectPropertiesWidget::ObjectPropertiesWidget(SceneState *appState, QWidget *pa
         if (m_appState->selectedLayerSet) {
             refreshLayerSetData(*m_appState->selectedLayerSet.value());
         }
+        if (m_appState->selectedEnvSpace) {
+            refreshEnvSpaceData(*m_appState->selectedEnvSpace.value());
+        }
+        if (m_appState->selectedLcb) {
+            refreshLcbData(m_appState->selectedLcb.value());
+        }
+        if (m_appState->selectedSvb) {
+            refreshSvbData(m_appState->selectedSvb.value());
+        }
     });
 }
 
@@ -475,6 +484,72 @@ void ObjectPropertiesWidget::refreshLayerSetData(physis_ScnLayerSet &layerSet)
     contentFinderConditionEdit->setText(QString::number(layerSet.content_finder_condition_id));
     contentFinderConditionEdit->setReadOnly(true);
     layout->addRow(i18n("ContentFinderCondition"), contentFinderConditionEdit);
+}
+
+void ObjectPropertiesWidget::refreshEnvSpaceData(physis_ScnEnvSpace &envSpace)
+{
+    const auto section = new CollapseSection(i18n("Env Space"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
+    section->setLayout(layout);
+
+    const auto indexEdit = new QLineEdit();
+    indexEdit->setText(QString::number(envSpace.index));
+    indexEdit->setReadOnly(true);
+    layout->addRow(i18n("Index"), indexEdit);
+
+    const auto envLocationIdEdit = new ObjectIdEdit(m_appState);
+    envLocationIdEdit->setObjectId(envSpace.env_location_instance_id);
+    layout->addRow(i18n("EnvLocation ID"), envLocationIdEdit);
+
+    const auto envbEdit = new PathEdit();
+    envbEdit->setPath(QString::fromStdString(envSpace.envb_path));
+    connect(envbEdit, &PathEdit::editingFinished, this, [envbEdit, &envSpace] {
+        envSpace.envb_path = toCString(envbEdit->path());
+    });
+    layout->addRow(i18n("Envb Path"), envbEdit);
+
+    const auto essbEdit = new PathEdit();
+    essbEdit->setPath(QString::fromStdString(envSpace.essb_path));
+    connect(essbEdit, &PathEdit::editingFinished, this, [essbEdit, &envSpace] {
+        envSpace.essb_path = toCString(essbEdit->path());
+    });
+    layout->addRow(i18n("Essb Path"), essbEdit);
+}
+
+void ObjectPropertiesWidget::refreshLcbData(const QString &lcb)
+{
+    const auto section = new CollapseSection(i18n("Light Culling Binary"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
+    section->setLayout(layout);
+
+    const auto pathEdit = new PathEdit();
+    pathEdit->setPath(lcb);
+    pathEdit->setReadOnly(true);
+    layout->addRow(i18n("Path"), pathEdit);
+}
+
+void ObjectPropertiesWidget::refreshSvbData(const QString &svb)
+{
+    const auto section = new CollapseSection(i18n("Sky Visibility Binary"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
+    section->setLayout(layout);
+
+    const auto pathEdit = new PathEdit();
+    pathEdit->setPath(svb);
+    pathEdit->setReadOnly(true);
+    layout->addRow(i18n("Path"), pathEdit);
 }
 
 void ObjectPropertiesWidget::addCommonSection(physis_InstanceObject &object)

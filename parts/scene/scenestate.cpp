@@ -97,6 +97,8 @@ void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
     if (tera_buffer.size > 0) {
         terrain = physis_terrain_parse(cache.platform(), tera_buffer);
     }
+    svbPath = QString::fromStdString(section.general.svb_path);
+    lcbPath = QString::fromStdString(section.general.lcb_path);
 
     const auto loadLgb = [this, &cache](const char *path) {
         const auto bg_buffer = cache.read(QString::fromStdString(path));
@@ -126,6 +128,10 @@ void ObjectScene::load(FileCache &cache, const physis_ScnSection &section)
 
     for (uint32_t i = 0; i < section.layer_sets.layer_set_count; i++) {
         layerSets.push_back(section.layer_sets.layer_sets[i]);
+    }
+
+    for (uint32_t i = 0; i < section.num_env_spaces; i++) {
+        envSpaces.push_back(section.env_spaces[i]);
     }
 
     // Process nested shared groups

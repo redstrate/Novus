@@ -5,6 +5,7 @@
 
 #include <QAbstractItemModel>
 
+struct physis_ScnEnvSpace;
 struct physis_ScnLayerSet;
 struct DropInObject;
 struct ScnSGActionControllerDescriptor;
@@ -48,6 +49,14 @@ enum class TreeType {
     LayerSets,
     /// A layer set.
     LayerSet,
+    /// The SVB file for this scene.
+    SkyVisibilityBinary,
+    /// The LCB file for this scene.
+    LightCullingBinary,
+    /// The env spaces for this scene.
+    EnvSpaces,
+    /// An individual env space.
+    EnvSpace,
 };
 
 struct SceneTreeInformation {
@@ -95,6 +104,9 @@ public:
     static std::optional<DropInObject *> dropInObjectAt(const QModelIndex &index);
     static std::optional<int> terrainPlateAt(const QModelIndex &index);
     static std::optional<physis_ScnLayerSet *> layerSetAt(const QModelIndex &index);
+    static std::optional<physis_ScnEnvSpace *> envSpaceAt(const QModelIndex &index);
+    static std::optional<QString> lcbAt(const QModelIndex &index);
+    static std::optional<QString> svbAt(const QModelIndex &index);
 
 private:
     void refresh();

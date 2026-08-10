@@ -255,12 +255,12 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
 
                 for (uint32_t j = 0; j < obsb.envs[i].sections[section].timeline_count; j++) {
                     const auto &timeline = obsb.envs[i].sections[section].timelines[j];
-                    if (timeline.tag == physis_EnvTimelineElement::Tag::ChangeVisibility) {
+                    if (timeline.tag == physis_EnvTimelineElement::Tag::ObjectVisibility) {
                         OBSBTimeline newTimeline;
 
-                        for (uint32_t g = 0; g < timeline.change_visibility.point_count; g++) {
+                        for (uint32_t g = 0; g < timeline.object_visibility.point_count; g++) {
                             newTimeline.points.push_back(
-                                OBSBPoint{.time = timeline.change_visibility.points[g].time, .visible = timeline.change_visibility.points[g].visible});
+                                OBSBPoint{.time = timeline.object_visibility.points[g].time, .visible = timeline.object_visibility.points[g].visible});
                         }
 
                         scene.obsbTimelines[layer.object_set_referenced[z].instance_id] = newTimeline;

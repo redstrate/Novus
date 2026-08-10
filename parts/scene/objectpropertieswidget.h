@@ -5,6 +5,7 @@
 
 #include <QScrollArea>
 
+struct physis_ScnEnvSpace;
 struct physis_ScnLayerSet;
 struct physis_GameContentsRangeInstanceObject;
 struct physis_WaterRangeInstanceObject;
@@ -69,6 +70,9 @@ private:
     void refreshDropInData(DropInObject *object);
     void refreshPlateData(int index);
     void refreshLayerSetData(physis_ScnLayerSet &layerSet);
+    void refreshEnvSpaceData(physis_ScnEnvSpace &envSpace);
+    void refreshLcbData(const QString &lcb);
+    void refreshSvbData(const QString &svb);
 
     void addCommonSection(physis_InstanceObject &object);
     void addBgPartSection(physis_BgPartInstanceObject &bg);

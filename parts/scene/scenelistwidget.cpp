@@ -51,6 +51,9 @@ SceneListWidget::SceneListWidget(SceneState *appState, QWidget *parent)
         m_appState->selectedDropInObject = m_objectListModel->dropInObjectAt(originalIndex);
         m_appState->selectedPlate = m_objectListModel->terrainPlateAt(originalIndex);
         m_appState->selectedLayerSet = m_objectListModel->layerSetAt(originalIndex);
+        m_appState->selectedEnvSpace = m_objectListModel->envSpaceAt(originalIndex);
+        m_appState->selectedLcb = m_objectListModel->lcbAt(originalIndex);
+        m_appState->selectedSvb = m_objectListModel->svbAt(originalIndex);
         Q_EMIT m_appState->selectionChanged();
     });
     layout->addWidget(treeWidget);

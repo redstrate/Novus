@@ -103,6 +103,9 @@ public:
     std::unordered_map<std::string, physis_Material> cachedMaterials;
     std::unordered_map<uint32_t, OBSBTimeline> obsbTimelines;
     std::vector<physis_ScnLayerSet> layerSets;
+    QString svbPath;
+    QString lcbPath;
+    std::vector<physis_ScnEnvSpace> envSpaces;
 
     /// Key is the ID of the SGB instance.
     std::unordered_map<uint32_t, ObjectScene> nestedScenes;
@@ -143,6 +146,9 @@ public:
     std::optional<DropInObject *> selectedDropInObject;
     std::optional<int> selectedPlate;
     std::optional<physis_ScnLayerSet *> selectedLayerSet;
+    std::optional<physis_ScnEnvSpace *> selectedEnvSpace;
+    std::optional<QString> selectedLcb;
+    std::optional<QString> selectedSvb;
     QList<uint32_t> visibleTerrainPlates;
     physis_Lcb loadedLcb{};
 

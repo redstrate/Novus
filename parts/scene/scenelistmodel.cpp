@@ -106,6 +106,10 @@ QVariant SceneListModel::data(const QModelIndex &index, const int role) const
             case TreeType::DropIns:
             case TreeType::LayerSet:
             case TreeType::LayerSets:
+            case TreeType::EnvSpace:
+            case TreeType::LightCullingBinary:
+            case TreeType::EnvSpaces:
+            case TreeType::SkyVisibilityBinary:
                 return QIcon::fromTheme(QStringLiteral("emblem-documents-symbolic"));
             case TreeType::Layer:
             case TreeType::DropInLayer:
@@ -268,6 +272,33 @@ std::optional<physis_ScnLayerSet *> SceneListModel::layerSetAt(const QModelIndex
     return std::nullopt;
 }
 
+std::optional<physis_ScnEnvSpace *> SceneListModel::envSpaceAt(const QModelIndex &index)
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::EnvSpace) {
+        return item->data.value<physis_ScnEnvSpace *>();
+    }
+    return std::nullopt;
+}
+
+std::optional<QString> SceneListModel::lcbAt(const QModelIndex &index)
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::LightCullingBinary) {
+        return item->data.value<QString>();
+    }
+    return std::nullopt;
+}
+
+std::optional<QString> SceneListModel::svbAt(const QModelIndex &index)
+{
+    const auto item = static_cast<SceneTreeInformation *>(index.internalPointer());
+    if (item && item->type == TreeType::SkyVisibilityBinary) {
+        return item->data.value<QString>();
+    }
+    return std::nullopt;
+}
+
 void SceneListModel::refresh()
 {
     beginResetModel();
@@ -422,6 +453,47 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         }
     }
 
+    if (!scene.envSpaces.empty()) {
+        const auto envSpacesItem = new SceneTreeInformation();
+        envSpacesItem->type = TreeType::EnvSpaces;
+        envSpacesItem->parent = parentNode;
+        envSpacesItem->name = i18n("Env Spaces");
+        envSpacesItem->row = parentNode->children.size();
+        parentNode->children.push_back(envSpacesItem);
+
+        for (uint32_t i = 0; i < scene.envSpaces.size(); i++) {
+            QFileInfo info(QString::fromStdString(scene.envSpaces[i].envb_path));
+
+            auto envSpaceItem = new SceneTreeInformation();
+            envSpaceItem->type = TreeType::EnvSpace;
+            envSpaceItem->parent = envSpacesItem;
+            envSpaceItem->name = info.fileName();
+            envSpaceItem->row = i;
+            envSpaceItem->data = QVariant::fromValue(&scene.envSpaces[i]);
+            envSpacesItem->children.push_back(envSpaceItem);
+        }
+    }
+
+    if (!scene.lcbPath.isEmpty()) {
+        const auto lcbItem = new SceneTreeInformation();
+        lcbItem->type = TreeType::LightCullingBinary;
+        lcbItem->parent = parentNode;
+        lcbItem->name = QFileInfo(scene.lcbPath).fileName();
+        lcbItem->row = parentNode->children.size();
+        lcbItem->data = scene.lcbPath;
+        parentNode->children.push_back(lcbItem);
+    }
+
+    if (!scene.svbPath.isEmpty()) {
+        const auto svbItem = new SceneTreeInformation();
+        svbItem->type = TreeType::SkyVisibilityBinary;
+        svbItem->parent = parentNode;
+        svbItem->name = QFileInfo(scene.svbPath).fileName();
+        svbItem->row = parentNode->children.size();
+        svbItem->data = scene.svbPath;
+        parentNode->children.push_back(svbItem);
+    }
+
     // External LGB files
     for (size_t y = 0; y < scene.lgbFiles.size(); y++) {
         const auto &[name, lgb] = scene.lgbFiles[y];
@@ -446,7 +518,7 @@ void SceneListModel::processScene(SceneTreeInformation *parentNode, ObjectScene 
         }
     }
 
-    // Embeded LGBs
+    // Embedded LGBs
     for (size_t y = 0; y < scene.embeddedLgbs.size(); y++) {
         const auto &lgb = scene.embeddedLgbs[y];
 
