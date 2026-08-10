@@ -35,7 +35,7 @@ enum class FileType {
     SoundCompressedData,
     UIGeneratedData,
     LightClippingBinary,
-    UnderwaterBinary, // TODO: what would this be called?
+    UnderwaterBinary,
     SkyVisibilityBinary,
     Terrain,
     StainingTemplate,
