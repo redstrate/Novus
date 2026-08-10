@@ -31,6 +31,7 @@ public Q_SLOTS:
 
 private:
     void setupActions();
+    void updateNavigationActions() const;
 
     QTabWidget *m_partHolder = nullptr;
     FileCache m_cache;

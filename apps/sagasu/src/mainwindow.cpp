@@ -111,6 +111,7 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
 
     setupActions();
     setupGUI(QSize(1280, 720), Keys | Save | Create | ToolBar, QStringLiteral("dataexplorer.rc"));
+    updateNavigationActions();
 
     // We don't provide help (yet)
     actionCollection()->removeAction(actionCollection()->action(KStandardAction::name(KStandardAction::HelpContents)));
@@ -149,6 +150,7 @@ void MainWindow::back()
     m_navigationPointer--;
     Q_UNUSED(selectPath(m_navigationStack[m_navigationPointer]));
     m_navigatingStack = false;
+    updateNavigationActions();
 }
 
 void MainWindow::forward()
@@ -161,6 +163,7 @@ void MainWindow::forward()
     m_navigationPointer++;
     Q_UNUSED(selectPath(m_navigationStack[m_navigationPointer]));
     m_navigatingStack = false;
+    updateNavigationActions();
 }
 
 void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString &path)
@@ -183,6 +186,8 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
             m_navigationPointer = m_navigationStack.size() - 1;
         }
     }
+
+    updateNavigationActions();
 
     const QFileInfo info(path);
 
@@ -615,6 +620,12 @@ void MainWindow::setupActions()
     windowColorSchemeMenu->menu()->setIcon(QIcon::fromTheme(QStringLiteral("preferences-desktop-color")));
     windowColorSchemeMenu->menu()->setTitle(i18n("&Window Color Scheme"));
     actionCollection()->addAction(QStringLiteral("window_color_scheme"), windowColorSchemeMenu);
+}
+
+void MainWindow::updateNavigationActions() const
+{
+    m_backAction->setEnabled(m_navigationPointer > 0);
+    m_forwardAction->setEnabled(m_navigationPointer + 1 < m_navigationStack.size());
 }
 
 #include "moc_mainwindow.cpp"
