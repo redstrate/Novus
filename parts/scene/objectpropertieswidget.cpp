@@ -1262,10 +1262,6 @@ void ObjectPropertiesWidget::addTargetMarkerSection(physis_TargetMarkerInstanceO
     layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
 
-    const auto nameplateOffsetYEdit = new FloatEdit();
-    nameplateOffsetYEdit->setValue(targetMarker.nameplate_offset_y);
-    layout->addRow(i18n("Nameplate Offset Y(?)"), nameplateOffsetYEdit);
-
     const auto targetMarkerTypeEdit = new EnumEdit<TargetMarkerType>();
     targetMarkerTypeEdit->setValue(targetMarker.target_market_type);
     layout->addRow(i18n("Type"), targetMarkerTypeEdit);
@@ -1306,6 +1302,10 @@ void ObjectPropertiesWidget::addRangeSection(physis_RangeInstanceObject &range)
     const auto layout = new QFormLayout();
     layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
+
+    const auto shapeEdit = new EnumEdit<RangeShape>();
+    shapeEdit->setValue(range.shape);
+    layout->addRow(i18n("Shape"), shapeEdit);
 }
 
 void ObjectPropertiesWidget::addCullingBoxSection(physis_CullingBoxInstanceObject &cullingBox)
@@ -1435,6 +1435,14 @@ void ObjectPropertiesWidget::addWaterRangeSection(physis_WaterRangeInstanceObjec
     const auto layout = new QFormLayout();
     layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
+
+    const auto enabledCheck = new BoolEdit();
+    enabledCheck->setValue(collider.enabled);
+    layout->addRow(i18n("Enabled"), enabledCheck);
+
+    const auto unk2Check = new BoolEdit();
+    unk2Check->setValue(collider.unk2);
+    layout->addRow(i18n("Unk2"), unk2Check);
 }
 
 void ObjectPropertiesWidget::addGameContentsRangeSection(physis_GameContentsRangeInstanceObject &collider)

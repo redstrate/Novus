@@ -518,6 +518,41 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer,
             }
         };
 
+        const auto decideBasedOnRange = [this, commandBuffer](const physis_RangeInstanceObject &range) {
+            auto discardCubeLines = glm::vec4(0);
+            vkCmdPushConstants(commandBuffer,
+                               m_pipelineLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                               sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+                               sizeof(glm::vec4),
+                               &discardCubeLines);
+
+            switch (range.shape) {
+            case RangeShape::Box: {
+                discardCubeLines = glm::vec4(1);
+                vkCmdPushConstants(commandBuffer,
+                                   m_pipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                   sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+                                   sizeof(glm::vec4),
+                                   &discardCubeLines);
+
+                Primitives::DrawCube(commandBuffer);
+            } break;
+            case RangeShape::Sphere:
+                Primitives::DrawSphere(commandBuffer);
+                break;
+            case RangeShape::Cylinder:
+                Primitives::DrawCylinder(commandBuffer);
+                break;
+            case RangeShape::Plane:
+                Primitives::DrawPlane(commandBuffer);
+                break;
+            case RangeShape::None:
+                break;
+            }
+        };
+
         const auto pos = glm::make_vec3(combinedTransform.translation);
 
         switch (object.data.tag) {
@@ -613,6 +648,12 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer,
             break;
         case physis_LayerEntry::Tag::TargetMarker:
             drawBillboard(commandBuffer, camera, m_targetMarkerTexture, billboardColor, pos);
+            break;
+        case physis_LayerEntry::Tag::DoorRange:
+            decideBasedOnRange(object.data.door_range._0.parent_data);
+            break;
+        case physis_LayerEntry::Tag::ClickableRange:
+            decideBasedOnRange(object.data.door_range._0.parent_data);
             break;
         default: {
             constexpr auto discardCubeLines = glm::vec4(1);
