@@ -131,7 +131,7 @@ void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
         addExitRangeSection(object.data.exit_range._0);
         break;
     case physis_LayerEntry::Tag::EventRange:
-        addEventRangeSection(object.data.event_range._0);
+        addEventRangeSection(object.instance_id, object.data.event_range._0);
         break;
     case physis_LayerEntry::Tag::ChairMarker:
         addChairMarkerSection(object.data.chair_marker._0);
@@ -935,7 +935,7 @@ void ObjectPropertiesWidget::addExitRangeSection(physis_ExitRangeInstanceObject 
     layout->addRow(i18n("Unk Instance ID"), unkInstanceIdEdit);
 }
 
-void ObjectPropertiesWidget::addEventRangeSection(physis_EventRangeInstanceObject &eventRange)
+void ObjectPropertiesWidget::addEventRangeSection(const uint32_t instanceId, physis_EventRangeInstanceObject &eventRange)
 {
     addTriggerBoxSection(eventRange.parent_data);
 
@@ -946,6 +946,12 @@ void ObjectPropertiesWidget::addEventRangeSection(physis_EventRangeInstanceObjec
     const auto layout = new QFormLayout();
     layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
+
+    if (auto fateId = m_appState->lookupFateEventRange(instanceId)) {
+        const auto fateIdEdit = new ExcelEdit(m_appState, {QStringLiteral("Fate")}, fateId.value());
+        fateIdEdit->setReadOnly(true);
+        layout->addRow(i18n("Used by FATE"), fateIdEdit);
+    }
 }
 
 void ObjectPropertiesWidget::addChairMarkerSection(physis_ChairMarkerInstanceObject &chairMarker)

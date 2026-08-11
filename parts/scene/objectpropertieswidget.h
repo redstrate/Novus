@@ -86,7 +86,7 @@ private:
     void addSharedGroupSection(physis_SharedGroupInstanceObject &sharedGroup);
     void addAetheryteSection(physis_AetheryteInstanceObject &aetheryte);
     void addExitRangeSection(physis_ExitRangeInstanceObject &exitRange);
-    void addEventRangeSection(physis_EventRangeInstanceObject &eventRange);
+    void addEventRangeSection(uint32_t instanceId, physis_EventRangeInstanceObject &eventRange);
     void addChairMarkerSection(physis_ChairMarkerInstanceObject &chairMarker);
     void addPrefetchRangeSection(physis_PrefetchRangeInstanceObject &prefetchRange);
     void addLightSection(physis_LightInstanceObject &light);

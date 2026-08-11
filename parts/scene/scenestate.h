@@ -169,6 +169,11 @@ public:
      */
     QString lookupBNpcName(uint32_t id) const;
 
+    /**
+     * @return The FATE associated with this event range.
+     */
+    std::optional<uint32_t> lookupFateEventRange(uint32_t id) const;
+
     float longestAnimationTime() const;
 
     void updateAllAnimations(float time);
@@ -190,6 +195,7 @@ private:
     physis_ExcelSheet m_enpcResidentSheet{};
     physis_ExcelSheet m_eobjNameSheet{};
     physis_ExcelSheet m_bnpcNameSheet{};
+    physis_ExcelSheet m_fateSheet{};
     float m_longestAnimationTime = 0.0f;
     FileCache &m_cache;
 };

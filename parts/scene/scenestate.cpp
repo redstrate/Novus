@@ -66,6 +66,22 @@ SceneState::SceneState(FileCache &cache, QObject *parent)
             physis_exh_free(&exh);
         }
     }
+
+    // Fate
+    {
+        const auto exhFile = m_cache.read(QStringLiteral("exd/fate.exh"));
+        if (exhFile.size == 0) {
+            qWarning() << "Failed to read exd/fate.exh";
+        } else {
+            const auto exh = physis_exh_parse(cache.platform(), exhFile);
+            if (!exh.p_ptr) {
+                qWarning() << "Failed to parse exd/fate.exh";
+            } else {
+                m_fateSheet = m_cache.readExcelSheet(QStringLiteral("Fate"), &exh, getLanguage());
+            }
+            physis_exh_free(&exh);
+        }
+    }
 }
 
 SceneState::~SceneState()
@@ -470,6 +486,21 @@ QString SceneState::lookupBNpcName(const uint32_t id) const
         physis_free_row(&row, m_bnpcNameSheet.pages[0].column_count);
     }
     return i18n("Battle NPC");
+}
+
+std::optional<uint32_t> SceneState::lookupFateEventRange(const uint32_t id) const
+{
+    if (m_fateSheet.p_ptr) {
+        for (uint32_t i = 0; i < m_fateSheet.page_count; i++) {
+            for (uint32_t j = 0; j < m_fateSheet.pages[i].entry_count; j++) {
+                // Location column
+                if (m_fateSheet.pages[i].entries[j].subrows[0].columns[9].u_int32._0 == id) {
+                    return m_fateSheet.pages[i].entries[j].row_id;
+                }
+            }
+        }
+    }
+    return {};
 }
 
 float SceneState::longestAnimationTime() const
