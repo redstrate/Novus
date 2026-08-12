@@ -33,6 +33,7 @@
 #include "mtrlpart.h"
 #include "openinwidget.h"
 #include "pathedit.h"
+#include "scdpart.h"
 #include "scenepart.h"
 #include "scenestate.h"
 #include "settings.h"
@@ -202,6 +203,9 @@ void MainWindow::refreshParts(const QString &indexPath, Hash hash, const QString
 
 void MainWindow::loadPart(const physis_Buffer file, const QFileInfo &info)
 {
+    for (auto i = 0; i < m_partHolder->count(); i++) {
+        delete m_partHolder->widget(i);
+    }
     m_partHolder->clear();
 
     m_urlEdit->setText(info.filePath());
@@ -419,6 +423,11 @@ void MainWindow::loadPart(const physis_Buffer file, const QFileInfo &info)
         mdlWidget->addThreePointLighting();
         mdlWidget->addVfx(avfx, transformation, QStringLiteral("vfx"));
         addTab(mdlWidget);
+    } break;
+    case FileType::SoundCompressedData: {
+        const auto scdWidget = new ScdPart();
+        scdWidget->load(m_cache.platform(), file);
+        addTab(scdWidget);
     } break;
     default:
         break;
