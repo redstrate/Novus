@@ -325,6 +325,7 @@ void ImGuiPass::createFontImage()
     texture.data = pixels;
     texture.data_size = width * height * 4;
     texture.mip_levels = 1;
+    texture.layers = 1;
 
     m_fontAtlas = m_renderer.addGameTexture(texture);
     m_renderer.device().nameTexture(m_fontAtlas, "ImGui Font Atlas");

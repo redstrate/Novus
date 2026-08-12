@@ -742,6 +742,7 @@ Texture ObjectPass::addTexture(const QString &path)
     texture.data = image.bits();
     texture.data_size = image.sizeInBytes();
     texture.mip_levels = 1;
+    texture.layers = 1;
 
     auto tex = m_renderer->addGameTexture(texture);
     m_renderer->device().nameTexture(tex, path.toStdString());

@@ -381,9 +381,11 @@ Texture Device::addGameTexture(physis_Texture gameTexture) const
 
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.extent.width = gameTexture.width;
+    imageInfo.extent.height = gameTexture.height;
     imageInfo.extent.depth = gameTexture.depth;
     imageInfo.mipLevels = gameTexture.mip_levels;
-    imageInfo.arrayLayers = 1; // TODO: use from texture data
+    imageInfo.arrayLayers = gameTexture.layers;
 
     if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE1_D) {
         imageInfo.imageType = VK_IMAGE_TYPE_1D;
@@ -393,14 +395,11 @@ Texture Device::addGameTexture(physis_Texture gameTexture) const
     }
     if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE3_D) {
         imageInfo.imageType = VK_IMAGE_TYPE_3D;
-        imageInfo.extent.depth = gameTexture.depth;
     }
     if (gameTexture.attribute & TextureAttribute_TEXTURE_TYPE2_D_ARRAY) {
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.arrayLayers = gameTexture.depth; // just a guess
     }
-    imageInfo.extent.width = gameTexture.width;
-    imageInfo.extent.height = gameTexture.height;
+
     switch (gameTexture.format) {
     case TextureFormat::A8_UNORM:
         imageInfo.format = VK_FORMAT_A8_UNORM;
@@ -531,55 +530,70 @@ Texture Device::addGameTexture(physis_Texture gameTexture) const
 
     vkBindBufferMemory(device, stagingBuffer, stagingBufferMemory, 0);
 
-    // copy to staging buffer
-    void *mapped_data;
-    vkMapMemory(device, stagingBufferMemory, 0, gameTexture.data_size, 0, &mapped_data);
-    memcpy(mapped_data, gameTexture.data, gameTexture.data_size);
-    vkUnmapMemory(device, stagingBufferMemory);
+    for (int i = 0; i < gameTexture.layers; i++) {
+        for (int j = 0; j < gameTexture.mip_levels; j++) {
+            auto mipData = physis_tex_mip_data(&gameTexture, j);
+            if (mipData.start == mipData.end) {
+                // HACK: this fallback is meant for ImGuiPass and ObjectPass, can be removed once they can port away from addGameTexture.
+                mipData.width = gameTexture.width;
+                mipData.height = gameTexture.height;
+                mipData.start = 0;
+                mipData.end = gameTexture.data_size;
+            }
 
-    // copy staging buffer to image
-    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+            // copy to staging buffer
+            void *mapped_data;
+            vkMapMemory(device, stagingBufferMemory, 0, gameTexture.data_size, 0, &mapped_data);
+            memcpy(mapped_data, gameTexture.data + mipData.start, mipData.end - mipData.start);
+            vkUnmapMemory(device, stagingBufferMemory);
 
-    VkImageSubresourceRange range = {};
-    range.baseMipLevel = 0;
-    range.levelCount = 1;
-    range.baseArrayLayer = 0;
-    range.layerCount = 1;
+            VkImageSubresourceRange range = {};
+            range.baseMipLevel = j;
+            range.levelCount = 1;
+            range.baseArrayLayer = i;
+            range.layerCount = 1;
 
-    inlineTransitionImageLayout(commandBuffer,
-                                newTexture.image,
-                                imageInfo.format,
-                                VK_IMAGE_ASPECT_COLOR_BIT,
-                                range,
-                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            // copy staging buffer to image
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
-    VkBufferImageCopy region = {};
-    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    region.imageSubresource.mipLevel = 0;
-    region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = 1;
-    region.imageExtent = {static_cast<uint32_t>(gameTexture.width), static_cast<uint32_t>(gameTexture.height), static_cast<uint32_t>(gameTexture.depth)};
+            inlineTransitionImageLayout(commandBuffer,
+                                        newTexture.image,
+                                        imageInfo.format,
+                                        VK_IMAGE_ASPECT_COLOR_BIT,
+                                        range,
+                                        VK_IMAGE_LAYOUT_UNDEFINED,
+                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-    vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, newTexture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+            VkBufferImageCopy region = {};
+            region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.imageSubresource.mipLevel = j;
+            region.imageSubresource.baseArrayLayer = i;
+            region.imageSubresource.layerCount = 1;
+            region.imageExtent.width = mipData.width;
+            region.imageExtent.height = mipData.height;
+            region.imageExtent.depth = 1;
 
-    inlineTransitionImageLayout(commandBuffer,
-                                newTexture.image,
-                                imageInfo.format,
-                                VK_IMAGE_ASPECT_COLOR_BIT,
-                                range,
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, newTexture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    endSingleTimeCommands(commandBuffer);
+            inlineTransitionImageLayout(commandBuffer,
+                                        newTexture.image,
+                                        imageInfo.format,
+                                        VK_IMAGE_ASPECT_COLOR_BIT,
+                                        range,
+                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+            endSingleTimeCommands(commandBuffer);
+        }
+    }
 
     // free staging resources
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
 
-    range = {};
-    range.levelCount = 1;
-    range.layerCount = 1;
+    VkImageSubresourceRange range = {};
+    range.levelCount = gameTexture.mip_levels;
+    range.layerCount = gameTexture.layers;
     range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
     VkImageViewCreateInfo viewInfo = {};
