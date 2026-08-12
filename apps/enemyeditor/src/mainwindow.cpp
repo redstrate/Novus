@@ -37,7 +37,7 @@ MainWindow::MainWindow(const physis_SqPackResource data)
 
     const auto model = new EnemyModel(m_cache);
 
-    m_part = new MDLPart(m_cache);
+    m_part = new MDLPart(m_cache, false, this);
     m_part->minimumCameraDistance = 0.05f;
 
     const auto skelName = physis_skeleton_path(Race::Hyur, Tribe::Midlander, Gender::Male);

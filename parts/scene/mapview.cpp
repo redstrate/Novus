@@ -25,7 +25,7 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
     , m_cache(cache)
     , m_appState(appState)
 {
-    m_mdlPart = new MDLPart(m_cache);
+    m_mdlPart = new MDLPart(m_cache, false, this);
     m_mdlPart->enableFreemode();
     connect(m_mdlPart, &MDLPart::initializeRender, this, [this, appState] {
         m_mdlPart->manager()->addPass(new ObjectPass(m_mdlPart->manager(), appState));

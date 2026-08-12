@@ -261,7 +261,7 @@ void MainWindow::loadPart(const physis_Buffer file, const QFileInfo &info)
             transformation.scale[1] = 1;
             transformation.scale[2] = 1;
 
-            auto mdlWidget = new MDLPart(m_cache);
+            auto mdlWidget = new MDLPart(m_cache, true, this);
             std::vector<std::pair<std::string, physis_Material>> materials(mdl.num_material_names);
             for (uint32_t i = 0; i < mdl.num_material_names; i++) {
                 materials[i] = {mdl.material_names[i], physis_material_parse(m_cache.platform(), m_cache.read(QString::fromUtf8(mdl.material_names[i])))};
@@ -419,7 +419,7 @@ void MainWindow::loadPart(const physis_Buffer file, const QFileInfo &info)
         transformation.scale[1] = 1;
         transformation.scale[2] = 1;
 
-        const auto mdlWidget = new MDLPart(m_cache);
+        const auto mdlWidget = new MDLPart(m_cache, false, this);
         mdlWidget->addThreePointLighting();
         mdlWidget->addVfx(avfx, transformation, QStringLiteral("vfx"));
         addTab(mdlWidget);

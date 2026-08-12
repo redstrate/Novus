@@ -9,6 +9,7 @@
 #include "mdlexport.h"
 #include "rendermanager.h"
 
+class QVBoxLayout;
 class QVulkanInstance;
 class VulkanWindow;
 class FileCache;
@@ -18,7 +19,7 @@ class MDLPart : public QWidget
     Q_OBJECT
 
 public:
-    explicit MDLPart(FileCache &cache, QWidget *parent = nullptr);
+    explicit MDLPart(FileCache &cache, bool showDetails, QWidget *parent = nullptr);
     ~MDLPart() override;
 
     void exportModel(const QString &fileName) const;
@@ -143,4 +144,5 @@ private:
     QAction *m_debugFrustumCullingAction = nullptr;
     QAction *m_vfxAction = nullptr;
     QAction *m_collisionAction = nullptr;
+    QVBoxLayout *m_detailsLayout = nullptr;
 };

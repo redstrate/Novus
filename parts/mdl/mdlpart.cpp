@@ -5,9 +5,9 @@
 #include "glm/gtx/transform.hpp"
 
 #include <KLocalizedString>
+#include <QHBoxLayout>
 #include <QJsonObject>
 #include <QResizeEvent>
-#include <QVBoxLayout>
 #include <QVulkanWindow>
 #include <cmath>
 #include <glm/gtc/quaternion.hpp>
@@ -15,13 +15,14 @@
 
 #include "filecache.h"
 #include "knownvalues.h"
+#include "pathedit.h"
 #include "vulkanwindow.h"
 
-MDLPart::MDLPart(FileCache &cache, QWidget *parent)
+MDLPart::MDLPart(FileCache &cache, bool showDetails, QWidget *parent)
     : QWidget(parent)
     , m_cache(cache)
 {
-    const auto viewportLayout = new QVBoxLayout();
+    const auto viewportLayout = new QHBoxLayout();
     viewportLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(viewportLayout);
 
@@ -51,6 +52,17 @@ MDLPart::MDLPart(FileCache &cache, QWidget *parent)
     widget->installEventFilter(m_vkWindow);
 
     viewportLayout->addWidget(widget);
+
+    if (showDetails) {
+        const auto detailsLayoutHolder = new QWidget();
+        detailsLayoutHolder->setMaximumWidth(200);
+
+        m_detailsLayout = new QVBoxLayout();
+        m_detailsLayout->setAlignment(Qt::AlignTop);
+        detailsLayoutHolder->setLayout(m_detailsLayout);
+
+        viewportLayout->addWidget(detailsLayoutHolder);
+    }
 
     connect(this, &MDLPart::modelChanged, this, &MDLPart::reloadRenderer);
     connect(this, &MDLPart::skeletonChanged, this, &MDLPart::reloadBoneData);
@@ -143,6 +155,14 @@ void MDLPart::addModel(const physis_MDL &mdl,
         std::ranges::transform(materials, std::back_inserter(model->materials), [this](const std::pair<std::string, physis_Material> &mat) {
             return createOrCacheMaterial(mat.first, mat.second);
         });
+
+        if (m_detailsLayout) {
+            for (const auto &path : materials | std::views::keys) {
+                const auto pathEdit = new PathEdit();
+                pathEdit->setPath(QString::fromStdString(path));
+                m_detailsLayout->addWidget(pathEdit);
+            }
+        }
 
         if (materials.empty()) {
             model->materials.push_back(createOrCacheMaterial("invalid", physis_Material{}));

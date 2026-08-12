@@ -17,7 +17,7 @@ GearView::GearView(FileCache &cache, QWidget *parent)
     setFrameShape(Panel);
     setFrameShadow(Sunken);
 
-    m_mdlPart = new MDLPart(m_cache);
+    m_mdlPart = new MDLPart(m_cache, false, this);
     reloadRaceDeforms();
 
     const auto layout = new QVBoxLayout();

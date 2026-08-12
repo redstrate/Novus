@@ -70,7 +70,7 @@ QString buildMtrlPath(const ModelCharaType type, const uint16_t model, const uin
 EnemyModel::EnemyModel(FileCache &cache)
     : m_cache(cache)
 {
-    m_part = new MDLPart(m_cache);
+    m_part = new MDLPart(m_cache, false);
     m_part->minimumCameraDistance = 0.05f;
     // TODO: terrible hack WRT to DPI but it works
     m_part->setMinimumSize(128 / m_part->devicePixelRatio(), 128 / m_part->devicePixelRatio());
