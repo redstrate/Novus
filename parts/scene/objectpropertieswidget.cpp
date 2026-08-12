@@ -1090,6 +1090,50 @@ void ObjectPropertiesWidget::addVfxSection(physis_VfxInstanceObject &vfx)
         vfx.asset_path = toCString(assetPathEdit->path());
     });
     layout->addRow(i18n("Asset Path"), assetPathEdit);
+
+    const auto softEdit = new FloatEdit();
+    softEdit->setValue(vfx.soft_particle_fade_range);
+    layout->addRow(i18n("Soft Particle Fade Range"), softEdit);
+
+    // TODO
+    const auto colorEdit = new ColorEdit();
+    layout->addRow(i18n("Color"), colorEdit);
+
+    const auto activeEdit = new BoolEdit();
+    activeEdit->setValue(vfx.active);
+    layout->addRow(i18n("Active"), activeEdit);
+
+    const auto unk1Edit = new BoolEdit();
+    unk1Edit->setValue(vfx.unk1);
+    layout->addRow(i18n("Unk1"), unk1Edit);
+
+    const auto unk2Edit = new BoolEdit();
+    unk2Edit->setValue(vfx.unk2);
+    layout->addRow(i18n("Unk2"), unk2Edit);
+
+    const auto fadeNearStartEdit = new FloatEdit();
+    fadeNearStartEdit->setValue(vfx.fade_near_start);
+    layout->addRow(i18n("Fade Near Start"), fadeNearStartEdit);
+
+    const auto fadeNearEndEdit = new FloatEdit();
+    fadeNearEndEdit->setValue(vfx.fade_near_end);
+    layout->addRow(i18n("Fade Near End"), fadeNearEndEdit);
+
+    const auto fadeFarStartEdit = new FloatEdit();
+    fadeFarStartEdit->setValue(vfx.fade_far_start);
+    layout->addRow(i18n("Fade Far Start"), fadeFarStartEdit);
+
+    const auto fadeFarEndEdit = new FloatEdit();
+    fadeFarEndEdit->setValue(vfx.fade_far_end);
+    layout->addRow(i18n("Fade Far End"), fadeFarEndEdit);
+
+    const auto zCorrectEdit = new FloatEdit();
+    zCorrectEdit->setValue(vfx.z_correct);
+    layout->addRow(i18n("Z Correct"), zCorrectEdit);
+
+    const auto unk3Edit = new FloatEdit();
+    unk3Edit->setValue(vfx.unk3);
+    layout->addRow(i18n("Unk3"), unk3Edit);
 }
 
 void ObjectPropertiesWidget::addEnvSetSection(physis_EnvSetInstanceObject &envSet)
