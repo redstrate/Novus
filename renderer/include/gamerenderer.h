@@ -41,7 +41,7 @@ public:
 private:
     struct RequestedBinding {
         VkDescriptorType type = VK_DESCRIPTOR_TYPE_SAMPLER;
-        VkShaderStageFlags stageFlags = VK_SHADER_STAGE_ALL;
+        VkShaderStageFlags stageFlags = 0;
         bool used = false;
         std::string originalName; // as seen in the HLSL
 

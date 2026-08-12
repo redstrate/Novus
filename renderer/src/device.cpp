@@ -242,10 +242,8 @@ Texture Device::createDummyTexture(const std::array<uint8_t, 4> values) const
 
 Buffer Device::createDummyBuffer() const
 {
-    auto buffer = createBuffer(655360, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    auto buffer = createBuffer(655360, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     nameBuffer(buffer, "Dummy Buffer");
-
-    // TODO: fill with data?
 
     return buffer;
 }

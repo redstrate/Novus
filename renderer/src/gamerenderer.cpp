@@ -68,7 +68,6 @@ GameRenderer::GameRenderer(Device &device, FileCache &cache)
     m_device.nameTexture(m_blackTex, "Black Dummy Texture");
 
     m_dummyBuffer = m_device.createDummyBuffer();
-    m_device.nameBuffer(m_dummyBuffer, "Dummy Buffer");
 
     const size_t vertexSize = planeVertices.size() * sizeof(glm::vec4);
     m_planeVertexBuffer = m_device.createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -1022,7 +1021,8 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
 
         const auto &collectResources = [&requestedSets](const spirv_cross::CompilerGLSL &glsl,
                                                         const spirv_cross::SmallVector<spirv_cross::Resource> &resources,
-                                                        const VkShaderStageFlagBits stageFlagBit) {
+                                                        const VkShaderStageFlagBits stageFlagBit,
+                                                        const VkDescriptorType descriptorType) {
             for (const auto &resource : resources) {
                 const unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
                 const unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
@@ -1038,29 +1038,22 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
                     requestSet.bindings.resize(binding + 1);
                 }
 
-                const auto type = glsl.get_type(resource.type_id);
-
-                if (type.basetype == spirv_cross::SPIRType::Image) {
-                    requestSet.bindings[binding].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-                } else if (type.basetype == spirv_cross::SPIRType::Struct) {
-                    requestSet.bindings[binding].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                } else if (type.basetype == spirv_cross::SPIRType::Sampler) {
-                    requestSet.bindings[binding].type = VK_DESCRIPTOR_TYPE_SAMPLER;
-                }
-
+                requestSet.bindings[binding].type = descriptorType;
                 requestSet.bindings[binding].used = true;
                 requestSet.bindings[binding].stageFlags |= stageFlagBit;
                 requestSet.bindings[binding].originalName = resource.name;
             }
         };
 
-        collectResources(vertex_glsl, vertex_resources.uniform_buffers, VK_SHADER_STAGE_VERTEX_BIT);
-        collectResources(vertex_glsl, vertex_resources.separate_images, VK_SHADER_STAGE_VERTEX_BIT);
-        collectResources(vertex_glsl, vertex_resources.separate_samplers, VK_SHADER_STAGE_VERTEX_BIT);
+        collectResources(vertex_glsl, vertex_resources.uniform_buffers, VK_SHADER_STAGE_VERTEX_BIT, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        collectResources(vertex_glsl, vertex_resources.separate_images, VK_SHADER_STAGE_VERTEX_BIT, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+        collectResources(vertex_glsl, vertex_resources.separate_samplers, VK_SHADER_STAGE_VERTEX_BIT, VK_DESCRIPTOR_TYPE_SAMPLER);
+        collectResources(vertex_glsl, vertex_resources.storage_buffers, VK_SHADER_STAGE_VERTEX_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
-        collectResources(fragment_glsl, fragment_resources.uniform_buffers, VK_SHADER_STAGE_FRAGMENT_BIT);
-        collectResources(fragment_glsl, fragment_resources.separate_images, VK_SHADER_STAGE_FRAGMENT_BIT);
-        collectResources(fragment_glsl, fragment_resources.separate_samplers, VK_SHADER_STAGE_FRAGMENT_BIT);
+        collectResources(fragment_glsl, fragment_resources.uniform_buffers, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        collectResources(fragment_glsl, fragment_resources.separate_images, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+        collectResources(fragment_glsl, fragment_resources.separate_samplers, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_SAMPLER);
+        collectResources(fragment_glsl, fragment_resources.storage_buffers, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
         for (auto &set : requestedSets) {
             if (set.used) {
@@ -1287,8 +1280,6 @@ GameRenderer::CachedPipeline &GameRenderer::bindPipeline(VkCommandBuffer command
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        // pipelineLayoutInfo.pushConstantRangeCount = 1;
-        // pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
         std::vector<VkDescriptorSetLayout> setLayouts;
         for (auto &set : requestedSets) {
@@ -1520,7 +1511,8 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
 
                 info->sampler = m_normalSampler;
             } break;
-            case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
+            case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+            case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
                 auto info = &bufferInfo.emplace_back();
                 descriptorWrite.pBufferInfo = info;
 
@@ -1568,9 +1560,8 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                     } else if (strcmp(name, "g_FogParameter") == 0) {
                         useUniformBuffer(g_FogParameter);
                     } else {
-                        qInfo() << "Unknown resource:" << name;
-                        info->buffer = m_dummyBuffer.buffer;
-                        info->range = 655360;
+                        qWarning() << "Unknown resource:" << name;
+                        useUniformBuffer(m_dummyBuffer);
                     }
                 };
 
@@ -1578,17 +1569,18 @@ VkDescriptorSet GameRenderer::createDescriptorFor(const DrawObject *object,
                     const auto name = cachedPipeline.vertexShader.scalar_parameters[z].name;
 
                     bindBuffer(name);
-                    z++;
                 } else if (binding.stageFlags == VK_SHADER_STAGE_FRAGMENT_BIT) {
                     const auto name = cachedPipeline.pixelShader.scalar_parameters[z].name;
 
                     bindBuffer(name);
-                    z++;
                 } else {
+                    qWarning() << "Stage flags not handled:" << binding.stageFlags;
+
                     // placeholder buffer so it at least doesn't crash
                     info->buffer = m_dummyBuffer.buffer;
-                    info->range = 655360;
+                    info->range = m_dummyBuffer.size;
                 }
+                z++;
             } break;
             default:
                 break;

@@ -231,6 +231,7 @@ RenderManager::RenderManager(FileCache &cache)
     enabledFeatures.shaderCullDistance = VK_TRUE;
     enabledFeatures.fillModeNonSolid = VK_TRUE;
     enabledFeatures.imageCubeArray = VK_TRUE;
+    enabledFeatures.fragmentStoresAndAtomics = VK_TRUE;
 
     VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT unusedAttachmentsFeaturesExt{};
     unusedAttachmentsFeaturesExt.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT;
