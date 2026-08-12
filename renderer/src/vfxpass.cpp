@@ -180,6 +180,9 @@ void VfxPass::createPipeline()
     depthStencil.maxDepthBounds = 1.0f;
 
     auto renderer = dynamic_cast<SimpleRenderer *>(m_renderer.renderer());
+    if (!renderer) {
+        return;
+    }
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
