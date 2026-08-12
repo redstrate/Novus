@@ -176,7 +176,7 @@ void MapView::addTerrain(ObjectScene &scene) const
                 .scale = {1, 1, 1},
             };
 
-            m_mdlPart->addModel(plateMdl, false, transformation, QStringLiteral("terapart%1").arg(i), materials);
+            m_mdlPart->addModel(plateMdl, false, transformation, QStringLiteral("terapart%1").arg(i), materials, scene.terrain.clip_distance);
 
             // We don't need this, and it will just take up memory
             physis_mdl_free(&plateMdl);
@@ -305,7 +305,12 @@ void MapView::processLayer(ObjectScene &scene, const physis_Layer &layer, const 
                             materials.emplace_back(std::make_pair(material_name, scene.cachedMaterials[material_name]));
                         }
 
-                        m_mdlPart->addModel(plateMdl, false, combinedTransform, QString::fromStdString(assetPath), materials);
+                        m_mdlPart->addModel(plateMdl,
+                                            false,
+                                            combinedTransform,
+                                            QString::fromStdString(assetPath),
+                                            materials,
+                                            object.data.bg_part._0.fade_out_distance);
 
                         // We don't need this, and it will just take up memory
                         physis_mdl_free(&plateMdl);

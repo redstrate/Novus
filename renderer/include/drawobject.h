@@ -80,4 +80,5 @@ struct DrawObjectInstance {
     DrawObject *sourceObject = nullptr;
     Transformation transformation;
     BoundingBox lastBoundingBox{};
+    float clipOutDistance = 0.0f;
 };

@@ -651,7 +651,7 @@ void RenderManager::reloadDrawObject(DrawObject &DrawObject) const
                     const size_t vertexSize = part.num_vertices * sizeof(Vertex);
                     renderPart.vertexBuffer = m_device->createBuffer(vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
                     m_device->copyToBuffer(renderPart.vertexBuffer, part.vertices, vertexSize);
-                    m_device->nameBuffer(renderPart.vertexBuffer, "Vertex Buffer for MDL");
+                    m_device->nameBuffer(renderPart.vertexBuffer, "Vertex Buffer for MDL " + std::to_string(lod));
                 } else {
                     qWarning() << DrawObject.name << "Lod" << lod << "Part" << i << "has zero vertices, is that supposed to happen?";
                 }

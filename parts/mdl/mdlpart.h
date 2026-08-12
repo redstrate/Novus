@@ -87,6 +87,7 @@ public Q_SLOTS:
                   const Transformation &transformation,
                   const QString &name,
                   std::vector<std::pair<std::string, physis_Material>> materials,
+                  float clipOutDistance = 0.0f,
                   uint16_t fromBodyId = 101,
                   uint16_t toBodyId = 101);
 

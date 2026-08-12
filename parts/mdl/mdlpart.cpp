@@ -140,6 +140,7 @@ void MDLPart::addModel(const physis_MDL &mdl,
                        const Transformation &transformation,
                        const QString &name,
                        std::vector<std::pair<std::string, physis_Material>> materials,
+                       const float clipOutDistance,
                        const uint16_t fromBodyId,
                        const uint16_t toBodyId)
 {
@@ -172,7 +173,7 @@ void MDLPart::addModel(const physis_MDL &mdl,
     }
 
     Q_ASSERT(model != nullptr);
-    m_vkWindow->models.push_back(DrawObjectInstance{name, model, transformation});
+    m_vkWindow->models.push_back(DrawObjectInstance{name, model, transformation, {}, clipOutDistance});
 
     Q_EMIT modelChanged();
 }

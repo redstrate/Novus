@@ -138,6 +138,11 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             continue;
         }
 
+        if (model.clipOutDistance > 0.0 && distance > model.clipOutDistance) {
+            scene.culledObjects++; // TODO: introduce a separate count?
+            continue;
+        }
+
         // Shitty unoptimized frustum check
         glm::vec4 boundMin = glm::make_vec4(model.sourceObject->model.bounding_box.min);
         glm::vec4 boundMax = glm::make_vec4(model.sourceObject->model.bounding_box.max);

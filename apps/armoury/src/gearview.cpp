@@ -356,6 +356,7 @@ void GearView::updatePart()
                                         transformation,
                                         sanitizeMdlPath(mdlPath),
                                         materials,
+                                        0.0f,
                                         physis_get_race_code(currentRace, currentTribe, currentGender),
                                         gearAddition.bodyId);
                     gearAddition.mdl = mdl;
