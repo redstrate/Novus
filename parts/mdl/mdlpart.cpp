@@ -95,6 +95,8 @@ MDLPart::~MDLPart()
 {
     physis_pbd_free(&pbd);
     destroyObjects();
+    m_renderer->destroySwapchain(false);
+    delete m_vkWindow;
 }
 
 void MDLPart::exportModel(const QString &fileName) const
