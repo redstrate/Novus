@@ -36,7 +36,7 @@ SimpleRenderer::SimpleRenderer(Device &device)
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.maxLod = 1.0f;
+    samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
 
     vkCreateSampler(m_device.device, &samplerInfo, nullptr, &m_sampler);
 
