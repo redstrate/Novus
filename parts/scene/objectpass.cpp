@@ -480,6 +480,14 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer,
                            sizeof(glm::vec4),
                            &debugColor);
 
+        auto discardCubeLines = glm::vec4(0);
+        vkCmdPushConstants(commandBuffer,
+                           m_pipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+                           sizeof(glm::vec4),
+                           &discardCubeLines);
+
         const auto decideBasedOnTrigger = [this, commandBuffer](const physis_TriggerBoxInstanceObject &trigger) {
             auto discardCubeLines = glm::vec4(0);
             vkCmdPushConstants(commandBuffer,
@@ -519,17 +527,9 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer,
         };
 
         const auto decideBasedOnRange = [this, commandBuffer](const physis_RangeInstanceObject &range) {
-            auto discardCubeLines = glm::vec4(0);
-            vkCmdPushConstants(commandBuffer,
-                               m_pipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                               sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
-                               sizeof(glm::vec4),
-                               &discardCubeLines);
-
             switch (range.shape) {
             case RangeShape::Box: {
-                discardCubeLines = glm::vec4(1);
+                const glm::vec4 discardCubeLines = glm::vec4(1);
                 vkCmdPushConstants(commandBuffer,
                                    m_pipelineLayout,
                                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -579,13 +579,19 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer,
                 for (uint32_t i = 0; i < object.data.pop_range._0.position_count; i++) {
                     setModel({object.data.pop_range._0.positions[i][0], object.data.pop_range._0.positions[i][1], object.data.pop_range._0.positions[i][2]},
                              glm::vec3(0.1));
-                    constexpr auto discardCubeLines = false;
-                    vkCmdPushConstants(commandBuffer,
-                                       m_pipelineLayout,
-                                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                                       sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
-                                       sizeof(glm::vec4),
-                                       &discardCubeLines);
+                    Primitives::DrawCube(commandBuffer);
+                }
+            }
+            drawBillboard(commandBuffer, camera, m_poprangeTexture, billboardColor, pos);
+        } break;
+        case physis_LayerEntry::Tag::ClientPath: {
+            // Only show positions when the PopRange is selected to reduce the noise...
+            if (m_appState->selectedObject && m_appState->selectedObject.value() == &object) {
+                for (uint32_t i = 0; i < object.data.client_path._0.parent_data.control_point_count; i++) {
+                    setModel({object.data.client_path._0.parent_data.control_points[i].position[0],
+                              object.data.client_path._0.parent_data.control_points[i].position[1],
+                              object.data.client_path._0.parent_data.control_points[i].position[2]},
+                             glm::vec3(0.1));
                     Primitives::DrawCube(commandBuffer);
                 }
             }
@@ -654,6 +660,9 @@ void ObjectPass::addLayer(VkCommandBuffer commandBuffer,
             break;
         case physis_LayerEntry::Tag::ClickableRange:
             decideBasedOnRange(object.data.door_range._0.parent_data);
+            break;
+        case physis_LayerEntry::Tag::SphereCastRange:
+            Primitives::DrawSphere(commandBuffer);
             break;
         default: {
             constexpr auto discardCubeLines = glm::vec4(1);

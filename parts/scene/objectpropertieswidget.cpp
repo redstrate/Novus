@@ -191,7 +191,13 @@ void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
         addGameContentsRangeSection(object.data.game_contents_range._0);
         break;
     case physis_LayerEntry::Tag::FateRange:
-        addFateRangeSection();
+        addFateRangeSection(object.data.fate_range._0);
+        break;
+    case physis_LayerEntry::Tag::ClientPath:
+        addClientPathSection(object.data.client_path._0);
+        break;
+    case physis_LayerEntry::Tag::SphereCastRange:
+        addSphereCastRangeSection();
         break;
     default:
         break;
@@ -667,6 +673,11 @@ void ObjectPropertiesWidget::addPopRangeSection(physis_PopRangeInstanceObject &p
     const auto layout = new QFormLayout();
     layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
+
+    const auto countEdit = new QLineEdit();
+    countEdit->setText(QString::number(pop.position_count));
+    countEdit->setReadOnly(true);
+    layout->addRow(i18n("Position Count"), countEdit);
 
     const auto typeEdit = new EnumEdit<PopType>();
     typeEdit->setValue(pop.pop_type);
@@ -1284,9 +1295,21 @@ void ObjectPropertiesWidget::addClientPathSection(physis_ClientPathInstanceObjec
     const auto layout = new QFormLayout();
     layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
+
+    const auto unk1Check = new BoolEdit();
+    unk1Check->setValue(clientPath.unk1);
+    layout->addRow(i18n("Unk1"), unk1Check);
+
+    const auto unk2Check = new BoolEdit();
+    unk2Check->setValue(clientPath.unk2);
+    layout->addRow(i18n("Unk2"), unk2Check);
+
+    const auto unk3Check = new BoolEdit();
+    unk3Check->setValue(clientPath.unk3);
+    layout->addRow(i18n("Unk3"), unk3Check);
 }
 
-void ObjectPropertiesWidget::addPathSection(physis_PathInstanceObject &)
+void ObjectPropertiesWidget::addPathSection(physis_PathInstanceObject &path)
 {
     const auto section = new CollapseSection(i18n("Path"));
     m_layout->addWidget(section);
@@ -1295,6 +1318,11 @@ void ObjectPropertiesWidget::addPathSection(physis_PathInstanceObject &)
     const auto layout = new QFormLayout();
     layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
+
+    const auto countEdit = new QLineEdit();
+    countEdit->setText(QString::number(path.control_point_count));
+    countEdit->setReadOnly(true);
+    layout->addRow(i18n("Control Point Count"), countEdit);
 }
 
 void ObjectPropertiesWidget::addRangeSection(physis_RangeInstanceObject &range)
@@ -1464,9 +1492,27 @@ void ObjectPropertiesWidget::addGameContentsRangeSection(physis_GameContentsRang
     section->setLayout(layout);
 }
 
-void ObjectPropertiesWidget::addFateRangeSection()
+void ObjectPropertiesWidget::addFateRangeSection(physis_FateRangeInstanceObject &fateRange)
 {
+    addRangeSection(fateRange.parent_data);
+
     const auto section = new CollapseSection(i18n("Fate Range"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
+    section->setLayout(layout);
+
+    const auto fateLayoutIdEdit = new QLineEdit();
+    fateLayoutIdEdit->setText(QString::number(fateRange.fate_layout_label_id));
+    fateLayoutIdEdit->setReadOnly(true);
+    layout->addRow(i18n("Fate Layout Label Id(?)"), fateLayoutIdEdit);
+}
+
+void ObjectPropertiesWidget::addSphereCastRangeSection()
+{
+    const auto section = new CollapseSection(i18n("Sphere Cast Range"));
     m_layout->addWidget(section);
     m_sections.push_back(section);
 
