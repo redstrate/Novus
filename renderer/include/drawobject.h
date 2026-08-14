@@ -66,7 +66,8 @@ struct DrawObject {
     size_t chooseLod(const float distance) const
     {
         for (size_t i = 0; i < lods.size(); i++) {
-            if (distance < lods[i].range) {
+            // Last LoDs have 0.0 as their range
+            if (lods[i].range != 0.0 && distance < lods[i].range / 100.0f) {
                 return i;
             }
         }

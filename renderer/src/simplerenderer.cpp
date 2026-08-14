@@ -133,7 +133,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
 
         // Not sure if this is the intended use case of this property, but we can use it for some shitty culling
         // Note that the 0.0 check is because terrain models usually have 0 here.
-        if (model.sourceObject->model.model_clip_out_of_distance > 0.0 && distance > model.sourceObject->model.model_clip_out_of_distance) {
+        if (model.sourceObject->model.model_clip_out_of_distance > 0.0 && distance > model.sourceObject->model.model_clip_out_of_distance / 100.0f) {
             scene.culledObjects++; // TODO: introduce a separate count?
             continue;
         }
