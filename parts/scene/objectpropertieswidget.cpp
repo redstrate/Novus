@@ -199,6 +199,9 @@ void ObjectPropertiesWidget::refreshObjectData(physis_InstanceObject &object)
     case physis_LayerEntry::Tag::SphereCastRange:
         addSphereCastRangeSection();
         break;
+    case physis_LayerEntry::Tag::Weapon:
+        addWeaponSection(object.data.weapon._0);
+        break;
     default:
         break;
     }
@@ -1563,6 +1566,27 @@ void ObjectPropertiesWidget::addSphereCastRangeSection()
     const auto layout = new QFormLayout();
     layout->setContentsMargins({0, 0, 0, 0});
     section->setLayout(layout);
+}
+
+void ObjectPropertiesWidget::addWeaponSection(physis_WeaponInstanceObject &weapon)
+{
+    const auto section = new CollapseSection(i18n("Weapon"));
+    m_layout->addWidget(section);
+    m_sections.push_back(section);
+
+    const auto layout = new QFormLayout();
+    layout->setContentsMargins({0, 0, 0, 0});
+    section->setLayout(layout);
+
+    const auto weaponIdEdit = new UIntEdit(weapon.weapon_id, this);
+    layout->addRow(i18n("Weapon ID"), weaponIdEdit);
+
+    const auto animationVariantEdit = new UIntEdit(weapon.animation_variant, this);
+    layout->addRow(i18n("Weapon ID"), animationVariantEdit);
+
+    const auto visibleEdit = new BoolEdit();
+    visibleEdit->setValue(weapon.visible);
+    layout->addRow(i18n("Visible"), visibleEdit);
 }
 
 #include "moc_objectpropertieswidget.cpp"

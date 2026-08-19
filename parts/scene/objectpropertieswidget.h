@@ -5,6 +5,7 @@
 
 #include <QScrollArea>
 
+struct physis_WeaponInstanceObject;
 struct physis_FateRangeInstanceObject;
 struct physis_ScnEnvSpace;
 struct physis_ScnLayerSet;
@@ -114,6 +115,7 @@ private:
     void addGameContentsRangeSection(physis_GameContentsRangeInstanceObject &collider);
     void addFateRangeSection(physis_FateRangeInstanceObject &fateRange);
     void addSphereCastRangeSection();
+    void addWeaponSection(physis_WeaponInstanceObject &weapon);
 
     SceneState *m_appState = nullptr;
     QVBoxLayout *m_layout = nullptr;
