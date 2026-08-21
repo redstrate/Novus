@@ -240,20 +240,22 @@ void MainWindow::openMap(const QString &basePath, const int territoryType, const
                 const auto instanceContentSheet = m_cache.readExcelSheet(QStringLiteral("InstanceContent"), &instanceContentExh, Language::None);
 
                 const auto instanceContentRow = physis_excel_get_row(&instanceContentSheet, instanceContentId);
+                if (instanceContentRow.columns) {
+                    m_lgbEventRange = instanceContentRow.columns[7].u_int32._0;
+                    const auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
 
-                m_lgbEventRange = instanceContentRow.columns[7].u_int32._0;
+                    const auto mapEffectExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/ContentDirectorManagedSG.exh")));
+                    const auto mapEffectSheet = m_cache.readExcelSheet(QStringLiteral("ContentDirectorManagedSG"), &mapEffectExh, Language::None);
 
-                const auto mapEffectId = instanceContentRow.columns[64].u_int16._0;
-
-                const auto mapEffectExh = physis_exh_parse(m_cache.platform(), m_cache.read(QStringLiteral("exd/ContentDirectorManagedSG.exh")));
-                const auto mapEffectSheet = m_cache.readExcelSheet(QStringLiteral("ContentDirectorManagedSG"), &mapEffectExh, Language::None);
-
-                const auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
-                for (size_t i = 0; i < effectCount; i++) {
-                    const auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
-                    if (effectRow.columns) {
-                        m_mapEffects.push_back(effectRow.columns[0].int32._0);
+                    const auto effectCount = physis_excel_get_subrow_count(&mapEffectSheet, mapEffectId);
+                    for (size_t i = 0; i < effectCount; i++) {
+                        const auto effectRow = physis_excel_get_subrow(&mapEffectSheet, mapEffectId, i);
+                        if (effectRow.columns) {
+                            m_mapEffects.push_back(effectRow.columns[0].int32._0);
+                        }
                     }
+                } else {
+                    qWarning() << "Could not find instance content row" << instanceContentId << "map effects and other things won't function!";
                 }
             }
         }
