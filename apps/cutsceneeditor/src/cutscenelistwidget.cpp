@@ -25,20 +25,28 @@ CutsceneListWidget::CutsceneListWidget(FileCache &cache, QWidget *parent)
     const auto layout = new QVBoxLayout();
     setLayout(layout);
 
-    m_searchModel = new QSortFilterProxyModel(this);
-    m_searchModel->setRecursiveFilteringEnabled(true);
-    m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
+    m_cutsceneSearchModel = new QSortFilterProxyModel(this);
+    m_cutsceneSearchModel->setRecursiveFilteringEnabled(true);
+    m_cutsceneSearchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
+
+    m_questSearchModel = new QSortFilterProxyModel(this);
+    m_questSearchModel->setRecursiveFilteringEnabled(true);
+    m_questSearchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
 
     const auto searchEdit = new QLineEdit();
     searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     connect(searchEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
-        m_searchModel->setFilterFixedString(text);
+        m_cutsceneSearchModel->setFilterFixedString(text);
+        m_questSearchModel->setFilterFixedString(text);
     });
     layout->addWidget(searchEdit);
 
+    m_tabWidget = new QTabWidget();
+    layout->addWidget(m_tabWidget);
+
     const auto originalModel = new QStandardItemModel(this);
-    m_searchModel->setSourceModel(originalModel);
+    m_cutsceneSearchModel->setSourceModel(originalModel);
 
     const auto cutsceneExhFile = m_cache.read(QStringLiteral("exd/Cutscene.exh"));
     if (cutsceneExhFile.size == 0) {
@@ -60,6 +68,7 @@ CutsceneListWidget::CutsceneListWidget(FileCache &cache, QWidget *parent)
 
             const auto item = new QStandardItem();
             item->setText(qPath);
+            item->setData(qPath);
 
             originalModel->insertRow(originalModel->rowCount(), item);
 
@@ -67,17 +76,69 @@ CutsceneListWidget::CutsceneListWidget(FileCache &cache, QWidget *parent)
         }
     }
 
-    physis_sqpack_free_excel_sheet(&cutsceneSheet);
+    m_cutsceneListWidget = new QListView();
+    m_cutsceneListWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
+    m_cutsceneListWidget->setModel(m_cutsceneSearchModel);
 
+    connect(m_cutsceneListWidget, &QListView::activated, this, &CutsceneListWidget::accept);
+
+    m_tabWidget->addTab(m_cutsceneListWidget, i18n("Cutscene"));
+
+    const auto originalJournalModel = new QStandardItemModel(this);
+    m_questSearchModel->setSourceModel(originalJournalModel);
+
+    const auto completeJournalExhFile = m_cache.read(QStringLiteral("exd/CompleteJournal.exh"));
+    if (completeJournalExhFile.size == 0) {
+        qWarning() << "Could not load CompleteJournal Excel header!";
+    }
+    const auto completeJournalExh = physis_exh_parse(m_cache.platform(), completeJournalExhFile);
+    const auto completeJournalSheet = m_cache.readExcelSheet(QStringLiteral("CompleteJournal"), &completeJournalExh, getLanguage());
+
+    for (uint32_t i = 0; i < completeJournalExh.pages[0].row_count; i++) {
+        auto journalRow = physis_excel_get_row(&completeJournalSheet, i);
+        if (journalRow.columns) {
+            const char *name = journalRow.columns[5].string._0;
+            if (strlen(name) == 0) {
+                physis_free_row(&journalRow, completeJournalExh.column_count);
+                continue;
+            }
+
+            QString qName = QString::fromStdString(name);
+
+            int z = 1;
+            for (uint32_t j = 6; j < 30; j++) {
+                const auto cutsceneRowId = journalRow.columns[j].int32._0;
+                if (cutsceneRowId > 0) {
+                    auto cutsceneRow = physis_excel_get_row(&cutsceneSheet, cutsceneRowId);
+                    const char *path = cutsceneRow.columns[0].string._0;
+                    const QString qPath = QString::fromStdString(path);
+                    physis_free_row(&cutsceneRow, cutsceneExh.column_count);
+
+                    const auto item = new QStandardItem();
+                    item->setText(i18n("%1 (Cutscene #%2)", qName, z++));
+                    item->setData(qPath);
+
+                    originalJournalModel->insertRow(originalJournalModel->rowCount(), item);
+                }
+            }
+
+            physis_free_row(&journalRow, completeJournalExh.column_count);
+        }
+    }
+
+    physis_sqpack_free_excel_sheet(&cutsceneSheet);
     physis_exh_free(&cutsceneExh);
 
-    m_listWidget = new QListView();
-    m_listWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
-    m_listWidget->setModel(m_searchModel);
+    physis_sqpack_free_excel_sheet(&completeJournalSheet);
+    physis_exh_free(&completeJournalExh);
 
-    connect(m_listWidget, &QListView::activated, this, &CutsceneListWidget::accept);
+    m_questListWidget = new QListView();
+    m_questListWidget->setEditTriggers(QListView::EditTrigger::NoEditTriggers);
+    m_questListWidget->setModel(m_questSearchModel);
 
-    layout->addWidget(m_listWidget);
+    connect(m_questListWidget, &QListView::activated, this, &CutsceneListWidget::accept);
+
+    m_tabWidget->addTab(m_questListWidget, i18n("Quest"));
 
     auto buttonBox = new QDialogButtonBox(QDialogButtonBox::Open | QDialogButtonBox::Cancel);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &CutsceneListWidget::accept);
@@ -85,8 +146,14 @@ CutsceneListWidget::CutsceneListWidget(FileCache &cache, QWidget *parent)
     layout->addWidget(buttonBox);
 
     // Disable when there's no selection
-    connect(m_listWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this, buttonBox] {
-        buttonBox->button(QDialogButtonBox::Open)->setEnabled(m_listWidget->selectionModel()->hasSelection());
+    connect(m_cutsceneListWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this, buttonBox] {
+        const QListView *listView = nullptr;
+        if (m_tabWidget->currentIndex() == 0) {
+            listView = m_cutsceneListWidget;
+        } else {
+            listView = m_questListWidget;
+        }
+        buttonBox->button(QDialogButtonBox::Open)->setEnabled(listView->selectionModel()->hasSelection());
     });
 
     // And it should be disabled by default
@@ -100,10 +167,20 @@ QString CutsceneListWidget::acceptedCutscene() const
 
 void CutsceneListWidget::accept()
 {
+    const QListView *listView = nullptr;
+    const QSortFilterProxyModel *searchModel = nullptr;
+    if (m_tabWidget->currentIndex() == 0) {
+        listView = m_cutsceneListWidget;
+        searchModel = m_cutsceneSearchModel;
+    } else {
+        listView = m_questListWidget;
+        searchModel = m_questSearchModel;
+    }
+
     // Figure out the selection first
-    const auto index = m_listWidget->selectionModel()->selectedIndexes().constFirst();
+    const auto index = listView->selectionModel()->selectedIndexes().constFirst();
     if (index.isValid()) {
-        m_acceptedCutscene = m_searchModel->mapToSource(index).data(Qt::DisplayRole).toString();
+        m_acceptedCutscene = searchModel->mapToSource(index).data(Qt::UserRole + 1).toString();
     }
 
     QDialog::accept();

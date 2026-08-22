@@ -22,9 +22,12 @@ public:
     void accept() override;
 
 private:
-    QListView *m_listWidget = nullptr;
+    QListView *m_cutsceneListWidget = nullptr;
+    QListView *m_questListWidget = nullptr;
 
     FileCache &m_cache;
     QString m_acceptedCutscene;
-    QSortFilterProxyModel *m_searchModel = nullptr;
+    QSortFilterProxyModel *m_cutsceneSearchModel = nullptr;
+    QSortFilterProxyModel *m_questSearchModel = nullptr;
+    QTabWidget *m_tabWidget = nullptr;
 };
