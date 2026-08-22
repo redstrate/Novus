@@ -33,7 +33,7 @@ MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
     searchEdit->setPlaceholderText(i18nc("@info:placeholder", "Search…"));
     searchEdit->setClearButtonEnabled(true);
     connect(searchEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
-        m_searchModel->setFilterRegularExpression(text);
+        m_searchModel->setFilterFixedString(text);
     });
     layout->addWidget(searchEdit);
 
