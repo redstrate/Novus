@@ -4,7 +4,7 @@ SPDX-PackageSupplier = "Joshua Goins <josh@redstrate.com>"
 SPDX-PackageDownloadLocation = "https://github.com/redstrate/Novus"
 
 [[annotations]]
-path = ["apps/sdklauncher/sdklauncher.rc", "apps/armoury/geareditor.rc", "apps/karuku/exceleditor.rc", "apps/sagasu/dataexplorer.rc", "apps/mapeditor/mapeditor.rc", "apps/enemyeditor/enemyeditor.rc", "apps/patchdiff/patchdiff.rc"]
+path = ["apps/cutsceneeditor/cutsceneeditor.rc", "apps/sdklauncher/sdklauncher.rc", "apps/armoury/geareditor.rc", "apps/karuku/exceleditor.rc", "apps/sagasu/dataexplorer.rc", "apps/mapeditor/mapeditor.rc", "apps/enemyeditor/enemyeditor.rc", "apps/patchdiff/patchdiff.rc"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "Joshua Goins <josh@redstrate.com>"
 SPDX-License-Identifier = "GPL-3.0-or-later"
