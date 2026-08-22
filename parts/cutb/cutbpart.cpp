@@ -10,6 +10,7 @@
 
 #include "magic_enum.hpp"
 #include "scenepart.h"
+#include "scenestate.h"
 
 CutbPart::CutbPart(FileCache &cache, QWidget *parent)
     : QWidget(parent)
@@ -23,10 +24,13 @@ CutbPart::CutbPart(FileCache &cache, QWidget *parent)
     m_layout->addWidget(m_sceneListWidget);
 
     connect(m_sceneListWidget, &QListWidget::itemClicked, [this](const QListWidgetItem *item) {
+        m_part->clear();
+
         const QString lvbPath = QStringLiteral("bg/%1.lvb").arg(item->data(Qt::DisplayRole).toString());
         const auto lvbFile = m_cache.read(lvbPath);
         if (lvbFile.size > 0) {
             m_part->loadLvb(lvbFile);
+            Q_EMIT m_part->sceneState()->mapLoaded();
         } else {
             qWarning() << "Failed to load scene" << lvbPath;
         }
@@ -38,6 +42,7 @@ CutbPart::CutbPart(FileCache &cache, QWidget *parent)
 
 void CutbPart::load(const Platform platform, const physis_Buffer file) const
 {
+    m_part->clear();
     m_sceneListWidget->clear();
 
     const auto cutb = physis_cutb_parse(platform, file);
