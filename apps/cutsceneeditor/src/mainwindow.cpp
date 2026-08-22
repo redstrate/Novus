@@ -3,6 +3,8 @@
 
 #include "mainwindow.h"
 
+#include "cutbpart.h"
+
 #include <KActionCollection>
 #include <KActionMenu>
 #include <KColorSchemeManager>
@@ -34,6 +36,9 @@ MainWindow::MainWindow(const physis_SqPackResource data)
 
     const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
+
+    m_part = new CutbPart(this);
+    setCentralWidget(m_part);
 }
 
 MainWindow::~MainWindow() = default;
@@ -45,7 +50,13 @@ void MainWindow::setupActions()
         [this] {
             auto listWidget = new CutsceneListWidget(m_cache, this);
             connect(listWidget, &CutsceneListWidget::accepted, this, [this, listWidget] {
-                // openMap(listWidget->acceptedMap(), listWidget->acceptedTerritoryType(), listWidget->acceptedContentFinderCondition());
+                const auto cutscene = QStringLiteral("cut/%1.cutb").arg(listWidget->acceptedCutscene());
+                const auto cutsceneFile = m_cache.read(cutscene);
+                if (cutsceneFile.data) {
+                    m_part->load(m_cache.platform(), cutsceneFile);
+                } else {
+                    qWarning() << "Unable to load cutscene file" << cutscene;
+                }
             });
             listWidget->show();
         },

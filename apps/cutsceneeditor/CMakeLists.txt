@@ -19,6 +19,7 @@ target_link_libraries(novus-cutsceneeditor
         Novus::Common
         Novus::MdlPart
         Novus::ScenePart
+        Novus::CutbPart
         Physis::Physis
         Qt6::Core
         Qt6::Widgets

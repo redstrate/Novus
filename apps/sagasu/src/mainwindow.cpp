@@ -21,6 +21,7 @@
 #include <magic_enum.hpp>
 
 #include "cmppart.h"
+#include "cutbpart.h"
 #include "dicpart.h"
 #include "excelresolver.h"
 #include "exdpart.h"
@@ -428,6 +429,11 @@ void MainWindow::loadPart(const physis_Buffer file, const QFileInfo &info)
         const auto scdWidget = new ScdPart();
         scdWidget->load(m_cache.platform(), file);
         addTab(scdWidget);
+    } break;
+    case FileType::CutsceneBinary: {
+        const auto cutbWidget = new CutbPart();
+        cutbWidget->load(m_cache.platform(), file);
+        addTab(cutbWidget);
     } break;
     default:
         break;

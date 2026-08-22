@@ -7,6 +7,7 @@
 
 #include "filecache.h"
 
+class CutbPart;
 class QLabel;
 class ScenePart;
 class ObjectPropertiesWidget;
@@ -26,4 +27,5 @@ private:
     void setupActions();
 
     FileCache m_cache;
+    CutbPart *m_part = nullptr;
 };
