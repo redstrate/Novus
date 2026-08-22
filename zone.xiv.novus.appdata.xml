@@ -30,6 +30,7 @@
     <launchable type="desktop-id">zone.xiv.novus.mapeditor.desktop</launchable>
     <launchable type="desktop-id">zone.xiv.novus.enemyeditor.desktop</launchable>
     <launchable type="desktop-id">zone.xiv.novus.patchdiff.desktop</launchable>
+    <launchable type="desktop-id">zone.xiv.novus.cutsceneeditor.desktop</launchable>
     <releases>
         <release version="0.1.0"/>
     </releases>
@@ -40,7 +41,8 @@
         <binary>novus-mapeditor</binary>
         <binary>novus-sagasu</binary>
         <binary>novus-enemyeditor</binary>
-        <binary>novus-patchdiff</binary>
+        <binary>novus-patchdiff</binary>]
+        <binary>novus-cutsceneeditor</binary>
     </provides>
     <recommends>
         <display_length compare="ge">600</display_length>

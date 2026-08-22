@@ -14,6 +14,7 @@ file (GENERATE
 #define ENEMYEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-enemyeditor>\")\n\
 #define PATCHDIFF_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-patchdiff>\")\n\
 #define LUADEC_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:luadec>\")\n\
+#define CUTSCENEEDITOR_EXECUTABLE QStringLiteral(\"$<TARGET_FILE_NAME:novus-cutsceneeditor>\")\n\
         "
 )
 

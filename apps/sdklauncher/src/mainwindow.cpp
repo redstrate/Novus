@@ -29,7 +29,8 @@ static QMap<QString, QPair<QString, QString>> applications = {
     {QStringLiteral("Excel Editor"), {QStringLiteral("zone.xiv.novus.exceleditor"), EXCELEDITOR_EXECUTABLE}},
     {QStringLiteral("Data Explorer"), {QStringLiteral("zone.xiv.novus.dataexplorer"), DATAEXPLORER_EXECUTABLE}},
     {QStringLiteral("Enemy Editor"), {QStringLiteral("zone.xiv.novus.enemyeditor"), ENEMYEDITOR_EXECUTABLE}},
-    {QStringLiteral("Patch Diff"), {QStringLiteral("zone.xiv.novus.patchdiff"), PATCHDIFF_EXECUTABLE}}};
+    {QStringLiteral("Patch Diff"), {QStringLiteral("zone.xiv.novus.patchdiff"), PATCHDIFF_EXECUTABLE}},
+    {QStringLiteral("Cutscene Editor"), {QStringLiteral("zone.xiv.novus.cutsceneeditor"), CUTSCENEEDITOR_EXECUTABLE}}};
 
 MainWindow::MainWindow()
 {
