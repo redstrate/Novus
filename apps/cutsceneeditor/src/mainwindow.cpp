@@ -37,7 +37,7 @@ MainWindow::MainWindow(const physis_SqPackResource data)
     const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
 
-    m_part = new CutbPart(this);
+    m_part = new CutbPart(m_cache, this);
     setCentralWidget(m_part);
 }
 

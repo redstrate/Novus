@@ -8,17 +8,21 @@
 #include <QWidget>
 #include <physis.hpp>
 
+class QListWidget;
+class FileCache;
+class ScenePart;
 class CutbPart : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit CutbPart(QWidget *parent = nullptr);
+    explicit CutbPart(FileCache &cache, QWidget *parent = nullptr);
 
-    void load(Platform platform, physis_Buffer file);
+    void load(Platform platform, physis_Buffer file) const;
 
 private:
-    physis_CMP m_cmp{};
-
     QHBoxLayout *m_layout = nullptr;
+    ScenePart *m_part = nullptr;
+    FileCache &m_cache;
+    QListWidget *m_sceneListWidget = nullptr;
 };

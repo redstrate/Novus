@@ -431,7 +431,7 @@ void MainWindow::loadPart(const physis_Buffer file, const QFileInfo &info)
         addTab(scdWidget);
     } break;
     case FileType::CutsceneBinary: {
-        const auto cutbWidget = new CutbPart();
+        const auto cutbWidget = new CutbPart(m_cache);
         cutbWidget->load(m_cache.platform(), file);
         addTab(cutbWidget);
     } break;

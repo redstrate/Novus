@@ -10,7 +10,8 @@ target_link_libraries(cutbpart
         Physis::Physis
         magic_enum
         Qt6::Core
-        Qt6::Widgets)
+        Qt6::Widgets
+        Novus::ScenePart)
 target_include_directories(cutbpart PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(cutbpart PRIVATE TRANSLATION_DOMAIN="novus")
 

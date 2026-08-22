@@ -5,54 +5,58 @@
 
 #include <KLocalizedString>
 #include <QFormLayout>
-#include <QGroupBox>
-#include <QTreeWidget>
+#include <QListWidget>
 #include <physis.hpp>
 
 #include "magic_enum.hpp"
+#include "scenepart.h"
 
-CutbPart::CutbPart(QWidget *parent)
+CutbPart::CutbPart(FileCache &cache, QWidget *parent)
     : QWidget(parent)
+    , m_cache(cache)
 {
     m_layout = new QHBoxLayout();
     setLayout(m_layout);
+
+    m_sceneListWidget = new QListWidget();
+    m_sceneListWidget->setMaximumWidth(200);
+    m_layout->addWidget(m_sceneListWidget);
+
+    connect(m_sceneListWidget, &QListWidget::itemClicked, [this](const QListWidgetItem *item) {
+        const QString lvbPath = QStringLiteral("bg/%1.lvb").arg(item->data(Qt::DisplayRole).toString());
+        const auto lvbFile = m_cache.read(lvbPath);
+        if (lvbFile.size > 0) {
+            m_part->loadLvb(lvbFile);
+        } else {
+            qWarning() << "Failed to load scene" << lvbPath;
+        }
+    });
+
+    m_part = new ScenePart(m_cache);
+    m_layout->addWidget(m_part);
 }
 
-void CutbPart::load(const Platform platform, const physis_Buffer file)
+void CutbPart::load(const Platform platform, const physis_Buffer file) const
 {
-    m_cmp = physis_cmp_parse(platform, file);
+    m_sceneListWidget->clear();
 
-    const auto raceListWidget = new QTreeWidget();
-    raceListWidget->setMaximumWidth(200);
-    raceListWidget->setHeaderLabel(i18nc("@title:column", "Scenes"));
-    m_layout->addWidget(raceListWidget);
-
-    // for (const auto &race : raceTree) {
-    //     const auto item = new QTreeWidgetItem();
-    //     item->setText(0, QLatin1String(magic_enum::enum_name(race.baseRace).data()));
-    //     raceListWidget->addTopLevelItem(item);
-    //
-    //     for (const auto subrace : race.subRaces) {
-    //         const auto subItem = new QTreeWidgetItem();
-    //         subItem->setText(0, QLatin1String(magic_enum::enum_name(subrace).data()));
-    //         subItem->setData(0, Qt::UserRole, QVariant::fromValue(new RaceTreeData(race.baseRace, subrace)));
-    //         item->addChild(subItem);
-    //     }
-    // }
-
-    raceListWidget->expandAll();
-
-    // connect(raceListWidget, &QTreeWidget::itemClicked, [this](const QTreeWidgetItem *item, const int column) {
-    //     Q_UNUSED(column)
-    //     if (const auto treeData = qvariant_cast<RaceTreeData *>(item->data(0, Qt::UserRole))) {
-    //         loadRaceData(treeData->race, treeData->subrace);
-    //     }
-    // });
-
-    const auto detailBox = new QGroupBox();
-    m_layout->addWidget(detailBox);
-    const auto detailBoxLayout = new QFormLayout();
-    detailBox->setLayout(detailBoxLayout);
+    const auto cutb = physis_cutb_parse(platform, file);
+    if (cutb.num_nodes > 0) {
+        for (uint32_t i = 0; i < cutb.num_nodes; i++) {
+            const auto node = cutb.nodes[i];
+            switch (node.tag) {
+            case physis_CutsceneNode::Tag::Ctds: {
+                const auto item = new QListWidgetItem();
+                item->setText(QString::fromStdString(node.ctds._0.level_name));
+                m_sceneListWidget->addItem(item);
+            } break;
+            case physis_CutsceneNode::Tag::Unknown:
+                break;
+            }
+        }
+    } else {
+        qWarning() << "Empty or invalid cutb file!";
+    }
 }
 
 #include "moc_cutbpart.cpp"
