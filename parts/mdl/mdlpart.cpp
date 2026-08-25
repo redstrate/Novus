@@ -227,6 +227,8 @@ void MDLPart::destroyObjects()
 
     m_renderer->scene.resetLights();
 
+    m_vkWindow->sourceVfx.clear();
+    m_vkWindow->vfx.clear();
     m_vkWindow->models.clear();
     for (const auto &model : m_vkWindow->sourceModels | std::views::values) {
         m_renderer->destroyDrawObject(*model);
