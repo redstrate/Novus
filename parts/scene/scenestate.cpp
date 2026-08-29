@@ -219,7 +219,7 @@ void SceneState::load(FileCache &cache, const physis_ScnSection &section, const 
     }
 
     const auto checkLayer = [this, &idealLayerSet](const auto &layer) {
-        if (!layer.visible) {
+        if (!layer.active) {
             return;
         }
 

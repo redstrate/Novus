@@ -223,7 +223,7 @@ void ObjectPropertiesWidget::refreshLayerData(physis_Layer &layer)
     layout->addRow(i18n("Name"), nameEdit);
 
     const auto visibleEdit = new BoolEdit();
-    visibleEdit->setValue(layer.visible);
+    visibleEdit->setValue(layer.active);
     layout->addRow(i18n("Visible"), visibleEdit);
 
     const auto idEdit = new QLineEdit();
@@ -731,15 +731,14 @@ void ObjectPropertiesWidget::addMapRangeSection(physis_MapRangeInstanceObject &m
     const auto bgmEdit = new ExcelEdit(m_appState, {QStringLiteral("BGM")}, mapRange.bgm);
     layout->addRow(i18n("BGM"), bgmEdit);
 
-    const auto unk1Edit = new QLineEdit();
-    unk1Edit->setReadOnly(true);
-    unk1Edit->setText(QString::number(mapRange.unk1));
-    layout->addRow(i18n("UNK1"), unk1Edit);
+    const auto unk1Edit = new BoolEdit();
+    unk1Edit->setValue(mapRange.unk1);
+    layout->addRow(i18n("Unk1"), unk1Edit);
 
-    const auto unk2Edit = new QLineEdit();
-    unk2Edit->setReadOnly(true);
-    unk2Edit->setText(QString::number(mapRange.unk2));
-    layout->addRow(i18n("UNK2"), unk2Edit);
+    const auto housingSubdivisionEdit = new QLineEdit();
+    housingSubdivisionEdit->setReadOnly(true);
+    housingSubdivisionEdit->setText(QString::number(mapRange.housing_subdivision));
+    layout->addRow(i18n("Housing subdivision"), housingSubdivisionEdit);
 
     const auto housingBlockIdEdit = new QLineEdit();
     housingBlockIdEdit->setReadOnly(true);
