@@ -83,9 +83,9 @@ bool VulkanWindow::event(QEvent *e)
     case QEvent::MouseButtonPress: {
         const auto mouseEvent = dynamic_cast<QMouseEvent *>(e);
 
-        m_part->setFocus(Qt::FocusReason::MouseFocusReason);
-
         if (m_part->isEnabled() && (mouseEvent->button() == Qt::MouseButton::LeftButton || mouseEvent->button() == Qt::MouseButton::RightButton)) {
+            m_part->setFocus(Qt::FocusReason::MouseFocusReason);
+
             m_part->lastX = mouseEvent->position().x();
             m_part->lastY = mouseEvent->position().y();
             m_part->cameraMode = mouseEvent->button() == Qt::MouseButton::LeftButton ? MDLPart::CameraMode::Orbit : MDLPart::CameraMode::Move;
@@ -97,7 +97,7 @@ bool VulkanWindow::event(QEvent *e)
         }
     } break;
     case QEvent::MouseButtonRelease: {
-        if (m_part->isEnabled()) {
+        if (m_part->isEnabled() && m_part->cameraMode != MDLPart::CameraMode::None) {
             m_part->cameraMode = MDLPart::CameraMode::None;
 
             setKeyboardGrabEnabled(false);
