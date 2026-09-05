@@ -17,6 +17,7 @@
 #include "scenestate.h"
 #include "swapchain.h"
 #include "utility.h"
+#include "vulkanwindow.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -27,6 +28,7 @@ MapView::MapView(FileCache &cache, SceneState *appState, QWidget *parent)
 {
     m_mdlPart = new MDLPart(m_cache, false, this);
     m_mdlPart->enableFreemode();
+    m_mdlPart->vkWindow()->lazyUpdate = true; // Otherwise large maps end up lagging the interface quite a bit, especially on low-end systems.
     connect(m_mdlPart, &MDLPart::initializeRender, this, [this, appState] {
         m_mdlPart->manager()->addPass(new ObjectPass(m_mdlPart->manager(), appState));
     });

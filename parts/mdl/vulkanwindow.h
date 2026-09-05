@@ -22,6 +22,8 @@ public:
     bool freeMode = false;
     std::vector<VfxObjectInstance> vfx;
     std::unordered_map<QString, VfxObject *> sourceVfx;
+    // If enabled, the window will not update unless specifically requested.
+    bool lazyUpdate = false;
 
 protected:
     void exposeEvent(QExposeEvent *) override;

@@ -68,6 +68,7 @@ bool VulkanWindow::event(QEvent *e)
                                resizeEvent->size().width() * screen()->devicePixelRatio(),
                                resizeEvent->size().height() * screen()->devicePixelRatio());
         }
+        requestUpdate();
     } break;
     case QEvent::Hide: {
         m_renderer->destroySwapchain(false);
@@ -91,6 +92,8 @@ bool VulkanWindow::event(QEvent *e)
 
             setKeyboardGrabEnabled(true);
             setCursor(Qt::BlankCursor);
+
+            Q_EMIT m_part->cameraMoved();
         }
     } break;
     case QEvent::MouseButtonRelease: {
@@ -99,6 +102,8 @@ bool VulkanWindow::event(QEvent *e)
 
             setKeyboardGrabEnabled(false);
             setCursor({});
+
+            Q_EMIT m_part->cameraMoved();
         }
     } break;
     case QEvent::MouseMove: {
@@ -118,6 +123,8 @@ bool VulkanWindow::event(QEvent *e)
 
             m_part->lastX = mouseEvent->position().x();
             m_part->lastY = mouseEvent->position().y();
+
+            Q_EMIT m_part->cameraMoved();
         }
     } break;
     case QEvent::Wheel: {
@@ -126,6 +133,8 @@ bool VulkanWindow::event(QEvent *e)
         if (m_part->isEnabled()) {
             m_part->cameraDistance -= scrollEvent->angleDelta().y() / 120.0f * 0.1f; // FIXME: why 120?
             m_part->cameraDistance = std::clamp(m_part->cameraDistance, m_part->minimumCameraDistance, 4.0f);
+
+            Q_EMIT m_part->cameraMoved();
         }
     } break;
     case QEvent::KeyPress: {
@@ -157,6 +166,8 @@ bool VulkanWindow::event(QEvent *e)
             default:
                 break;
             }
+
+            Q_EMIT m_part->cameraMoved();
         }
     } break;
     case QEvent::KeyRelease: {
@@ -188,6 +199,8 @@ bool VulkanWindow::event(QEvent *e)
             default:
                 break;
             }
+
+            Q_EMIT m_part->cameraMoved();
         }
     } break;
     default:
@@ -259,8 +272,6 @@ void VulkanWindow::render()
             m_part->position.y += 0.05f * speed * deltaTime;
         }
 
-        Q_EMIT m_part->cameraMoved();
-
         m_renderer->camera.view = glm::mat4(1.0f);
         m_renderer->camera.view = glm::translate(m_renderer->camera.view, m_part->position);
         m_renderer->camera.view *= glm::mat4_cast(glm::angleAxis(m_part->yaw, glm::vec3(0, 1, 0)) * glm::angleAxis(m_part->pitch, glm::vec3(1, 0, 0)));
@@ -277,5 +288,7 @@ void VulkanWindow::render()
 
     m_renderer->render(models, vfx);
     m_instance->presentQueued(this);
-    requestUpdate();
+    if (!lazyUpdate) {
+        requestUpdate();
+    }
 }

@@ -72,6 +72,7 @@ MDLPart::MDLPart(FileCache &cache, bool showDetails, QWidget *parent)
     m_wireframeAction->setChecked(m_renderer->scene.wireframe);
     connect(m_wireframeAction, &QAction::toggled, this, [this](const bool toggled) {
         m_renderer->scene.wireframe = toggled;
+        m_vkWindow->requestUpdate();
     });
 
     m_frustumCullingAction = new QAction(i18n("Frustum Culling"));
@@ -79,6 +80,7 @@ MDLPart::MDLPart(FileCache &cache, bool showDetails, QWidget *parent)
     m_frustumCullingAction->setChecked(m_renderer->scene.frustumCulling);
     connect(m_frustumCullingAction, &QAction::toggled, this, [this](const bool toggled) {
         m_renderer->scene.frustumCulling = toggled;
+        m_vkWindow->requestUpdate();
     });
 
     m_debugFrustumCullingAction = new QAction(i18n("Draw Culling AABBs"));
@@ -86,6 +88,7 @@ MDLPart::MDLPart(FileCache &cache, bool showDetails, QWidget *parent)
     m_debugFrustumCullingAction->setChecked(m_renderer->scene.debugFrustumCulling);
     connect(m_debugFrustumCullingAction, &QAction::toggled, this, [this](const bool toggled) {
         m_renderer->scene.debugFrustumCulling = toggled;
+        m_vkWindow->requestUpdate();
     });
 
     m_vfxAction = new QAction(i18n("Draw VFX"));
@@ -93,6 +96,7 @@ MDLPart::MDLPart(FileCache &cache, bool showDetails, QWidget *parent)
     m_vfxAction->setChecked(m_renderer->scene.vfx);
     connect(m_vfxAction, &QAction::toggled, this, [this](const bool toggled) {
         m_renderer->scene.vfx = toggled;
+        m_vkWindow->requestUpdate();
     });
 
     m_collisionAction = new QAction(i18n("Draw Collision"));
@@ -100,7 +104,11 @@ MDLPart::MDLPart(FileCache &cache, bool showDetails, QWidget *parent)
     m_collisionAction->setChecked(m_renderer->scene.collision);
     connect(m_collisionAction, &QAction::toggled, this, [this](const bool toggled) {
         m_renderer->scene.collision = toggled;
+        m_vkWindow->requestUpdate();
     });
+
+    connect(this, &MDLPart::modelChanged, m_vkWindow, &QWindow::requestUpdate);
+    connect(this, &MDLPart::cameraMoved, m_vkWindow, &QWindow::requestUpdate);
 }
 
 MDLPart::~MDLPart()
