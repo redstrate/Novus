@@ -14,10 +14,52 @@
 
 #include "mapview.h"
 #include "settings.h"
+#include "vulkanwindow.h"
 
 #include <KLocalizedString>
 #include <QDir>
 #include <QLabel>
+#include <QRubberBand>
+#include <QtWidgets/private/qsplitter_p.h>
+
+class TestSplitterHandle : public QSplitterHandle
+{
+public:
+    TestSplitterHandle(const Qt::Orientation orientation, QSplitter *parent)
+        : QSplitterHandle(orientation, parent)
+    {
+    }
+
+    bool sendEvent(QEvent *event)
+    {
+        const auto widgetPrivate = dynamic_cast<QSplitterHandlePrivate *>(QObjectPrivate::get(this));
+
+        // FIXME: It would be nice to expose this as public API in Qt?
+        if (widgetPrivate->pressed) {
+            return this->event(event);
+        }
+        return false;
+    }
+};
+
+class TestSplitter : public QSplitter
+{
+public:
+    bool sendEvent(QEvent *event) const
+    {
+        bool processed = false;
+        for (int i = 0; i < this->count(); i++) {
+            processed |= dynamic_cast<TestSplitterHandle *>(this->handle(i))->sendEvent(event);
+        }
+        return processed;
+    }
+
+protected:
+    QSplitterHandle *createHandle() override
+    {
+        return new TestSplitterHandle(orientation(), this);
+    }
+};
 
 ScenePart::ScenePart(FileCache &cache, QWidget *parent)
     : QWidget(parent)
@@ -29,13 +71,13 @@ ScenePart::ScenePart(FileCache &cache, QWidget *parent)
     layout->setSpacing(0);
     setLayout(layout);
 
-    const auto splitter = new QSplitter();
-    splitter->setChildrenCollapsible(false);
-    layout->addWidget(splitter);
+    m_splitter = new TestSplitter();
+    m_splitter->setChildrenCollapsible(false);
+    layout->addWidget(m_splitter);
 
     const auto sidebarWidget = new QWidget();
-    splitter->addWidget(sidebarWidget);
-    splitter->setStretchFactor(0, 0);
+    m_splitter->addWidget(sidebarWidget);
+    m_splitter->setStretchFactor(0, 0);
 
     const auto sidebarLayout = new QVBoxLayout();
     sidebarLayout->setContentsMargins(0, 0, 0, 0);
@@ -69,13 +111,14 @@ ScenePart::ScenePart(FileCache &cache, QWidget *parent)
     sidebarLayout->addWidget(m_timeSlider);
 
     m_mapView = new MapView(m_cache, m_appState);
-    splitter->addWidget(m_mapView);
-    splitter->setStretchFactor(1, 1);
+    m_mapView->part().vkWindow()->installEventFilter(this);
+    m_splitter->addWidget(m_mapView);
+    m_splitter->setStretchFactor(1, 1);
 
     m_objectPropertiesWidget = new ObjectPropertiesWidget(m_appState);
     m_objectPropertiesWidget->setMinimumWidth(400); // HACK: workaround for bad default splitter sizes
-    splitter->addWidget(m_objectPropertiesWidget);
-    splitter->setStretchFactor(2, 0);
+    m_splitter->addWidget(m_objectPropertiesWidget);
+    m_splitter->setStretchFactor(2, 0);
 
     connect(
         m_appState,
@@ -185,6 +228,15 @@ SceneState *ScenePart::sceneState() const
 MapView *ScenePart::mapView() const
 {
     return m_mapView;
+}
+
+bool ScenePart::eventFilter(QObject *watched, QEvent *event)
+{
+    // HACK: We need to send any relevant mouse events to the splitter, if we don't - the handles will release too early and make it impossible to resize.
+    if (dynamic_cast<QMouseEvent *>(event) && m_splitter->sendEvent(event)) {
+        return true;
+    }
+    return QWidget::eventFilter(watched, event);
 }
 
 #include "moc_scenepart.cpp"

@@ -702,6 +702,11 @@ void MDLPart::addThreePointLighting() const
     manager()->scene.lights.push_back(fillLight);
 }
 
+VulkanWindow *MDLPart::vkWindow() const
+{
+    return m_vkWindow;
+}
+
 bool MDLPart::modelExists(const QString &name) const
 {
     return m_vkWindow->sourceModels.contains(name);

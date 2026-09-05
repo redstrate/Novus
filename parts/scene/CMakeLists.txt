@@ -39,6 +39,7 @@ target_link_libraries(scenepart
         Physis::Physis
         Qt6::Core
         Qt6::Widgets
+        Qt6::WidgetsPrivate
         tinygltf)
 qt_add_resources(scenepart
         PREFIX "/"

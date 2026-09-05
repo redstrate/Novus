@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <QSplitter>
 #include <QWidget>
 #include <physis.hpp>
 
@@ -15,6 +16,7 @@ class SceneListWidget;
 class SceneState;
 class ObjectPropertiesWidget;
 class VulkanWindow;
+class TestSplitter;
 
 // Cutoff before nameplates and billboards are drawn.
 constexpr float MAX_DEBUG_DRAW_DISTANCE = 50.0f;
@@ -38,6 +40,8 @@ public:
     SceneState *sceneState() const;
     MapView *mapView() const;
 
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 private:
     FileCache &m_cache;
     SceneState *m_appState = nullptr;
@@ -48,4 +52,5 @@ private:
     QSlider *m_timeSlider = nullptr;
     physis_Sgb m_sgb{};
     physis_Lvb m_lvb{};
+    TestSplitter *m_splitter = nullptr;
 };

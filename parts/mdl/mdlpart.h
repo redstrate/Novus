@@ -62,6 +62,8 @@ public:
 
     void addThreePointLighting() const;
 
+    VulkanWindow *vkWindow() const;
+
 Q_SIGNALS:
     void modelChanged();
     void skeletonChanged();
