@@ -478,9 +478,11 @@ std::optional<QVariant> ExcelModel::contextFor(const uint32_t row, const uint32_
 
     const auto contextName = m_schema.neededContextForColumn(column);
     if (!contextName.isEmpty()) {
-        const uint32_t column = m_schema.indexForName(contextName).value();
-        const uint32_t unsortedColumn = m_sortedColumnIndices[column];
-        return data(index(row, unsortedColumn), Qt::DisplayRole);
+        if (const auto column = m_schema.indexForName(contextName)) {
+            const uint32_t unsortedColumn = m_sortedColumnIndices[*column];
+            return data(index(row, unsortedColumn), Qt::DisplayRole);
+        }
+        qWarning() << "indexForName(" << contextName << ") failed";
     }
     return {};
 }
