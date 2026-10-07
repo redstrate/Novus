@@ -13,6 +13,9 @@
 
 int main(int argc, char *argv[])
 {
+    // TODO: Investigate why Passthrough renders our enemy images SO terribly
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor);
+
     const QApplication app(argc, argv);
 
     KLocalizedString::setApplicationDomain(QByteArrayLiteral("novus"));

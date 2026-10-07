@@ -8,11 +8,13 @@ target_sources(novus-enemyeditor
         include/enemyinfowindow.h
         include/enemymodel.h
         include/mainwindow.h
+        include/kawariapi.h
 
         src/enemyinfowindow.cpp
         src/enemymodel.cpp
         src/main.cpp
-        src/mainwindow.cpp)
+        src/mainwindow.cpp
+        src/kawariapi.cpp)
 target_include_directories(novus-enemyeditor
         PUBLIC
         include)

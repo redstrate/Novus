@@ -5,8 +5,16 @@
 
 #include <QDialog>
 
+class FileCache;
+class KawariApi;
+
 class EnemyInfoWindow : public QDialog
 {
 public:
-    explicit EnemyInfoWindow(uint32_t id, const QString &mdlPath, const QString &mtrlPath, QWidget *parent);
+    explicit EnemyInfoWindow(FileCache &cache,
+                             KawariApi *kawariApi,
+                             QList<uint32_t> ids,
+                             const QString &mdlPath,
+                             const QList<QString> &mtrlPaths,
+                             QWidget *parent);
 };

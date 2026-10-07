@@ -212,12 +212,9 @@ bool VulkanWindow::event(QEvent *e)
 
 void VulkanWindow::render()
 {
-    if (!m_initialized) {
+    if (!m_initialized || !present) {
         return;
     }
-
-    const float deltaTime = m_timer.nsecsElapsed() / 1000000000.0f;
-    m_timer.restart();
 
     ImGui::SetCurrentContext(m_renderer->ctx);
 
@@ -230,6 +227,20 @@ void VulkanWindow::render()
         m_part->requestUpdate();
 
     ImGui::Render();
+
+    updateView();
+
+    m_renderer->render(models, vfx, true);
+    m_instance->presentQueued(this);
+    if (!lazyUpdate) {
+        requestUpdate();
+    }
+}
+
+void VulkanWindow::updateView()
+{
+    const float deltaTime = m_timer.nsecsElapsed() / 1000000000.0f;
+    m_timer.restart();
 
     if (freeMode) {
         float movX = 0.0f;
@@ -284,11 +295,5 @@ void VulkanWindow::render()
 
         m_renderer->camera.view = glm::lookAt(m_part->position + position, m_part->position, glm::vec3(0, -1, 0));
         m_renderer->camera.position = m_part->position + position;
-    }
-
-    m_renderer->render(models, vfx);
-    m_instance->presentQueued(this);
-    if (!lazyUpdate) {
-        requestUpdate();
     }
 }

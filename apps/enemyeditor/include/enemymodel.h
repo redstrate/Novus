@@ -16,9 +16,9 @@ public:
     explicit EnemyModel(FileCache &cache);
 
     enum CustomRole {
-        IdRole = Qt::UserRole,
+        IdsRole = Qt::UserRole,
         MdlPath,
-        MtrlPath,
+        MtrlPaths,
     };
 
     int rowCount(const QModelIndex &parent) const override;
@@ -26,16 +26,17 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
 private:
-    QImage renderModel(uint32_t id, const QString &mdlPath, const QString &mtrlPath) const;
+    QPair<QImage, QList<QString>> renderModel(const QString &mdlPath, const QString &baseMtrlPath) const;
 
     struct Enemy {
-        uint32_t id;
-        QImage image;
+        QList<uint32_t> ids;
         QString mdlPath;
-        QString mtrlPath;
+        QString baseMtrlPath;
     };
     QList<Enemy *> m_enemies;
+    QList<QString> m_seenEnemies;
 
     MDLPart *m_part;
     FileCache &m_cache;
+    QHash<QString, QPair<QImage, QList<QString>>> *m_imageCache = nullptr;
 };

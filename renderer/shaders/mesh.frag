@@ -43,7 +43,8 @@ layout(std430, push_constant) uniform PushConstant {
 
 void main() {
     vec3 diffuse = vec3(1);
-    if (textureSize(indexTexture, 0).x == 1) {
+    bool useDye = false; // TODO: breaks enemy models and doesn't even work that well for dyed stuff yet anyway
+    if (textureSize(indexTexture, 0).x == 1 || !useDye) {
         vec4 tex = texture(diffuseTexture, inUV);
         diffuse = tex.rgb;
 

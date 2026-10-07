@@ -9,7 +9,7 @@
 #include <QFormLayout>
 
 class QTableView;
-class MDLPart;
+class KawariApi;
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -21,8 +21,8 @@ public:
 private:
     void setupActions();
 
-    MDLPart *m_part = nullptr;
     FileCache m_cache;
     QFormLayout *m_detailsLayout = nullptr;
-    QTableView *m_tableView;
+    QTableView *m_tableView = nullptr;
+    KawariApi *m_kawariApi = nullptr;
 };

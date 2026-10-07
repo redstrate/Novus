@@ -650,6 +650,7 @@ RenderManager *MDLPart::manager() const
 
 QImage MDLPart::grab() const
 {
+    m_vkWindow->updateView();
     return m_renderer->grab(m_vkWindow->models, m_vkWindow->vfx);
 }
 

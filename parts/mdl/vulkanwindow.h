@@ -16,6 +16,7 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
     void render();
+    void updateView();
 
     std::vector<DrawObjectInstance> models;
     std::unordered_map<QString, DrawObject *> sourceModels;
@@ -24,6 +25,8 @@ public:
     std::unordered_map<QString, VfxObject *> sourceVfx;
     // If enabled, the window will not update unless specifically requested.
     bool lazyUpdate = false;
+    // If disabled, the window will never update/present. This is only useful for hacky off-screen rendering.
+    bool present = true;
 
 protected:
     void exposeEvent(QExposeEvent *) override;

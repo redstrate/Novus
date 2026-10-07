@@ -112,7 +112,8 @@ const static QMap<FileType, QString> typeToIcon{{FileType::Unknown, QStringLiter
                                                 {FileType::HardwareCursor, QStringLiteral("cursor-arrow-symbolic")},
                                                 {FileType::SharedGroup, QStringLiteral("object-group-symbolic")},
                                                 {FileType::TimelineMotion, QStringLiteral("preferences-desktop-animations")},
-                                                {FileType::Shader, QStringLiteral("paint-pattern-symbolic")}};
+                                                {FileType::Shader, QStringLiteral("paint-pattern-symbolic")},
+                                                {FileType::SoundCompressedData, QStringLiteral("music-note-16th-symbolic")}};
 
 const static QMap<FileType, std::function<const char *(Platform, physis_Buffer)>> typeToDebug{{FileType::LayerGroupBinary, physis_lgb_debug},
                                                                                               {FileType::LayerVariableBinary, physis_lvb_debug},

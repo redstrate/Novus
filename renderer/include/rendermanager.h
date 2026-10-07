@@ -50,7 +50,7 @@ public:
      */
     Texture addGameTexture(const physis_Texture &gameTexture) const;
 
-    void render(std::vector<DrawObjectInstance> &models, const std::vector<VfxObjectInstance> &vfx);
+    void render(std::vector<DrawObjectInstance> &models, const std::vector<VfxObjectInstance> &vfx, bool present);
 
     VkRenderPass presentationRenderPass() const;
 

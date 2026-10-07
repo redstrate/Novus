@@ -15,14 +15,14 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QListWidget>
 #include <QTableView>
 #include <physis.hpp>
 
+#include "kawariapi.h"
 #include "mdlpart.h"
 #include "openinwidget.h"
-
-#include <QHeaderView>
 
 MainWindow::MainWindow(const physis_SqPackResource data)
     : m_cache(data)
@@ -37,26 +37,22 @@ MainWindow::MainWindow(const physis_SqPackResource data)
 
     const auto model = new EnemyModel(m_cache);
 
-    m_part = new MDLPart(m_cache, false, this);
-    m_part->minimumCameraDistance = 0.05f;
-
-    const auto skelName = physis_skeleton_path(Race::Hyur, Tribe::Midlander, Gender::Male);
-    m_part->setSkeleton(physis_skeleton_parse(m_cache.platform(), m_cache.read(QString::fromUtf8(skelName))));
-
     m_tableView = new QTableView();
     m_tableView->setModel(model);
     m_tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     m_tableView->verticalHeader()->setDefaultSectionSize(128);
     m_tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     m_tableView->horizontalHeader()->setDefaultSectionSize(128);
+    m_tableView->horizontalHeader()->setVisible(false);
+    m_tableView->verticalHeader()->setVisible(false);
     layout->addWidget(m_tableView);
 
     connect(m_tableView, &QTableView::activated, this, [this](const QModelIndex &index) {
-        const auto id = index.data(EnemyModel::CustomRole::IdRole).value<uint32_t>();
+        const auto ids = index.data(EnemyModel::CustomRole::IdsRole).value<QList<uint32_t>>();
         const auto mdlPath = index.data(EnemyModel::CustomRole::MdlPath).value<QString>();
-        const auto mtrlPath = index.data(EnemyModel::CustomRole::MtrlPath).value<QString>();
+        const auto mtrlPaths = index.data(EnemyModel::CustomRole::MtrlPaths).value<QList<QString>>();
 
-        const auto window = new EnemyInfoWindow(id, mdlPath, mtrlPath, this);
+        const auto window = new EnemyInfoWindow(m_cache, m_kawariApi, ids, mdlPath, mtrlPaths, this);
         window->open();
     });
 
@@ -72,6 +68,8 @@ MainWindow::MainWindow(const physis_SqPackResource data)
 
     const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
+
+    m_kawariApi = new KawariApi(this);
 }
 
 void MainWindow::setupActions()

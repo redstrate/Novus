@@ -481,7 +481,7 @@ void RenderManager::destroySwapchain(const bool keepSwapchainObject)
     }
 }
 
-void RenderManager::render(std::vector<DrawObjectInstance> &models, const std::vector<VfxObjectInstance> &vfx)
+void RenderManager::render(std::vector<DrawObjectInstance> &models, const std::vector<VfxObjectInstance> &vfx, bool present)
 {
     vkWaitForFences(m_device->device,
                     1,
@@ -574,9 +574,11 @@ void RenderManager::render(std::vector<DrawObjectInstance> &models, const std::v
 
     const VkSemaphore waitSemaphores[] = {m_device->swapChain->imageAvailableSemaphores[m_device->swapChain->currentFrame]};
     constexpr VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
+    if (present) {
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+    }
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
@@ -590,19 +592,21 @@ void RenderManager::render(std::vector<DrawObjectInstance> &models, const std::v
         return;
 
     // present
-    VkPresentInfoKHR presentInfo = {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    if (present) {
+        VkPresentInfoKHR presentInfo = {};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-    const VkSwapchainKHR swapChains[] = {m_device->swapChain->swapchain};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &imageIndex;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+        const VkSwapchainKHR swapChains[] = {m_device->swapChain->swapchain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &imageIndex;
 
-    vkQueuePresentKHR(m_device->presentQueue, &presentInfo);
+        vkQueuePresentKHR(m_device->presentQueue, &presentInfo);
 
-    m_device->swapChain->currentFrame = (m_device->swapChain->currentFrame + 1) % 3;
+        m_device->swapChain->currentFrame = (m_device->swapChain->currentFrame + 1) % 3;
+    }
 }
 
 VkRenderPass RenderManager::presentationRenderPass() const
@@ -942,10 +946,16 @@ void RenderManager::freeResources() const
 
 QImage RenderManager::grab(std::vector<DrawObjectInstance> &models, std::vector<VfxObjectInstance> &vfx)
 {
-    render(models, vfx);
+    const auto currentFrame = m_device->swapChain->currentFrame;
 
     // Source for the copy is the last rendered swapchain image
-    VkImage srcImage = m_device->swapChain->swapchainImages[m_device->swapChain->currentFrame];
+    VkImage srcImage = m_device->swapChain->swapchainImages[currentFrame];
+
+    render(models, vfx, false);
+
+    vkWaitForFences(m_device->device, 1, &m_device->swapChain->inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+
+    vkQueueWaitIdle(m_device->graphicsQueue);
 
     // Create the linear tiled destination image to copy to and to read the memory from
     VkImageCreateInfo imageCreateCI = {};
