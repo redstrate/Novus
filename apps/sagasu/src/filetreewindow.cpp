@@ -24,6 +24,8 @@ FileTreeWindow::FileTreeWindow(HashDatabase &database, const QString &gamePath, 
     m_searchModel = new QSortFilterProxyModel();
     m_searchModel->setRecursiveFilteringEnabled(true);
     m_searchModel->setFilterCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
+    m_searchModel->setFilterRole(FileTreeModel::PathRole);
+    m_searchModel->setSortRole(Qt::DisplayRole);
 
     m_searchEdit = new QLineEdit();
 
@@ -106,6 +108,7 @@ void FileTreeWindow::refreshModel()
     // TODO: this should really be handled by the proxy
     m_fileModel = new FileTreeModel(m_database, m_showUnknown, m_gamePath, m_cache);
     m_searchModel->setSourceModel(m_fileModel);
+    m_searchModel->sort(0);
 }
 
 void FileTreeWindow::setShowUnknown(const bool show)

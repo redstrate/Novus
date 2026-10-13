@@ -12,6 +12,7 @@
 #include "filetreemodel.h"
 
 class FileCache;
+
 class FileTreeWindow : public QWidget
 {
     Q_OBJECT
