@@ -93,7 +93,7 @@ QVariant ExcelModel::data(const QModelIndex &index, const int role) const
         const auto column = m_sortedColumnIndices.indexOf(index.column());
         const auto &data = dataForIndex(index);
 
-        return decorationForColumn(m_schema, index.row(), column, data);
+        return decorationForColumn(m_schema, column, data);
     }
     if (role == Qt::EditRole) {
         const auto &data = dataForIndex(index);
@@ -400,7 +400,7 @@ QVariant ExcelModel::displayForColumn(const Schema &schema, const uint32_t row, 
     }
 }
 
-QVariant ExcelModel::decorationForColumn(const Schema &schema, uint32_t row, uint32_t column, const physis_Field &data) const
+QVariant ExcelModel::decorationForColumn(const Schema &schema, uint32_t column, const physis_Field &data) const
 {
     const auto fieldType = schema.typeForColumn(column);
     switch (fieldType) {
@@ -414,7 +414,7 @@ QVariant ExcelModel::decorationForColumn(const Schema &schema, uint32_t row, uin
         }
 
         const auto tex = physis_texture_parse(m_cache.platform(), file);
-        const auto rgba = physis_texture_to_rgba(tex); // TODO: free
+        const auto rgba = physis_texture_decode(tex, 0, 0); // TODO: free
 
         return QImage(rgba.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
     }

@@ -174,7 +174,7 @@ QVariant GearListModel::data(const QModelIndex &index, const int role) const
             if (texFile.data != nullptr) {
                 const auto tex = physis_texture_parse(m_cache.platform(), texFile);
                 if (tex.p_ptr != nullptr) {
-                    const auto rgba = physis_texture_to_rgba(tex);
+                    const auto rgba = physis_texture_decode(tex, 0, 0);
                     const QImage image(rgba.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
 
                     QPixmap pixmap;

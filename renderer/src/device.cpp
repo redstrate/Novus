@@ -530,19 +530,19 @@ Texture Device::addGameTexture(physis_Texture gameTexture) const
 
     for (int i = 0; i < gameTexture.layers; i++) {
         for (int j = 0; j < gameTexture.mip_levels; j++) {
-            auto mipData = physis_tex_mip_data(&gameTexture, j);
-            if (mipData.start == mipData.end) {
+            auto slice = physis_tex_slice(&gameTexture, j, i);
+            if (slice.start == slice.end) {
                 // HACK: this fallback is meant for ImGuiPass and ObjectPass, can be removed once they can port away from addGameTexture.
-                mipData.width = gameTexture.width;
-                mipData.height = gameTexture.height;
-                mipData.start = 0;
-                mipData.end = gameTexture.data_size;
+                slice.width = gameTexture.width;
+                slice.height = gameTexture.height;
+                slice.start = 0;
+                slice.end = gameTexture.data_size;
             }
 
             // copy to staging buffer
             void *mapped_data;
             vkMapMemory(device, stagingBufferMemory, 0, gameTexture.data_size, 0, &mapped_data);
-            memcpy(mapped_data, gameTexture.data + mipData.start, mipData.end - mipData.start);
+            memcpy(mapped_data, gameTexture.data + slice.start, slice.end - slice.start);
             vkUnmapMemory(device, stagingBufferMemory);
 
             VkImageSubresourceRange range = {};
@@ -567,8 +567,8 @@ Texture Device::addGameTexture(physis_Texture gameTexture) const
             region.imageSubresource.mipLevel = j;
             region.imageSubresource.baseArrayLayer = i;
             region.imageSubresource.layerCount = 1;
-            region.imageExtent.width = mipData.width;
-            region.imageExtent.height = mipData.height;
+            region.imageExtent.width = slice.width;
+            region.imageExtent.height = slice.height;
             region.imageExtent.depth = 1;
 
             vkCmdCopyBufferToImage(commandBuffer, stagingBuffer, newTexture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);

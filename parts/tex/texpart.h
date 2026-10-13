@@ -17,7 +17,7 @@ public:
     /**
      * @brief Loads a .tex file.
      */
-    bool loadTex(Platform platform, physis_Buffer file) const;
+    bool loadTex(Platform platform, physis_Buffer file);
 
     /**
      * @brief Loads a .hwc file.
@@ -30,8 +30,19 @@ public:
     void loadPng(physis_Buffer file) const;
 
     QAction *saveImageAction() const;
+    QAction *layerAction() const;
+    QAction *levelAction() const;
 
 private:
     ImageLabel *m_label = nullptr;
-    QAction *m_saveImage = nullptr;
+    QAction *m_saveImageAction = nullptr;
+    QAction *m_layerAction = nullptr;
+    QMenu *m_layerMenu = nullptr;
+    QActionGroup *m_layerGroup = nullptr;
+    QAction *m_levelAction = nullptr;
+    QMenu *m_levelMenu = nullptr;
+    QActionGroup *m_levelGroup = nullptr;
+    int m_level = 0;
+    int m_layer = 0;
+    QList<QList<QImage>> m_levels;
 };

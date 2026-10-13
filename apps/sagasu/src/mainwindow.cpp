@@ -238,6 +238,8 @@ void MainWindow::loadPart(const physis_Buffer file, const QFileInfo &info)
             addTab(texWidget);
 
             m_fileActionsMenu->addAction(texWidget->saveImageAction());
+            m_fileActionsMenu->addAction(texWidget->layerAction());
+            m_fileActionsMenu->addAction(texWidget->levelAction());
         }
     }
 
