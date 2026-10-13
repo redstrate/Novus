@@ -38,6 +38,7 @@ public:
     QList<QPair<QString, Language>> availableLanguages() const;
     QAction *selectLanguageAction() const;
     QAction *saveCsvAction() const;
+    QAction *saveMdAction() const;
     QString name() const;
 
     QString selectedRow() const;
@@ -76,6 +77,7 @@ private:
     QLineEdit *m_filterEdit = nullptr;
     bool m_modified = false;
     bool m_readOnly = false;
+    QAction *m_saveMarkdownTableAction = nullptr;
 
     SearchSettings m_searchSettings;
 };

@@ -331,9 +331,9 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
     m_languageGroup = new QActionGroup(this);
     m_languageGroup->setExclusive(true);
 
-    m_saveCsvAction = new QAction(QIcon::fromTheme(QStringLiteral("text-csv")), i18n("Save CSV…"), this);
+    m_saveCsvAction = new QAction(QIcon::fromTheme(QStringLiteral("text-csv")), i18n("Save as CSV…"), this);
     connect(m_saveCsvAction, &QAction::triggered, this, [this] {
-        const QString savePath = getSaveFileName(this, QStringLiteral("ExcelEditorCSVFile"), i18nc("@title:window", "Save CSV"), {}, QStringLiteral("*.csv"));
+        const QString savePath = getSaveFileName(this, QStringLiteral("ExcelEditorCSVFile"), i18nc("@title:window", "Save CSV"), m_name, QStringLiteral("*.csv"));
         if (!savePath.isEmpty()) {
             QString csvString;
 
@@ -357,7 +357,7 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
                 // Data
                 for (int k = 0; k < rows; k++) {
                     for (int j = 0; j < columns; j++) {
-                        csvString += model->data(model->index(k, j)).toString();
+                        csvString += model->data(model->index(k, j), Qt::EditRole).toString();
                         csvString += QStringLiteral(", ");
                     }
                     csvString += QStringLiteral("\n");
@@ -368,6 +368,57 @@ EXDPart::EXDPart(FileCache &cache, AbstractExcelResolver *resolver, QWidget *par
             if (csvFile.open(QIODevice::WriteOnly)) {
                 QTextStream out(&csvFile);
                 out << csvString;
+            }
+        }
+    });
+
+    m_saveMarkdownTableAction = new QAction(QIcon::fromTheme(QStringLiteral("text-x-markdown")), i18n("Save as Markdown…"), this);
+    connect(m_saveMarkdownTableAction, &QAction::triggered, this, [this] {
+        const QString savePath = getSaveFileName(this, QStringLiteral("ExcelEditorMdFile"), i18nc("@title:window", "Save Markdown"), m_name, QStringLiteral("*.md"));
+        if (!savePath.isEmpty()) {
+            QString mdString;
+
+            for (uint32_t i = 0; i < m_exh.page_count; i++) {
+                const auto tableWidget = qobject_cast<QTableView *>(m_pageTabWidget->widget(i));
+                Q_ASSERT(tableWidget);
+
+                const auto model = tableWidget->model();
+                const int rows = model->rowCount();
+                const int columns = model->columnCount();
+
+                // Header
+                if (i == 0) {
+                    mdString += QStringLiteral("|");
+                    for (int j = 0; j < columns; j++) {
+                        mdString += model->headerData(j, Qt::Horizontal).toString();
+                        mdString += QStringLiteral("|");
+                    }
+                    mdString += QStringLiteral("\n");
+
+                    // separator
+                    mdString += QStringLiteral("|");
+                    for (int j = 0; j < columns; j++) {
+                        mdString += QStringLiteral("-");
+                        mdString += QStringLiteral("|");
+                    }
+                    mdString += QStringLiteral("\n");
+                }
+
+                // Data
+                for (int k = 0; k < rows; k++) {
+                    mdString += QStringLiteral("|");
+                    for (int j = 0; j < columns; j++) {
+                        mdString += model->data(model->index(k, j), Qt::EditRole).toString();
+                        mdString += QStringLiteral("|");
+                    }
+                    mdString += QStringLiteral("\n");
+                }
+            }
+
+            QFile csvFile(savePath);
+            if (csvFile.open(QIODevice::WriteOnly)) {
+                QTextStream out(&csvFile);
+                out << mdString;
             }
         }
     });
@@ -528,6 +579,11 @@ QAction *EXDPart::selectLanguageAction() const
 QAction *EXDPart::saveCsvAction() const
 {
     return m_saveCsvAction;
+}
+
+QAction *EXDPart::saveMdAction() const
+{
+    return m_saveMarkdownTableAction;
 }
 
 QString EXDPart::name() const
