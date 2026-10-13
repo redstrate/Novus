@@ -58,7 +58,7 @@ ExcelEdit::ExcelEdit(const SceneState *state, const QStringList &excelSheets, ui
                 const Schema schema(Schema::getPath(sheetName));
 
                 for (uint32_t i = 0; i < sheet.page_count; i++) {
-                    m_models.push_back({sheetName, new ExcelModel(exh, sheet.pages[i], schema, resolver, language)});
+                    m_models.push_back({sheetName, new ExcelModel(exh, sheet.pages[i], schema, resolver, state->cache(), language)});
                 }
             }
         }

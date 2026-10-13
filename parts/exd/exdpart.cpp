@@ -625,7 +625,7 @@ void EXDPart::loadTables()
         const auto tableWidget = new ExcelTableView();
         connect(tableWidget, &ExcelTableView::requestJump, this, &EXDPart::requestJump);
 
-        const auto excelModel = new ExcelModel(m_exh, m_sheet.pages[i], schema, m_resolver, getSuitableLanguage(m_exh), this);
+        const auto excelModel = new ExcelModel(m_exh, m_sheet.pages[i], schema, m_resolver, m_cache, getSuitableLanguage(m_exh), this);
         connect(excelModel, &ExcelModel::modified, this, [this] {
             m_modified = true;
             Q_EMIT modified();
@@ -642,6 +642,7 @@ void EXDPart::loadTables()
             tableWidget->setEditTriggers(QAbstractItemView::DoubleClicked);
         }
         tableWidget->resizeColumnsToContents();
+        // tableWidget->resizeRowsToContents(); TODO: Currently way too expensive :-(
         tableWidget->setAlternatingRowColors(true);
         tableWidget->setSortingEnabled(true);
         tableWidget->horizontalHeader()->setSortIndicatorClearable(true);

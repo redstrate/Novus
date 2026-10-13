@@ -9,6 +9,7 @@
 
 #include <physis.hpp>
 
+class FileCache;
 class AbstractExcelResolver;
 
 class ExcelModel : public QAbstractTableModel
@@ -20,6 +21,7 @@ public:
                const physis_ExcelSheetPage &page,
                const Schema &schema,
                AbstractExcelResolver *resolver,
+               FileCache &cache,
                Language language,
                QObject *parent = nullptr);
 
@@ -63,6 +65,11 @@ private:
     QVariant displayForColumn(const Schema &schema, uint32_t row, uint32_t column, const physis_Field &data) const;
 
     /**
+     * @brief Returns a decoration for a given column data, including resolving other sheets.
+     */
+    QVariant decorationForColumn(const Schema &schema, uint32_t row, uint32_t column, const physis_Field &data) const;
+
+    /**
      * @brief Returns a nice display for a given column data.
      */
     static QVariant displayForData(const physis_Field &data);
@@ -91,7 +98,8 @@ private:
     Schema m_schema; // TODO: don't copy
     bool m_hasSubrows = false;
     // Mapping from a regular index to a list of columns that were sorted by offset
-    QList<uint32_t> m_sortedColumnIndices;
+    QList<int> m_sortedColumnIndices;
     AbstractExcelResolver *m_resolver;
     Language m_language;
+    FileCache &m_cache;
 };

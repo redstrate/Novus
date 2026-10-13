@@ -60,6 +60,22 @@ public:
      */
     QString comment(uint32_t index) const;
 
+    enum class FieldType {
+        Scalar,
+        Link,
+        Array,
+        Icon,
+        ModelId,
+        Color,
+    };
+
+    /**
+     * @brief Returns the type for a given column.
+     *
+     * @note This is the index into the *schema* and is sorted by column offset.
+     */
+    FieldType typeForColumn(uint32_t index) const;
+
 private:
     struct Condition {
         QString switchColumn;
@@ -67,14 +83,8 @@ private:
     };
 
     struct Field {
-        enum class Type {
-            Single,
-            Link,
-            Array,
-        };
-
         QString name;
-        Type type = Type::Single;
+        FieldType type = FieldType::Scalar;
         QString comment;
 
         // link

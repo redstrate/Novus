@@ -4,6 +4,7 @@
 #include "excelmodel.h"
 
 #include "excelresolver.h"
+#include "filecache.h"
 #include "utility.h"
 
 #include <KLocalizedString>
@@ -17,6 +18,7 @@ ExcelModel::ExcelModel(const physis_EXH &exh,
                        const physis_ExcelSheetPage &page,
                        const Schema &schema,
                        AbstractExcelResolver *resolver,
+                       FileCache &cache,
                        const Language language,
                        QObject *parent)
     : QAbstractTableModel(parent)
@@ -25,6 +27,7 @@ ExcelModel::ExcelModel(const physis_EXH &exh,
     , m_schema(schema)
     , m_resolver(resolver)
     , m_language(language)
+    , m_cache(cache)
 {
     // We need to count the subrows to get the "true" row count.
     for (unsigned int i = 0; i < page.entry_count; i++) {
@@ -60,23 +63,37 @@ ExcelModel::ExcelModel(const physis_EXH &exh,
 
 int ExcelModel::rowCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent)
+    if (parent.isValid()) {
+        return 0;
+    }
     return static_cast<int>(m_rowCount);
 }
 
 int ExcelModel::columnCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent)
+    if (parent.isValid()) {
+        return 0;
+    }
     return static_cast<int>(m_page.column_count);
 }
 
 QVariant ExcelModel::data(const QModelIndex &index, const int role) const
 {
+    if (!checkIndex(index)) {
+        return {};
+    }
+
     if (role == Qt::DisplayRole) {
         const auto column = m_sortedColumnIndices.indexOf(index.column());
         const auto &data = dataForIndex(index);
 
         return displayForColumn(m_schema, index.row(), column, data);
+    }
+    if (role == Qt::DecorationRole) {
+        const auto column = m_sortedColumnIndices.indexOf(index.column());
+        const auto &data = dataForIndex(index);
+
+        return decorationForColumn(m_schema, index.row(), column, data);
     }
     if (role == Qt::EditRole) {
         const auto &data = dataForIndex(index);
@@ -372,8 +389,42 @@ QVariant ExcelModel::displayForColumn(const Schema &schema, const uint32_t row, 
         return QStringLiteral("???#%1").arg(targetRowId);
     }
 
-    // Normal data
-    return displayForData(data);
+    const auto fieldType = schema.typeForColumn(column);
+    switch (fieldType) {
+    case Schema::FieldType::Icon:
+    case Schema::FieldType::Color: {
+        return {}; // This has a decoration
+    }
+    default:
+        return displayForData(data);
+    }
+}
+
+QVariant ExcelModel::decorationForColumn(const Schema &schema, uint32_t row, uint32_t column, const physis_Field &data) const
+{
+    const auto fieldType = schema.typeForColumn(column);
+    switch (fieldType) {
+    case Schema::FieldType::Icon: {
+        const auto iconId = displayForData(data).toUInt();
+        const auto path = QStringLiteral("ui/icon/%1/%2.tex").arg(iconId / 1000 * 1000, 6, 10, u'0').arg(iconId, 6, 10, u'0');
+        const auto file = m_cache.read(path);
+        if (file.size == 0) {
+            qWarning() << "Couldn't read icon" << path;
+            return {};
+        }
+
+        const auto tex = physis_texture_parse(m_cache.platform(), file);
+        const auto rgba = physis_texture_to_rgba(tex); // TODO: free
+
+        return QImage(rgba.rgba, tex.width, tex.height, QImage::Format_RGBA8888);
+    }
+    case Schema::FieldType::Color: {
+        const auto packedColor = displayForData(data).toUInt();
+        return QColor::fromRgb((packedColor >> 16) & 0xFF, (packedColor >> 8) & 0xFF, (packedColor) & 0xFF, 255);
+    }
+    default:
+        return {};
+    }
 }
 
 QVariant ExcelModel::displayForData(const physis_Field &data)
@@ -383,6 +434,10 @@ QVariant ExcelModel::displayForData(const physis_Field &data)
     case physis_Field::Tag::String:
         result = QString::fromStdString(data.string._0);
         if (result.toString().isEmpty()) {
+            QByteArray a(data.string._0);
+            if (!a.isEmpty()) {
+                return a;
+            }
             result = i18n("(Intentionally blank)");
         }
         break;
@@ -479,7 +534,7 @@ std::optional<QVariant> ExcelModel::contextFor(const uint32_t row, const uint32_
     const auto contextName = m_schema.neededContextForColumn(column);
     if (!contextName.isEmpty()) {
         if (const auto column = m_schema.indexForName(contextName)) {
-            const uint32_t unsortedColumn = m_sortedColumnIndices[*column];
+            const auto unsortedColumn = m_sortedColumnIndices[*column];
             return data(index(row, unsortedColumn), Qt::DisplayRole);
         }
         qWarning() << "indexForName(" << contextName << ") failed";

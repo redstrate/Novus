@@ -26,7 +26,7 @@ Schema::Schema(const QString &path)
         const ryml::ConstNodeRef fields = tree["fields"];
         for (const auto &node : fields) {
             const auto field = parseField(node);
-            if (field.type != Field::Type::Array) {
+            if (field.type != FieldType::Array) {
                 m_fields.push_back(field);
             }
         }
@@ -119,6 +119,14 @@ QString Schema::comment(const uint32_t index) const
     return {};
 }
 
+Schema::FieldType Schema::typeForColumn(uint32_t index) const
+{
+    if (index < m_fields.size()) {
+        return m_fields[index].type;
+    }
+    return {};
+}
+
 Schema::Field Schema::parseField(ryml::ConstNodeRef node)
 {
     Field field;
@@ -131,7 +139,7 @@ Schema::Field Schema::parseField(ryml::ConstNodeRef node)
         const QString typeName = QString::fromLatin1(typeField.val());
 
         if (typeName == QStringLiteral("link")) {
-            field.type = Field::Type::Link;
+            field.type = FieldType::Link;
 
             if (node.has_child("targets")) {
                 ryml::ConstNodeRef targetsField = node["targets"];
@@ -156,7 +164,7 @@ Schema::Field Schema::parseField(ryml::ConstNodeRef node)
                 field.condition = condition;
             }
         } else if (typeName == QStringLiteral("array")) {
-            field.type = Field::Type::Array;
+            field.type = FieldType::Array;
 
             const int count = std::atoi(node["count"].val().data());
 
@@ -185,6 +193,12 @@ Schema::Field Schema::parseField(ryml::ConstNodeRef node)
                     m_fields.push_back(childField);
                 }
             }
+        } else if (typeName == QStringLiteral("icon")) {
+            field.type = FieldType::Icon;
+        } else if (typeName == QStringLiteral("modelId")) {
+            field.type = FieldType::ModelId;
+        } else if (typeName == QStringLiteral("color")) {
+            field.type = FieldType::Color;
         }
     }
 
