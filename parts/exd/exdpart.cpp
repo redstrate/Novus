@@ -645,6 +645,7 @@ void EXDPart::loadTables()
         tableWidget->setAlternatingRowColors(true);
         tableWidget->setSortingEnabled(true);
         tableWidget->horizontalHeader()->setSortIndicatorClearable(true);
+        tableWidget->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 
         // We have to call sort(-1) here because the above call to enable sorting sorts by the first column
         tableWidget->sortByColumn(-1, Qt::SortOrder::AscendingOrder);
