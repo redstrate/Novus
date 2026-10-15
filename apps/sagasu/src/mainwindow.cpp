@@ -127,6 +127,9 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
     connect(PathEdit::handler(), &OpenPathHandler::pathOpened, this, [this](const QString &path) {
         Q_UNUSED(m_tree->selectPath(path));
     });
+    connect(PathEdit::handler(), &OpenPathHandler::pathSearched, this, [this](const QString &path) {
+        Q_UNUSED(m_tree->searchPath(path));
+    });
 
     const auto openInWidget = new OpenInWidget(this);
     menuBar()->setCornerWidget(openInWidget);
@@ -135,6 +138,11 @@ MainWindow::MainWindow(const QString &gamePath, const physis_SqPackResource data
 bool MainWindow::selectPath(const QString &path) const
 {
     return m_tree->selectPath(path);
+}
+
+void MainWindow::searchPath(const QString &path) const
+{
+    m_tree->searchPath(path);
 }
 
 QString MainWindow::getArguments() const

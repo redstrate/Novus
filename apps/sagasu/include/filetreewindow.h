@@ -24,6 +24,7 @@ public:
     void setShowUnknown(bool show);
     bool selectPath(const QString &path) const;
     void focusSearchField() const;
+    void searchPath(const QString &path) const;
 
 Q_SIGNALS:
     void extractFile(const QString &path, const QString &indexPath, Hash hash);

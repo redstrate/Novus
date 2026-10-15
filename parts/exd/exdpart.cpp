@@ -15,10 +15,12 @@
 #include <physis.hpp>
 
 #include "magic_enum.hpp"
+#include "pathedit.h"
 #include "schema.h"
 #include "settings.h"
 
 #include <QActionGroup>
+#include <QClipboard>
 #include <QFileDialog>
 #include <QHeaderView>
 #include <QLineEdit>
@@ -650,6 +652,41 @@ void EXDPart::loadTables()
 
         // We have to call sort(-1) here because the above call to enable sorting sorts by the first column
         tableWidget->sortByColumn(-1, Qt::SortOrder::AscendingOrder);
+
+        tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(tableWidget, &QTableWidget::customContextMenuRequested, this, [this, tableWidget](const QPoint pos) {
+            const auto editData = tableWidget->indexAt(pos).data(Qt::EditRole);
+            const auto displayData = tableWidget->indexAt(pos).data(Qt::DisplayRole);
+
+            const auto menu = new QMenu(this);
+
+            const auto copyMenu = menu->addMenu(QIcon::fromTheme(QStringLiteral("edit-copy-symbolic")), i18n("Copy As"));
+
+            if (displayData.canConvert(QMetaType::fromType<QString>())) {
+                const auto copyShown = copyMenu->addAction(i18n("Display"));
+                connect(copyShown, &QAction::triggered, this, [displayData] {
+                    qGuiApp->clipboard()->setText(displayData.toString());
+                });
+            }
+
+            if (editData.canConvert(QMetaType::fromType<QString>())) {
+                const auto copyRaw = copyMenu->addAction(i18n("Raw"));
+                connect(copyRaw, &QAction::triggered, this, [editData] {
+                    qGuiApp->clipboard()->setText(editData.toString());
+                });
+            }
+
+            // Only consider actual strings (excludes things like colors and icons)
+            const auto possiblePath = editData.toString();
+            if (editData.metaType() == QMetaType::fromType<QString>() && !possiblePath.isEmpty()) {
+                const auto searchPathAction = menu->addAction(QIcon::fromTheme(QStringLiteral("edit-copy-path-symbolic")), i18n("Interpret as Path"));
+                connect(searchPathAction, &QAction::triggered, this, [possiblePath] {
+                    PathEdit::handler()->searchPath(possiblePath);
+                });
+            }
+
+            menu->exec(tableWidget->mapToGlobal(pos));
+        });
 
         m_pageTabWidget->addTab(tableWidget, i18nc("@title:tab", "Page %1", i));
     }

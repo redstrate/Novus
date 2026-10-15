@@ -40,8 +40,13 @@ int main(int argc, char *argv[])
     const QStringList args = parser.positionalArguments();
     if (!args.isEmpty()) {
         const auto path = args.value(0);
-        if (!window->selectPath(path)) {
-            QMessageBox::warning(window, i18n("Path Not Found"), i18n("%1 wasn't found, maybe you need to add it to the database?", path));
+        if (path == QStringLiteral("search")) {
+            const auto actualPath = args.value(1);
+            window->searchPath(actualPath);
+        } else {
+            if (!window->selectPath(path)) {
+                QMessageBox::warning(window, i18n("Path Not Found"), i18n("%1 wasn't found, maybe you need to add it to the database?", path));
+            }
         }
     }
 

@@ -16,11 +16,13 @@ class NOVUSCOMMON_EXPORT OpenPathHandler : public QObject
     Q_OBJECT
 public:
     void openPath(const QString &path);
+    void searchPath(const QString &path);
 
     void setEmitSignal(bool emit);
 
 Q_SIGNALS:
     void pathOpened(const QString &path);
+    void pathSearched(const QString &path);
 
 private:
     bool m_emitSignal = false;
@@ -38,6 +40,7 @@ public:
     void setPath(const QString &path) const;
     void setReadOnly(bool readOnly) const;
 
+    // TODO: maybe move somewhere else
     static OpenPathHandler *handler();
 
     QString path() const;

@@ -23,6 +23,7 @@ public:
     MainWindow(const QString &gamePath, physis_SqPackResource data);
 
     bool selectPath(const QString &path) const;
+    void searchPath(const QString &path) const;
 
 public Q_SLOTS:
     QString getArguments() const;

@@ -20,6 +20,15 @@ void OpenPathHandler::openPath(const QString &path)
     }
 }
 
+void OpenPathHandler::searchPath(const QString &path)
+{
+    if (m_emitSignal) {
+        Q_EMIT pathSearched(path);
+    } else {
+        QProcess::startDetached(DATAEXPLORER_EXECUTABLE, {QStringLiteral("search"), path});
+    }
+}
+
 void OpenPathHandler::setEmitSignal(const bool emit)
 {
     m_emitSignal = emit;

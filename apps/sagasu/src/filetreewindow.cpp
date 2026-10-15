@@ -139,4 +139,9 @@ void FileTreeWindow::focusSearchField() const
     m_searchEdit->setFocus(Qt::FocusReason::ShortcutFocusReason);
 }
 
+void FileTreeWindow::searchPath(const QString &path) const
+{
+    m_searchEdit->setText(path);
+}
+
 #include "moc_filetreewindow.cpp"
