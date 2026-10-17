@@ -14,6 +14,7 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QVBoxLayout>
+#include <kawari.hpp>
 
 MapListWidget::MapListWidget(FileCache &cache, QWidget *parent)
     : QDialog(parent)

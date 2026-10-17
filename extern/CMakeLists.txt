@@ -33,3 +33,11 @@ add_subdirectory(imgui EXCLUDE_FROM_ALL)
 add_subdirectory(dxbc EXCLUDE_FROM_ALL)
 add_subdirectory(rapidyaml EXCLUDE_FROM_ALL)
 add_subdirectory(luadec51 EXCLUDE_FROM_ALL)
+
+corrosion_import_crate(MANIFEST_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libkawari/Cargo.toml)
+target_include_directories(kawari INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libkawari/target/public)
+if (ENABLE_SANITIZERS)
+    corrosion_add_target_rustflags(kawari -Zsanitizer=address -Zsanitizer=leak)
+endif()
+
+add_library(Kawari::Kawari ALIAS kawari)

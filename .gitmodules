@@ -7,3 +7,6 @@
 [submodule "extern/luadec51"]
 	path = extern/luadec51
 	url = https://github.com/redstrate/luadec51.git
+[submodule "extern/libkawari"]
+	path = extern/libkawari
+	url = https://codeberg.org/redstrate/libkawari
