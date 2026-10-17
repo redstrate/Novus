@@ -80,6 +80,6 @@ struct DrawObjectInstance {
     QString name;
     DrawObject *sourceObject = nullptr;
     Transformation transformation;
-    BoundingBox lastBoundingBox{};
+    AABB lastBoundingBox{};
     float clipOutDistance = 0.0f;
 };

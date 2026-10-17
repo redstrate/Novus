@@ -418,7 +418,7 @@ void SceneState::showAll()
     Q_EMIT visibleLayerIdsChanged();
 }
 
-std::optional<BoundingBox> SceneState::checkLightBoundingBox(const uint32_t id, const uint32_t sgbId) const
+std::optional<AABB> SceneState::checkLightBoundingBox(const uint32_t id, const uint32_t sgbId) const
 {
     for (uint32_t i = 0; i < loadedLcb.lcc_count; i++) {
         for (uint32_t j = 0; j < loadedLcb.lccs[i].num_entries; j++) {
@@ -427,17 +427,17 @@ std::optional<BoundingBox> SceneState::checkLightBoundingBox(const uint32_t id, 
             // SGB light case
             // FIXME: might not be correct after porting??
             if (entry.instance_id == sgbId && entry.members[0] == id) {
-                return BoundingBox{
-                    .min = {entry.min[0], entry.min[1], entry.min[2], 1.0f},
-                    .max = {entry.max[0], entry.max[1], entry.max[2], 1.0f},
+                return AABB{
+                    .min = {entry.min[0], entry.min[1], entry.min[2]},
+                    .max = {entry.max[0], entry.max[1], entry.max[2]},
                 };
             }
 
             // Normal light case
             if (entry.instance_id == id) {
-                return BoundingBox{
-                    .min = {entry.min[0], entry.min[1], entry.min[2], 1.0f},
-                    .max = {entry.max[0], entry.max[1], entry.max[2], 1.0f},
+                return AABB{
+                    .min = {entry.min[0], entry.min[1], entry.min[2]},
+                    .max = {entry.max[0], entry.max[1], entry.max[2]},
                 };
             }
         }

@@ -167,7 +167,7 @@ void SimpleRenderer::render(VkCommandBuffer commandBuffer, Camera &camera, Scene
             }
         }
 
-        auto bounding_box = BoundingBox{
+        auto bounding_box = AABB{
             .min = {newBoundMin[0], newBoundMin[1], newBoundMin[2]},
             .max = {newBoundMax[0], newBoundMax[1], newBoundMax[2]},
         };

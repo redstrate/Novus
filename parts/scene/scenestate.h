@@ -152,7 +152,7 @@ public:
     QList<uint32_t> visibleTerrainPlates;
     physis_Lcb loadedLcb{};
 
-    std::optional<BoundingBox> checkLightBoundingBox(uint32_t id, uint32_t sgbId) const;
+    std::optional<AABB> checkLightBoundingBox(uint32_t id, uint32_t sgbId) const;
 
     /**
      * @return The name for this Event NPC. If not found, then a generic one.

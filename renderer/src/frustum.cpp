@@ -57,7 +57,7 @@ CameraFrustum camera_extract_frustum(const Camera &cam)
     return extract_frustum(combined);
 }
 
-std::array<glm::vec3, 8> get_points(const BoundingBox &aabb)
+std::array<glm::vec3, 8> get_points(const AABB &aabb)
 {
     return {glm::vec3(aabb.min[0], aabb.min[1], aabb.min[2]),
             glm::vec3(aabb.max[0], aabb.min[1], aabb.min[2]),
@@ -78,7 +78,7 @@ CameraFrustum normalize_frustum(const CameraFrustum &frustum)
     return normalized_frustum;
 }
 
-bool test_aabb_frustum(const CameraFrustum &frustum, const BoundingBox &aabb)
+bool test_aabb_frustum(const CameraFrustum &frustum, const AABB &aabb)
 {
     for (std::size_t i = 0; i < 6; i++) {
         int out = 0;
@@ -93,13 +93,13 @@ bool test_aabb_frustum(const CameraFrustum &frustum, const BoundingBox &aabb)
     return true;
 }
 
-bool intersects(const BoundingBox &a, const BoundingBox &b)
+bool intersects(const AABB &a, const AABB &b)
 {
     return glm::all(glm::lessThanEqual(glm::make_vec3(a.min), glm::make_vec3(b.max)))
         && glm::all(glm::greaterThanEqual(glm::make_vec3(a.max), glm::make_vec3(b.min)));
 }
 
-bool contains(const BoundingBox &box, const glm::vec3 &point)
+bool contains(const AABB &box, const glm::vec3 &point)
 {
-    return intersects(box, BoundingBox{.min = {point[0], point[1], point[2]}, .max = {point[0], point[1], point[2]}});
+    return intersects(box, AABB{.min = {point[0], point[1], point[2]}, .max = {point[0], point[1], point[2]}});
 }
