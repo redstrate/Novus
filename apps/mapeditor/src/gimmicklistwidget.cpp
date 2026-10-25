@@ -3,6 +3,7 @@
 
 #include "gimmicklistwidget.h"
 
+#include "kawari.hpp"
 #include "physis.hpp"
 #include "scenepart.h"
 
@@ -46,10 +47,9 @@ GimmickListWidget::GimmickListWidget(ScenePart *part, SceneState *state, QWidget
                         const auto row = physis_excel_get_row(&eobjSheet, baseId);
                         const auto eobjData = row.columns[9].u_int32._0;
 
-                        const auto eventType = eobjData >> 16;
+                        const auto eventType = static_cast<HandlerType>(eobjData >> 16);
                         const auto eventId = eobjData & 0xFFFF;
-                        // GimmickAccessor is 15
-                        if (eventType == 15) {
+                        if (eventType == HandlerType::GimmickAccessor) {
                             const int row = tableWidget->rowCount();
                             tableWidget->insertRow(row);
 
